@@ -1,0 +1,919 @@
+import {
+  OpenIMAdvancedHistoryMessageListResult,
+  OpenIMAdvancedTextElem,
+  OpenIMAtTextElem,
+  OpenIMAtUsersInfoItem,
+  OpenIMAttachedGroupHasReadInfo,
+  OpenIMAttachedInfoElem,
+  OpenIMBlackListResult,
+  OpenIMBlackUserItem,
+  OpenIMCardElem,
+  OpenIMConversationInputStatusItem,
+  OpenIMConversationItem,
+  OpenIMConversationListResult,
+  OpenIMCustomElem,
+  OpenIMFaceElem,
+  OpenIMFileElem,
+  OpenIMFindMessageResult,
+  OpenIMFindMessageResultItem,
+  OpenIMFriendApplicationItem,
+  OpenIMFriendApplicationListResult,
+  OpenIMFriendListResult,
+  OpenIMFriendUserItem,
+  OpenIMGroupApplicationItem,
+  OpenIMGroupApplicationListResult,
+  OpenIMGroupItem,
+  OpenIMGroupListResult,
+  OpenIMGroupMemberItem,
+  OpenIMGroupMemberListResult,
+  OpenIMLoginStatus,
+  OpenIMLocationElem,
+  OpenIMMergeElem,
+  OpenIMMessageEntity,
+  OpenIMMessageItem,
+  OpenIMMessageItemRef,
+  OpenIMMessageListResult,
+  OpenIMMessageReceiptItem,
+  OpenIMMessageReceiptListResult,
+  OpenIMMessageRevokedItem,
+  OpenIMMessageStatus,
+  OpenIMMessageType,
+  OpenIMNotificationElem,
+  OpenIMOfflinePush,
+  OpenIMPicture,
+  OpenIMPictureElem,
+  OpenIMPlatform,
+  OpenIMQuoteElem,
+  OpenIMSearchMessageResult,
+  OpenIMSearchMessageResultItem,
+  OpenIMSessionType,
+  OpenIMSoundElem,
+  OpenIMTextElem,
+  OpenIMTypingElem,
+  OpenIMUploadFileResult,
+  OpenIMUploadFileProgressEvent,
+  OpenIMUploadFileProgressStage,
+  OpenIMUploadLogsProgressEvent,
+  OpenIMUploadProgress,
+  OpenIMUserCommandItem,
+  OpenIMUserInfo,
+  OpenIMUserListResult,
+  OpenIMUserStatusItem,
+  OpenIMUserStatusListResult,
+  OpenIMVideoElem
+} from '../interface.uts'
+
+export type NativeParserHelpers = {
+  parseNativeAny : (data : string) => any | null,
+  parseNativeJSONObjectListData : (data : string) => Array<UTSJSONObject> | null,
+  parseNativeConversationItemData : (data : string) => OpenIMConversationItem | null,
+  parseNativeConversationListData : (data : string) => Array<OpenIMConversationItem> | null,
+  parseNativeUserInfoData : (data : string) => OpenIMUserInfo | null,
+  parseNativeUserInfoListData : (data : string) => Array<OpenIMUserInfo> | null,
+  parseNativeFriendUserListData : (data : string) => Array<OpenIMFriendUserItem> | null,
+  parseNativeBlackUserListData : (data : string) => Array<OpenIMBlackUserItem> | null,
+  parseNativeGroupData : (data : string) => OpenIMGroupItem | null,
+  parseNativeGroupListData : (data : string) => Array<OpenIMGroupItem> | null,
+  parseNativeGroupMemberListData : (data : string) => Array<OpenIMGroupMemberItem> | null,
+  parseNativeFriendApplicationListData : (data : string) => Array<OpenIMFriendApplicationItem> | null,
+  parseNativeGroupApplicationListData : (data : string) => Array<OpenIMGroupApplicationItem> | null,
+  parseNativeMessageData : (data : string) => OpenIMMessageItem | null,
+  parseNativeMessageListData : (data : string) => Array<OpenIMMessageItem> | null,
+  parseNativeAdvancedHistoryMessageListData : (data : string) => OpenIMAdvancedHistoryMessageListResult | null,
+  parseNativeStringListData : (data : string) => Array<string> | null,
+  readStringParam : (value : any | null, key : string) => string,
+  readNumberParam : (value : any | null, key : string) => number,
+  readBooleanParam : (value : any | null, key : string) => boolean,
+  isRequiredField : (value : UTSJSONObject, key : string) => boolean,
+  isOptionalNumberField : (value : UTSJSONObject, key : string) => boolean
+}
+
+export function normalizeOperationID(operationID ?: string | null) : string {
+  return operationID != null ? operationID : ''
+}
+
+export function stringifyJSON(value : any | null) : string {
+  const text = JSON.stringify(value)
+  if (text != null) {
+    return text as string
+  }
+  return '{}'
+}
+
+export function buildJSONField(key : string, value : string) : string {
+  return '"' + key + '":' + value
+}
+
+export function stringifyJSONString(value : string | null) : string {
+  if (value == null) { return 'null' }
+  const text = JSON.stringify(value)
+  if (text != null) { return text as string }
+  return '""'
+}
+
+export function stringifyJSONNumber(value : number) : string {
+  return value.toString()
+}
+
+export function stringifyJSONBoolean(value : boolean) : string {
+  return value ? 'true' : 'false'
+}
+
+export function appendJSONText(json : string, field : string) : string {
+  return json.length == 0 ? field : json + ',' + field
+}
+
+export function appendOptionalJSONStringText(json : string, key : string, value ?: string | null) : string {
+  if (value != null) { return appendJSONText(json, buildJSONField(key, stringifyJSONString(value as string))) }
+  return json
+}
+
+export function appendOptionalJSONNumberText(json : string, key : string, value ?: number | null) : string {
+  if (value != null) { return appendJSONText(json, buildJSONField(key, stringifyJSONNumber(value as number))) }
+  return json
+}
+
+export function appendOptionalJSONBooleanText(json : string, key : string, value ?: boolean | null) : string {
+  if (value != null) { return appendJSONText(json, buildJSONField(key, stringifyJSONBoolean(value as boolean))) }
+  return json
+}
+
+export function stringifyStringList(value ?: Array<string> | null) : string {
+  if (value == null) { return '[]' }
+  const list = value as Array<string>
+  let text = ''
+  list.forEach((item : string) => { text = appendJSONText(text, stringifyJSONString(item)) })
+  return '[' + text + ']'
+}
+
+export function stringifyOpenIMMessageEntityList(value ?: Array<OpenIMMessageEntity> | null) : string {
+  if (value == null) { return '[]' }
+  const list = value as Array<OpenIMMessageEntity>
+  let text = ''
+  list.forEach((entity : OpenIMMessageEntity) => {
+    let item = ''
+    item = appendOptionalJSONStringText(item, 'type', entity.type)
+    item = appendOptionalJSONNumberText(item, 'offset', entity.offset)
+    item = appendOptionalJSONNumberText(item, 'length', entity.length)
+    item = appendOptionalJSONStringText(item, 'url', entity.url)
+    item = appendOptionalJSONStringText(item, 'ex', entity.ex)
+    item = appendOptionalJSONStringText(item, 'info', entity.info)
+    text = appendJSONText(text, '{' + item + '}')
+  })
+  return '[' + text + ']'
+}
+
+export function rejectNativeError(reject : (reason : any | null) => void, errCode : number, errMsg : string) {
+  const error = {
+    errCode: errCode,
+    errMsg: errMsg
+  }
+  reject(error)
+}
+
+export function hasNativeKey(value : UTSJSONObject, key : string) : boolean {
+  const keys = UTSJSONObject.keys(value)
+  let index = 0
+  while (index < keys.length) {
+    if (keys[index] == key) {
+      return true
+    }
+    index = index + 1
+  }
+  return false
+}
+
+export function readNativeValue(value : any | null, key : string) : any | null {
+  if (value instanceof UTSJSONObject && hasNativeKey(value, key)) {
+    return value[key]
+  }
+  return null
+}
+
+function stringifyNativeValue(value : any | null) : string | null {
+  if (value != null) {
+    const text = JSON.stringify(value)
+    if (text != null) { return text as string }
+  }
+  return null
+}
+
+function parseObjectFromValue(value : any | null, helpers : NativeParserHelpers) : UTSJSONObject | null {
+  const text = stringifyNativeValue(value)
+  if (text == null) { return null }
+  const raw = helpers.parseNativeAny(text)
+  if (raw instanceof UTSJSONObject) { return raw }
+  return null
+}
+
+export function parseNativeUploadFileResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMUploadFileResult | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject) {
+    return { url: helpers.readStringParam(raw, 'url'), uri: helpers.readStringParam(raw, 'uri'), uuid: helpers.readStringParam(raw, 'uuid'), size: helpers.readNumberParam(raw, 'size'), typ: helpers.readNumberParam(raw, 'typ'), mediaID: helpers.readStringParam(raw, 'mediaID') }
+  }
+  return null
+}
+
+export function parseNativeUploadFileProgressEventCommon(data : string, helpers : NativeParserHelpers) : OpenIMUploadFileProgressEvent | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject) {
+    if (helpers.isRequiredField(raw, 'stage') == false) { return null }
+    return { operationID: helpers.readStringParam(raw, 'operationID'), stage: helpers.readStringParam(raw, 'stage') as OpenIMUploadFileProgressStage, total: helpers.readNumberParam(raw, 'total'), current: helpers.readNumberParam(raw, 'current'), storageSize: helpers.readNumberParam(raw, 'storageSize') }
+  }
+  return null
+}
+
+export function parseNativeUploadLogsProgressEventCommon(data : string, helpers : NativeParserHelpers) : OpenIMUploadLogsProgressEvent | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject) {
+    return { operationID: helpers.readStringParam(raw, 'operationID'), current: helpers.readNumberParam(raw, 'current'), size: helpers.readNumberParam(raw, 'size'), percent: helpers.readNumberParam(raw, 'percent') }
+  }
+  return null
+}
+
+function parseNativeConversationItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMConversationItem {
+  return {
+    conversationID: helpers.readStringParam(item, 'conversationID'),
+    conversationType: helpers.readNumberParam(item, 'conversationType') as OpenIMSessionType,
+    userID: helpers.readStringParam(item, 'userID'),
+    groupID: helpers.readStringParam(item, 'groupID'),
+    showName: helpers.readStringParam(item, 'showName'),
+    faceURL: helpers.readStringParam(item, 'faceURL'),
+    recvMsgOpt: helpers.readNumberParam(item, 'recvMsgOpt'),
+    unreadCount: helpers.readNumberParam(item, 'unreadCount'),
+    latestMsg: helpers.readStringParam(item, 'latestMsg'),
+    latestMsgSendTime: helpers.readNumberParam(item, 'latestMsgSendTime'),
+    draftText: helpers.readStringParam(item, 'draftText'),
+    draftTextTime: helpers.readNumberParam(item, 'draftTextTime'),
+    isPinned: helpers.readBooleanParam(item, 'isPinned'),
+    isPrivateChat: helpers.readBooleanParam(item, 'isPrivateChat'),
+    attachedInfo: helpers.readStringParam(item, 'attachedInfo'),
+    ex: helpers.readStringParam(item, 'ex'),
+    burnDuration: helpers.readNumberParam(item, 'burnDuration'),
+    minSeq: helpers.readNumberParam(item, 'minSeq'),
+    maxSeq: helpers.readNumberParam(item, 'maxSeq'),
+    msgDestructTime: helpers.readNumberParam(item, 'msgDestructTime'),
+    groupAtType: helpers.readNumberParam(item, 'groupAtType'),
+    isMsgDestruct: helpers.readBooleanParam(item, 'isMsgDestruct'),
+    isNotInGroup: helpers.readBooleanParam(item, 'isNotInGroup'),
+    updateUnreadCountTime: helpers.readNumberParam(item, 'updateUnreadCountTime')
+  }
+}
+
+function isValidParsedConversation(conversation : OpenIMConversationItem, helpers : NativeParserHelpers) : boolean {
+  const raw = parseObjectFromValue(conversation, helpers)
+  if (raw == null) { return false }
+  return helpers.isRequiredField(raw, 'conversationType') &&
+    helpers.isRequiredField(raw, 'recvMsgOpt') &&
+    helpers.isRequiredField(raw, 'unreadCount') &&
+    helpers.isRequiredField(raw, 'latestMsgSendTime') &&
+    helpers.isRequiredField(raw, 'draftTextTime') &&
+    helpers.isRequiredField(raw, 'burnDuration') &&
+    helpers.isRequiredField(raw, 'minSeq') &&
+    helpers.isRequiredField(raw, 'maxSeq') &&
+    helpers.isRequiredField(raw, 'msgDestructTime') &&
+    helpers.isRequiredField(raw, 'groupAtType') &&
+    helpers.isRequiredField(raw, 'updateUnreadCountTime')
+}
+
+function isValidParsedConversationList(conversations : Array<OpenIMConversationItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < conversations.length) {
+    if (isValidParsedConversation(conversations[index], helpers) == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+function parseNativeConversationListFallback(data : string, helpers : NativeParserHelpers) : Array<OpenIMConversationItem> | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const conversations : Array<OpenIMConversationItem> = []
+  rawList.forEach((item : UTSJSONObject) => { conversations.push(parseNativeConversationItem(item, helpers)) })
+  return conversations
+}
+
+function parseNativeConversationList(data : string, helpers : NativeParserHelpers) : Array<OpenIMConversationItem> | null {
+  const typedList = helpers.parseNativeConversationListData(data)
+  if (typedList != null) { return typedList }
+  return parseNativeConversationListFallback(data, helpers)
+}
+
+export function parseNativeConversationEventListCommon(data : string, helpers : NativeParserHelpers) : OpenIMConversationListResult | null {
+  const conversations = parseNativeConversationList(data, helpers)
+  if (conversations == null) { return null }
+  if (isValidParsedConversationList(conversations, helpers) == false) { return null }
+  return { conversations: conversations }
+}
+
+export function parseNativeConversationObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMConversationItem | null {
+  const typedItem = helpers.parseNativeConversationItemData(data)
+  if (typedItem != null && isValidParsedConversation(typedItem, helpers)) { return typedItem }
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject) { return parseNativeConversationItem(raw, helpers) }
+  return null
+}
+
+export function parseNativeConversationListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMConversationListResult | null {
+  const conversations = parseNativeConversationList(data, helpers)
+  if (conversations != null) { return { conversations: conversations } }
+  return null
+}
+
+export function parseNativeConversationListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMConversationListResult | null {
+  const conversations = parseNativeConversationListFallback(data, helpers)
+  if (conversations != null && isValidParsedConversationList(conversations, helpers)) { return { conversations: conversations } }
+  return null
+}
+
+function parseNativeUserItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMUserInfo {
+  return {
+    userID: helpers.readStringParam(item, 'userID'),
+    nickname: helpers.readStringParam(item, 'nickname'),
+    faceURL: helpers.readStringParam(item, 'faceURL'),
+    ex: helpers.readStringParam(item, 'ex'),
+    createTime: helpers.readNumberParam(item, 'createTime'),
+    attachedInfo: helpers.readStringParam(item, 'attachedInfo'),
+    globalRecvMsgOpt: helpers.readNumberParam(item, 'globalRecvMsgOpt')
+  }
+}
+
+function isValidParsedUser(user : OpenIMUserInfo, helpers : NativeParserHelpers) : boolean {
+  const raw = parseObjectFromValue(user, helpers)
+  if (raw == null) { return false }
+  return helpers.isOptionalNumberField(raw, 'createTime') && helpers.isOptionalNumberField(raw, 'globalRecvMsgOpt')
+}
+
+function isValidParsedUserList(users : Array<OpenIMUserInfo>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < users.length) {
+    if (isValidParsedUser(users[index], helpers) == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeUserListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMUserListResult | null {
+  const typedList = helpers.parseNativeUserInfoListData(data)
+  if (typedList != null && isValidParsedUserList(typedList, helpers)) { return { users: typedList } }
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const users : Array<OpenIMUserInfo> = []
+  rawList.forEach((item : UTSJSONObject) => { users.push(parseNativeUserItem(item, helpers)) })
+  return { users: users }
+}
+
+function parseNativeNumberListValue(value : any | null) : Array<number> {
+  const text = stringifyNativeValue(value)
+  if (text == null) { return [] }
+  const trimmed = text.trim()
+  if (trimmed.length < 2) { return [] }
+  const body = trimmed.substring(1, trimmed.length - 1)
+  if (body.length == 0) { return [] }
+  const result : Array<number> = []
+  const items = body.split(',')
+  items.forEach((item : string) => { result.push(parseFloat(item.trim())) })
+  return result
+}
+
+function parseNativeUserStatusItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMUserStatusItem {
+  return { userID: helpers.readStringParam(item, 'userID'), status: helpers.readNumberParam(item, 'status'), platformIDs: parseNativeNumberListValue(readNativeValue(item, 'platformIDs')) }
+}
+
+export function parseNativeUserStatusListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMUserStatusListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const statuses : Array<OpenIMUserStatusItem> = []
+  rawList.forEach((item : UTSJSONObject) => { statuses.push(parseNativeUserStatusItem(item, helpers)) })
+  return { statuses: statuses }
+}
+
+export function parseNativeUserObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMUserInfo | null {
+  const typedItem = helpers.parseNativeUserInfoData(data)
+  if (typedItem != null && isValidParsedUser(typedItem, helpers)) { return typedItem }
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'userID')) { return parseNativeUserItem(raw, helpers) }
+  return null
+}
+
+export function parseNativeUserStatusEventListCommon(data : string, helpers : NativeParserHelpers) : OpenIMUserStatusListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const statuses : Array<OpenIMUserStatusItem> = []
+  let valid = true
+  rawList.forEach((item : UTSJSONObject) => {
+    if (helpers.isRequiredField(item, 'userID') && helpers.isRequiredField(item, 'status')) { statuses.push(parseNativeUserStatusItem(item, helpers)) } else { valid = false }
+  })
+  if (valid == false) { return null }
+  return { statuses: statuses }
+}
+
+function parseNativeFriendItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMFriendUserItem {
+  return { ownerUserID: helpers.readStringParam(item, 'ownerUserID'), userID: helpers.readStringParam(item, 'userID'), nickname: helpers.readStringParam(item, 'nickname'), faceURL: helpers.readStringParam(item, 'faceURL'), remark: helpers.readStringParam(item, 'remark'), createTime: helpers.readNumberParam(item, 'createTime'), addSource: helpers.readNumberParam(item, 'addSource'), operatorUserID: helpers.readStringParam(item, 'operatorUserID'), ex: helpers.readStringParam(item, 'ex'), attachedInfo: helpers.readStringParam(item, 'attachedInfo'), isPinned: helpers.readBooleanParam(item, 'isPinned') }
+}
+
+function isValidParsedFriendList(friends : Array<OpenIMFriendUserItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < friends.length) {
+    const raw = parseObjectFromValue(friends[index], helpers)
+    if (raw == null || helpers.isRequiredField(raw, 'createTime') == false || helpers.isRequiredField(raw, 'addSource') == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeFriendListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMFriendListResult | null {
+  const typedList = helpers.parseNativeFriendUserListData(data)
+  if (typedList != null && isValidParsedFriendList(typedList, helpers)) { return { friends: typedList } }
+  return parseNativeFriendListResultFallbackCommon(data, helpers)
+}
+
+export function parseNativeFriendListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMFriendListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const friends : Array<OpenIMFriendUserItem> = []
+  rawList.forEach((item : UTSJSONObject) => { friends.push(parseNativeFriendItem(item, helpers)) })
+  return { friends: friends }
+}
+
+export function parseNativeFriendObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMFriendUserItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'userID')) { return parseNativeFriendItem(raw, helpers) }
+  return null
+}
+
+function parseNativeBlackUserItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMBlackUserItem {
+  return { ownerUserID: helpers.readStringParam(item, 'ownerUserID'), userID: helpers.readStringParam(item, 'userID'), nickname: helpers.readStringParam(item, 'nickname'), faceURL: helpers.readStringParam(item, 'faceURL'), createTime: helpers.readNumberParam(item, 'createTime'), addSource: helpers.readNumberParam(item, 'addSource'), operatorUserID: helpers.readStringParam(item, 'operatorUserID'), ex: helpers.readStringParam(item, 'ex'), attachedInfo: helpers.readStringParam(item, 'attachedInfo') }
+}
+
+function isValidParsedBlackList(users : Array<OpenIMBlackUserItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < users.length) {
+    const raw = parseObjectFromValue(users[index], helpers)
+    if (raw == null || helpers.isRequiredField(raw, 'createTime') == false || helpers.isRequiredField(raw, 'addSource') == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeBlackListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMBlackListResult | null {
+  const typedList = helpers.parseNativeBlackUserListData(data)
+  if (typedList != null && isValidParsedBlackList(typedList, helpers)) { return { blackUsers: typedList } }
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const users : Array<OpenIMBlackUserItem> = []
+  rawList.forEach((item : UTSJSONObject) => { users.push(parseNativeBlackUserItem(item, helpers)) })
+  return { blackUsers: users }
+}
+
+export function parseNativeBlackUserObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMBlackUserItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'userID')) { return parseNativeBlackUserItem(raw, helpers) }
+  return null
+}
+
+function parseNativeGroupItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMGroupItem {
+  return { groupID: helpers.readStringParam(item, 'groupID'), groupName: helpers.readStringParam(item, 'groupName'), notification: helpers.readStringParam(item, 'notification'), introduction: helpers.readStringParam(item, 'introduction'), faceURL: helpers.readStringParam(item, 'faceURL'), ownerUserID: helpers.readStringParam(item, 'ownerUserID'), createTime: helpers.readNumberParam(item, 'createTime'), memberCount: helpers.readNumberParam(item, 'memberCount'), status: helpers.readNumberParam(item, 'status'), creatorUserID: helpers.readStringParam(item, 'creatorUserID'), groupType: helpers.readNumberParam(item, 'groupType'), needVerification: helpers.readNumberParam(item, 'needVerification'), lookMemberInfo: helpers.readNumberParam(item, 'lookMemberInfo'), applyMemberFriend: helpers.readNumberParam(item, 'applyMemberFriend'), notificationUpdateTime: helpers.readNumberParam(item, 'notificationUpdateTime'), notificationUserID: helpers.readStringParam(item, 'notificationUserID'), ex: helpers.readStringParam(item, 'ex'), attachedInfo: helpers.readStringParam(item, 'attachedInfo') }
+}
+
+function isValidParsedGroup(group : OpenIMGroupItem, helpers : NativeParserHelpers) : boolean {
+  const raw = parseObjectFromValue(group, helpers)
+  if (raw == null) { return false }
+  return helpers.isRequiredField(raw, 'createTime') && helpers.isRequiredField(raw, 'memberCount') && helpers.isRequiredField(raw, 'status') && helpers.isRequiredField(raw, 'groupType') && helpers.isRequiredField(raw, 'needVerification') && helpers.isRequiredField(raw, 'lookMemberInfo') && helpers.isRequiredField(raw, 'applyMemberFriend') && helpers.isRequiredField(raw, 'notificationUpdateTime')
+}
+
+function isValidParsedGroupList(groups : Array<OpenIMGroupItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < groups.length) {
+    if (isValidParsedGroup(groups[index], helpers) == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeGroupListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupListResult | null {
+  const typedList = helpers.parseNativeGroupListData(data)
+  if (typedList != null && isValidParsedGroupList(typedList, helpers)) { return { groups: typedList } }
+  return parseNativeGroupListResultFallbackCommon(data, helpers)
+}
+
+export function parseNativeGroupListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const groups : Array<OpenIMGroupItem> = []
+  rawList.forEach((item : UTSJSONObject) => { groups.push(parseNativeGroupItem(item, helpers)) })
+  return { groups: groups }
+}
+
+export function parseNativeGroupObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupItem | null {
+  const typedItem = helpers.parseNativeGroupData(data)
+  if (typedItem != null && isValidParsedGroup(typedItem, helpers)) { return typedItem }
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'groupID')) { return parseNativeGroupItem(raw, helpers) }
+  return null
+}
+
+function parseNativeGroupMemberItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMGroupMemberItem {
+  return { groupID: helpers.readStringParam(item, 'groupID'), userID: helpers.readStringParam(item, 'userID'), nickname: helpers.readStringParam(item, 'nickname'), faceURL: helpers.readStringParam(item, 'faceURL'), roleLevel: helpers.readNumberParam(item, 'roleLevel'), joinTime: helpers.readNumberParam(item, 'joinTime'), joinSource: helpers.readNumberParam(item, 'joinSource'), operatorUserID: helpers.readStringParam(item, 'operatorUserID'), ex: helpers.readStringParam(item, 'ex'), muteEndTime: helpers.readNumberParam(item, 'muteEndTime'), inviterUserID: helpers.readStringParam(item, 'inviterUserID'), attachedInfo: helpers.readStringParam(item, 'attachedInfo') }
+}
+
+function isValidParsedGroupMemberList(members : Array<OpenIMGroupMemberItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < members.length) {
+    const raw = parseObjectFromValue(members[index], helpers)
+    if (raw == null || helpers.isRequiredField(raw, 'roleLevel') == false || helpers.isRequiredField(raw, 'joinTime') == false || helpers.isRequiredField(raw, 'joinSource') == false || helpers.isRequiredField(raw, 'muteEndTime') == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeGroupMemberListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupMemberListResult | null {
+  const typedList = helpers.parseNativeGroupMemberListData(data)
+  if (typedList != null && isValidParsedGroupMemberList(typedList, helpers)) { return { members: typedList } }
+  return parseNativeGroupMemberListResultFallbackCommon(data, helpers)
+}
+
+export function parseNativeGroupMemberListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupMemberListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const members : Array<OpenIMGroupMemberItem> = []
+  rawList.forEach((item : UTSJSONObject) => { members.push(parseNativeGroupMemberItem(item, helpers)) })
+  return { members: members }
+}
+
+export function parseNativeGroupMemberObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupMemberItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'groupID') && helpers.isRequiredField(raw, 'userID')) { return parseNativeGroupMemberItem(raw, helpers) }
+  return null
+}
+
+function parseNativeFriendApplicationItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMFriendApplicationItem {
+  return { fromUserID: helpers.readStringParam(item, 'fromUserID'), fromNickname: helpers.readStringParam(item, 'fromNickname'), fromFaceURL: helpers.readStringParam(item, 'fromFaceURL'), toUserID: helpers.readStringParam(item, 'toUserID'), toNickname: helpers.readStringParam(item, 'toNickname'), toFaceURL: helpers.readStringParam(item, 'toFaceURL'), handleResult: helpers.readNumberParam(item, 'handleResult'), reqMsg: helpers.readStringParam(item, 'reqMsg'), createTime: helpers.readNumberParam(item, 'createTime'), handlerUserID: helpers.readStringParam(item, 'handlerUserID'), handleMsg: helpers.readStringParam(item, 'handleMsg'), handleTime: helpers.readNumberParam(item, 'handleTime'), ex: helpers.readStringParam(item, 'ex'), attachedInfo: helpers.readStringParam(item, 'attachedInfo') }
+}
+
+function isValidParsedFriendApplicationList(applications : Array<OpenIMFriendApplicationItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < applications.length) {
+    const raw = parseObjectFromValue(applications[index], helpers)
+    if (raw == null || helpers.isRequiredField(raw, 'handleResult') == false || helpers.isRequiredField(raw, 'createTime') == false || helpers.isRequiredField(raw, 'handleTime') == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeFriendApplicationListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMFriendApplicationListResult | null {
+  const typedList = helpers.parseNativeFriendApplicationListData(data)
+  if (typedList != null && isValidParsedFriendApplicationList(typedList, helpers)) { return { applications: typedList } }
+  return parseNativeFriendApplicationListResultFallbackCommon(data, helpers)
+}
+
+export function parseNativeFriendApplicationListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMFriendApplicationListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const applications : Array<OpenIMFriendApplicationItem> = []
+  rawList.forEach((item : UTSJSONObject) => { applications.push(parseNativeFriendApplicationItem(item, helpers)) })
+  return { applications: applications }
+}
+
+export function parseNativeFriendApplicationObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMFriendApplicationItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'fromUserID') && helpers.isRequiredField(raw, 'toUserID')) { return parseNativeFriendApplicationItem(raw, helpers) }
+  return null
+}
+
+function parseNativeGroupApplicationItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMGroupApplicationItem {
+  return { groupID: helpers.readStringParam(item, 'groupID'), groupName: helpers.readStringParam(item, 'groupName'), notification: helpers.readStringParam(item, 'notification'), introduction: helpers.readStringParam(item, 'introduction'), groupFaceURL: helpers.readStringParam(item, 'groupFaceURL'), ownerUserID: helpers.readStringParam(item, 'ownerUserID'), createTime: helpers.readNumberParam(item, 'createTime'), status: helpers.readNumberParam(item, 'status'), creatorUserID: helpers.readStringParam(item, 'creatorUserID'), groupType: helpers.readNumberParam(item, 'groupType'), memberCount: helpers.readNumberParam(item, 'memberCount'), userID: helpers.readStringParam(item, 'userID'), nickname: helpers.readStringParam(item, 'nickname'), userFaceURL: helpers.readStringParam(item, 'userFaceURL'), handleResult: helpers.readNumberParam(item, 'handleResult'), reqMsg: helpers.readStringParam(item, 'reqMsg'), handledMsg: helpers.readStringParam(item, 'handledMsg'), reqTime: helpers.readNumberParam(item, 'reqTime'), joinSource: helpers.readNumberParam(item, 'joinSource'), inviterUserID: helpers.readStringParam(item, 'inviterUserID'), handleUserID: helpers.readStringParam(item, 'handleUserID'), handledTime: helpers.readNumberParam(item, 'handledTime'), ex: helpers.readStringParam(item, 'ex'), attachedInfo: helpers.readStringParam(item, 'attachedInfo') }
+}
+
+function isValidParsedGroupApplicationList(applications : Array<OpenIMGroupApplicationItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < applications.length) {
+    const raw = parseObjectFromValue(applications[index], helpers)
+    if (raw == null || helpers.isRequiredField(raw, 'createTime') == false || helpers.isRequiredField(raw, 'status') == false || helpers.isRequiredField(raw, 'groupType') == false || helpers.isRequiredField(raw, 'memberCount') == false || helpers.isRequiredField(raw, 'handleResult') == false || helpers.isRequiredField(raw, 'reqTime') == false || helpers.isRequiredField(raw, 'joinSource') == false || helpers.isRequiredField(raw, 'handledTime') == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeGroupApplicationListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupApplicationListResult | null {
+  const typedList = helpers.parseNativeGroupApplicationListData(data)
+  if (typedList != null && isValidParsedGroupApplicationList(typedList, helpers)) { return { applications: typedList } }
+  return parseNativeGroupApplicationListResultFallbackCommon(data, helpers)
+}
+
+export function parseNativeGroupApplicationListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupApplicationListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const applications : Array<OpenIMGroupApplicationItem> = []
+  rawList.forEach((item : UTSJSONObject) => { applications.push(parseNativeGroupApplicationItem(item, helpers)) })
+  return { applications: applications }
+}
+
+export function parseNativeGroupApplicationObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupApplicationItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'groupID') && helpers.isRequiredField(raw, 'userID')) { return parseNativeGroupApplicationItem(raw, helpers) }
+  return null
+}
+
+export function parseNativeConversationInputStatusCommon(data : string, helpers : NativeParserHelpers) : OpenIMConversationInputStatusItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'conversationID') && helpers.isRequiredField(raw, 'userID')) {
+    return { conversationID: helpers.readStringParam(raw, 'conversationID'), userID: helpers.readStringParam(raw, 'userID'), platformIDs: parseNativeNumberListValue(readNativeValue(raw, 'platformIDs')) }
+  }
+  return null
+}
+
+export function parseNativeUserCommandCommon(data : string, helpers : NativeParserHelpers) : OpenIMUserCommandItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'userID') && helpers.isRequiredField(raw, 'type') && helpers.isRequiredField(raw, 'uuid') && helpers.isRequiredField(raw, 'createTime')) {
+    return { userID: helpers.readStringParam(raw, 'userID'), type: helpers.readNumberParam(raw, 'type'), uuid: helpers.readStringParam(raw, 'uuid'), createTime: helpers.readNumberParam(raw, 'createTime'), value: helpers.readStringParam(raw, 'value'), ex: helpers.readStringParam(raw, 'ex') }
+  }
+  return null
+}
+
+function parseNativeTextElem(value : any | null, helpers : NativeParserHelpers) : OpenIMTextElem | null {
+  if (value instanceof UTSJSONObject) { return { content: helpers.readStringParam(value, 'content') } }
+  return null
+}
+
+function parseNativeCardElem(value : any | null, helpers : NativeParserHelpers) : OpenIMCardElem | null {
+  if (value instanceof UTSJSONObject) { return { userID: helpers.readStringParam(value, 'userID'), nickname: helpers.readStringParam(value, 'nickname'), faceURL: helpers.readStringParam(value, 'faceURL'), ex: helpers.readStringParam(value, 'ex') } }
+  return null
+}
+
+function parseNativeFaceElem(value : any | null, helpers : NativeParserHelpers) : OpenIMFaceElem | null {
+  if (value instanceof UTSJSONObject) { return { index: helpers.readNumberParam(value, 'index'), data: helpers.readStringParam(value, 'data') } }
+  return null
+}
+
+function parseNativeLocationElem(value : any | null, helpers : NativeParserHelpers) : OpenIMLocationElem | null {
+  if (value instanceof UTSJSONObject) { return { descriptionText: helpers.readStringParam(value, 'description'), longitude: helpers.readNumberParam(value, 'longitude'), latitude: helpers.readNumberParam(value, 'latitude') } }
+  return null
+}
+
+function parseNativeCustomElem(value : any | null, helpers : NativeParserHelpers) : OpenIMCustomElem | null {
+  if (value instanceof UTSJSONObject) { return { data: helpers.readStringParam(value, 'data'), descriptionText: helpers.readStringParam(value, 'description'), extensionText: helpers.readStringParam(value, 'extension') } }
+  return null
+}
+
+function parseNativePicture(value : any | null, helpers : NativeParserHelpers) : OpenIMPicture | null {
+  if (value instanceof UTSJSONObject) { return { uuid: helpers.readStringParam(value, 'uuid'), type: helpers.readStringParam(value, 'type'), size: helpers.readNumberParam(value, 'size'), width: helpers.readNumberParam(value, 'width'), height: helpers.readNumberParam(value, 'height'), url: helpers.readStringParam(value, 'url') } }
+  return null
+}
+
+function parseNativePictureElem(value : any | null, helpers : NativeParserHelpers) : OpenIMPictureElem | null {
+  if (value instanceof UTSJSONObject) {
+    const sourcePicture = parseNativePicture(readNativeValue(value, 'sourcePicture'), helpers)
+    const bigPicture = parseNativePicture(readNativeValue(value, 'bigPicture'), helpers)
+    const snapshotPicture = parseNativePicture(readNativeValue(value, 'snapshotPicture'), helpers)
+    if (sourcePicture != null && bigPicture != null && snapshotPicture != null) { return { sourcePath: helpers.readStringParam(value, 'sourcePath'), sourcePicture: sourcePicture, bigPicture: bigPicture, snapshotPicture: snapshotPicture } }
+  }
+  return null
+}
+
+function parseNativeSoundElem(value : any | null, helpers : NativeParserHelpers) : OpenIMSoundElem | null {
+  if (value instanceof UTSJSONObject) { return { uuid: helpers.readStringParam(value, 'uuid'), soundPath: helpers.readStringParam(value, 'soundPath'), sourceUrl: helpers.readStringParam(value, 'sourceUrl'), dataSize: helpers.readNumberParam(value, 'dataSize'), duration: helpers.readNumberParam(value, 'duration') } }
+  return null
+}
+
+function parseNativeVideoElem(value : any | null, helpers : NativeParserHelpers) : OpenIMVideoElem | null {
+  if (value instanceof UTSJSONObject) { return { videoPath: helpers.readStringParam(value, 'videoPath'), videoUUID: helpers.readStringParam(value, 'videoUUID'), videoUrl: helpers.readStringParam(value, 'videoUrl'), videoType: helpers.readStringParam(value, 'videoType'), videoSize: helpers.readNumberParam(value, 'videoSize'), duration: helpers.readNumberParam(value, 'duration'), snapshotPath: helpers.readStringParam(value, 'snapshotPath'), snapshotUUID: helpers.readStringParam(value, 'snapshotUUID'), snapshotSize: helpers.readNumberParam(value, 'snapshotSize'), snapshotUrl: helpers.readStringParam(value, 'snapshotUrl'), snapshotWidth: helpers.readNumberParam(value, 'snapshotWidth'), snapshotHeight: helpers.readNumberParam(value, 'snapshotHeight') } }
+  return null
+}
+
+function parseNativeFileElem(value : any | null, helpers : NativeParserHelpers) : OpenIMFileElem | null {
+  if (value instanceof UTSJSONObject) { return { filePath: helpers.readStringParam(value, 'filePath'), uuid: helpers.readStringParam(value, 'uuid'), sourceUrl: helpers.readStringParam(value, 'sourceUrl'), fileName: helpers.readStringParam(value, 'fileName'), fileSize: helpers.readNumberParam(value, 'fileSize') } }
+  return null
+}
+
+function parseNativeJSONObjectList(value : any | null, helpers : NativeParserHelpers) : Array<UTSJSONObject> {
+  const list : Array<UTSJSONObject> = []
+  const text = stringifyNativeValue(value)
+  if (text == null) { return list }
+  const rawList = helpers.parseNativeJSONObjectListData(text)
+  if (rawList != null) { rawList.forEach((item : UTSJSONObject) => { list.push(item) }) }
+  return list
+}
+
+function parseNativeMessageEntityList(value : any | null, helpers : NativeParserHelpers) : Array<OpenIMMessageEntity> {
+  const list : Array<OpenIMMessageEntity> = []
+  const rawList = parseNativeJSONObjectList(value, helpers)
+  rawList.forEach((item : UTSJSONObject) => { list.push({ type: helpers.readStringParam(item, 'type'), offset: helpers.readNumberParam(item, 'offset'), length: helpers.readNumberParam(item, 'length'), url: helpers.readStringParam(item, 'url'), ex: helpers.readStringParam(item, 'ex'), info: helpers.readStringParam(item, 'info') }) })
+  return list
+}
+
+function parseNativeAdvancedTextElem(value : any | null, helpers : NativeParserHelpers) : OpenIMAdvancedTextElem | null {
+  if (value instanceof UTSJSONObject) { return { text: helpers.readStringParam(value, 'text'), messageEntityList: parseNativeMessageEntityList(readNativeValue(value, 'messageEntityList'), helpers) } }
+  return null
+}
+
+function parseNativeAtUsersInfoList(value : any | null, helpers : NativeParserHelpers) : Array<OpenIMAtUsersInfoItem> {
+  const list : Array<OpenIMAtUsersInfoItem> = []
+  const rawList = parseNativeJSONObjectList(value, helpers)
+  rawList.forEach((item : UTSJSONObject) => { list.push({ atUserID: helpers.readStringParam(item, 'atUserID'), groupNickname: helpers.readStringParam(item, 'groupNickname') }) })
+  return list
+}
+
+function parseNativeStringList(value : any | null, helpers : NativeParserHelpers) : Array<string> {
+  const text = stringifyNativeValue(value)
+  if (text != null) {
+    const list = helpers.parseNativeStringListData(text)
+    if (list != null) { return list }
+  }
+  return []
+}
+
+function parseNativeMessageItemRef(value : any | null, helpers : NativeParserHelpers) : OpenIMMessageItemRef | null {
+  if (value instanceof UTSJSONObject) {
+    return { clientMsgID: helpers.readStringParam(value, 'clientMsgID'), serverMsgID: helpers.readStringParam(value, 'serverMsgID'), createTime: helpers.readNumberParam(value, 'createTime'), sendTime: helpers.readNumberParam(value, 'sendTime'), sessionType: helpers.readNumberParam(value, 'sessionType') as OpenIMSessionType, sendID: helpers.readStringParam(value, 'sendID'), recvID: helpers.readStringParam(value, 'recvID'), msgFrom: helpers.readNumberParam(value, 'msgFrom'), contentType: helpers.readNumberParam(value, 'contentType') as OpenIMMessageType, senderPlatformID: helpers.readNumberParam(value, 'senderPlatformID') as OpenIMPlatform, senderNickname: helpers.readStringParam(value, 'senderNickname'), senderFaceUrl: helpers.readStringParam(value, 'senderFaceUrl'), groupID: helpers.readStringParam(value, 'groupID'), content: helpers.readStringParam(value, 'content'), seq: helpers.readNumberParam(value, 'seq'), isRead: helpers.readBooleanParam(value, 'isRead'), status: helpers.readNumberParam(value, 'status') as OpenIMMessageStatus, attachedInfo: helpers.readStringParam(value, 'attachedInfo'), ex: helpers.readStringParam(value, 'ex'), localEx: helpers.readStringParam(value, 'localEx'), textElem: parseNativeTextElem(readNativeValue(value, 'textElem'), helpers), cardElem: parseNativeCardElem(readNativeValue(value, 'cardElem'), helpers), pictureElem: parseNativePictureElem(readNativeValue(value, 'pictureElem'), helpers), soundElem: parseNativeSoundElem(readNativeValue(value, 'soundElem'), helpers), videoElem: parseNativeVideoElem(readNativeValue(value, 'videoElem'), helpers), fileElem: parseNativeFileElem(readNativeValue(value, 'fileElem'), helpers), faceElem: parseNativeFaceElem(readNativeValue(value, 'faceElem'), helpers), locationElem: parseNativeLocationElem(readNativeValue(value, 'locationElem'), helpers), customElem: parseNativeCustomElem(readNativeValue(value, 'customElem'), helpers) }
+  }
+  return null
+}
+
+function parseNativeMessageItemRefList(value : any | null, helpers : NativeParserHelpers) : Array<OpenIMMessageItemRef> {
+  const list : Array<OpenIMMessageItemRef> = []
+  const rawList = parseNativeJSONObjectList(value, helpers)
+  rawList.forEach((item : UTSJSONObject) => { const message = parseNativeMessageItemRef(item, helpers); if (message != null) { list.push(message) } })
+  return list
+}
+
+function parseNativeMergeElem(value : any | null, helpers : NativeParserHelpers) : OpenIMMergeElem | null {
+  if (value instanceof UTSJSONObject) { return { title: helpers.readStringParam(value, 'title'), abstractList: parseNativeStringList(readNativeValue(value, 'abstractList'), helpers), multiMessage: parseNativeMessageItemRefList(readNativeValue(value, 'multiMessage'), helpers), messageEntityList: parseNativeMessageEntityList(readNativeValue(value, 'messageEntityList'), helpers) } }
+  return null
+}
+
+function parseNativeAtTextElem(value : any | null, helpers : NativeParserHelpers) : OpenIMAtTextElem | null {
+  if (value instanceof UTSJSONObject) { return { text: helpers.readStringParam(value, 'text'), atUserList: parseNativeStringList(readNativeValue(value, 'atUserList'), helpers), atUsersInfo: parseNativeAtUsersInfoList(readNativeValue(value, 'atUsersInfo'), helpers), quoteMessage: parseNativeMessageItemRef(readNativeValue(value, 'quoteMessage'), helpers), isAtSelf: helpers.readBooleanParam(value, 'isAtSelf') } }
+  return null
+}
+
+function parseNativeQuoteElem(value : any | null, helpers : NativeParserHelpers) : OpenIMQuoteElem | null {
+  if (value instanceof UTSJSONObject) {
+    const quoteMessage = parseNativeMessageItemRef(readNativeValue(value, 'quoteMessage'), helpers)
+    if (quoteMessage != null) { return { text: helpers.readStringParam(value, 'text'), quoteMessage: quoteMessage, messageEntityList: parseNativeMessageEntityList(readNativeValue(value, 'messageEntityList'), helpers) } }
+  }
+  return null
+}
+
+function parseNativeTypingElem(value : any | null, helpers : NativeParserHelpers) : OpenIMTypingElem | null {
+  if (value instanceof UTSJSONObject) { return { msgTips: helpers.readStringParam(value, 'msgTips') } }
+  return null
+}
+
+function parseNativeOfflinePush(value : any | null, helpers : NativeParserHelpers) : OpenIMOfflinePush | null {
+  if (value instanceof UTSJSONObject) { return { title: helpers.readStringParam(value, 'title'), desc: helpers.readStringParam(value, 'desc'), ex: helpers.readStringParam(value, 'ex'), iOSPushSound: helpers.readStringParam(value, 'iOSPushSound'), iOSBadgeCount: helpers.readBooleanParam(value, 'iOSBadgeCount') } }
+  return null
+}
+
+function parseNativeGroupHasReadInfo(value : any | null, helpers : NativeParserHelpers) : OpenIMAttachedGroupHasReadInfo | null {
+  if (value instanceof UTSJSONObject) { return { hasReadCount: helpers.readNumberParam(value, 'hasReadCount'), hasReadUserIDList: parseNativeStringList(readNativeValue(value, 'hasReadUserIDList'), helpers), groupMemberCount: helpers.readNumberParam(value, 'groupMemberCount') } }
+  return null
+}
+
+function parseNativeUploadProgress(value : any | null, helpers : NativeParserHelpers) : OpenIMUploadProgress | null {
+  if (value instanceof UTSJSONObject) { return { total: helpers.readNumberParam(value, 'total'), save: helpers.readNumberParam(value, 'save'), current: helpers.readNumberParam(value, 'current'), uploadID: helpers.readStringParam(value, 'uploadID') } }
+  return null
+}
+
+function parseNativeAttachedInfoElem(value : any | null, helpers : NativeParserHelpers) : OpenIMAttachedInfoElem | null {
+  if (value instanceof UTSJSONObject) { return { groupHasReadInfo: parseNativeGroupHasReadInfo(readNativeValue(value, 'groupHasReadInfo'), helpers), isPrivateChat: helpers.readBooleanParam(value, 'isPrivateChat'), isEncryption: helpers.readBooleanParam(value, 'isEncryption'), inEncryptStatus: helpers.readBooleanParam(value, 'inEncryptStatus'), burnDuration: helpers.readNumberParam(value, 'burnDuration'), hasReadTime: helpers.readNumberParam(value, 'hasReadTime'), messageEntityList: parseNativeMessageEntityList(readNativeValue(value, 'messageEntityList'), helpers), uploadProgress: parseNativeUploadProgress(readNativeValue(value, 'uploadProgress'), helpers) } }
+  return null
+}
+
+function parseNativeNotificationElem(value : any | null, helpers : NativeParserHelpers) : OpenIMNotificationElem | null {
+  if (value instanceof UTSJSONObject) { return { detail: helpers.readStringParam(value, 'detail') } }
+  return null
+}
+
+function parseNativeMessageItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMMessageItem {
+  return { clientMsgID: helpers.readStringParam(item, 'clientMsgID'), serverMsgID: helpers.readStringParam(item, 'serverMsgID'), createTime: helpers.readNumberParam(item, 'createTime'), sendTime: helpers.readNumberParam(item, 'sendTime'), sessionType: helpers.readNumberParam(item, 'sessionType') as OpenIMSessionType, sendID: helpers.readStringParam(item, 'sendID'), recvID: helpers.readStringParam(item, 'recvID'), msgFrom: helpers.readNumberParam(item, 'msgFrom'), contentType: helpers.readNumberParam(item, 'contentType') as OpenIMMessageType, senderPlatformID: helpers.readNumberParam(item, 'senderPlatformID') as OpenIMPlatform, senderNickname: helpers.readStringParam(item, 'senderNickname'), senderFaceUrl: helpers.readStringParam(item, 'senderFaceUrl'), groupID: helpers.readStringParam(item, 'groupID'), content: helpers.readStringParam(item, 'content'), seq: helpers.readNumberParam(item, 'seq'), isRead: helpers.readBooleanParam(item, 'isRead'), status: helpers.readNumberParam(item, 'status') as OpenIMMessageStatus, offlinePush: parseNativeOfflinePush(readNativeValue(item, 'offlinePush'), helpers), attachedInfo: helpers.readStringParam(item, 'attachedInfo'), ex: helpers.readStringParam(item, 'ex'), localEx: helpers.readStringParam(item, 'localEx'), textElem: parseNativeTextElem(readNativeValue(item, 'textElem'), helpers), cardElem: parseNativeCardElem(readNativeValue(item, 'cardElem'), helpers), pictureElem: parseNativePictureElem(readNativeValue(item, 'pictureElem'), helpers), soundElem: parseNativeSoundElem(readNativeValue(item, 'soundElem'), helpers), videoElem: parseNativeVideoElem(readNativeValue(item, 'videoElem'), helpers), fileElem: parseNativeFileElem(readNativeValue(item, 'fileElem'), helpers), mergeElem: parseNativeMergeElem(readNativeValue(item, 'mergeElem'), helpers), atTextElem: parseNativeAtTextElem(readNativeValue(item, 'atTextElem'), helpers), faceElem: parseNativeFaceElem(readNativeValue(item, 'faceElem'), helpers), locationElem: parseNativeLocationElem(readNativeValue(item, 'locationElem'), helpers), customElem: parseNativeCustomElem(readNativeValue(item, 'customElem'), helpers), quoteElem: parseNativeQuoteElem(readNativeValue(item, 'quoteElem'), helpers), advancedTextElem: parseNativeAdvancedTextElem(readNativeValue(item, 'advancedTextElem'), helpers), typingElem: parseNativeTypingElem(readNativeValue(item, 'typingElem'), helpers), notificationElem: parseNativeNotificationElem(readNativeValue(item, 'notificationElem'), helpers), attachedInfoElem: parseNativeAttachedInfoElem(readNativeValue(item, 'attachedInfoElem'), helpers) }
+}
+
+function isValidParsedMessageObject(raw : UTSJSONObject, helpers : NativeParserHelpers) : boolean {
+  return helpers.isRequiredField(raw, 'createTime') && helpers.isRequiredField(raw, 'sendTime') && helpers.isRequiredField(raw, 'sessionType') && helpers.isRequiredField(raw, 'msgFrom') && helpers.isRequiredField(raw, 'contentType') && helpers.isRequiredField(raw, 'senderPlatformID') && helpers.isRequiredField(raw, 'seq') && helpers.isRequiredField(raw, 'status')
+}
+
+function isValidParsedMessage(message : OpenIMMessageItem, helpers : NativeParserHelpers) : boolean {
+  const raw = parseObjectFromValue(message, helpers)
+  if (raw == null) { return false }
+  return isValidParsedMessageObject(raw, helpers)
+}
+
+function isValidParsedMessageList(messages : Array<OpenIMMessageItem>, helpers : NativeParserHelpers) : boolean {
+  let index = 0
+  while (index < messages.length) {
+    if (isValidParsedMessage(messages[index], helpers) == false) { return false }
+    index = index + 1
+  }
+  return true
+}
+
+export function parseNativeMessageCommon(data : string, helpers : NativeParserHelpers) : OpenIMMessageItem | null {
+  const trimmed = data.trim()
+  if (trimmed.length == 0) { return null }
+  const firstChar = trimmed.substring(0, 1)
+  if (firstChar == '[') {
+    const typedList = helpers.parseNativeMessageListData(trimmed)
+    if (typedList != null && typedList.length > 0 && isValidParsedMessage(typedList[0], helpers)) { return typedList[0] }
+    const rawList = helpers.parseNativeJSONObjectListData(trimmed)
+    if (rawList != null && rawList.length > 0 && isValidParsedMessageObject(rawList[0], helpers)) { return parseNativeMessageItem(rawList[0], helpers) }
+    return null
+  }
+  const typedMessage = helpers.parseNativeMessageData(trimmed)
+  if (typedMessage != null && isValidParsedMessage(typedMessage, helpers)) { return typedMessage }
+  const raw = helpers.parseNativeAny(trimmed)
+  if (raw instanceof UTSJSONObject && isValidParsedMessageObject(raw, helpers)) { return parseNativeMessageItem(raw, helpers) }
+  return null
+}
+
+export function parseNativeAdvancedHistoryMessageListCommon(data : string, helpers : NativeParserHelpers) : OpenIMAdvancedHistoryMessageListResult | null {
+  const typedResult = helpers.parseNativeAdvancedHistoryMessageListData(data)
+  if (typedResult != null && isValidParsedMessageList(typedResult.messageList, helpers)) { return typedResult }
+  return parseNativeAdvancedHistoryMessageListFallbackCommon(data, helpers)
+}
+
+export function parseNativeAdvancedHistoryMessageListFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMAdvancedHistoryMessageListResult | null {
+  const raw = helpers.parseNativeAny(data)
+  if (!(raw instanceof UTSJSONObject)) { return null }
+  const messages : Array<OpenIMMessageItem> = []
+  const rawList = parseNativeJSONObjectList(readNativeValue(raw, 'messageList'), helpers)
+  rawList.forEach((item : UTSJSONObject) => { if (isValidParsedMessageObject(item, helpers)) { messages.push(parseNativeMessageItem(item, helpers)) } })
+  return { messageList: messages, isEnd: helpers.readBooleanParam(raw, 'isEnd'), errCode: helpers.readNumberParam(raw, 'errCode'), errMsg: helpers.readStringParam(raw, 'errMsg') }
+}
+
+function parseNativeMessageListFromValue(value : any | null, helpers : NativeParserHelpers) : Array<OpenIMMessageItem> {
+  const messages : Array<OpenIMMessageItem> = []
+  const rawList = parseNativeJSONObjectList(value, helpers)
+  rawList.forEach((item : UTSJSONObject) => { messages.push(parseNativeMessageItem(item, helpers)) })
+  return messages
+}
+
+export function parseNativeMessageEventListCommon(data : string, helpers : NativeParserHelpers) : OpenIMMessageListResult | null {
+  const typedList = helpers.parseNativeMessageListData(data)
+  if (typedList != null && isValidParsedMessageList(typedList, helpers)) { return { messages: typedList } }
+  return parseNativeMessageEventListFallbackCommon(data, helpers)
+}
+
+export function parseNativeMessageEventListFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMMessageListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const messages : Array<OpenIMMessageItem> = []
+  let valid = true
+  rawList.forEach((item : UTSJSONObject) => { if (isValidParsedMessageObject(item, helpers)) { messages.push(parseNativeMessageItem(item, helpers)) } else { valid = false } })
+  if (valid == false) { return null }
+  return { messages: messages }
+}
+
+function parseNativeFindMessageResultItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMFindMessageResultItem {
+  return { conversationID: helpers.readStringParam(item, 'conversationID'), conversationType: helpers.readNumberParam(item, 'conversationType') as OpenIMSessionType, showName: helpers.readStringParam(item, 'showName'), faceURL: helpers.readStringParam(item, 'faceURL'), latestMsgSendTime: helpers.readNumberParam(item, 'latestMsgSendTime'), messageCount: helpers.readNumberParam(item, 'messageCount'), messageList: parseNativeMessageListFromValue(readNativeValue(item, 'messageList'), helpers) }
+}
+
+export function parseNativeFindMessageResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMFindMessageResult | null {
+  const raw = helpers.parseNativeAny(data)
+  if (!(raw instanceof UTSJSONObject)) { return null }
+  const items : Array<OpenIMFindMessageResultItem> = []
+  const rawList = parseNativeJSONObjectList(readNativeValue(raw, 'findResultItems'), helpers)
+  rawList.forEach((item : UTSJSONObject) => { items.push(parseNativeFindMessageResultItem(item, helpers)) })
+  return { totalCount: helpers.readNumberParam(raw, 'totalCount'), findResultItems: items }
+}
+
+export function parseNativeMessageListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMFindMessageResult | null {
+  return parseNativeFindMessageResultCommon(data, helpers)
+}
+
+export function parseNativeSearchMessageResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMSearchMessageResult | null {
+  const raw = helpers.parseNativeAny(data)
+  if (!(raw instanceof UTSJSONObject)) { return null }
+  const items : Array<OpenIMSearchMessageResultItem> = []
+  const rawList = parseNativeJSONObjectList(readNativeValue(raw, 'searchResultItems'), helpers)
+  rawList.forEach((item : UTSJSONObject) => { items.push(parseNativeFindMessageResultItem(item, helpers)) })
+  return { totalCount: helpers.readNumberParam(raw, 'totalCount'), searchResultItems: items }
+}
+
+export function parseNativeMessageRevokedCommon(data : string, helpers : NativeParserHelpers) : OpenIMMessageRevokedItem | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'clientMsgID') && helpers.isRequiredField(raw, 'revokeTime') && helpers.isRequiredField(raw, 'sessionType') && helpers.isRequiredField(raw, 'seq')) {
+    return { revokerID: helpers.readStringParam(raw, 'revokerID'), revokerRole: helpers.readNumberParam(raw, 'revokerRole'), clientMsgID: helpers.readStringParam(raw, 'clientMsgID'), revokerNickname: helpers.readStringParam(raw, 'revokerNickname'), revokeTime: helpers.readNumberParam(raw, 'revokeTime'), sourceMessageSendTime: helpers.readNumberParam(raw, 'sourceMessageSendTime'), sourceMessageSendID: helpers.readStringParam(raw, 'sourceMessageSendID'), sourceMessageSenderNickname: helpers.readStringParam(raw, 'sourceMessageSenderNickname'), sessionType: helpers.readNumberParam(raw, 'sessionType') as OpenIMSessionType, seq: helpers.readNumberParam(raw, 'seq'), ex: helpers.readStringParam(raw, 'ex'), isAdminRevoke: helpers.readBooleanParam(raw, 'isAdminRevoke') }
+  }
+  return null
+}
+
+function parseNativeMessageReceiptItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMMessageReceiptItem {
+  return { groupID: helpers.readStringParam(item, 'groupID'), userID: helpers.readStringParam(item, 'userID'), msgIDList: parseNativeStringList(readNativeValue(item, 'msgIDList'), helpers), readTime: helpers.readNumberParam(item, 'readTime'), msgFrom: helpers.readNumberParam(item, 'msgFrom'), contentType: helpers.readNumberParam(item, 'contentType') as OpenIMMessageType, sessionType: helpers.readNumberParam(item, 'sessionType') as OpenIMSessionType }
+}
+
+export function parseNativeMessageReceiptListCommon(data : string, helpers : NativeParserHelpers) : OpenIMMessageReceiptListResult | null {
+  const rawList = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) { return null }
+  const receipts : Array<OpenIMMessageReceiptItem> = []
+  let valid = true
+  rawList.forEach((item : UTSJSONObject) => { if (helpers.isRequiredField(item, 'userID') && helpers.isRequiredField(item, 'readTime') && helpers.isRequiredField(item, 'contentType') && helpers.isRequiredField(item, 'sessionType')) { receipts.push(parseNativeMessageReceiptItem(item, helpers)) } else { valid = false } })
+  if (valid == false) { return null }
+  return { receipts: receipts }
+}
+
+export function parseNativeLoginStatusCommon(data : string) : OpenIMLoginStatus {
+  if (data == '3') { return 3 }
+  if (data == '2') { return 2 }
+  return 1
+}

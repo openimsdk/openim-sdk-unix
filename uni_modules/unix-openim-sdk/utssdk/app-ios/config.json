@@ -1,0 +1,16 @@
+{
+  "frameworks": [
+    "libresolv.tbd"
+  ],
+  "deploymentTarget": "12.0",
+  "dependencies-pod-sources": [
+    "https://cdn.cocoapods.org/"
+  ],
+  "dependencies-pods": [
+    {
+      "name": "OpenIMSDKCore",
+      "version": "3.8.3-hotfix.14-dynamic",
+      "source": "https://cdn.cocoapods.org/"
+    }
+  ]
+}

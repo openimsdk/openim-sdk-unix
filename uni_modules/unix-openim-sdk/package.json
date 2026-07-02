@@ -1,0 +1,56 @@
+{
+  "id": "unix-openim-sdk",
+  "displayName": "Unix OpenIM SDK",
+  "version": "0.1.0",
+  "description": "Promise-style UTS wrapper for OpenIM native SDK on Android and iOS",
+  "keywords": [
+    "openim",
+    "im",
+    "uts",
+    "uni-app-x",
+    "android",
+    "ios"
+  ],
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "HBuilderX": ">=5.7.0",
+    "uni-app": "^3.1.0",
+    "uni-app-x": "^3.1.0"
+  },
+  "uni_modules": {
+    "platforms": {
+      "app-android": "y",
+      "app-ios": "y",
+      "web": "n",
+      "mp-weixin": "n",
+      "cloud": {
+        "tcb": "-",
+        "aliyun": "-",
+        "alipay": "-"
+      }
+    }
+  },
+  "dcloudext": {
+    "type": "",
+    "sale": {
+      "regular": {
+        "price": "0.00"
+      },
+      "sourcecode": {
+        "price": "0.00"
+      }
+    },
+    "contact": {
+      "qq": ""
+    },
+    "declaration": {
+      "ads": "",
+      "data": "",
+      "permissions": ""
+    },
+    "npmurl": "",
+    "darkmode": "-",
+    "i18n": "-",
+    "widescreen": "-"
+  }
+}

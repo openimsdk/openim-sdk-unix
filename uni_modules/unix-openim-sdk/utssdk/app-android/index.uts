@@ -1,0 +1,724 @@
+import { NativeOpenIMSDK } from 'uts.sdk.modules.unixOpenimSdk'
+import {
+  OpenIMMessageStatus,
+  OpenIMPlatform,
+  OpenIMLogLevel,
+  OpenIMMessageType,
+  OpenIMSessionType,
+  OpenIMLoginStatus,
+  OpenIMSendMessageOptions,
+  OpenIMUploadFileParams,
+  OpenIMCreateSoundMessageParams,
+  OpenIMCreateVideoMessageParams,
+  OpenIMCreateFileMessageParams,
+  OpenIMUploadFileResult,
+  OpenIMMarkMessagesAsReadByMsgIDParams,
+  OpenIMUpdateFcmTokenParams,
+  OpenIMUploadLogsParams,
+  OpenIMUploadFileProgressStage,
+  OpenIMUploadFileProgressEvent,
+  OpenIMUploadLogsProgressEvent,
+  OpenIMSendMessageProgressEvent,
+  OpenIMMessageKeyParams,
+  OpenIMSetMessageLocalExParams,
+  OpenIMSetConversationBoolean,
+  OpenIMSetSelfInfoRecvMsgOpt,
+  OpenIMUpdateFriendBoolean,
+  OpenIMGroupNeedVerification,
+  OpenIMGroupOption,
+  OpenIMGroupDisplayIsRead,
+  OpenIMGroupMemberRoleLevel,
+  OpenIMSetConversationParams,
+  OpenIMSetSelfInfoParams,
+  OpenIMUpdateFriendsParams,
+  OpenIMInsertSingleMessageParams,
+  OpenIMInsertGroupMessageParams,
+  OpenIMInputStateParams,
+  OpenIMSetConversationDraftParams,
+  OpenIMAddFriendParams,
+  OpenIMSearchFriendsParams,
+  OpenIMGetSpecifiedFriendsInfoParams,
+  OpenIMFriendApplicationHandleParams,
+  OpenIMAddBlackParams,
+  OpenIMGroupUserListParams,
+  OpenIMGroupInviteParams,
+  OpenIMGroupMemberListByJoinTimeFilterParams,
+  OpenIMSearchGroupMembersParams,
+  OpenIMCreateGroupInfo,
+  OpenIMCreateGroupParams,
+  OpenIMSetGroupInfoParams,
+  OpenIMSetGroupMemberInfoParams,
+  OpenIMJoinGroupParams,
+  OpenIMSearchGroupsParams,
+  OpenIMChangeGroupMuteParams,
+  OpenIMChangeGroupMemberMuteParams,
+  OpenIMTransferGroupOwnerParams,
+  OpenIMGroupApplicationHandleParams,
+  OpenIMFindMessageParams,
+  OpenIMCreateCustomMessageParams,
+  OpenIMCreateQuoteMessageParams,
+  OpenIMCreateAdvancedQuoteMessageParams,
+  OpenIMCreateAdvancedTextMessageParams,
+  OpenIMCreateTextAtMessageParams,
+  OpenIMCreateMergerMessageParams,
+  OpenIMCreateFaceMessageParams,
+  OpenIMCreateLocationMessageParams,
+  OpenIMMessageEntity,
+  OpenIMTextElem,
+  OpenIMCardElem,
+  OpenIMAtUsersInfoItem,
+  OpenIMAtTextElem,
+  OpenIMNotificationElem,
+  OpenIMAdvancedTextElem,
+  OpenIMTypingElem,
+  OpenIMFileElem,
+  OpenIMFaceElem,
+  OpenIMLocationElem,
+  OpenIMCustomElem,
+  OpenIMMergeElem,
+  OpenIMOfflinePush,
+  OpenIMPicture,
+  OpenIMPictureElem,
+  OpenIMAttachedGroupHasReadInfo,
+  OpenIMUploadProgress,
+  OpenIMAttachedInfoElem,
+  OpenIMQuoteElem,
+  OpenIMSoundElem,
+  OpenIMVideoElem,
+  OpenIMMessageItemRef,
+  OpenIMMessageItem,
+  OpenIMConversationItem,
+  OpenIMConversationListResult,
+  OpenIMUserListResult,
+  OpenIMUserStatusItem,
+  OpenIMUserStatusListResult,
+  OpenIMFriendListResult,
+  OpenIMBlackListResult,
+  OpenIMGroupListResult,
+  OpenIMGroupMemberListResult,
+  OpenIMFriendApplicationListResult,
+  OpenIMGroupApplicationListResult,
+  OpenIMMessageListResult,
+  OpenIMUserInfo,
+  OpenIMPublicUserItem,
+  OpenIMFriendUserItem,
+  OpenIMBlackUserItem,
+  OpenIMGroupItem,
+  OpenIMGroupMemberItem,
+  OpenIMFriendApplicationItem,
+  OpenIMGroupApplicationItem,
+  OpenIMMessageRevokedItem,
+  OpenIMMessageReceiptItem,
+  OpenIMMessageReceiptListResult,
+  OpenIMConversationInputStatusItem,
+  OpenIMUserCommandItem,
+  OpenIMGetOneConversationParams,
+  OpenIMPageParams,
+  OpenIMGetGroupMemberListParams,
+  OpenIMGetAdvancedHistoryMessageListParams,
+  OpenIMAdvancedHistoryMessageListResult,
+  OpenIMSearchLocalMessagesParams,
+  OpenIMApplicationListParams,
+  OpenIMSearchMessageResultItem,
+  OpenIMFindMessageResultItem,
+  OpenIMSearchMessageResult,
+  OpenIMFindMessageResult,
+  OpenIMError,
+  OpenIMInitConfig,
+  OpenIMSDKEventName,
+  OpenIMSDKEvent,
+  OpenIMSDKRawEventHandler,
+  OpenIMVoidEventHandler,
+  OpenIMErrorEventHandler,
+  OpenIMStringEventHandler,
+  OpenIMBooleanEventHandler,
+  OpenIMNumberEventHandler,
+  OpenIMMessageEventHandler,
+  OpenIMMessageListEventHandler,
+  OpenIMMessageRevokedEventHandler,
+  OpenIMMessageReceiptListEventHandler,
+  OpenIMConversationListEventHandler,
+  OpenIMConversationInputStatusEventHandler,
+  OpenIMFriendEventHandler,
+  OpenIMBlackUserEventHandler,
+  OpenIMFriendApplicationEventHandler,
+  OpenIMGroupEventHandler,
+  OpenIMGroupMemberEventHandler,
+  OpenIMGroupApplicationEventHandler,
+  OpenIMUserEventHandler,
+  OpenIMUserStatusListEventHandler,
+  OpenIMUserCommandEventHandler,
+  OpenIMSendMessageProgressEventHandler,
+  OpenIMUploadFileProgressEventHandler,
+  OpenIMUploadLogsProgressEventHandler,
+  OpenIMSDKEventSubscription,
+  OpenIMSDKEventHandlerSubscription,
+  OffSDKEvent,
+  OffSDKEventName,
+  InitSDK,
+  Login,
+  Logout,
+  GetLoginStatus,
+  GetLoginUserID,
+  CreateTextMessage,
+  SendMessage,
+  UploadFile,
+  OpenIMSDKInstance
+} from '../interface.uts'
+import {
+  ensureNativeEventsBound,
+  onSDKEvent,
+  offSDKEvent,
+  offSDKEventName,
+  onConnectingEvent,
+  onConnectSuccessEvent,
+  onConnectFailedEvent,
+  onKickedOfflineEvent,
+  onUserTokenExpiredEvent,
+  onUserTokenInvalidEvent,
+  onRecvNewMessageEvent,
+  onRecvOfflineNewMessageEvent,
+  onRecvOnlineOnlyMessageEvent,
+  onMsgDeletedEvent,
+  onNewRecvMessageRevokedEvent,
+  onRecvC2CReadReceiptEvent,
+  onRecvNewMessagesEvent,
+  onRecvOfflineNewMessagesEvent,
+  onConversationChangedEvent,
+  onConversationUserInputStatusChangedEvent,
+  onNewConversationEvent,
+  onSyncServerFailedEvent,
+  onSyncServerFinishEvent,
+  onSyncServerProgressEvent,
+  onSyncServerStartEvent,
+  onSendMessageProgressEvent,
+  onUploadFileProgressEvent,
+  onUploadLogsProgressEvent,
+  onTotalUnreadMessageCountChangedEvent,
+  onRecvCustomBusinessMessageEvent,
+  onBlackAddedEvent,
+  onBlackDeletedEvent,
+  onFriendAddedEvent,
+  onFriendApplicationAcceptedEvent,
+  onFriendApplicationAddedEvent,
+  onFriendApplicationDeletedEvent,
+  onFriendApplicationRejectedEvent,
+  onFriendDeletedEvent,
+  onFriendInfoChangedEvent,
+  onGroupApplicationAcceptedEvent,
+  onGroupApplicationAddedEvent,
+  onGroupApplicationDeletedEvent,
+  onGroupApplicationRejectedEvent,
+  onGroupDismissedEvent,
+  onGroupInfoChangedEvent,
+  onGroupMemberAddedEvent,
+  onGroupMemberDeletedEvent,
+  onGroupMemberInfoChangedEvent,
+  onJoinedGroupAddedEvent,
+  onJoinedGroupDeletedEvent,
+  onSelfInfoUpdatedEvent,
+  onUserCommandAddEvent,
+  onUserCommandDeleteEvent,
+  onUserCommandUpdateEvent,
+  onUserStatusChangedEvent
+} from './events.uts'
+import {
+  normalizeOperationID,
+  stringifyJSON,
+  rejectNativeError,
+  getOpenIMDataPathNative,
+  normalizeInitConfig,
+  parseNativeMessage,
+  readStringParam,
+  readNumberParam,
+  readBooleanParam,
+  stringifyOpenIMMessage,
+  stringifyOpenIMMessagePayload,
+  parseNativeUploadFileResult,
+  parseNativeUploadFileProgressEvent,
+  parseNativeUploadLogsProgressEvent,
+  parseNativeConversationEventList,
+  parseNativeConversationObject,
+  parseNativeConversationListResult,
+  parseNativeConversationListResultFallback,
+  parseNativeUserListResult,
+  parseNativeUserObject,
+  parseNativeUserStatusListResult,
+  parseNativeUserStatusEventList,
+  parseNativeFriendListResult,
+  parseNativeFriendListResultFallback,
+  parseNativeFriendObject,
+  parseNativeBlackListResult,
+  parseNativeBlackUserObject,
+  parseNativeGroupListResult,
+  parseNativeGroupListResultFallback,
+  parseNativeGroupObject,
+  parseNativeGroupMemberListResult,
+  parseNativeGroupMemberListResultFallback,
+  parseNativeGroupMemberObject,
+  parseNativeFriendApplicationListResult,
+  parseNativeFriendApplicationListResultFallback,
+  parseNativeFriendApplicationObject,
+  parseNativeGroupApplicationListResult,
+  parseNativeGroupApplicationListResultFallback,
+  parseNativeGroupApplicationObject,
+  parseNativeConversationInputStatus,
+  parseNativeUserCommand,
+  parseNativeMessageRevoked,
+  parseNativeMessageReceiptList,
+  parseNativeAdvancedHistoryMessageList,
+  parseNativeAdvancedHistoryMessageListFallback,
+  parseNativeMessageEventList,
+  parseNativeMessageEventListFallback,
+  parseNativeFindMessageResult,
+  parseNativeMessageListResult,
+  parseNativeSearchMessageResult,
+  parseNativeLoginStatus
+} from './native-call.uts'
+export const OpenIMMessageStatusNotExist : OpenIMMessageStatus = 0
+export const OpenIMMessageStatusSending : OpenIMMessageStatus = 1
+export const OpenIMMessageStatusSucceed : OpenIMMessageStatus = 2
+export const OpenIMMessageStatusFailed : OpenIMMessageStatus = 3
+export const OpenIMMessageStatusDeleted : OpenIMMessageStatus = 4
+export const OpenIMMessageStatusFiltered : OpenIMMessageStatus = 5
+
+export const OpenIMPlatformIOS : OpenIMPlatform = 1
+export const OpenIMPlatformAndroid : OpenIMPlatform = 2
+export const OpenIMPlatformWindows : OpenIMPlatform = 3
+export const OpenIMPlatformMacOSX : OpenIMPlatform = 4
+export const OpenIMPlatformWeb : OpenIMPlatform = 5
+export const OpenIMPlatformMiniWeb : OpenIMPlatform = 6
+export const OpenIMPlatformLinux : OpenIMPlatform = 7
+export const OpenIMPlatformAndroidPad : OpenIMPlatform = 8
+export const OpenIMPlatformIPad : OpenIMPlatform = 9
+export const OpenIMPlatformAdmin : OpenIMPlatform = 10
+export const OpenIMPlatformHarmony : OpenIMPlatform = 11
+
+export const OpenIMLogLevelPanic : OpenIMLogLevel = 0
+export const OpenIMLogLevelFatal : OpenIMLogLevel = 1
+export const OpenIMLogLevelError : OpenIMLogLevel = 2
+export const OpenIMLogLevelWarn : OpenIMLogLevel = 3
+export const OpenIMLogLevelInfo : OpenIMLogLevel = 4
+export const OpenIMLogLevelDebug : OpenIMLogLevel = 5
+export const OpenIMLogLevelVerbose : OpenIMLogLevel = 6
+
+export const OpenIMMessageTypeText : OpenIMMessageType = 101
+export const OpenIMMessageTypePicture : OpenIMMessageType = 102
+export const OpenIMMessageTypeVoice : OpenIMMessageType = 103
+export const OpenIMMessageTypeVideo : OpenIMMessageType = 104
+export const OpenIMMessageTypeFile : OpenIMMessageType = 105
+export const OpenIMMessageTypeAtText : OpenIMMessageType = 106
+export const OpenIMMessageTypeMerge : OpenIMMessageType = 107
+export const OpenIMMessageTypeCard : OpenIMMessageType = 108
+export const OpenIMMessageTypeLocation : OpenIMMessageType = 109
+export const OpenIMMessageTypeCustom : OpenIMMessageType = 110
+export const OpenIMMessageTypeRevoke : OpenIMMessageType = 111
+export const OpenIMMessageTypeTyping : OpenIMMessageType = 113
+export const OpenIMMessageTypeQuote : OpenIMMessageType = 114
+export const OpenIMMessageTypeFace : OpenIMMessageType = 115
+export const OpenIMMessageTypeAdvancedText : OpenIMMessageType = 117
+export const OpenIMMessageTypeMarkdownText : OpenIMMessageType = 118
+export const OpenIMMessageTypeCustomNotTriggerConversation : OpenIMMessageType = 119
+export const OpenIMMessageTypeCustomOnlineOnly : OpenIMMessageType = 120
+export const OpenIMMessageTypeReactionModifier : OpenIMMessageType = 121
+export const OpenIMMessageTypeReactionDeleter : OpenIMMessageType = 122
+export const OpenIMMessageTypeStream : OpenIMMessageType = 143
+export const OpenIMMessageTypeCommon : OpenIMMessageType = 200
+export const OpenIMMessageTypeGroupMsg : OpenIMMessageType = 201
+export const OpenIMMessageTypeSignalMsg : OpenIMMessageType = 202
+export const OpenIMMessageTypeCustomNotification : OpenIMMessageType = 203
+export const OpenIMMessageTypeFriendApplicationApproved : OpenIMMessageType = 1201
+export const OpenIMMessageTypeFriendApplicationRejected : OpenIMMessageType = 1202
+export const OpenIMMessageTypeFriendApplication : OpenIMMessageType = 1203
+export const OpenIMMessageTypeFriendAdded : OpenIMMessageType = 1204
+export const OpenIMMessageTypeFriendDeleted : OpenIMMessageType = 1205
+export const OpenIMMessageTypeFriendRemarkSet : OpenIMMessageType = 1206
+export const OpenIMMessageTypeBlackAdded : OpenIMMessageType = 1207
+export const OpenIMMessageTypeBlackDeleted : OpenIMMessageType = 1208
+export const OpenIMMessageTypeFriendInfoUpdated : OpenIMMessageType = 1209
+export const OpenIMMessageTypeFriendsInfoUpdated : OpenIMMessageType = 1210
+export const OpenIMMessageTypeConversationChanged : OpenIMMessageType = 1300
+export const OpenIMMessageTypeUserInfoUpdated : OpenIMMessageType = 1303
+export const OpenIMMessageTypeUserStatusChanged : OpenIMMessageType = 1304
+export const OpenIMMessageTypeUserCommandAdded : OpenIMMessageType = 1305
+export const OpenIMMessageTypeUserCommandDeleted : OpenIMMessageType = 1306
+export const OpenIMMessageTypeUserCommandUpdated : OpenIMMessageType = 1307
+export const OpenIMMessageTypeUserSubscribeOnlineStatus : OpenIMMessageType = 1308
+export const OpenIMMessageTypeOANotification : OpenIMMessageType = 1400
+export const OpenIMMessageTypeGroupCreated : OpenIMMessageType = 1501
+export const OpenIMMessageTypeGroupInfoUpdated : OpenIMMessageType = 1502
+export const OpenIMMessageTypeJoinGroupApplication : OpenIMMessageType = 1503
+export const OpenIMMessageTypeMemberQuit : OpenIMMessageType = 1504
+export const OpenIMMessageTypeGroupApplicationAccepted : OpenIMMessageType = 1505
+export const OpenIMMessageTypeGroupApplicationRejected : OpenIMMessageType = 1506
+export const OpenIMMessageTypeGroupOwnerTransferred : OpenIMMessageType = 1507
+export const OpenIMMessageTypeMemberKicked : OpenIMMessageType = 1508
+export const OpenIMMessageTypeMemberInvited : OpenIMMessageType = 1509
+export const OpenIMMessageTypeMemberEnter : OpenIMMessageType = 1510
+export const OpenIMMessageTypeGroupDismissed : OpenIMMessageType = 1511
+export const OpenIMMessageTypeGroupMemberMuted : OpenIMMessageType = 1512
+export const OpenIMMessageTypeGroupMemberCancelMuted : OpenIMMessageType = 1513
+export const OpenIMMessageTypeGroupMuted : OpenIMMessageType = 1514
+export const OpenIMMessageTypeGroupCancelMuted : OpenIMMessageType = 1515
+export const OpenIMMessageTypeGroupMemberInfoUpdated : OpenIMMessageType = 1516
+export const OpenIMMessageTypeGroupMemberSetToAdmin : OpenIMMessageType = 1517
+export const OpenIMMessageTypeGroupMemberSetToOrdinaryUser : OpenIMMessageType = 1518
+export const OpenIMMessageTypeGroupAnnouncementUpdated : OpenIMMessageType = 1519
+export const OpenIMMessageTypeGroupNameUpdated : OpenIMMessageType = 1520
+export const OpenIMMessageTypeSuperGroupUpdated : OpenIMMessageType = 1651
+export const OpenIMMessageTypeMsgDeleted : OpenIMMessageType = 1652
+export const OpenIMMessageTypeBurnMessageChange : OpenIMMessageType = 1701
+export const OpenIMMessageTypeConversationPrivateChat : OpenIMMessageType = 1701
+export const OpenIMMessageTypeConversationUnread : OpenIMMessageType = 1702
+export const OpenIMMessageTypeClearConversation : OpenIMMessageType = 1703
+export const OpenIMMessageTypeConversationGroupChanged : OpenIMMessageType = 1704
+export const OpenIMMessageTypeBusinessNotification : OpenIMMessageType = 2001
+export const OpenIMMessageTypeRevokeMessage : OpenIMMessageType = 2101
+export const OpenIMMessageTypeDeleteMessages : OpenIMMessageType = 2102
+export const OpenIMMessageTypeModifyMessage : OpenIMMessageType = 2103
+export const OpenIMMessageTypeDeleteUserAllMessagesInConversation : OpenIMMessageType = 2150
+export const OpenIMMessageTypeHasReadReceipt : OpenIMMessageType = 2200
+export const OpenIMMessageTypeHasResetUnreadReceipt : OpenIMMessageType = 2210
+export const OpenIMMessageTypeHasGroupReadReceipt : OpenIMMessageType = 2300
+export const OpenIMMessageTypePinned : OpenIMMessageType = 2400
+export const OpenIMMessageTypePinnedRead : OpenIMMessageType = 2401
+export const OpenIMMessageTypeStreamNotification : OpenIMMessageType = 2500
+
+export const OpenIMSessionTypeSingle : OpenIMSessionType = 1
+export const OpenIMSessionTypeWriteGroup : OpenIMSessionType = 2
+export const OpenIMSessionTypeGroup : OpenIMSessionType = 3
+export const OpenIMSessionTypeNotification : OpenIMSessionType = 4
+
+export const OpenIMLoginStatusLogout : OpenIMLoginStatus = 1
+export const OpenIMLoginStatusLogging : OpenIMLoginStatus = 2
+export const OpenIMLoginStatusLogged : OpenIMLoginStatus = 3
+
+function optionalString(value ?: string | null) : string { return value != null ? value as string : '' }
+function optionalBoolean(value ?: boolean | null) : boolean { return value != null ? value as boolean : false }
+function optionalNumber(value ?: number | null) : number { return value != null ? value as number : 0 }
+function requireLoggedInForCreate(apiName : string, operationID : string, reject : (reason : any | null) => void) : boolean {
+  const loginStatus = parseNativeLoginStatus(NativeOpenIMSDK.getLoginStatus(operationID))
+  if (loginStatus != 3) {
+    rejectNativeError(reject, -1, apiName + ' requires logged in status')
+    return false
+  }
+  return true
+}
+function readOfflinePushInfo(options : OpenIMSendMessageOptions) : string { return options.offlinePushInfo != null ? stringifyJSON(options.offlinePushInfo) : '{}' }
+function readIsOnlineOnly(options : OpenIMSendMessageOptions) : boolean { return options.isOnlineOnly != null ? options.isOnlineOnly as boolean : false }
+function readOperationID(options : OpenIMSendMessageOptions) : string { return options.operationID != null ? options.operationID as string : '' }
+function appendPayloadField(payload : string, field : string) : string { return payload.length > 0 ? payload + ',' + field : field }
+function stringifyUpdateFriendsPayload(params : OpenIMUpdateFriendsParams) : string {
+  let payload = ''
+  payload = appendPayloadField(payload, '"friendUserIDs":' + stringifyJSON(params.friendUserIDs))
+  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
+  if (params.remark != null) { payload = appendPayloadField(payload, '"remark":' + stringifyJSON(params.remark)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  return '{' + payload + '}'
+}
+function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : string {
+  let payload = ''
+  payload = appendPayloadField(payload, '"groupID":' + stringifyJSON(params.groupID))
+  if (params.groupName != null) { payload = appendPayloadField(payload, '"groupName":' + stringifyJSON(params.groupName)) }
+  if (params.notification != null) { payload = appendPayloadField(payload, '"notification":' + stringifyJSON(params.notification)) }
+  if (params.introduction != null) { payload = appendPayloadField(payload, '"introduction":' + stringifyJSON(params.introduction)) }
+  if (params.faceURL != null) { payload = appendPayloadField(payload, '"faceURL":' + stringifyJSON(params.faceURL)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  if (params.needVerification != null) { payload = appendPayloadField(payload, '"needVerification":' + stringifyJSON(params.needVerification)) }
+  if (params.lookMemberInfo != null) { payload = appendPayloadField(payload, '"lookMemberInfo":' + stringifyJSON(params.lookMemberInfo)) }
+  if (params.applyMemberFriend != null) { payload = appendPayloadField(payload, '"applyMemberFriend":' + stringifyJSON(params.applyMemberFriend)) }
+  if (params.displayIsRead != null) { payload = appendPayloadField(payload, '"displayIsRead":' + stringifyJSON(params.displayIsRead)) }
+  return '{' + payload + '}'
+}
+function stringifySetGroupMemberInfoPayload(params : OpenIMSetGroupMemberInfoParams) : string {
+  let payload = ''
+  payload = appendPayloadField(payload, '"groupID":' + stringifyJSON(params.groupID))
+  payload = appendPayloadField(payload, '"userID":' + stringifyJSON(params.userID))
+  if (params.nickname != null) { payload = appendPayloadField(payload, '"nickname":' + stringifyJSON(params.nickname)) }
+  if (params.faceURL != null) { payload = appendPayloadField(payload, '"faceURL":' + stringifyJSON(params.faceURL)) }
+  if (params.roleLevel != null) { payload = appendPayloadField(payload, '"roleLevel":' + stringifyJSON(params.roleLevel)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  return '{' + payload + '}'
+}
+
+function resolveStringNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<string> { return new Promise<string>((resolve, reject) => { invoke(resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function parseNativeNumberValue(data : string) : number | null { return data.length > 0 ? parseFloat(data) : null }
+function parseNativeBooleanValue(data : string) : boolean { return data == 'true' }
+function parseNativeBooleanListValue(data : string) : Array<boolean> | null {
+  const trimmed = data.trim()
+  if (trimmed.length < 2) { return null }
+  const result : Array<boolean> = []
+  const body = trimmed.substring(1, trimmed.length - 1)
+  if (body.length == 0) { return result }
+  const items = body.split(',')
+  items.forEach((item : string) => { result.push(item.trim() == 'true') })
+  return result
+}
+function parseNativeStringListValue(data : string) : Array<string> | null {
+  const trimmed = data.trim()
+  if (trimmed.length < 2) { return null }
+  const result : Array<string> = []
+  const body = trimmed.substring(1, trimmed.length - 1)
+  if (body.length == 0) { return result }
+  const items = body.split(',')
+  items.forEach((item : string) => {
+    let value = item.trim()
+    if (value.length >= 2 && value.substring(0, 1) == '"' && value.substring(value.length - 1, value.length) == '"') {
+      value = value.substring(1, value.length - 1)
+    }
+    result.push(value)
+  })
+  return result
+}
+function resolveNumberNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<number | null> { return new Promise<number | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeNumberValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveBooleanNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeBooleanValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveBooleanListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<Array<boolean> | null> { return new Promise<Array<boolean> | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeBooleanListValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveStringListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<Array<string> | null> { return new Promise<Array<string> | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeStringListValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveConversationObjectNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMConversationItem | null> { return new Promise<OpenIMConversationItem | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeConversationObject(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveConversationListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMConversationListResult | null> { return new Promise<OpenIMConversationListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeConversationListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveUserObjectNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMUserInfo | null> { return new Promise<OpenIMUserInfo | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeUserObject(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveUserListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMUserListResult | null> { return new Promise<OpenIMUserListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeUserListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveUserStatusListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMUserStatusListResult | null> { return new Promise<OpenIMUserStatusListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeUserStatusListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveFriendListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFriendListResult | null> { return new Promise<OpenIMFriendListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeFriendListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveBlackListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMBlackListResult | null> { return new Promise<OpenIMBlackListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeBlackListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveFriendApplicationListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFriendApplicationListResult | null> { return new Promise<OpenIMFriendApplicationListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeFriendApplicationListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupListResult | null> { return new Promise<OpenIMGroupListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeGroupListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupObjectNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupItem | null> { return new Promise<OpenIMGroupItem | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeGroupObject(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupMemberListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeGroupMemberListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupApplicationListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupApplicationListResult | null> { return new Promise<OpenIMGroupApplicationListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeGroupApplicationListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveMessageListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFindMessageResult | null> { return new Promise<OpenIMFindMessageResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeMessageListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveAdvancedHistoryNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return new Promise<OpenIMAdvancedHistoryMessageListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeAdvancedHistoryMessageList(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+
+export function off(subscription : OpenIMSDKEventSubscription) { offSDKEvent(subscription) }
+export function offEvent(eventName : OpenIMSDKEventName) { offSDKEventName(eventName) }
+@UTSJS.keepAlive
+export function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectingEvent(handler) }
+@UTSJS.keepAlive
+export function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectSuccessEvent(handler) }
+@UTSJS.keepAlive
+export function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onConnectFailedEvent(handler) }
+@UTSJS.keepAlive
+export function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onKickedOfflineEvent(handler) }
+@UTSJS.keepAlive
+export function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onUserTokenExpiredEvent(handler) }
+@UTSJS.keepAlive
+export function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onUserTokenInvalidEvent(handler) }
+@UTSJS.keepAlive
+export function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessageEvent(handler) }
+@UTSJS.keepAlive
+export function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessageEvent(handler) }
+@UTSJS.keepAlive
+export function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOnlineOnlyMessageEvent(handler) }
+@UTSJS.keepAlive
+export function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMsgDeletedEvent(handler) }
+@UTSJS.keepAlive
+export function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription { return onNewRecvMessageRevokedEvent(handler) }
+@UTSJS.keepAlive
+export function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription { return onRecvC2CReadReceiptEvent(handler) }
+@UTSJS.keepAlive
+export function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessagesEvent(handler) }
+@UTSJS.keepAlive
+export function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessagesEvent(handler) }
+@UTSJS.keepAlive
+export function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onConversationChangedEvent(handler) }
+@UTSJS.keepAlive
+export function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription { return onConversationUserInputStatusChangedEvent(handler) }
+@UTSJS.keepAlive
+export function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onNewConversationEvent(handler) }
+@UTSJS.keepAlive
+export function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFailedEvent(handler) }
+@UTSJS.keepAlive
+export function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFinishEvent(handler) }
+@UTSJS.keepAlive
+export function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onSyncServerProgressEvent(handler) }
+@UTSJS.keepAlive
+export function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerStartEvent(handler) }
+@UTSJS.keepAlive
+export function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription { return onSendMessageProgressEvent(handler) }
+@UTSJS.keepAlive
+export function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadFileProgressEvent(handler) }
+@UTSJS.keepAlive
+export function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadLogsProgressEvent(handler) }
+@UTSJS.keepAlive
+export function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onTotalUnreadMessageCountChangedEvent(handler) }
+@UTSJS.keepAlive
+export function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription { return onRecvCustomBusinessMessageEvent(handler) }
+@UTSJS.keepAlive
+export function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackAddedEvent(handler) }
+@UTSJS.keepAlive
+export function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackDeletedEvent(handler) }
+@UTSJS.keepAlive
+export function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendAddedEvent(handler) }
+@UTSJS.keepAlive
+export function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAcceptedEvent(handler) }
+@UTSJS.keepAlive
+export function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAddedEvent(handler) }
+@UTSJS.keepAlive
+export function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationDeletedEvent(handler) }
+@UTSJS.keepAlive
+export function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationRejectedEvent(handler) }
+@UTSJS.keepAlive
+export function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendDeletedEvent(handler) }
+@UTSJS.keepAlive
+export function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendInfoChangedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAcceptedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAddedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationDeletedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationRejectedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupDismissedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupInfoChangedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberAddedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberDeletedEvent(handler) }
+@UTSJS.keepAlive
+export function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberInfoChangedEvent(handler) }
+@UTSJS.keepAlive
+export function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupAddedEvent(handler) }
+@UTSJS.keepAlive
+export function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupDeletedEvent(handler) }
+@UTSJS.keepAlive
+export function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription { return onSelfInfoUpdatedEvent(handler) }
+@UTSJS.keepAlive
+export function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onUserCommandAddEvent(handler) }
+@UTSJS.keepAlive
+export function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onUserCommandDeleteEvent(handler) }
+@UTSJS.keepAlive
+export function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onUserCommandUpdateEvent(handler) }
+@UTSJS.keepAlive
+export function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription { return onUserStatusChangedEvent(handler) }
+
+export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); resolve(NativeOpenIMSDK.initSDK(normalizeOperationID(operationID), normalizeInitConfig(config)) == 'true') }) }
+export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.login(normalizeOperationID(operationID), userID, token, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const logout = function (operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.logout(normalizeOperationID(operationID), resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const getLoginStatus = function (operationID ?: string | null) : Promise<OpenIMLoginStatus> { return new Promise<OpenIMLoginStatus>((resolve, reject) => { resolve(parseNativeLoginStatus(NativeOpenIMSDK.getLoginStatus(normalizeOperationID(operationID)))) }) }
+export const getLoginUserID = function () : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getLoginUserID()) }) }
+export const getSdkVersion = function () : string { return NativeOpenIMSDK.getSdkVersion() }
+export const getOpenIMDataPath = function () : string { return getOpenIMDataPathNative() }
+export const unInitSDK = function (operationID ?: string | null) { NativeOpenIMSDK.unInitSDK(normalizeOperationID(operationID)) }
+
+export const getAllConversationList = function (operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getAllConversationList(normalizeOperationID(operationID), resolve, reject) }) }
+export const getOneConversation = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<OpenIMConversationItem | null> { return resolveConversationObjectNative((resolve, reject) => { NativeOpenIMSDK.getOneConversation(normalizeOperationID(operationID), params.sessionType, params.sourceID, resolve, reject) }) }
+export const getAdvancedHistoryMessageList = function (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return resolveAdvancedHistoryNative((resolve, reject) => { NativeOpenIMSDK.getAdvancedHistoryMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getAdvancedHistoryMessageListReverse = function (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return resolveAdvancedHistoryNative((resolve, reject) => { NativeOpenIMSDK.getAdvancedHistoryMessageListReverse(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getSpecifiedGroupsInfo = function (params : Array<string>, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getSpecifiedGroupsInfo(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const deleteConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
+export const markConversationMessageAsRead = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markConversationMessageAsRead(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
+export const getGroupMemberList = function (params : OpenIMGetGroupMemberListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative((resolve, reject) => { NativeOpenIMSDK.getGroupMemberList(normalizeOperationID(operationID), params.groupID, params.filter, params.offset, params.count, resolve, reject) }) }
+export const setMessageLocalEx = function (params : OpenIMSetMessageLocalExParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setMessageLocalEx(normalizeOperationID(operationID), params.conversationID, params.clientMsgID, params.localEx, resolve, reject) }) }
+export const revokeMessage = function (params : OpenIMMessageKeyParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.revokeMessage(normalizeOperationID(operationID), params.conversationID, params.clientMsgID, resolve, reject) }) }
+export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setConversation(normalizeOperationID(operationID), params.conversationID, stringifyJSON(params), resolve, reject) }) }
+export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setAppBackgroundStatus(normalizeOperationID(operationID), data, resolve, reject) }) }
+export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setAppBadge(normalizeOperationID(operationID), appUnreadCount, resolve, reject) }) }
+export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.networkStatusChanged(normalizeOperationID(operationID), resolve, reject) }) }
+export const getSelfUserInfo = function (operationID ?: string | null) : Promise<OpenIMUserInfo | null> { return resolveUserObjectNative((resolve, reject) => { NativeOpenIMSDK.getSelfUserInfo(normalizeOperationID(operationID), resolve, reject) }) }
+export const getUsersInfo = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMUserListResult | null> { return resolveUserListNative((resolve, reject) => { NativeOpenIMSDK.getUsersInfo(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const setSelfInfo = function (data : OpenIMSetSelfInfoParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setSelfInfo(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const deleteMessageFromLocalStorage = function (params : OpenIMMessageKeyParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteMessageFromLocalStorage(normalizeOperationID(operationID), params.conversationID, params.clientMsgID, resolve, reject) }) }
+export const deleteMessage = function (params : OpenIMMessageKeyParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteMessage(normalizeOperationID(operationID), params.conversationID, params.clientMsgID, resolve, reject) }) }
+export const deleteAllMsgFromLocal = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteAllMsgFromLocal(normalizeOperationID(operationID), resolve, reject) }) }
+export const deleteAllMsgFromLocalAndSvr = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteAllMsgFromLocalAndSvr(normalizeOperationID(operationID), resolve, reject) }) }
+export const insertSingleMessageToLocalStorage = function (params : OpenIMInsertSingleMessageParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.insertSingleMessageToLocalStorage(normalizeOperationID(operationID), stringifyOpenIMMessagePayload(params.message), params.recvID, params.sendID, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const insertGroupMessageToLocalStorage = function (params : OpenIMInsertGroupMessageParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.insertGroupMessageToLocalStorage(normalizeOperationID(operationID), stringifyOpenIMMessagePayload(params.message), params.groupID, params.sendID, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const changeInputStates = function (params : OpenIMInputStateParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeInputStates(normalizeOperationID(operationID), params.conversationID, optionalBoolean(params.focus), resolve, reject) }) }
+export const getInputstates = function (params : OpenIMInputStateParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.getInputStates(normalizeOperationID(operationID), params.conversationID, optionalString(params.userID), resolve, reject) }) }
+export const clearConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.clearConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
+export const hideConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideConversation(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
+export const hideAllConversations = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideAllConversations(normalizeOperationID(operationID), resolve, reject) }) }
+export const markAllConversationMessageAsRead = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markAllConversationMessageAsRead(normalizeOperationID(operationID), resolve, reject) }) }
+export const markMessagesAsReadByMsgID = function (params : OpenIMMarkMessagesAsReadByMsgIDParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markMessagesAsReadByMsgID(normalizeOperationID(operationID), params.conversationID, params.clientMsgIDs, resolve, reject) }) }
+export const searchConversation = function (searchParam : string, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.searchConversation(normalizeOperationID(operationID), searchParam, resolve, reject) }) }
+export const getConversationListSplit = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getConversationListSplit(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }
+export const getConversationIDBySessionType = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getConversationIDBySessionType(params.sourceID, '', params.sessionType)) }) }
+export const getMultipleConversation = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getMultipleConversation(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const deleteConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return deleteConversationAndDeleteAllMsg(conversationID, operationID) }
+export const setConversationDraft = function (params : OpenIMSetConversationDraftParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setConversationDraft(normalizeOperationID(operationID), params.conversationID, params.draftText, resolve, reject) }) }
+export const getTotalUnreadMsgCount = function (operationID ?: string | null) : Promise<number | null> { return resolveNumberNative((resolve, reject) => { NativeOpenIMSDK.getTotalUnreadMsgCount(normalizeOperationID(operationID), resolve, reject) }) }
+export const searchLocalMessages = function (params : OpenIMSearchLocalMessagesParams, operationID ?: string | null) : Promise<OpenIMSearchMessageResult | null> { return new Promise<OpenIMSearchMessageResult | null>((resolve, reject) => { NativeOpenIMSDK.searchLocalMessages(normalizeOperationID(operationID), stringifyJSON(params), (data : string) => { resolve(parseNativeSearchMessageResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const addFriend = function (params : OpenIMAddFriendParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.addFriend(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const searchFriends = function (params : OpenIMSearchFriendsParams, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return resolveFriendListNative((resolve, reject) => { NativeOpenIMSDK.searchFriends(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getSpecifiedFriendsInfo = function (params : OpenIMGetSpecifiedFriendsInfoParams, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return new Promise<OpenIMFriendListResult | null>((resolve, reject) => { NativeOpenIMSDK.getSpecifiedFriendsInfo(normalizeOperationID(operationID), stringifyJSON(params.userIDList), params.filterBlack, (data : string) => { resolve(parseNativeFriendListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const getFriendApplicationListAsRecipient = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMFriendApplicationListResult | null> { return resolveFriendApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getFriendApplicationListAsRecipient(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getFriendApplicationListAsApplicant = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMFriendApplicationListResult | null> { return resolveFriendApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getFriendApplicationListAsApplicant(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getFriendApplicationUnhandledCount = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<number | null> { return resolveNumberNative((resolve, reject) => { NativeOpenIMSDK.getFriendApplicationUnhandledCount(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getFriendList = function (filterBlack ?: boolean | null, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return resolveFriendListNative((resolve, reject) => { NativeOpenIMSDK.getFriendList(normalizeOperationID(operationID), optionalBoolean(filterBlack), resolve, reject) }) }
+export const getFriendListPage = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return resolveFriendListNative((resolve, reject) => { NativeOpenIMSDK.getFriendListPage(normalizeOperationID(operationID), params.offset, params.count, false, resolve, reject) }) }
+export const updateFriends = function (params : OpenIMUpdateFriendsParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifyUpdateFriendsPayload(params); NativeOpenIMSDK.updateFriends(op, payload, resolve, reject) }) }
+export const checkFriend = function (data : Array<string>, operationID ?: string | null) : Promise<Array<boolean> | null> { return resolveBooleanListNative((resolve, reject) => { NativeOpenIMSDK.checkFriend(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const acceptFriendApplication = function (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.acceptFriendApplication(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const refuseFriendApplication = function (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.refuseFriendApplication(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const deleteFriend = function (userID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteFriend(normalizeOperationID(operationID), userID, resolve, reject) }) }
+export const addBlack = function (params : OpenIMAddBlackParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.addBlack(normalizeOperationID(operationID), params.toUserID, optionalString(params.ex), resolve, reject) }) }
+export const removeBlack = function (userID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.removeBlack(normalizeOperationID(operationID), userID, resolve, reject) }) }
+export const getBlackList = function (operationID ?: string | null) : Promise<OpenIMBlackListResult | null> { return resolveBlackListNative((resolve, reject) => { NativeOpenIMSDK.getBlackList(normalizeOperationID(operationID), resolve, reject) }) }
+export const inviteUserToGroup = function (params : OpenIMGroupInviteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.inviteUserToGroup(normalizeOperationID(operationID), params.groupID, params.reason, stringifyJSON(params.userIDList), resolve, reject) }) }
+export const kickGroupMember = function (params : OpenIMGroupInviteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.kickGroupMember(normalizeOperationID(operationID), params.groupID, params.reason, stringifyJSON(params.userIDList), resolve, reject) }) }
+export const isJoinGroup = function (groupID : string, operationID ?: string | null) : Promise<boolean> { return resolveBooleanNative((resolve, reject) => { NativeOpenIMSDK.isJoinGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }
+export const getSpecifiedGroupMembersInfo = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { NativeOpenIMSDK.getSpecifiedGroupMembersInfo(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), (data : string) => { resolve(parseNativeGroupMemberListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const getUsersInGroup = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<Array<string> | null> { return resolveStringListNative((resolve, reject) => { NativeOpenIMSDK.getUsersInGroup(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), resolve, reject) }) }
+export const getGroupMemberListByJoinTimeFilter = function (params : OpenIMGroupMemberListByJoinTimeFilterParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { NativeOpenIMSDK.getGroupMemberListByJoinTimeFilter(normalizeOperationID(operationID), params.groupID, params.offset, params.count, params.joinTimeBegin, optionalNumber(params.joinTimeEnd), stringifyJSON(params.userIDList), (data : string) => { resolve(parseNativeGroupMemberListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const searchGroupMembers = function (params : OpenIMSearchGroupMembersParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative((resolve, reject) => { NativeOpenIMSDK.searchGroupMembers(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getJoinedGroupList = function (operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupList(normalizeOperationID(operationID), resolve, reject) }) }
+export const getJoinedGroupListPage = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupListPage(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }
+export const createGroup = function (params : OpenIMCreateGroupParams, operationID ?: string | null) : Promise<OpenIMGroupItem | null> { return resolveGroupObjectNative((resolve, reject) => { NativeOpenIMSDK.createGroup(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const setGroupInfo = function (params : OpenIMSetGroupInfoParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifySetGroupInfoPayload(params); NativeOpenIMSDK.setGroupInfo(op, payload, resolve, reject) }) }
+export const setGroupMemberInfo = function (params : OpenIMSetGroupMemberInfoParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifySetGroupMemberInfoPayload(params); NativeOpenIMSDK.setGroupMemberInfo(op, payload, resolve, reject) }) }
+export const joinGroup = function (params : OpenIMJoinGroupParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.joinGroup(normalizeOperationID(operationID), params.groupID, params.reqMsg, params.joinSource, optionalString(params.ex), resolve, reject) }) }
+export const searchGroups = function (params : OpenIMSearchGroupsParams, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.searchGroups(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const quitGroup = function (groupID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.quitGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }
+export const dismissGroup = function (groupID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.dismissGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }
+export const changeGroupMute = function (params : OpenIMChangeGroupMuteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeGroupMute(normalizeOperationID(operationID), params.groupID, params.isMute, resolve, reject) }) }
+export const changeGroupMemberMute = function (params : OpenIMChangeGroupMemberMuteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeGroupMemberMute(normalizeOperationID(operationID), params.groupID, params.userID, params.mutedSeconds, resolve, reject) }) }
+export const transferGroupOwner = function (params : OpenIMTransferGroupOwnerParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.transferGroupOwner(normalizeOperationID(operationID), params.groupID, params.newOwnerUserID, resolve, reject) }) }
+export const getGroupApplicationListAsApplicant = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMGroupApplicationListResult | null> { return resolveGroupApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationListAsApplicant(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getGroupApplicationListAsRecipient = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMGroupApplicationListResult | null> { return resolveGroupApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationListAsRecipient(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const getGroupApplicationUnhandledCount = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<number | null> { return resolveNumberNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationUnhandledCount(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const acceptGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.acceptGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }
+export const refuseGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.refuseGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }
+export const getGroupMemberOwnerAndAdmin = function (groupID : string, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative((resolve, reject) => { NativeOpenIMSDK.getGroupMemberOwnerAndAdmin(normalizeOperationID(operationID), groupID, resolve, reject) }) }
+export const findMessageList = function (params : Array<OpenIMFindMessageParams>, operationID ?: string | null) : Promise<OpenIMFindMessageResult | null> { return resolveMessageListNative((resolve, reject) => { NativeOpenIMSDK.findMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
+export const updateFcmToken = function (params : OpenIMUpdateFcmTokenParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.updateFcmToken(normalizeOperationID(operationID), params.fcmToken, params.expireTime, resolve, reject) }) }
+export const subscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.subscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const unsubscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.unsubscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const getUserStatus = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getUserStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const getSubscribeUsersStatus = function (operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getSubscribeUsersStatus(normalizeOperationID(operationID), resolve, reject) }) }
+
+export const createTextMessage = function (text : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createTextMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createTextMessage(op, text))) }) }
+export const createImageMessageFromFullPath = function (imageFullPath : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createImageMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createImageMessageFromFullPath(op, imageFullPath))) }) }
+export const createImageMessageByURL = function (params : OpenIMPictureElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createImageMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createImageMessageByURL(op, optionalString(params.sourcePath), stringifyJSON(params.sourcePicture), stringifyJSON(params.bigPicture), stringifyJSON(params.snapshotPicture)))) }) }
+export const createCustomMessage = function (params : OpenIMCreateCustomMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCustomMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCustomMessage(op, params.data, params.extension, params.descriptionText))) }) }
+export const createQuoteMessage = function (params : OpenIMCreateQuoteMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createQuoteMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createQuoteMessage(op, params.text, params.message))) }) }
+export const createAdvancedQuoteMessage = function (params : OpenIMCreateAdvancedQuoteMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createAdvancedQuoteMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createAdvancedQuoteMessage(op, params.text, params.message, stringifyJSON(params.messageEntityList)))) }) }
+export const createAdvancedTextMessage = function (params : OpenIMCreateAdvancedTextMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createAdvancedTextMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createAdvancedTextMessage(op, params.text, stringifyJSON(params.messageEntityList)))) }) }
+export const createTextAtMessage = function (params : OpenIMCreateTextAtMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createTextAtMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createTextAtMessage(op, params.text, stringifyJSON(params.atUserIDList), stringifyJSON(params.atUsersInfo), params.quoteMessage != null ? stringifyOpenIMMessage(params.quoteMessage) : ''))) }) }
+export const createSoundMessageFromFullPath = function (params : OpenIMCreateSoundMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createSoundMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createSoundMessageFromFullPath(op, params.soundPath, params.duration))) }) }
+export const createSoundMessageByURL = function (params : OpenIMSoundElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createSoundMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createSoundMessageByURL(op, stringifyJSON(params)))) }) }
+export const createVideoMessageFromFullPath = function (params : OpenIMCreateVideoMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createVideoMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createVideoMessageFromFullPath(op, params.videoPath, params.videoType, params.duration, params.snapshotPath))) }) }
+export const createVideoMessageByURL = function (params : OpenIMVideoElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createVideoMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createVideoMessageByURL(op, stringifyJSON(params)))) }) }
+export const createFileMessageFromFullPath = function (params : OpenIMCreateFileMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFileMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFileMessageFromFullPath(op, params.filePath, params.fileName))) }) }
+export const createFileMessageByURL = function (params : OpenIMFileElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFileMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFileMessageByURL(op, stringifyJSON(params)))) }) }
+export const createMergerMessage = function (params : OpenIMCreateMergerMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createMergerMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createMergerMessage(op, stringifyOpenIMMessagePayload(params.messageList), params.title, stringifyJSON(params.abstractList)))) }) }
+export const createForwardMessage = function (message : OpenIMMessageItem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createForwardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createForwardMessage(op, stringifyOpenIMMessage(message)))) }) }
+export const createFaceMessage = function (params : OpenIMCreateFaceMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFaceMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFaceMessage(op, params.index, params.data))) }) }
+export const createLocationMessage = function (params : OpenIMCreateLocationMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createLocationMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createLocationMessage(op, params.descriptionText, params.longitude, params.latitude))) }) }
+export const createCardMessage = function (card : OpenIMCardElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCardMessage(op, stringifyJSON(card)))) }) }
+
+export const sendMessage = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessage(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { const message = parseNativeMessage(data); if (message != null) { resolve(message) } else { rejectNativeError(reject, -1, 'sendMessage returned invalid message data') } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const sendMessageNotOss = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessageNotOss(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { const message = parseNativeMessage(data); if (message != null) { resolve(message) } else { rejectNativeError(reject, -1, 'sendMessageNotOss returned invalid message data') } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+
+export const uploadFile = function (params : OpenIMUploadFileParams, operationID ?: string | null) : Promise<OpenIMUploadFileResult | null> {
+  return new Promise<OpenIMUploadFileResult | null>((resolve, reject) => {
+    NativeOpenIMSDK.uploadFile(normalizeOperationID(operationID), stringifyJSON(params), (data : string) => {
+      resolve(parseNativeUploadFileResult(data))
+    }, (errCode : number, errMsg : string) => {
+      rejectNativeError(reject, errCode, errMsg)
+    })
+  })
+}
+export const uploadLogs = function (params : OpenIMUploadLogsParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.uploadLogs(normalizeOperationID(operationID), params.line, params.ex, resolve, reject) }) }

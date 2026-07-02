@@ -1,0 +1,17 @@
+node_modules/
+unpackage/
+.hbuilderx/
+env.js
+.DS_Store
+*.zip
+*.apk
+*.ipa
+*.app/
+*.xcarchive/
+*.xcframework/
+*.aar
+*.log
+coverage/
+dist/
+
+AGENTS.md

@@ -1,0 +1,6 @@
+export const UnixOpenIMErrorCode : string = 'UNIX_OPENIM_SDK_ERROR'
+
+export type UnixOpenIMError = {
+  errCode : number
+  errMsg : string
+}

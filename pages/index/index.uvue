@@ -1,0 +1,1111 @@
+<template>
+	<!-- #ifdef APP -->
+	<scroll-view class="page-scroll">
+	<!-- #endif -->
+		<view class="page">
+			<text class="title">Unix OpenIM SDK</text>
+			<text class="status">{{statusText}}</text>
+			<text class="cache-text">{{cacheText}}</text>
+
+			<view class="section">
+				<text class="section-title">Setup</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleInitSDKOnly">01 Init SDK</button>
+					<button class="action-button" @click="handleLoginOnly">02 Login</button>
+					<button class="action-button" @click="handleLogout">03 Logout</button>
+					<button class="action-button" @click="handleGetLoginStatus">04 Login Status</button>
+					<button class="action-button" @click="handleGetLoginUserID">05 Login UserID</button>
+					<button class="action-button" @click="handleGetSdkVersion">06 SDK Version</button>
+					<button class="action-button" @click="handleUnInitSDK">07 UnInit SDK</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">Conversation</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleGetAllConversationList">08 All Conversations</button>
+					<button class="action-button" @click="handleGetConversationList">09 Conversation Page</button>
+					<button class="action-button" @click="handleGetOneConversation">10 One Conversation</button>
+					<button class="action-button" @click="handleGetMultipleConversation">11 Multiple Conversation</button>
+					<button class="action-button" @click="handleGetConversationIDBySessionType">12 Conversation ID</button>
+					<button class="action-button" @click="handleSearchConversation">13 Search Conversation</button>
+					<button class="action-button" @click="handleGetTotalUnreadMsgCount">14 Total Unread</button>
+					<button class="action-button" @click="handleMarkConversationMessageAsRead">15 Mark Conversation Read</button>
+					<button class="action-button" @click="handleMarkAllConversationMessageAsRead">16 Mark All Read</button>
+					<button class="action-button" @click="handleSetConversation">17 Set Conversation</button>
+					<button class="action-button" @click="handleSetConversationDraft">18 Set Draft</button>
+					<button class="action-button" @click="handleChangeInputStates">19 Change Input</button>
+					<button class="action-button" @click="handleGetInputstates">20 Get Input</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">Message Read / Storage</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleGetHistoryByConversationID">21 History</button>
+					<button class="action-button" @click="handleGetAdvancedHistoryReverse">22 History Reverse</button>
+					<button class="action-button" @click="handleSearchLocalMessages">23 Search Messages</button>
+					<button class="action-button" @click="handleFindMessageList">24 Find Cached Msg</button>
+					<button class="action-button" @click="handleSetMessageLocalEx">25 Set LocalEx</button>
+					<button class="action-button" @click="handleMarkMessagesAsReadByMsgID">26 Mark Msg Read</button>
+					<button class="action-button" @click="handleInsertSingleMessage">27 Insert Single</button>
+					<button class="action-button" @click="handleInsertGroupMessage">28 Insert Group</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">Create Message</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleCreateTextMessage">29 Text</button>
+					<button class="action-button" @click="handleCreateAdvancedTextMessage">30 Advanced Text</button>
+					<button class="action-button" @click="handleCreateQuoteMessageOnly">31 Quote</button>
+					<button class="action-button" @click="handleCreateAdvancedQuoteMessage">32 Advanced Quote</button>
+					<button class="action-button" @click="handleCreateForwardMessage">33 Forward</button>
+					<button class="action-button" @click="handleCreateTextAtMessage">34 Text At</button>
+					<button class="action-button" @click="handleCreateMergerMessage">35 Merger</button>
+					<button class="action-button" @click="handleCreateCustomMessage">36 Custom</button>
+					<button class="action-button" @click="handleCreateFaceMessage">37 Face</button>
+					<button class="action-button" @click="handleCreateLocationMessage">38 Location</button>
+					<button class="action-button" @click="handleCreateCardMessage">39 Card</button>
+					<button class="action-button" @click="handleCreateImageMessage">Image Local</button>
+					<button class="action-button" @click="handleCreateSoundMessage">Sound Local</button>
+					<button class="action-button" @click="handleCreateVideoMessage">Video Local</button>
+					<button class="action-button" @click="handleCreateFileMessage">File Local</button>
+					<button class="action-button" @click="handleCreateImageMessageByURL">40 Image URL</button>
+					<button class="action-button" @click="handleCreateSoundMessageByURL">41 Sound URL</button>
+					<button class="action-button" @click="handleCreateVideoMessageByURL">42 Video URL</button>
+					<button class="action-button" @click="handleCreateFileMessageByURL">43 File URL</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">Send Cached Message</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleSendCachedMessage">44 Send Cached</button>
+					<button class="action-button" @click="handleSendCachedMessageNotOss">45 Send Cached Not OSS</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">User / Friend</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleGetSelfUserInfo">46 Self Info</button>
+					<button class="action-button" @click="handleGetUsersInfo">47 Users Info</button>
+					<button class="action-button" @click="handleSetSelfInfo">48 Set Self Ex</button>
+					<button class="action-button" @click="handleGetFriendList">49 Friend List</button>
+					<button class="action-button" @click="handleGetFriendListPage">50 Friend Page</button>
+					<button class="action-button" @click="handleSearchFriends">51 Search Friends</button>
+					<button class="action-button" @click="handleGetSpecifiedFriendsInfo">52 Specified Friends</button>
+					<button class="action-button" @click="handleCheckFriend">53 Check Friend</button>
+					<button class="action-button" @click="handleGetFriendApplicationListAsRecipient">54 Friend Apps Recipient</button>
+					<button class="action-button" @click="handleGetFriendApplicationListAsApplicant">55 Friend Apps Applicant</button>
+					<button class="action-button" @click="handleGetFriendApplicationUnhandledCount">56 Friend Apps Count</button>
+					<button class="action-button" @click="handleGetBlackList">57 Black List</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">Group</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleGetJoinedGroupList">58 Joined Groups</button>
+					<button class="action-button" @click="handleGetJoinedGroupListPage">59 Joined Groups Page</button>
+					<button class="action-button" @click="handleGetSpecifiedGroupsInfo">60 Specified Groups</button>
+					<button class="action-button" @click="handleSearchGroups">61 Search Groups</button>
+					<button class="action-button" @click="handleIsJoinGroup">62 Is Join Group</button>
+					<button class="action-button" @click="handleGetGroupMemberList">63 Group Members</button>
+					<button class="action-button" @click="handleGetSpecifiedGroupMembersInfo">64 Specified Members</button>
+					<button class="action-button" @click="handleGetUsersInGroup">65 Users In Group</button>
+					<button class="action-button" @click="handleGetGroupMemberListByJoinTimeFilter">66 Members By Join Time</button>
+					<button class="action-button" @click="handleSearchGroupMembers">67 Search Members</button>
+					<button class="action-button" @click="handleGetGroupMemberOwnerAndAdmin">68 Owner Admin</button>
+					<button class="action-button" @click="handleGetGroupApplicationListAsApplicant">69 Group Apps Applicant</button>
+					<button class="action-button" @click="handleGetGroupApplicationListAsRecipient">70 Group Apps Recipient</button>
+					<button class="action-button" @click="handleGetGroupApplicationUnhandledCount">71 Group Apps Count</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">Status / Push / Upload</text>
+				<view class="button-grid">
+					<button class="action-button" @click="handleSubscribeUsersStatus">72 Subscribe Status</button>
+					<button class="action-button" @click="handleGetUserStatus">73 User Status</button>
+					<button class="action-button" @click="handleGetSubscribeUsersStatus">74 Subscribed Status</button>
+					<button class="action-button" @click="handleUnsubscribeUsersStatus">75 Unsubscribe Status</button>
+					<button class="action-button" @click="handleUpdateFcmToken">76 Update FCM</button>
+					<button class="action-button" @click="handleSetAppBackgroundStatus">77 App Background</button>
+					<button class="action-button" @click="handleSetAppBadge">78 App Badge</button>
+					<button class="action-button" @click="handleNetworkStatusChanged">79 Network Changed</button>
+					<button class="action-button" @click="handleUploadLogs">80 Upload Logs</button>
+					<button class="action-button" @click="handleUploadFile">81 Upload File</button>
+				</view>
+			</view>
+
+			<view class="section">
+				<text class="section-title">Optional Destructive / State Changing</text>
+				<view class="button-grid">
+					<button class="action-button danger-button" @click="handleAddFriend">82 Add Friend</button>
+					<button class="action-button danger-button" @click="handleUpdateFriends">83 Update Friends</button>
+					<button class="action-button danger-button" @click="handleAcceptFriendApplication">84 Accept Friend App</button>
+					<button class="action-button danger-button" @click="handleRefuseFriendApplication">85 Refuse Friend App</button>
+					<button class="action-button danger-button" @click="handleDeleteFriend">86 Delete Friend</button>
+					<button class="action-button danger-button" @click="handleAddBlack">87 Add Black</button>
+					<button class="action-button danger-button" @click="handleRemoveBlack">88 Remove Black</button>
+					<button class="action-button danger-button" @click="handleCreateGroup">89 Create Group</button>
+					<button class="action-button danger-button" @click="handleSetGroupInfo">90 Set Group Info</button>
+					<button class="action-button danger-button" @click="handleSetGroupMemberInfo">91 Set Member Info</button>
+					<button class="action-button danger-button" @click="handleInviteUserToGroup">92 Invite User</button>
+					<button class="action-button danger-button" @click="handleKickGroupMember">93 Kick Member</button>
+					<button class="action-button danger-button" @click="handleJoinGroup">94 Join Group</button>
+					<button class="action-button danger-button" @click="handleQuitGroup">95 Quit Group</button>
+					<button class="action-button danger-button" @click="handleDismissGroup">96 Dismiss Group</button>
+					<button class="action-button danger-button" @click="handleChangeGroupMute">97 Group Mute</button>
+					<button class="action-button danger-button" @click="handleChangeGroupMemberMute">98 Member Mute</button>
+					<button class="action-button danger-button" @click="handleTransferGroupOwner">99 Transfer Owner</button>
+					<button class="action-button danger-button" @click="handleAcceptGroupApplication">100 Accept Group App</button>
+					<button class="action-button danger-button" @click="handleRefuseGroupApplication">101 Refuse Group App</button>
+					<button class="action-button danger-button" @click="handleRevokeMessage">102 Revoke Cached</button>
+					<button class="action-button danger-button" @click="handleDeleteMessageFromLocalStorage">103 Delete Local Msg</button>
+					<button class="action-button danger-button" @click="handleDeleteMessage">104 Delete Msg</button>
+					<button class="action-button danger-button" @click="handleDeleteAllMsgFromLocal">105 Delete All Local</button>
+					<button class="action-button danger-button" @click="handleDeleteAllMsgFromLocalAndSvr">106 Delete All Server</button>
+					<button class="action-button danger-button" @click="handleClearConversationAndDeleteAllMsg">107 Clear Conversation</button>
+					<button class="action-button danger-button" @click="handleHideConversation">108 Hide Conversation</button>
+					<button class="action-button danger-button" @click="handleHideAllConversations">109 Hide All</button>
+					<button class="action-button danger-button" @click="handleDeleteConversationAndDeleteAllMsg">110 Delete Conv+Msg</button>
+					<button class="action-button danger-button" @click="handleDeleteConversation">111 Delete Conversation</button>
+				</view>
+			</view>
+
+			<text class="result-label">Result</text>
+			<text class="result-text">{{resultText}}</text>
+		</view>
+	<!-- #ifdef APP -->
+	</scroll-view>
+	<!-- #endif -->
+</template>
+
+<script setup lang="uts">
+	import {
+		OpenIMInitConfig,
+		OpenIMAdvancedHistoryMessageListResult,
+		OpenIMConversationItem,
+		OpenIMConversationListResult,
+		OpenIMCreateAdvancedQuoteMessageParams,
+		OpenIMCreateAdvancedTextMessageParams,
+		OpenIMAtUsersInfoItem,
+		OpenIMCreateCustomMessageParams,
+		OpenIMCreateSoundMessageParams,
+		OpenIMCreateVideoMessageParams,
+		OpenIMCreateFileMessageParams,
+		OpenIMCreateFaceMessageParams,
+		OpenIMCreateGroupInfo,
+		OpenIMCreateGroupParams,
+		OpenIMCreateLocationMessageParams,
+		OpenIMCreateMergerMessageParams,
+		OpenIMCreateQuoteMessageParams,
+		OpenIMCreateTextAtMessageParams,
+		OpenIMGetAdvancedHistoryMessageListParams,
+		OpenIMGetGroupMemberListParams,
+		OpenIMGetOneConversationParams,
+		OpenIMGroupApplicationHandleParams,
+		OpenIMGroupApplicationItem,
+		OpenIMGroupApplicationListResult,
+		OpenIMGroupInviteParams,
+		OpenIMGroupItem,
+		OpenIMGroupListResult,
+		OpenIMGroupMemberItem,
+		OpenIMGroupMemberListByJoinTimeFilterParams,
+		OpenIMGroupMemberListResult,
+		OpenIMGroupUserListParams,
+		OpenIMApplicationListParams,
+		OpenIMBlackListResult,
+		OpenIMBlackUserItem,
+		OpenIMFindMessageResult,
+		OpenIMFindMessageParams,
+		OpenIMInsertGroupMessageParams,
+		OpenIMInsertSingleMessageParams,
+		OpenIMLogLevel,
+		OpenIMMessageItem,
+		OpenIMMessageKeyParams,
+		OpenIMMessageListResult,
+		OpenIMMessageTypeText,
+		OpenIMPageParams,
+		OpenIMPicture,
+		OpenIMPictureElem,
+		OpenIMPlatform,
+		OpenIMSearchFriendsParams,
+		OpenIMSearchGroupMembersParams,
+		OpenIMSearchGroupsParams,
+		OpenIMSearchLocalMessagesParams,
+		OpenIMSearchMessageResult,
+		OpenIMSendMessageOptions,
+		OpenIMSessionTypeGroup,
+		OpenIMSessionTypeSingle,
+		OpenIMSetConversationDraftParams,
+		OpenIMSetConversationParams,
+		OpenIMSetGroupInfoParams,
+		OpenIMSetGroupMemberInfoParams,
+		OpenIMSetMessageLocalExParams,
+		OpenIMSetSelfInfoParams,
+		OpenIMSendMessageProgressEvent,
+		OpenIMFriendApplicationHandleParams,
+		OpenIMFriendApplicationItem,
+		OpenIMFriendApplicationListResult,
+		OpenIMFriendListResult,
+		OpenIMFriendUserItem,
+		OpenIMAddBlackParams,
+		OpenIMAddFriendParams,
+		OpenIMGetSpecifiedFriendsInfoParams,
+		OpenIMInputStateParams,
+		OpenIMMarkMessagesAsReadByMsgIDParams,
+		OpenIMSoundElem,
+		OpenIMUpdateFriendsParams,
+		OpenIMUpdateFcmTokenParams,
+		OpenIMUploadFileParams,
+		OpenIMUploadFileProgressEvent,
+		OpenIMUploadFileResult,
+		OpenIMUploadLogsParams,
+		OpenIMUploadLogsProgressEvent,
+		OpenIMUserInfo,
+		OpenIMUserListResult,
+		OpenIMSDKEventSubscription,
+		OpenIMMessageRevokedItem,
+		OpenIMMessageReceiptListResult,
+		OpenIMConversationInputStatusItem,
+		OpenIMUserCommandItem,
+		OpenIMUserStatusListResult,
+		OpenIMVideoElem,
+		OpenIMFileElem,
+		OpenIMCardElem,
+		off,
+		onConnecting,
+		onConnectSuccess,
+		onConnectFailed,
+		onKickedOffline,
+		onUserTokenExpired,
+		onUserTokenInvalid,
+		onRecvNewMessage,
+		onRecvOfflineNewMessage,
+		onRecvOnlineOnlyMessage,
+		onMsgDeleted,
+		onNewRecvMessageRevoked,
+		onRecvC2CReadReceipt,
+		onRecvNewMessages,
+		onRecvOfflineNewMessages,
+		onConversationChanged,
+		onConversationUserInputStatusChanged,
+		onNewConversation,
+		onSyncServerFailed,
+		onSyncServerFinish,
+		onSyncServerProgress,
+		onSyncServerStart,
+		onSendMessageProgress,
+		onUploadFileProgress,
+		onUploadLogsProgress,
+		onTotalUnreadMessageCountChanged,
+		onRecvCustomBusinessMessage,
+		onBlackAdded,
+		onBlackDeleted,
+		onFriendAdded,
+		onFriendApplicationAccepted,
+		onFriendApplicationAdded,
+		onFriendApplicationDeleted,
+		onFriendApplicationRejected,
+		onFriendDeleted,
+		onFriendInfoChanged,
+		onGroupApplicationAccepted,
+		onGroupApplicationAdded,
+		onGroupApplicationDeleted,
+		onGroupApplicationRejected,
+		onGroupDismissed,
+		onGroupInfoChanged,
+		onGroupMemberAdded,
+		onGroupMemberDeleted,
+		onGroupMemberInfoChanged,
+		onJoinedGroupAdded,
+		onJoinedGroupDeleted,
+		onSelfInfoUpdated,
+		onUserCommandAdd,
+		onUserCommandDelete,
+		onUserCommandUpdate,
+		onUserStatusChanged,
+		initSDK,
+		login,
+		logout,
+		getLoginStatus,
+		getLoginUserID,
+		getSdkVersion,
+		unInitSDK,
+		getAllConversationList,
+		getOneConversation,
+		getAdvancedHistoryMessageList,
+		getAdvancedHistoryMessageListReverse,
+		getSpecifiedGroupsInfo,
+		deleteConversationAndDeleteAllMsg,
+		markConversationMessageAsRead,
+		getGroupMemberList,
+		setMessageLocalEx,
+		revokeMessage,
+		setConversation,
+		setAppBackgroundStatus,
+		setAppBadge,
+		networkStatusChanged,
+		getSelfUserInfo,
+		getUsersInfo,
+		setSelfInfo,
+		deleteMessageFromLocalStorage,
+		deleteMessage,
+		deleteAllMsgFromLocal,
+		deleteAllMsgFromLocalAndSvr,
+		insertGroupMessageToLocalStorage,
+		insertSingleMessageToLocalStorage,
+		changeInputStates,
+		getInputstates,
+		clearConversationAndDeleteAllMsg,
+		hideConversation,
+		hideAllConversations,
+		markAllConversationMessageAsRead,
+		markMessagesAsReadByMsgID,
+		searchConversation,
+		getConversationListSplit,
+		getConversationIDBySessionType,
+		getMultipleConversation,
+		deleteConversation,
+		setConversationDraft,
+		getTotalUnreadMsgCount,
+		searchLocalMessages,
+		addFriend,
+		searchFriends,
+		getSpecifiedFriendsInfo,
+		getFriendApplicationListAsRecipient,
+		getFriendApplicationListAsApplicant,
+		getFriendApplicationUnhandledCount,
+		getFriendList,
+		getFriendListPage,
+		updateFriends,
+		checkFriend,
+		acceptFriendApplication,
+		refuseFriendApplication,
+		deleteFriend,
+		addBlack,
+		removeBlack,
+		getBlackList,
+		inviteUserToGroup,
+		kickGroupMember,
+		isJoinGroup,
+		getSpecifiedGroupMembersInfo,
+		getUsersInGroup,
+		getGroupMemberListByJoinTimeFilter,
+		searchGroupMembers,
+		getJoinedGroupList,
+		getJoinedGroupListPage,
+		createGroup,
+		setGroupInfo,
+		setGroupMemberInfo,
+		joinGroup,
+		searchGroups,
+		quitGroup,
+		dismissGroup,
+		changeGroupMute,
+		changeGroupMemberMute,
+		transferGroupOwner,
+		getGroupApplicationListAsApplicant,
+		getGroupApplicationListAsRecipient,
+		getGroupApplicationUnhandledCount,
+		acceptGroupApplication,
+		refuseGroupApplication,
+		getGroupMemberOwnerAndAdmin,
+		findMessageList,
+		updateFcmToken,
+		subscribeUsersStatus,
+		unsubscribeUsersStatus,
+		getUserStatus,
+		getSubscribeUsersStatus,
+		createTextMessage,
+		createImageMessageFromFullPath,
+		createImageMessageByURL,
+		createCustomMessage,
+		createQuoteMessage,
+		createAdvancedQuoteMessage,
+		createAdvancedTextMessage,
+		createTextAtMessage,
+		createSoundMessageFromFullPath,
+		createSoundMessageByURL,
+		createVideoMessageFromFullPath,
+		createVideoMessageByURL,
+		createFileMessageFromFullPath,
+		createFileMessageByURL,
+		createMergerMessage,
+		createForwardMessage,
+		createFaceMessage,
+		createLocationMessage,
+		createCardMessage,
+		sendMessage,
+		sendMessageNotOss,
+		uploadFile,
+		uploadLogs,
+		OpenIMPlatformIOS,
+		OpenIMPlatformAndroid,
+		OpenIMLogLevelVerbose
+	} from '@/uni_modules/unix-openim-sdk'
+
+	// Page state
+	const statusText = ref('Ready')
+	const resultText = ref('Tap a button to call the native SDK wrapper.')
+	const cacheText = ref('Cache: empty')
+
+	// Demo account and conversation fixtures
+	const demoApiAddr = 'https://your-api.example.com'
+	const demoWsAddr = 'wss://your-ws.example.com'
+	const demoUserID = 'your-user-id'
+	const demoToken = 'replace-with-user-token'
+	const demoPeerUserID = 'peer-user-id'
+	const demoConversationID = 'si_peer-user-id_your-user-id'
+
+	// Local file demo paths must be readable POSIX absolute paths in the App sandbox.
+	const demoFixedImageFullPath = ''
+	const demoFixedSoundFullPath = ''
+	const demoFixedVideoFullPath = ''
+	const demoFixedVideoSnapshotFullPath = ''
+	const demoFixedFileFullPath = ''
+	const demoFixedFileName = 'file.pdf'
+
+	// Cached data shared by the demo buttons
+	type DemoSendTarget = {
+		recvID : string
+		groupID : string
+	}
+
+	let cachedConversation : OpenIMConversationItem | null = null
+	let cachedGroupID = ''
+	let cachedGroup : OpenIMGroupItem | null = null
+	let cachedGroupMember : OpenIMGroupMemberItem | null = null
+	let cachedFriend : OpenIMFriendUserItem | null = null
+	let cachedFriendApplication : OpenIMFriendApplicationHandleParams | null = null
+	let cachedGroupApplication : OpenIMGroupApplicationHandleParams | null = null
+	let cachedQuoteSourceMessage : OpenIMMessageItem | null = null
+	let cachedCreatedMessage : OpenIMMessageItem | null = null
+	let cachedSentMessage : OpenIMMessageItem | null = null
+	let cachedClientMsgID = ''
+
+	// Result rendering helpers
+	function setResult(value : string) {
+		console.log(value)
+		resultText.value = value
+	}
+
+	function stringifyAPIValue(value : any | null) : string {
+		if (value == null) {
+			return 'null'
+		}
+		const text = JSON.stringify(value)
+		if (text != null) {
+			return text as string
+		}
+		return value.toString()
+	}
+
+	function setAPIResult(value : any | null) {
+		const jsonText = stringifyAPIValue(value)
+		console.log('api result typed object', value)
+		console.log('api result json string', jsonText)
+		setResult('typed object:\n' + jsonText + '\n\njson string:\n' + jsonText)
+	}
+
+	function setFailure(error : any | null) {
+		console.log('native sdk error', error)
+		if (error instanceof Error) {
+			setResult(error.message)
+		} else if (error instanceof UTSJSONObject) {
+			setResult(JSON.stringify(error) as string)
+		} else if (error != null) {
+			setResult(error.toString())
+		} else {
+			setResult('Unknown error')
+		}
+	}
+
+	// Cache helpers
+	function findGroupConversation(conversations : Array<OpenIMConversationItem>) : OpenIMConversationItem | null {
+		let index = 0
+		while (index < conversations.length) {
+			const groupID = conversations[index].groupID != null ? conversations[index].groupID as string : ''
+			if (groupID.length > 0) {
+				return conversations[index]
+			}
+			index = index + 1
+		}
+		return null
+	}
+
+	function findQuoteableTextMessage(messages : Array<OpenIMMessageItem>) : OpenIMMessageItem | null {
+		let index = messages.length - 1
+		while (index >= 0) {
+			const message = messages[index]
+			if (message.contentType == OpenIMMessageTypeText) {
+				return message
+			}
+			index = index - 1
+		}
+		return null
+	}
+
+	function updateCacheText() {
+		let conversationID = '-'
+		if (cachedConversation != null) {
+			conversationID = (cachedConversation as OpenIMConversationItem).conversationID
+		}
+		let messageID = cachedClientMsgID.length > 0 ? cachedClientMsgID : '-'
+		let groupID = cachedGroupID.length > 0 ? cachedGroupID : '-'
+		cacheText.value = 'Cache: conversation=' + conversationID + ' group=' + groupID + ' message=' + messageID
+	}
+
+	function cacheMessage(message : OpenIMMessageItem | null) {
+		if (message != null) {
+			cachedCreatedMessage = message
+			const id = message.clientMsgID != null ? message.clientMsgID as string : ''
+			if (id.length > 0) {
+				cachedClientMsgID = id
+			}
+			updateCacheText()
+		}
+	}
+
+	function cacheConversationList(result : OpenIMConversationListResult | null) {
+		if (result != null && result.conversations.length > 0) {
+			cachedConversation = result.conversations[0]
+			const groupConversation = findGroupConversation(result.conversations)
+			if (groupConversation != null) {
+				cachedGroupID = (groupConversation as OpenIMConversationItem).groupID != null ? (groupConversation as OpenIMConversationItem).groupID as string : ''
+			}
+			updateCacheText()
+		}
+	}
+
+	function cacheHistory(history : OpenIMAdvancedHistoryMessageListResult | null) {
+		if (history != null && history.messageList.length > 0) {
+			const quoteSource = findQuoteableTextMessage(history.messageList)
+			if (quoteSource != null) {
+				cachedQuoteSourceMessage = quoteSource
+				cachedClientMsgID = (quoteSource as OpenIMMessageItem).clientMsgID != null ? (quoteSource as OpenIMMessageItem).clientMsgID as string : cachedClientMsgID
+				updateCacheText()
+			}
+		}
+	}
+
+	function cacheGroups(result : OpenIMGroupListResult | null) {
+		if (result != null && result.groups.length > 0) {
+			cachedGroup = result.groups[0]
+			cachedGroupID = result.groups[0].groupID
+			updateCacheText()
+		}
+	}
+
+	function cacheGroupMembers(result : OpenIMGroupMemberListResult | null) {
+		if (result != null && result.members.length > 0) {
+			cachedGroupMember = result.members[0]
+			updateCacheText()
+		}
+	}
+
+	function cacheFriends(result : OpenIMFriendListResult | null) {
+		if (result != null && result.friends.length > 0) {
+			cachedFriend = result.friends[0]
+			updateCacheText()
+		}
+	}
+
+	function cacheFriendApplications(result : OpenIMFriendApplicationListResult | null) {
+		if (result != null && result.applications.length > 0) {
+			const app = result.applications[0]
+			const handleParams : OpenIMFriendApplicationHandleParams = { toUserID: app.fromUserID, handleMsg: 'handled by uni-app x test console' }
+			cachedFriendApplication = handleParams
+			updateCacheText()
+		}
+	}
+
+	function cacheGroupApplications(result : OpenIMGroupApplicationListResult | null) {
+		if (result != null && result.applications.length > 0) {
+			const app = result.applications[0]
+			const handleParams : OpenIMGroupApplicationHandleParams = { groupID: app.groupID, fromUserID: app.userID, handleMsg: 'handled by uni-app x test console' }
+			cachedGroupApplication = handleParams
+			updateCacheText()
+		}
+	}
+
+	// API runner and required-data helpers
+	function runAPI<T>(loading : string, success : string, promise : Promise<T>, onSuccess : (value : T) => void) {
+		statusText.value = loading
+		promise.then((value : T) => {
+			statusText.value = success
+			onSuccess(value)
+			setAPIResult(value)
+		}).catch((error : any | null) : void => {
+			statusText.value = loading + ' failed'
+			setFailure(error)
+		})
+	}
+
+	function noCache(value : any | null) {}
+
+	function requireConversationID() : string {
+		if (cachedConversation != null) {
+			return (cachedConversation as OpenIMConversationItem).conversationID
+		}
+		return demoConversationID
+	}
+
+	function requireGroupID() : string {
+		if (cachedGroupID.length > 0) {
+			return cachedGroupID
+		}
+		return ''
+	}
+
+	function requireCachedMessage() : OpenIMMessageItem | null {
+		if (cachedCreatedMessage != null) {
+			return cachedCreatedMessage
+		}
+		if (cachedSentMessage != null) {
+			return cachedSentMessage
+		}
+		if (cachedQuoteSourceMessage != null) {
+			return cachedQuoteSourceMessage
+		}
+		return null
+	}
+
+	function requireClientMsgID() : string {
+		if (cachedClientMsgID.length > 0) {
+			return cachedClientMsgID
+		}
+		const message = requireCachedMessage()
+		if (message != null && (message as OpenIMMessageItem).clientMsgID != null) {
+			return (message as OpenIMMessageItem).clientMsgID as string
+		}
+		return ''
+	}
+
+	function failMissing(message : string) {
+		statusText.value = 'Missing test data'
+		setResult(message)
+	}
+
+	function requireLocalFilePath(value : string, fieldName : string) : boolean {
+		if (value.length > 0) {
+			return true
+		}
+		failMissing('Set ' + fieldName + ' to a readable POSIX absolute file path in the App sandbox before running this button.')
+		return false
+	}
+
+	// SDK event subscriptions
+	let sdkEventSubscriptions : Array<OpenIMSDKEventSubscription> = []
+
+	function updateStatusForSDKEventName(eventName : string) {
+		if (eventName == 'onConnecting') {
+			statusText.value = 'Connecting'
+		} else if (eventName == 'onConnectSuccess') {
+			statusText.value = 'Connected'
+		} else if (eventName == 'onConnectFailed') {
+			statusText.value = 'Connect failed'
+		} else if (eventName == 'onKickedOffline') {
+			statusText.value = 'Kicked offline'
+		} else if (eventName == 'onUserTokenExpired') {
+			statusText.value = 'Token expired'
+		} else if (eventName == 'onUserTokenInvalid') {
+			statusText.value = 'Token invalid'
+		} else if (eventName == 'onSyncServerStart') {
+			statusText.value = 'Syncing conversations'
+		} else if (eventName == 'onSyncServerFinish') {
+			statusText.value = 'Sync finished'
+		} else if (eventName == 'onSyncServerFailed') {
+			statusText.value = 'Sync failed'
+		}
+	}
+
+	function showSDKEvent(eventName : string, value : any | null) {
+		updateStatusForSDKEventName(eventName)
+		const jsonText = stringifyAPIValue(value)
+		console.log('sdk event name', eventName)
+		console.log('sdk event typed payload', value)
+		console.log('sdk event json payload', jsonText)
+		setResult('event: ' + eventName + '\n\ntyped payload:\n' + jsonText + '\n\njson string:\n' + jsonText)
+	}
+
+	function showSDKErrorEvent(eventName : string, errCode : number, errMsg : string) {
+		updateStatusForSDKEventName(eventName)
+		console.log('sdk event error', eventName, errCode, errMsg)
+		setResult('event: ' + eventName + '\nerrCode: ' + errCode.toString() + '\nerrMsg: ' + errMsg)
+	}
+
+	function addSDKEventSubscription(subscription : OpenIMSDKEventSubscription) {
+		sdkEventSubscriptions.push(subscription)
+	}
+
+	function unregisterSDKEvents() {
+		sdkEventSubscriptions.forEach((subscription : OpenIMSDKEventSubscription) => { off(subscription) })
+		sdkEventSubscriptions = []
+	}
+
+	function registerSDKEvents() {
+		unregisterSDKEvents()
+		addSDKEventSubscription(onConnecting(() => { showSDKEvent('onConnecting', null) }))
+		addSDKEventSubscription(onConnectSuccess(() => { showSDKEvent('onConnectSuccess', null) }))
+		addSDKEventSubscription(onConnectFailed((errCode : number, errMsg : string) => { showSDKErrorEvent('onConnectFailed', errCode, errMsg) }))
+		addSDKEventSubscription(onKickedOffline(() => { showSDKEvent('onKickedOffline', null) }))
+		addSDKEventSubscription(onUserTokenExpired(() => { showSDKEvent('onUserTokenExpired', null) }))
+		addSDKEventSubscription(onUserTokenInvalid((errCode : number, errMsg : string) => { showSDKErrorEvent('onUserTokenInvalid', errCode, errMsg) }))
+		addSDKEventSubscription(onRecvNewMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvNewMessage', message) }))
+		addSDKEventSubscription(onRecvOfflineNewMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvOfflineNewMessage', message) }))
+		addSDKEventSubscription(onRecvOnlineOnlyMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvOnlineOnlyMessage', message) }))
+		addSDKEventSubscription(onMsgDeleted((message : OpenIMMessageItem | null) => { showSDKEvent('onMsgDeleted', message) }))
+		addSDKEventSubscription(onNewRecvMessageRevoked((revoked : OpenIMMessageRevokedItem | null) => { showSDKEvent('onNewRecvMessageRevoked', revoked) }))
+		addSDKEventSubscription(onRecvC2CReadReceipt((result : OpenIMMessageReceiptListResult | null) => { showSDKEvent('onRecvC2CReadReceipt', result) }))
+		addSDKEventSubscription(onRecvNewMessages((result : OpenIMMessageListResult | null) => { showSDKEvent('onRecvNewMessages', result) }))
+		addSDKEventSubscription(onRecvOfflineNewMessages((result : OpenIMMessageListResult | null) => { showSDKEvent('onRecvOfflineNewMessages', result) }))
+		addSDKEventSubscription(onConversationChanged((result : OpenIMConversationListResult | null) => { showSDKEvent('onConversationChanged', result) }))
+		addSDKEventSubscription(onConversationUserInputStatusChanged((status : OpenIMConversationInputStatusItem | null) => { showSDKEvent('onConversationUserInputStatusChanged', status) }))
+		addSDKEventSubscription(onNewConversation((result : OpenIMConversationListResult | null) => { showSDKEvent('onNewConversation', result) }))
+		addSDKEventSubscription(onSyncServerFailed((reinstalled : boolean) => { showSDKEvent('onSyncServerFailed', reinstalled) }))
+		addSDKEventSubscription(onSyncServerFinish((reinstalled : boolean) => { showSDKEvent('onSyncServerFinish', reinstalled) }))
+		addSDKEventSubscription(onSyncServerProgress((progress : number) => { showSDKEvent('onSyncServerProgress', progress) }))
+		addSDKEventSubscription(onSyncServerStart((reinstalled : boolean) => { showSDKEvent('onSyncServerStart', reinstalled) }))
+		addSDKEventSubscription(onSendMessageProgress((progress : OpenIMSendMessageProgressEvent | null) => { showSDKEvent('onSendMessageProgress', progress) }))
+		addSDKEventSubscription(onUploadFileProgress((progress : OpenIMUploadFileProgressEvent | null) => { showSDKEvent('onUploadFileProgress', progress) }))
+		addSDKEventSubscription(onUploadLogsProgress((progress : OpenIMUploadLogsProgressEvent | null) => { showSDKEvent('onUploadLogsProgress', progress) }))
+		addSDKEventSubscription(onTotalUnreadMessageCountChanged((count : number) => { showSDKEvent('onTotalUnreadMessageCountChanged', count) }))
+		addSDKEventSubscription(onRecvCustomBusinessMessage((payload : string) => { showSDKEvent('onRecvCustomBusinessMessage', payload) }))
+		addSDKEventSubscription(onBlackAdded((blackUser : OpenIMBlackUserItem | null) => { showSDKEvent('onBlackAdded', blackUser) }))
+		addSDKEventSubscription(onBlackDeleted((blackUser : OpenIMBlackUserItem | null) => { showSDKEvent('onBlackDeleted', blackUser) }))
+		addSDKEventSubscription(onFriendAdded((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendAdded', friend) }))
+		addSDKEventSubscription(onFriendApplicationAccepted((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationAccepted', application) }))
+		addSDKEventSubscription(onFriendApplicationAdded((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationAdded', application) }))
+		addSDKEventSubscription(onFriendApplicationDeleted((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationDeleted', application) }))
+		addSDKEventSubscription(onFriendApplicationRejected((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationRejected', application) }))
+		addSDKEventSubscription(onFriendDeleted((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendDeleted', friend) }))
+		addSDKEventSubscription(onFriendInfoChanged((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendInfoChanged', friend) }))
+		addSDKEventSubscription(onGroupApplicationAccepted((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationAccepted', application) }))
+		addSDKEventSubscription(onGroupApplicationAdded((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationAdded', application) }))
+		addSDKEventSubscription(onGroupApplicationDeleted((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationDeleted', application) }))
+		addSDKEventSubscription(onGroupApplicationRejected((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationRejected', application) }))
+		addSDKEventSubscription(onGroupDismissed((group : OpenIMGroupItem | null) => { showSDKEvent('onGroupDismissed', group) }))
+		addSDKEventSubscription(onGroupInfoChanged((group : OpenIMGroupItem | null) => { showSDKEvent('onGroupInfoChanged', group) }))
+		addSDKEventSubscription(onGroupMemberAdded((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberAdded', member) }))
+		addSDKEventSubscription(onGroupMemberDeleted((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberDeleted', member) }))
+		addSDKEventSubscription(onGroupMemberInfoChanged((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberInfoChanged', member) }))
+		addSDKEventSubscription(onJoinedGroupAdded((group : OpenIMGroupItem | null) => { showSDKEvent('onJoinedGroupAdded', group) }))
+		addSDKEventSubscription(onJoinedGroupDeleted((group : OpenIMGroupItem | null) => { showSDKEvent('onJoinedGroupDeleted', group) }))
+		addSDKEventSubscription(onSelfInfoUpdated((user : OpenIMUserInfo | null) => { showSDKEvent('onSelfInfoUpdated', user) }))
+		addSDKEventSubscription(onUserCommandAdd((command : OpenIMUserCommandItem | null) => { showSDKEvent('onUserCommandAdd', command) }))
+		addSDKEventSubscription(onUserCommandDelete((command : OpenIMUserCommandItem | null) => { showSDKEvent('onUserCommandDelete', command) }))
+		addSDKEventSubscription(onUserCommandUpdate((command : OpenIMUserCommandItem | null) => { showSDKEvent('onUserCommandUpdate', command) }))
+		addSDKEventSubscription(onUserStatusChanged((result : OpenIMUserStatusListResult | null) => { showSDKEvent('onUserStatusChanged', result) }))
+	}
+
+	registerSDKEvents()
+
+	// SDK setup and request builders
+	function buildInitConfig() : OpenIMInitConfig {
+		let platformID = OpenIMPlatformIOS
+		let systemType = 'unix-ios'
+		// #ifdef APP-ANDROID
+		platformID = OpenIMPlatformAndroid
+		systemType = 'unix-android'
+		// #endif
+		const config : OpenIMInitConfig = {
+			platformID: platformID,
+			apiAddr: demoApiAddr,
+			wsAddr: demoWsAddr,
+			logLevel: OpenIMLogLevelVerbose,
+			isLogStandardOutput: true,
+			systemType: systemType
+		}
+		return config
+	}
+
+	function readSendTarget(conversation : OpenIMConversationItem | null) : DemoSendTarget {
+		let recvID = demoPeerUserID
+		let groupID = ''
+		if (conversation != null) {
+			const conversationGroupID = (conversation as OpenIMConversationItem).groupID != null ? (conversation as OpenIMConversationItem).groupID as string : ''
+			const conversationUserID = (conversation as OpenIMConversationItem).userID != null ? (conversation as OpenIMConversationItem).userID as string : ''
+			if (conversationGroupID.length > 0) {
+				groupID = conversationGroupID
+				recvID = ''
+			} else if (conversationUserID.length > 0) {
+				recvID = conversationUserID
+			}
+		}
+		return { recvID: recvID, groupID: groupID }
+	}
+
+	function collectMergeMessages(messages : Array<OpenIMMessageItem>) : Array<OpenIMMessageItem> {
+		const selected : Array<OpenIMMessageItem> = []
+		let index = 0
+		while (index < messages.length && selected.length < 3) {
+			const message = messages[index]
+			if (message.contentType == OpenIMMessageTypeText) {
+				selected.push(message)
+			}
+			index = index + 1
+		}
+		return selected
+	}
+
+	function stringifyQuoteMessage(message : OpenIMMessageItem) : string {
+		const text = JSON.stringify(message)
+		if (text != null) {
+			return text as string
+		}
+		return '{}'
+	}
+
+	function readQuoteText(message : OpenIMMessageItem) : string {
+		const textElem = message.textElem
+		if (textElem != null) {
+			const content = textElem.content
+			if (content != null && content.length > 0) {
+				return content
+			}
+		}
+		return 'quote from uni-app x'
+	}
+
+	function defaultPageParams() : OpenIMPageParams {
+		const params : OpenIMPageParams = { offset: 0, count: 20 }
+		return params
+	}
+
+	function defaultApplicationParams() : OpenIMApplicationListParams {
+		const params : OpenIMApplicationListParams = { offset: 0, count: 20 }
+		return params
+	}
+
+	function messageKeyParams() : OpenIMMessageKeyParams | null {
+		const clientMsgID = requireClientMsgID()
+		if (clientMsgID.length == 0) {
+			return null
+		}
+		const params : OpenIMMessageKeyParams = { conversationID: requireConversationID(), clientMsgID: clientMsgID }
+		return params
+	}
+
+	// Button handlers
+	function handleInitSDKOnly() { runAPI<boolean>('Initializing', 'Initialized', initSDK(buildInitConfig(), 'uvue_init_sdk'), noCache) }
+	function handleLoginOnly() { runAPI<string>('Logging in', 'Logged in', login(demoUserID, demoToken, 'uvue_login'), noCache) }
+	function handleLogout() { runAPI<string>('Logging out', 'Logged out', logout('uvue_logout'), noCache) }
+	function handleGetLoginStatus() { runAPI<number>('Getting login status', 'Login status loaded', getLoginStatus('uvue_get_login_status'), noCache) }
+	function handleGetLoginUserID() { runAPI<string>('Getting login userID', 'Login userID loaded', getLoginUserID(), noCache) }
+	function handleGetSdkVersion() { statusText.value = 'SDK version loaded'; setAPIResult(getSdkVersion()) }
+	function handleUnInitSDK() { unInitSDK('uvue_uninit'); statusText.value = 'UnInit done'; setAPIResult('unInitSDK called') }
+
+	function handleGetAllConversationList() { runAPI<OpenIMConversationListResult | null>('Getting all conversations', 'All conversations loaded', getAllConversationList('uvue_all_conversations'), cacheConversationList) }
+	function handleGetConversationList() { runAPI<OpenIMConversationListResult | null>('Getting conversation page', 'Conversation page loaded', getConversationListSplit(defaultPageParams(), 'uvue_conversation_page'), cacheConversationList) }
+	function handleGetOneConversation() { const params : OpenIMGetOneConversationParams = { sourceID: demoPeerUserID, sessionType: OpenIMSessionTypeSingle }; runAPI<OpenIMConversationItem | null>('Getting one conversation', 'One conversation loaded', getOneConversation(params, 'uvue_one_conversation'), (value : OpenIMConversationItem | null) => { if (value != null) { cachedConversation = value; updateCacheText() } }) }
+	function handleGetMultipleConversation() { runAPI<OpenIMConversationListResult | null>('Getting multiple conversations', 'Multiple conversations loaded', getMultipleConversation([demoConversationID], 'uvue_multiple_conversation'), cacheConversationList) }
+	function handleGetConversationIDBySessionType() { const params : OpenIMGetOneConversationParams = { sourceID: demoPeerUserID, sessionType: OpenIMSessionTypeSingle }; runAPI<string>('Getting conversation ID', 'Conversation ID loaded', getConversationIDBySessionType(params, 'uvue_conversation_id'), noCache) }
+	function handleSearchConversation() { const keyword = cachedConversation != null ? (cachedConversation as OpenIMConversationItem).showName : demoPeerUserID; runAPI<OpenIMConversationListResult | null>('Searching conversations', 'Conversation search loaded', searchConversation(keyword, 'uvue_search_conversation'), cacheConversationList) }
+	function handleGetTotalUnreadMsgCount() { runAPI<number | null>('Getting total unread', 'Total unread loaded', getTotalUnreadMsgCount('uvue_total_unread'), noCache) }
+	function handleMarkConversationMessageAsRead() { runAPI<string>('Marking conversation read', 'Conversation read marked', markConversationMessageAsRead(requireConversationID(), 'uvue_mark_conversation_read'), noCache) }
+	function handleMarkAllConversationMessageAsRead() { runAPI<string>('Marking all read', 'All read marked', markAllConversationMessageAsRead('uvue_mark_all_read'), noCache) }
+	function handleSetConversation() { const params : OpenIMSetConversationParams = { conversationID: requireConversationID(), ex: 'uvue-test' }; runAPI<string>('Setting conversation', 'Conversation set', setConversation(params, 'uvue_set_conversation'), noCache) }
+	function handleSetConversationDraft() { const params : OpenIMSetConversationDraftParams = { conversationID: requireConversationID(), draftText: 'draft from uni-app x' }; runAPI<string>('Setting draft', 'Draft set', setConversationDraft(params, 'uvue_set_draft'), noCache) }
+	function handleChangeInputStates() { const params : OpenIMInputStateParams = { conversationID: requireConversationID(), userID: demoPeerUserID, focus: true }; runAPI<string>('Changing input state', 'Input state changed', changeInputStates(params, 'uvue_change_input'), noCache) }
+	function handleGetInputstates() { const params : OpenIMInputStateParams = { conversationID: requireConversationID(), userID: demoPeerUserID, focus: false }; runAPI<string>('Getting input state', 'Input state loaded', getInputstates(params, 'uvue_get_input'), noCache) }
+
+	function handleGetHistoryByConversationID() { const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: requireConversationID(), startClientMsgID: '', count: 20 }; runAPI<OpenIMAdvancedHistoryMessageListResult | null>('Getting history', 'History loaded', getAdvancedHistoryMessageList(params, 'uvue_history'), cacheHistory) }
+	function handleGetAdvancedHistoryReverse() { const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: requireConversationID(), startClientMsgID: '', count: 20 }; runAPI<OpenIMAdvancedHistoryMessageListResult | null>('Getting reverse history', 'Reverse history loaded', getAdvancedHistoryMessageListReverse(params, 'uvue_history_reverse'), cacheHistory) }
+	function handleSearchLocalMessages() { const params : OpenIMSearchLocalMessagesParams = { conversationID: requireConversationID(), keywordList: ['uni-app'], keywordListMatchType: 0, senderUserIDList: [], messageTypeList: [OpenIMMessageTypeText], searchTimePosition: 0, searchTimePeriod: 0, pageIndex: 1, count: 20 }; runAPI<OpenIMSearchMessageResult | null>('Searching local messages', 'Local messages searched', searchLocalMessages(params, 'uvue_search_local_messages'), noCache) }
+	function handleFindMessageList() { const clientMsgID = requireClientMsgID(); if (clientMsgID.length == 0) { failMissing('Create, send, or load a message before finding it.'); return }; const params : Array<OpenIMFindMessageParams> = [{ conversationID: requireConversationID(), clientMsgIDList: [clientMsgID] }]; runAPI<OpenIMFindMessageResult | null>('Finding cached message', 'Cached message found', findMessageList(params, 'uvue_find_message'), noCache) }
+	function handleSetMessageLocalEx() { const params = messageKeyParams(); if (params == null) { failMissing('Create, send, or load a message before setting localEx.'); return }; const localExParams : OpenIMSetMessageLocalExParams = { conversationID: params.conversationID, clientMsgID: params.clientMsgID, localEx: 'local ex from uni-app x' }; runAPI<string>('Setting message localEx', 'Message localEx set', setMessageLocalEx(localExParams, 'uvue_set_local_ex'), noCache) }
+	function handleMarkMessagesAsReadByMsgID() { const clientMsgID = requireClientMsgID(); if (clientMsgID.length == 0) { failMissing('Create, send, or load a message before marking it read.'); return }; const params : OpenIMMarkMessagesAsReadByMsgIDParams = { conversationID: requireConversationID(), clientMsgIDs: clientMsgID }; runAPI<string>('Marking message read', 'Message read marked', markMessagesAsReadByMsgID(params, 'uvue_mark_message_read'), noCache) }
+	function handleInsertSingleMessage() { const message = requireCachedMessage(); if (message == null) { failMissing('Create a message before inserting it.'); return }; const params : OpenIMInsertSingleMessageParams = { message: message, recvID: demoPeerUserID, sendID: demoUserID }; runAPI<string>('Inserting single message', 'Insert single done', insertSingleMessageToLocalStorage(params, 'uvue_insert_single'), noCache) }
+	function handleInsertGroupMessage() { const message = requireCachedMessage(); if (message == null) { failMissing('Create a message before inserting it.'); return }; const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group list or group conversation before inserting group message.'); return }; const params : OpenIMInsertGroupMessageParams = { message: message, groupID: groupID, sendID: demoUserID }; runAPI<string>('Inserting group message', 'Insert group done', insertGroupMessageToLocalStorage(params, 'uvue_insert_group'), noCache) }
+
+	function handleCreateTextMessage() { runAPI<OpenIMMessageItem | null>('Creating text message', 'Text created', createTextMessage('hello from uni-app x', 'uvue_create_text'), cacheMessage) }
+	function handleCreateAdvancedTextMessage() { const params : OpenIMCreateAdvancedTextMessageParams = { text: 'advanced text from uni-app x', messageEntityList: [] }; runAPI<OpenIMMessageItem | null>('Creating advanced text', 'Advanced text created', createAdvancedTextMessage(params, 'uvue_create_advanced_text'), cacheMessage) }
+	function handleCreateQuoteMessageOnly() { const source = cachedQuoteSourceMessage; if (source == null) { failMissing('Load history before creating quote message.'); return }; const params : OpenIMCreateQuoteMessageParams = { text: readQuoteText(source), message: stringifyQuoteMessage(source) }; runAPI<OpenIMMessageItem | null>('Creating quote', 'Quote created', createQuoteMessage(params, 'uvue_create_quote'), cacheMessage) }
+	function handleCreateAdvancedQuoteMessage() { const source = cachedQuoteSourceMessage; if (source == null) { failMissing('Load history before creating advanced quote message.'); return }; const params : OpenIMCreateAdvancedQuoteMessageParams = { text: readQuoteText(source), message: stringifyQuoteMessage(source), messageEntityList: [] }; runAPI<OpenIMMessageItem | null>('Creating advanced quote', 'Advanced quote created', createAdvancedQuoteMessage(params, 'uvue_create_advanced_quote'), cacheMessage) }
+	function handleCreateForwardMessage() { const source = cachedQuoteSourceMessage; if (source == null) { failMissing('Load history before creating forward message.'); return }; runAPI<OpenIMMessageItem | null>('Creating forward', 'Forward created', createForwardMessage(source, 'uvue_create_forward'), cacheMessage) }
+	function handleCreateTextAtMessage() { const source = cachedQuoteSourceMessage; if (source == null) { failMissing('Load history before creating text-at message.'); return }; const atUsersInfo : Array<OpenIMAtUsersInfoItem> = [{ atUserID: demoPeerUserID, groupNickname: 'peer' }]; const params : OpenIMCreateTextAtMessageParams = { text: '@peer hello from uni-app x', atUserIDList: [demoPeerUserID], atUsersInfo: atUsersInfo, quoteMessage: source }; runAPI<OpenIMMessageItem | null>('Creating text-at', 'Text at created', createTextAtMessage(params, 'uvue_create_text_at'), cacheMessage) }
+	function handleCreateMergerMessage() { const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: requireConversationID(), startClientMsgID: '', count: 20 }; runAPI<OpenIMAdvancedHistoryMessageListResult | null>('Loading messages for merger', 'Merger source loaded', getAdvancedHistoryMessageList(params, 'uvue_merger_history'), (history : OpenIMAdvancedHistoryMessageListResult | null) => { if (history != null) { const messages = collectMergeMessages(history.messageList); if (messages.length > 0) { const abstracts : Array<string> = []; messages.forEach((message : OpenIMMessageItem) => { abstracts.push(readQuoteText(message)) }); const createParams : OpenIMCreateMergerMessageParams = { messageList: messages, title: 'uni-app x merger test', abstractList: abstracts }; runAPI<OpenIMMessageItem | null>('Creating merger', 'Merger created', createMergerMessage(createParams, 'uvue_create_merger'), cacheMessage) } } }) }
+	function handleCreateCustomMessage() { const params : OpenIMCreateCustomMessageParams = { data: '{"source":"uni-app x"}', extension: 'uvue-extension', descriptionText: 'uvue custom message' }; runAPI<OpenIMMessageItem | null>('Creating custom', 'Custom created', createCustomMessage(params, 'uvue_create_custom'), cacheMessage) }
+	function handleCreateFaceMessage() { const params : OpenIMCreateFaceMessageParams = { index: 1, data: 'smile' }; runAPI<OpenIMMessageItem | null>('Creating face', 'Face created', createFaceMessage(params, 'uvue_create_face'), cacheMessage) }
+	function handleCreateLocationMessage() { const params : OpenIMCreateLocationMessageParams = { descriptionText: 'DCloud test location', longitude: 120.155, latitude: 30.274 }; runAPI<OpenIMMessageItem | null>('Creating location', 'Location created', createLocationMessage(params, 'uvue_create_location'), cacheMessage) }
+	function handleCreateCardMessage() { const card : OpenIMCardElem = { userID: demoPeerUserID, nickname: 'peer', faceURL: '', ex: 'uvue-card' }; runAPI<OpenIMMessageItem | null>('Creating card', 'Card created', createCardMessage(card, 'uvue_create_card'), cacheMessage) }
+	function handleCreateImageMessage() { if (!requireLocalFilePath(demoFixedImageFullPath, 'demoFixedImageFullPath')) { return }; runAPI<OpenIMMessageItem | null>('Creating local image', 'Local image created', createImageMessageFromFullPath(demoFixedImageFullPath, 'uvue_create_image_full_path'), cacheMessage) }
+	function handleCreateSoundMessage() { if (!requireLocalFilePath(demoFixedSoundFullPath, 'demoFixedSoundFullPath')) { return }; const params : OpenIMCreateSoundMessageParams = { soundPath: demoFixedSoundFullPath, duration: 2 }; runAPI<OpenIMMessageItem | null>('Creating local sound', 'Local sound created', createSoundMessageFromFullPath(params, 'uvue_create_sound_full_path'), cacheMessage) }
+	function handleCreateVideoMessage() { if (!requireLocalFilePath(demoFixedVideoFullPath, 'demoFixedVideoFullPath')) { return }; if (!requireLocalFilePath(demoFixedVideoSnapshotFullPath, 'demoFixedVideoSnapshotFullPath')) { return }; const params : OpenIMCreateVideoMessageParams = { videoPath: demoFixedVideoFullPath, videoType: 'mp4', duration: 10, snapshotPath: demoFixedVideoSnapshotFullPath }; runAPI<OpenIMMessageItem | null>('Creating local video', 'Local video created', createVideoMessageFromFullPath(params, 'uvue_create_video_full_path'), cacheMessage) }
+	function handleCreateFileMessage() { if (!requireLocalFilePath(demoFixedFileFullPath, 'demoFixedFileFullPath')) { return }; const params : OpenIMCreateFileMessageParams = { filePath: demoFixedFileFullPath, fileName: demoFixedFileName }; runAPI<OpenIMMessageItem | null>('Creating local file', 'Local file created', createFileMessageFromFullPath(params, 'uvue_create_file_full_path'), cacheMessage) }
+	function handleCreateImageMessageByURL() { const picture : OpenIMPicture = { uuid: 'uvue-image', type: 'jpg', size: 1, width: 1, height: 1, url: 'https://example.com/image.jpg' }; const params : OpenIMPictureElem = { sourcePath: '', sourcePicture: picture, bigPicture: picture, snapshotPicture: picture }; runAPI<OpenIMMessageItem | null>('Creating image URL', 'Image URL created', createImageMessageByURL(params, 'uvue_create_image_url'), cacheMessage) }
+	function handleCreateSoundMessageByURL() { const params : OpenIMSoundElem = { uuid: 'uvue-sound', soundPath: '', sourceUrl: 'https://example.com/sound.mp3', dataSize: 1, duration: 1 }; runAPI<OpenIMMessageItem | null>('Creating sound URL', 'Sound URL created', createSoundMessageByURL(params, 'uvue_create_sound_url'), cacheMessage) }
+	function handleCreateVideoMessageByURL() { const params : OpenIMVideoElem = { videoPath: '', videoUUID: 'uvue-video', videoUrl: 'https://example.com/video.mp4', videoType: 'mp4', videoSize: 1, duration: 1, snapshotPath: '', snapshotUUID: 'uvue-snapshot', snapshotSize: 1, snapshotUrl: 'https://example.com/snapshot.jpg', snapshotWidth: 1, snapshotHeight: 1 }; runAPI<OpenIMMessageItem | null>('Creating video URL', 'Video URL created', createVideoMessageByURL(params, 'uvue_create_video_url'), cacheMessage) }
+	function handleCreateFileMessageByURL() { const params : OpenIMFileElem = { filePath: '', uuid: 'uvue-file', sourceUrl: 'https://example.com/file.txt', fileName: 'file.txt', fileSize: 1 }; runAPI<OpenIMMessageItem | null>('Creating file URL', 'File URL created', createFileMessageByURL(params, 'uvue_create_file_url'), cacheMessage) }
+
+	function handleSendCachedMessage() { const message = requireCachedMessage(); if (message == null) { failMissing('Create a message before sending.'); return }; const target = readSendTarget(cachedConversation); const options : OpenIMSendMessageOptions = { operationID: 'uvue_send_cached', message: message, recvID: target.recvID, groupID: target.groupID, isOnlineOnly: false }; runAPI<OpenIMMessageItem>('Sending cached message', 'Cached message sent', sendMessage(options), (value : OpenIMMessageItem) => { cachedSentMessage = value; cacheMessage(value) }) }
+	function handleSendCachedMessageNotOss() { const message = requireCachedMessage(); if (message == null) { failMissing('Create a message before sending not OSS.'); return }; const target = readSendTarget(cachedConversation); const options : OpenIMSendMessageOptions = { operationID: 'uvue_send_cached_not_oss', message: message, recvID: target.recvID, groupID: target.groupID, isOnlineOnly: false }; runAPI<OpenIMMessageItem>('Sending cached not OSS', 'Cached message sent not OSS', sendMessageNotOss(options), (value : OpenIMMessageItem) => { cachedSentMessage = value; cacheMessage(value) }) }
+
+	function handleGetSelfUserInfo() { runAPI<OpenIMUserInfo | null>('Getting self info', 'Self info loaded', getSelfUserInfo('uvue_self_info'), noCache) }
+	function handleGetUsersInfo() { runAPI<OpenIMUserListResult | null>('Getting users info', 'Users info loaded', getUsersInfo([demoUserID, demoPeerUserID], 'uvue_users_info'), noCache) }
+	function handleSetSelfInfo() { const params : OpenIMSetSelfInfoParams = { ex: 'uvue-self-ex' }; runAPI<string>('Setting self ex', 'Self ex set', setSelfInfo(params, 'uvue_set_self_info'), noCache) }
+	function handleGetFriendList() { runAPI<OpenIMFriendListResult | null>('Getting friends', 'Friend list loaded', getFriendList(false, 'uvue_friend_list'), cacheFriends) }
+	function handleGetFriendListPage() { runAPI<OpenIMFriendListResult | null>('Getting friend page', 'Friend page loaded', getFriendListPage(defaultPageParams(), 'uvue_friend_page'), cacheFriends) }
+	function handleSearchFriends() { const params : OpenIMSearchFriendsParams = { keywordList: [demoPeerUserID], isSearchUserID: true, isSearchNickname: true, isSearchRemark: true }; runAPI<OpenIMFriendListResult | null>('Searching friends', 'Friend search loaded', searchFriends(params, 'uvue_search_friends'), cacheFriends) }
+	function handleGetSpecifiedFriendsInfo() { const params : OpenIMGetSpecifiedFriendsInfoParams = { userIDList: [demoPeerUserID], filterBlack: false }; runAPI<OpenIMFriendListResult | null>('Getting specified friends', 'Specified friends loaded', getSpecifiedFriendsInfo(params, 'uvue_specified_friends'), cacheFriends) }
+	function handleCheckFriend() { runAPI<Array<boolean> | null>('Checking friend', 'Friend checked', checkFriend([demoPeerUserID], 'uvue_check_friend'), noCache) }
+	function handleGetFriendApplicationListAsRecipient() { runAPI<OpenIMFriendApplicationListResult | null>('Getting friend apps recipient', 'Friend apps recipient loaded', getFriendApplicationListAsRecipient(defaultApplicationParams(), 'uvue_friend_apps_recipient'), cacheFriendApplications) }
+	function handleGetFriendApplicationListAsApplicant() { runAPI<OpenIMFriendApplicationListResult | null>('Getting friend apps applicant', 'Friend apps applicant loaded', getFriendApplicationListAsApplicant(defaultApplicationParams(), 'uvue_friend_apps_applicant'), cacheFriendApplications) }
+	function handleGetFriendApplicationUnhandledCount() { runAPI<number | null>('Getting friend app count', 'Friend app count loaded', getFriendApplicationUnhandledCount(defaultPageParams(), 'uvue_friend_app_count'), noCache) }
+	function handleGetBlackList() { runAPI<OpenIMBlackListResult | null>('Getting black list', 'Black list loaded', getBlackList('uvue_black_list'), noCache) }
+
+	function handleGetJoinedGroupList() { runAPI<OpenIMGroupListResult | null>('Getting joined groups', 'Joined groups loaded', getJoinedGroupList('uvue_joined_groups'), cacheGroups) }
+	function handleGetJoinedGroupListPage() { runAPI<OpenIMGroupListResult | null>('Getting joined group page', 'Joined group page loaded', getJoinedGroupListPage(defaultPageParams(), 'uvue_joined_group_page'), cacheGroups) }
+	function handleGetSpecifiedGroupsInfo() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load joined groups or group conversation first.'); return }; runAPI<OpenIMGroupListResult | null>('Getting specified groups', 'Specified groups loaded', getSpecifiedGroupsInfo([groupID], 'uvue_specified_groups'), cacheGroups) }
+	function handleSearchGroups() { const params : OpenIMSearchGroupsParams = { keywordList: [requireGroupID()], isSearchGroupID: true, isSearchGroupName: true }; runAPI<OpenIMGroupListResult | null>('Searching groups', 'Group search loaded', searchGroups(params, 'uvue_search_groups'), cacheGroups) }
+	function handleIsJoinGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load joined groups or group conversation first.'); return }; runAPI<boolean>('Checking joined group', 'Joined group checked', isJoinGroup(groupID, 'uvue_is_join_group'), noCache) }
+	function handleGetGroupMemberList() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load joined groups or group conversation first.'); return }; const params : OpenIMGetGroupMemberListParams = { groupID: groupID, filter: 0, offset: 0, count: 20 }; runAPI<OpenIMGroupMemberListResult | null>('Getting group members', 'Group members loaded', getGroupMemberList(params, 'uvue_group_members'), cacheGroupMembers) }
+	function handleGetSpecifiedGroupMembersInfo() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const userID = cachedGroupMember != null ? (cachedGroupMember as OpenIMGroupMemberItem).userID : demoUserID; const params : OpenIMGroupUserListParams = { groupID: groupID, userIDList: [userID] }; runAPI<OpenIMGroupMemberListResult | null>('Getting specified members', 'Specified members loaded', getSpecifiedGroupMembersInfo(params, 'uvue_specified_members'), cacheGroupMembers) }
+	function handleGetUsersInGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMGroupUserListParams = { groupID: groupID, userIDList: [demoUserID] }; runAPI<Array<string> | null>('Getting users in group', 'Users in group loaded', getUsersInGroup(params, 'uvue_users_in_group'), noCache) }
+	function handleGetGroupMemberListByJoinTimeFilter() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMGroupMemberListByJoinTimeFilterParams = { groupID: groupID, offset: 0, count: 20, joinTimeBegin: 0, joinTimeEnd: 0, userIDList: [] }; runAPI<OpenIMGroupMemberListResult | null>('Getting members by join time', 'Members by join time loaded', getGroupMemberListByJoinTimeFilter(params, 'uvue_members_join_time'), cacheGroupMembers) }
+	function handleSearchGroupMembers() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMSearchGroupMembersParams = { groupID: groupID, keywordList: [demoUserID], isSearchUserID: true, isSearchMemberNickname: true }; runAPI<OpenIMGroupMemberListResult | null>('Searching group members', 'Group members searched', searchGroupMembers(params, 'uvue_search_group_members'), cacheGroupMembers) }
+	function handleGetGroupMemberOwnerAndAdmin() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<OpenIMGroupMemberListResult | null>('Getting owner admin', 'Owner admin loaded', getGroupMemberOwnerAndAdmin(groupID, 'uvue_owner_admin'), cacheGroupMembers) }
+	function handleGetGroupApplicationListAsApplicant() { runAPI<OpenIMGroupApplicationListResult | null>('Getting group apps applicant', 'Group apps applicant loaded', getGroupApplicationListAsApplicant(defaultApplicationParams(), 'uvue_group_apps_applicant'), cacheGroupApplications) }
+	function handleGetGroupApplicationListAsRecipient() { runAPI<OpenIMGroupApplicationListResult | null>('Getting group apps recipient', 'Group apps recipient loaded', getGroupApplicationListAsRecipient(defaultApplicationParams(), 'uvue_group_apps_recipient'), cacheGroupApplications) }
+	function handleGetGroupApplicationUnhandledCount() { runAPI<number | null>('Getting group app count', 'Group app count loaded', getGroupApplicationUnhandledCount(defaultPageParams(), 'uvue_group_app_count'), noCache) }
+
+	function handleSubscribeUsersStatus() { runAPI<string>('Subscribing user status', 'User status subscribed', subscribeUsersStatus([demoPeerUserID], 'uvue_subscribe_status'), noCache) }
+	function handleGetUserStatus() { runAPI<OpenIMUserStatusListResult | null>('Getting user status', 'User status loaded', getUserStatus([demoPeerUserID], 'uvue_user_status'), noCache) }
+	function handleGetSubscribeUsersStatus() { runAPI<OpenIMUserStatusListResult | null>('Getting subscribed status', 'Subscribed status loaded', getSubscribeUsersStatus('uvue_subscribed_status'), noCache) }
+	function handleUnsubscribeUsersStatus() { runAPI<string>('Unsubscribing user status', 'User status unsubscribed', unsubscribeUsersStatus([demoPeerUserID], 'uvue_unsubscribe_status'), noCache) }
+	function handleUpdateFcmToken() { const params : OpenIMUpdateFcmTokenParams = { fcmToken: 'uvue-fcm-token', expireTime: 0 }; runAPI<string>('Updating FCM token', 'FCM token updated', updateFcmToken(params, 'uvue_update_fcm'), noCache) }
+	function handleSetAppBackgroundStatus() { runAPI<string>('Setting app background', 'App background set', setAppBackgroundStatus(false, 'uvue_app_background'), noCache) }
+	function handleSetAppBadge() { runAPI<string>('Setting app badge', 'App badge set', setAppBadge(0, 'uvue_app_badge'), noCache) }
+	function handleNetworkStatusChanged() { runAPI<string>('Sending network changed', 'Network changed sent', networkStatusChanged('uvue_network_changed'), noCache) }
+	function handleUploadLogs() { const params : OpenIMUploadLogsParams = { line: 100, ex: 'uvue-upload-logs' }; runAPI<string>('Uploading logs', 'Logs uploaded', uploadLogs(params, 'uvue_upload_logs'), noCache) }
+	function handleUploadFile() { if (!requireLocalFilePath(demoFixedFileFullPath, 'demoFixedFileFullPath')) { return }; const params : OpenIMUploadFileParams = { filepath: demoFixedFileFullPath, name: demoFixedFileName, contentType: 'application/pdf', uuid: 'uvue-upload-file', cause: 'demo upload' }; runAPI<OpenIMUploadFileResult | null>('Uploading file', 'File uploaded', uploadFile(params, 'uvue_upload_file'), noCache) }
+
+	function handleAddFriend() { const params : OpenIMAddFriendParams = { toUserID: demoPeerUserID, reqMsg: 'friend request from uni-app x', ex: 'uvue-add-friend' }; runAPI<string>('Adding friend', 'Add friend called', addFriend(params, 'uvue_add_friend'), noCache) }
+	function handleUpdateFriends() { if (cachedFriend == null) { failMissing('Load friend list before updating friends.'); return }; const friend = cachedFriend as OpenIMFriendUserItem; const params : OpenIMUpdateFriendsParams = { friendUserIDs: [friend.userID], ex: 'uvue-update-friend' }; runAPI<string>('Updating friends', 'Friends updated', updateFriends(params, 'uvue_update_friends'), noCache) }
+	function handleAcceptFriendApplication() { if (cachedFriendApplication == null) { failMissing('Load friend application list before accepting.'); return }; runAPI<string>('Accepting friend application', 'Friend application accepted', acceptFriendApplication(cachedFriendApplication as OpenIMFriendApplicationHandleParams, 'uvue_accept_friend_app'), noCache) }
+	function handleRefuseFriendApplication() { if (cachedFriendApplication == null) { failMissing('Load friend application list before refusing.'); return }; runAPI<string>('Refusing friend application', 'Friend application refused', refuseFriendApplication(cachedFriendApplication as OpenIMFriendApplicationHandleParams, 'uvue_refuse_friend_app'), noCache) }
+	function handleDeleteFriend() { runAPI<string>('Deleting friend', 'Friend deleted', deleteFriend(demoPeerUserID, 'uvue_delete_friend'), noCache) }
+	function handleAddBlack() { const params : OpenIMAddBlackParams = { toUserID: demoPeerUserID, ex: 'uvue-add-black' }; runAPI<string>('Adding black', 'Black added', addBlack(params, 'uvue_add_black'), noCache) }
+	function handleRemoveBlack() { runAPI<string>('Removing black', 'Black removed', removeBlack(demoPeerUserID, 'uvue_remove_black'), noCache) }
+	function handleCreateGroup() { const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue test group', groupType: 2 }; const params : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [demoPeerUserID], adminUserIDs: [] }; runAPI<OpenIMGroupItem | null>('Creating group', 'Group created', createGroup(params, 'uvue_create_group'), (value : OpenIMGroupItem | null) => { if (value != null) { cachedGroup = value; cachedGroupID = (value as OpenIMGroupItem).groupID; updateCacheText() } }) }
+	function handleSetGroupInfo() { if (cachedGroup == null) { failMissing('Load or create a group before setting group info.'); return }; const group = cachedGroup as OpenIMGroupItem; const params : OpenIMSetGroupInfoParams = { groupID: group.groupID, ex: 'uvue-set-group-info' }; runAPI<string>('Setting group info', 'Group info set', setGroupInfo(params, 'uvue_set_group_info'), noCache) }
+	function handleSetGroupMemberInfo() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMSetGroupMemberInfoParams = { groupID: groupID, userID: demoUserID, nickname: 'uvue member', ex: 'uvue-set-member' }; runAPI<string>('Setting member info', 'Member info set', setGroupMemberInfo(params, 'uvue_set_member_info'), noCache) }
+	function handleInviteUserToGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMGroupInviteParams = { groupID: groupID, reason: 'invite from uni-app x', userIDList: [demoPeerUserID] }; runAPI<string>('Inviting user', 'User invited', inviteUserToGroup(params, 'uvue_invite_user'), noCache) }
+	function handleKickGroupMember() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMGroupInviteParams = { groupID: groupID, reason: 'kick from uni-app x', userIDList: [demoPeerUserID] }; runAPI<string>('Kicking member', 'Member kicked', kickGroupMember(params, 'uvue_kick_member'), noCache) }
+	function handleJoinGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<string>('Joining group', 'Join group called', joinGroup({ groupID: groupID, reqMsg: 'join from uni-app x', joinSource: 2, ex: 'uvue-join-group' }, 'uvue_join_group'), noCache) }
+	function handleQuitGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<string>('Quitting group', 'Group quit', quitGroup(groupID, 'uvue_quit_group'), noCache) }
+	function handleDismissGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<string>('Dismissing group', 'Group dismissed', dismissGroup(groupID, 'uvue_dismiss_group'), noCache) }
+	function handleChangeGroupMute() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<string>('Changing group mute', 'Group mute changed', changeGroupMute({ groupID: groupID, isMute: false }, 'uvue_group_mute'), noCache) }
+	function handleChangeGroupMemberMute() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<string>('Changing member mute', 'Member mute changed', changeGroupMemberMute({ groupID: groupID, userID: demoPeerUserID, mutedSeconds: 0 }, 'uvue_member_mute'), noCache) }
+	function handleTransferGroupOwner() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<string>('Transferring owner', 'Owner transferred', transferGroupOwner({ groupID: groupID, newOwnerUserID: demoPeerUserID }, 'uvue_transfer_owner'), noCache) }
+	function handleAcceptGroupApplication() { if (cachedGroupApplication == null) { failMissing('Load group application list before accepting.'); return }; runAPI<string>('Accepting group application', 'Group application accepted', acceptGroupApplication(cachedGroupApplication as OpenIMGroupApplicationHandleParams, 'uvue_accept_group_app'), noCache) }
+	function handleRefuseGroupApplication() { if (cachedGroupApplication == null) { failMissing('Load group application list before refusing.'); return }; runAPI<string>('Refusing group application', 'Group application refused', refuseGroupApplication(cachedGroupApplication as OpenIMGroupApplicationHandleParams, 'uvue_refuse_group_app'), noCache) }
+	function handleRevokeMessage() { const params = messageKeyParams(); if (params == null) { failMissing('Create, send, or load a message before revoking.'); return }; runAPI<string>('Revoking message', 'Message revoked', revokeMessage(params, 'uvue_revoke_message'), noCache) }
+	function handleDeleteMessageFromLocalStorage() { const params = messageKeyParams(); if (params == null) { failMissing('Create, send, or load a message before deleting locally.'); return }; runAPI<string>('Deleting local message', 'Local message deleted', deleteMessageFromLocalStorage(params, 'uvue_delete_local_message'), noCache) }
+	function handleDeleteMessage() { const params = messageKeyParams(); if (params == null) { failMissing('Create, send, or load a message before deleting.'); return }; runAPI<string>('Deleting message', 'Message deleted', deleteMessage(params, 'uvue_delete_message'), noCache) }
+	function handleDeleteAllMsgFromLocal() { runAPI<string>('Deleting all local messages', 'All local messages deleted', deleteAllMsgFromLocal('uvue_delete_all_local'), noCache) }
+	function handleDeleteAllMsgFromLocalAndSvr() { runAPI<string>('Deleting all server messages', 'All server messages deleted', deleteAllMsgFromLocalAndSvr('uvue_delete_all_server'), noCache) }
+	function handleClearConversationAndDeleteAllMsg() { runAPI<string>('Clearing conversation messages', 'Conversation messages cleared', clearConversationAndDeleteAllMsg(requireConversationID(), 'uvue_clear_conversation'), noCache) }
+	function handleHideConversation() { runAPI<string>('Hiding conversation', 'Conversation hidden', hideConversation(requireConversationID(), 'uvue_hide_conversation'), noCache) }
+	function handleHideAllConversations() { runAPI<string>('Hiding all conversations', 'All conversations hidden', hideAllConversations('uvue_hide_all_conversations'), noCache) }
+	function handleDeleteConversationAndDeleteAllMsg() { runAPI<string>('Deleting conversation and messages', 'Conversation and messages deleted', deleteConversationAndDeleteAllMsg(requireConversationID(), 'uvue_delete_conversation_msgs'), noCache) }
+	function handleDeleteConversation() { runAPI<string>('Deleting conversation', 'Conversation deleted', deleteConversation(requireConversationID(), 'uvue_delete_conversation'), noCache) }
+
+	defineExpose({
+		handleInitSDKOnly,
+		handleLoginOnly,
+		handleCreateTextMessage,
+		handleCreateQuoteMessageOnly,
+		handleCreateAdvancedQuoteMessage,
+		handleCreateForwardMessage,
+		handleCreateTextAtMessage,
+		handleCreateMergerMessage,
+		handleSendCachedMessage,
+		handleSendCachedMessageNotOss,
+		handleInsertSingleMessage,
+		handleInsertGroupMessage
+	})
+</script>
+
+<style>
+	.page-scroll {
+		flex: 1;
+	}
+
+	.page {
+		display: flex;
+		flex-direction: column;
+		padding: 14px;
+	}
+
+	.title {
+		font-size: 20px;
+		font-weight: 700;
+		color: #1f2937;
+	}
+
+	.status {
+		margin-top: 6px;
+		font-size: 12px;
+		color: #4b5563;
+	}
+
+	.cache-text {
+		margin-top: 4px;
+		font-size: 11px;
+		color: #6b7280;
+		line-height: 16px;
+	}
+
+	.section {
+		display: flex;
+		flex-direction: column;
+		margin-top: 14px;
+	}
+
+	.section-title {
+		font-size: 13px;
+		font-weight: 600;
+		color: #374151;
+	}
+
+	.button-grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		margin-top: 4px;
+	}
+
+	.action-button {
+		width: 46%;
+		margin-top: 6px;
+		margin-right: 8px;
+		padding-top: 3px;
+		padding-bottom: 3px;
+		font-size: 11px;
+		line-height: 17px;
+	}
+
+	.danger-button {
+		color: #991b1b;
+	}
+
+	.result-label {
+		margin-top: 16px;
+		font-size: 13px;
+		font-weight: 600;
+		color: #374151;
+	}
+
+	.result-text {
+		margin-top: 6px;
+		font-size: 12px;
+		color: #111827;
+		line-height: 18px;
+	}
+</style>

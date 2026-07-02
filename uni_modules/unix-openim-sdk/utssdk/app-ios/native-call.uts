@@ -1,0 +1,673 @@
+import { UTSiOS } from 'DCloudUTSFoundation'
+import { normalizeOperationID, stringifyJSON, rejectNativeError, readNativeValue, NativeParserHelpers, buildJSONField, stringifyJSONString, stringifyJSONNumber, stringifyJSONBoolean, appendJSONText, appendOptionalJSONStringText, appendOptionalJSONNumberText, appendOptionalJSONBooleanText, stringifyStringList, stringifyOpenIMMessageEntityList, parseNativeUploadFileResultCommon, parseNativeUploadFileProgressEventCommon, parseNativeUploadLogsProgressEventCommon, parseNativeConversationEventListCommon, parseNativeConversationObjectCommon, parseNativeConversationListResultCommon, parseNativeConversationListResultFallbackCommon, parseNativeUserListResultCommon, parseNativeUserObjectCommon, parseNativeUserStatusListResultCommon, parseNativeUserStatusEventListCommon, parseNativeFriendListResultCommon, parseNativeFriendListResultFallbackCommon, parseNativeFriendObjectCommon, parseNativeBlackListResultCommon, parseNativeBlackUserObjectCommon, parseNativeGroupListResultCommon, parseNativeGroupListResultFallbackCommon, parseNativeGroupObjectCommon, parseNativeGroupMemberListResultCommon, parseNativeGroupMemberListResultFallbackCommon, parseNativeGroupMemberObjectCommon, parseNativeFriendApplicationListResultCommon, parseNativeFriendApplicationListResultFallbackCommon, parseNativeFriendApplicationObjectCommon, parseNativeGroupApplicationListResultCommon, parseNativeGroupApplicationListResultFallbackCommon, parseNativeGroupApplicationObjectCommon, parseNativeConversationInputStatusCommon, parseNativeUserCommandCommon, parseNativeMessageCommon, parseNativeAdvancedHistoryMessageListCommon, parseNativeAdvancedHistoryMessageListFallbackCommon, parseNativeMessageEventListCommon, parseNativeMessageEventListFallbackCommon, parseNativeFindMessageResultCommon, parseNativeMessageListResultCommon, parseNativeSearchMessageResultCommon, parseNativeMessageRevokedCommon, parseNativeMessageReceiptListCommon, parseNativeLoginStatusCommon } from '../common/native-call-common.uts'
+export { normalizeOperationID, stringifyJSON, rejectNativeError, stringifyOpenIMMessageEntityList }
+import {
+  OpenIMInitConfig,
+  OpenIMAdvancedHistoryMessageListResult,
+  OpenIMBlackListResult,
+  OpenIMBlackUserItem,
+  OpenIMAdvancedTextElem,
+  OpenIMAtTextElem,
+  OpenIMAtUsersInfoItem,
+  OpenIMCardElem,
+  OpenIMConversationItem,
+  OpenIMConversationListResult,
+  OpenIMFaceElem,
+  OpenIMFileElem,
+  OpenIMLocationElem,
+  OpenIMCustomElem,
+  OpenIMFriendApplicationItem,
+  OpenIMFriendApplicationListResult,
+  OpenIMFriendListResult,
+  OpenIMFriendUserItem,
+  OpenIMGroupApplicationItem,
+  OpenIMGroupApplicationListResult,
+  OpenIMGroupItem,
+  OpenIMGroupListResult,
+  OpenIMGroupMemberItem,
+  OpenIMGroupMemberListResult,
+  OpenIMLoginStatus,
+  OpenIMMessageReceiptListResult,
+  OpenIMMessageRevokedItem,
+  OpenIMMessageItem,
+  OpenIMMessageItemRef,
+  OpenIMMessageListResult,
+  OpenIMMergeElem,
+  OpenIMFindMessageResult,
+  OpenIMSearchMessageResult,
+  OpenIMPicture,
+  OpenIMPictureElem,
+  OpenIMQuoteElem,
+  OpenIMSoundElem,
+  OpenIMUserInfo,
+  OpenIMUserCommandItem,
+  OpenIMConversationInputStatusItem,
+  OpenIMUserListResult,
+  OpenIMUserStatusListResult,
+  OpenIMAttachedGroupHasReadInfo,
+  OpenIMAttachedInfoElem,
+  OpenIMTextElem,
+  OpenIMVideoElem,
+  OpenIMUploadProgress,
+  OpenIMUploadFileResult,
+  OpenIMUploadFileProgressEvent,
+  OpenIMUploadLogsProgressEvent
+} from '../interface.uts'
+
+type NativeOpenIMInitConfig = {
+  platformID : number
+  apiAddr : string
+  wsAddr : string
+  dataDir : string
+  logFilePath : string
+  logLevel : number
+  isLogStandardOutput : boolean
+  systemType : string
+}
+
+function normalizeWritablePath(path : string | null) : string {
+  if (path == null || path.length == 0 || path.indexOf('unifile:') >= 0) {
+    return UTSiOS.getDataPath()
+  }
+  return path
+}
+
+export function getOpenIMDataPathNative() : string {
+  return UTSiOS.getDataPath()
+}
+
+export function normalizeInitConfig(config : OpenIMInitConfig) : string {
+  const nativeConfig : NativeOpenIMInitConfig = {
+    platformID: config.platformID,
+    apiAddr: config.apiAddr,
+    wsAddr: config.wsAddr,
+    dataDir: normalizeWritablePath(config.dataDir != null ? config.dataDir as string : null),
+    logFilePath: normalizeWritablePath(config.logFilePath != null ? config.logFilePath as string : null),
+    logLevel: config.logLevel,
+    isLogStandardOutput: config.isLogStandardOutput,
+    systemType: config.systemType
+  }
+  const configText = JSON.stringify(nativeConfig as any)
+  if (configText != null) {
+    return configText as string
+  }
+  return '{}'
+}
+
+export function parseNativeMessage(data : string) : OpenIMMessageItem | null {
+  return parseNativeMessageCommon(data, getNativeParserHelpers())
+}
+
+export function readStringParam(value : any | null, key : string) : string {
+  const raw = readNativeValue(value, key)
+  if (raw != null) {
+    if (typeof raw == 'string') {
+      return raw as string
+    }
+  }
+  return ''
+}
+
+export function readNumberParam(value : any | null, key : string) : number {
+  const raw = readNativeValue(value, key)
+  if (raw != null) {
+    if (typeof raw == 'number') {
+      return raw as number
+    }
+  }
+  return 0
+}
+
+export function readBooleanParam(value : any | null, key : string) : boolean {
+  const raw = readNativeValue(value, key)
+  if (raw != null) {
+    if (typeof raw == 'boolean') {
+      return raw as boolean
+    }
+  }
+  return false
+}
+
+function parseNativeAny(data : string) : any | null {
+  const trimmed = data.trim()
+  if (trimmed.length == 0) {
+    return null
+  }
+  try {
+    return JSON.parse(trimmed)
+  } catch (error) {
+    return data
+  }
+}
+
+function parseNativeJSONObjectListData(data : string) : Array<UTSJSONObject> | null {
+  return JSON.parseArray<UTSJSONObject>(data)
+}
+
+export function stringifyOpenIMPicture(value : OpenIMPicture | null) : string {
+  if (value == null) { return '{}' }
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'uuid', value.uuid)
+  text = appendOptionalJSONStringText(text, 'type', value.type)
+  text = appendOptionalJSONNumberText(text, 'size', value.size)
+  text = appendOptionalJSONNumberText(text, 'width', value.width)
+  text = appendOptionalJSONNumberText(text, 'height', value.height)
+  text = appendOptionalJSONStringText(text, 'url', value.url)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMPictureElem(value : OpenIMPictureElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'sourcePath', value.sourcePath)
+  if (value.sourcePicture != null) { text = appendJSONText(text, buildJSONField('sourcePicture', stringifyOpenIMPicture(value.sourcePicture))) }
+  if (value.bigPicture != null) { text = appendJSONText(text, buildJSONField('bigPicture', stringifyOpenIMPicture(value.bigPicture))) }
+  if (value.snapshotPicture != null) { text = appendJSONText(text, buildJSONField('snapshotPicture', stringifyOpenIMPicture(value.snapshotPicture))) }
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMMessageContentElem(content ?: string | null) : string | null {
+  if (content != null && (content as string).length > 0) { return content as string }
+  return null
+}
+
+function stringifyOpenIMPictureElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.pictureElem != null) { return stringifyOpenIMPictureElem(message.pictureElem as OpenIMPictureElem) }
+  return '{}'
+}
+
+export function stringifyOpenIMSoundElem(value : OpenIMSoundElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'uuid', value.uuid)
+  text = appendOptionalJSONStringText(text, 'soundPath', value.soundPath)
+  text = appendOptionalJSONStringText(text, 'sourceUrl', value.sourceUrl)
+  text = appendOptionalJSONNumberText(text, 'dataSize', value.dataSize)
+  text = appendOptionalJSONNumberText(text, 'duration', value.duration)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMSoundElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.soundElem != null) { return stringifyOpenIMSoundElem(message.soundElem as OpenIMSoundElem) }
+  return '{}'
+}
+
+export function stringifyOpenIMVideoElem(value : OpenIMVideoElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'videoPath', value.videoPath)
+  text = appendOptionalJSONStringText(text, 'videoUUID', value.videoUUID)
+  text = appendOptionalJSONStringText(text, 'videoUrl', value.videoUrl)
+  text = appendOptionalJSONStringText(text, 'videoType', value.videoType)
+  text = appendOptionalJSONNumberText(text, 'videoSize', value.videoSize)
+  text = appendOptionalJSONNumberText(text, 'duration', value.duration)
+  text = appendOptionalJSONStringText(text, 'snapshotPath', value.snapshotPath)
+  text = appendOptionalJSONStringText(text, 'snapshotUUID', value.snapshotUUID)
+  text = appendOptionalJSONNumberText(text, 'snapshotSize', value.snapshotSize)
+  text = appendOptionalJSONStringText(text, 'snapshotUrl', value.snapshotUrl)
+  text = appendOptionalJSONNumberText(text, 'snapshotWidth', value.snapshotWidth)
+  text = appendOptionalJSONNumberText(text, 'snapshotHeight', value.snapshotHeight)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMVideoElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.videoElem != null) { return stringifyOpenIMVideoElem(message.videoElem as OpenIMVideoElem) }
+  return '{}'
+}
+
+export function stringifyOpenIMFileElem(value : OpenIMFileElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'filePath', value.filePath)
+  text = appendOptionalJSONStringText(text, 'uuid', value.uuid)
+  text = appendOptionalJSONStringText(text, 'sourceUrl', value.sourceUrl)
+  text = appendOptionalJSONStringText(text, 'fileName', value.fileName)
+  text = appendOptionalJSONNumberText(text, 'fileSize', value.fileSize)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMFileElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.fileElem != null) { return stringifyOpenIMFileElem(message.fileElem as OpenIMFileElem) }
+  return '{}'
+}
+
+function stringifyAtUsersInfoList(value ?: Array<OpenIMAtUsersInfoItem> | null) : string {
+  if (value == null) { return '[]' }
+  const list = value as Array<OpenIMAtUsersInfoItem>
+  let text = ''
+  list.forEach((item : OpenIMAtUsersInfoItem) => {
+    let itemText = ''
+    itemText = appendOptionalJSONStringText(itemText, 'atUserID', item.atUserID)
+    itemText = appendOptionalJSONStringText(itemText, 'groupNickname', item.groupNickname)
+    text = appendJSONText(text, '{' + itemText + '}')
+  })
+  return '[' + text + ']'
+}
+
+function stringifyOpenIMTextElem(value : OpenIMTextElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'content', value.content)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMTextElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.textElem != null) { return stringifyOpenIMTextElem(message.textElem as OpenIMTextElem) }
+  return '{}'
+}
+
+function stringifyOpenIMCardElem(value : OpenIMCardElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'userID', value.userID)
+  text = appendOptionalJSONStringText(text, 'nickname', value.nickname)
+  text = appendOptionalJSONStringText(text, 'faceURL', value.faceURL)
+  text = appendOptionalJSONStringText(text, 'ex', value.ex)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMCardElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.cardElem != null) { return stringifyOpenIMCardElem(message.cardElem as OpenIMCardElem) }
+  return '{}'
+}
+
+function stringifyOpenIMFaceElem(value : OpenIMFaceElem) : string {
+  let text = ''
+  text = appendOptionalJSONNumberText(text, 'index', value.index)
+  text = appendOptionalJSONStringText(text, 'data', value.data)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMFaceElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.faceElem != null) { return stringifyOpenIMFaceElem(message.faceElem as OpenIMFaceElem) }
+  return '{}'
+}
+
+function stringifyOpenIMLocationElem(value : OpenIMLocationElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'description', value.descriptionText)
+  text = appendOptionalJSONNumberText(text, 'longitude', value.longitude)
+  text = appendOptionalJSONNumberText(text, 'latitude', value.latitude)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMLocationElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.locationElem != null) { return stringifyOpenIMLocationElem(message.locationElem as OpenIMLocationElem) }
+  return '{}'
+}
+
+function stringifyOpenIMCustomElem(value : OpenIMCustomElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'data', value.data)
+  text = appendOptionalJSONStringText(text, 'description', value.descriptionText)
+  text = appendOptionalJSONStringText(text, 'extension', value.extensionText)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMCustomElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.customElem != null) { return stringifyOpenIMCustomElem(message.customElem as OpenIMCustomElem) }
+  return '{}'
+}
+
+function stringifyOpenIMAdvancedTextElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.advancedTextElem != null) {
+    const elem = message.advancedTextElem as OpenIMAdvancedTextElem
+    let text = ''
+    text = appendOptionalJSONStringText(text, 'text', elem.text)
+    if (elem.messageEntityList != null) { text = appendJSONText(text, buildJSONField('messageEntityList', stringifyOpenIMMessageEntityList(elem.messageEntityList))) }
+    return '{' + text + '}'
+  }
+  return '{}'
+}
+
+function stringifyOpenIMAttachedGroupHasReadInfo(value : OpenIMAttachedGroupHasReadInfo) : string {
+  let text = ''
+  text = appendOptionalJSONNumberText(text, 'hasReadCount', value.hasReadCount)
+  text = appendOptionalJSONNumberText(text, 'unreadCount', value.unreadCount)
+  if (value.hasReadUserIDList != null) { text = appendJSONText(text, buildJSONField('hasReadUserIDList', stringifyStringList(value.hasReadUserIDList))) }
+  text = appendOptionalJSONNumberText(text, 'groupMemberCount', value.groupMemberCount)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMUploadProgress(value : OpenIMUploadProgress) : string {
+  let text = ''
+  text = appendOptionalJSONNumberText(text, 'total', value.total)
+  text = appendOptionalJSONNumberText(text, 'save', value.save)
+  text = appendOptionalJSONNumberText(text, 'current', value.current)
+  text = appendOptionalJSONStringText(text, 'uploadID', value.uploadID)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMAttachedInfoElem(value : OpenIMAttachedInfoElem) : string {
+  let text = ''
+  if (value.groupHasReadInfo != null) { text = appendJSONText(text, buildJSONField('groupHasReadInfo', stringifyOpenIMAttachedGroupHasReadInfo(value.groupHasReadInfo as OpenIMAttachedGroupHasReadInfo))) }
+  text = appendOptionalJSONBooleanText(text, 'isPrivateChat', value.isPrivateChat)
+  text = appendOptionalJSONBooleanText(text, 'isEncryption', value.isEncryption)
+  text = appendOptionalJSONBooleanText(text, 'inEncryptStatus', value.inEncryptStatus)
+  text = appendOptionalJSONNumberText(text, 'burnDuration', value.burnDuration)
+  text = appendOptionalJSONNumberText(text, 'hasReadTime', value.hasReadTime)
+  if (value.messageEntityList != null) { text = appendJSONText(text, buildJSONField('messageEntityList', stringifyOpenIMMessageEntityList(value.messageEntityList))) }
+  if (value.uploadProgress != null) { text = appendJSONText(text, buildJSONField('uploadProgress', stringifyOpenIMUploadProgress(value.uploadProgress as OpenIMUploadProgress))) }
+  return '{' + text + '}'
+}
+
+function appendOpenIMMessageRefFieldsText(text : string, message : OpenIMMessageItemRef) : string {
+  let json = text
+  json = appendOptionalJSONStringText(json, 'clientMsgID', message.clientMsgID)
+  json = appendOptionalJSONStringText(json, 'serverMsgID', message.serverMsgID)
+  json = appendJSONText(json, buildJSONField('createTime', stringifyJSONNumber(message.createTime)))
+  json = appendJSONText(json, buildJSONField('sendTime', stringifyJSONNumber(message.sendTime)))
+  json = appendJSONText(json, buildJSONField('sessionType', stringifyJSONNumber(message.sessionType as number)))
+  json = appendOptionalJSONStringText(json, 'sendID', message.sendID)
+  json = appendOptionalJSONStringText(json, 'recvID', message.recvID)
+  json = appendJSONText(json, buildJSONField('msgFrom', stringifyJSONNumber(message.msgFrom)))
+  json = appendJSONText(json, buildJSONField('contentType', stringifyJSONNumber(message.contentType as number)))
+  json = appendJSONText(json, buildJSONField('senderPlatformID', stringifyJSONNumber(message.senderPlatformID as number)))
+  json = appendOptionalJSONStringText(json, 'senderNickname', message.senderNickname)
+  json = appendOptionalJSONStringText(json, 'senderFaceUrl', message.senderFaceUrl)
+  json = appendOptionalJSONStringText(json, 'groupID', message.groupID)
+  json = appendOptionalJSONStringText(json, 'content', message.content)
+  json = appendJSONText(json, buildJSONField('seq', stringifyJSONNumber(message.seq)))
+  json = appendJSONText(json, buildJSONField('isRead', stringifyJSONBoolean(message.isRead)))
+  json = appendJSONText(json, buildJSONField('status', stringifyJSONNumber(message.status as number)))
+  json = appendOptionalJSONStringText(json, 'attachedInfo', message.attachedInfo)
+  json = appendOptionalJSONStringText(json, 'ex', message.ex)
+  json = appendOptionalJSONStringText(json, 'localEx', message.localEx)
+  if (message.textElem != null) { json = appendJSONText(json, buildJSONField('textElem', stringifyOpenIMTextElem(message.textElem as OpenIMTextElem))) }
+  return json
+}
+
+function stringifyOpenIMMessageRef(message : OpenIMMessageItemRef) : string {
+  return '{' + appendOpenIMMessageRefFieldsText('', message) + '}'
+}
+
+function stringifyOpenIMMessageRefList(value : Array<OpenIMMessageItemRef>) : string {
+  let text = ''
+  value.forEach((message : OpenIMMessageItemRef) => { text = appendJSONText(text, stringifyOpenIMMessageRef(message)) })
+  return '[' + text + ']'
+}
+
+function stringifyOpenIMQuoteElem(value : OpenIMQuoteElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'text', value.text)
+  if (value.quoteMessage != null) { text = appendJSONText(text, buildJSONField('quoteMessage', stringifyOpenIMMessageRef(value.quoteMessage as OpenIMMessageItemRef))) }
+  if (value.messageEntityList != null) { text = appendJSONText(text, buildJSONField('messageEntityList', stringifyOpenIMMessageEntityList(value.messageEntityList))) }
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMQuoteElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.quoteElem != null) { return stringifyOpenIMQuoteElem(message.quoteElem as OpenIMQuoteElem) }
+  return '{}'
+}
+
+function stringifyOpenIMAtTextElem(value : OpenIMAtTextElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'text', value.text)
+  if (value.atUserList != null) { text = appendJSONText(text, buildJSONField('atUserList', stringifyStringList(value.atUserList))) }
+  if (value.atUsersInfo != null) { text = appendJSONText(text, buildJSONField('atUsersInfo', stringifyAtUsersInfoList(value.atUsersInfo))) }
+  if (value.quoteMessage != null) { text = appendJSONText(text, buildJSONField('quoteMessage', stringifyOpenIMMessageRef(value.quoteMessage as OpenIMMessageItemRef))) }
+  text = appendOptionalJSONBooleanText(text, 'isAtSelf', value.isAtSelf)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMAtTextElemForMessage(message : OpenIMMessageItem) : string {
+  const content = stringifyOpenIMMessageContentElem(message.content)
+  if (content != null) { return content }
+  if (message.atTextElem != null) { return stringifyOpenIMAtTextElem(message.atTextElem as OpenIMAtTextElem) }
+  return '{}'
+}
+
+function stringifyOpenIMMergeElem(value : OpenIMMergeElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'title', value.title)
+  if (value.abstractList != null) { text = appendJSONText(text, buildJSONField('abstractList', stringifyStringList(value.abstractList))) }
+  if (value.multiMessage != null) { text = appendJSONText(text, buildJSONField('multiMessage', stringifyOpenIMMessageRefList(value.multiMessage as Array<OpenIMMessageItemRef>))) }
+  if (value.messageEntityList != null) { text = appendJSONText(text, buildJSONField('messageEntityList', stringifyOpenIMMessageEntityList(value.messageEntityList))) }
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMMergeElemForMessage(message : OpenIMMessageItem) : string {
+  if (message.content != null && (message.content as string).length > 0) { return message.content as string }
+  if (message.mergeElem != null) {
+    const elem = message.mergeElem as OpenIMMergeElem
+    let text = ''
+    text = appendOptionalJSONStringText(text, 'title', elem.title)
+    if (elem.abstractList != null) { text = appendJSONText(text, buildJSONField('abstractList', stringifyStringList(elem.abstractList))) }
+    return '{' + text + '}'
+  }
+  return '{}'
+}
+
+function stringifyOpenIMMessageItem(message : OpenIMMessageItem) : string {
+  let json = ''
+  json = appendOptionalJSONStringText(json, 'clientMsgID', message.clientMsgID)
+  json = appendOptionalJSONStringText(json, 'serverMsgID', message.serverMsgID)
+  json = appendJSONText(json, buildJSONField('createTime', stringifyJSONNumber(message.createTime)))
+  json = appendJSONText(json, buildJSONField('sendTime', stringifyJSONNumber(message.sendTime)))
+  json = appendJSONText(json, buildJSONField('sessionType', stringifyJSONNumber(message.sessionType as number)))
+  json = appendOptionalJSONStringText(json, 'sendID', message.sendID)
+  json = appendOptionalJSONStringText(json, 'recvID', message.recvID)
+  json = appendJSONText(json, buildJSONField('msgFrom', stringifyJSONNumber(message.msgFrom)))
+  json = appendJSONText(json, buildJSONField('contentType', stringifyJSONNumber(message.contentType as number)))
+  json = appendJSONText(json, buildJSONField('senderPlatformID', stringifyJSONNumber(message.senderPlatformID as number)))
+  json = appendOptionalJSONStringText(json, 'senderNickname', message.senderNickname)
+  json = appendOptionalJSONStringText(json, 'senderFaceUrl', message.senderFaceUrl)
+  json = appendOptionalJSONStringText(json, 'groupID', message.groupID)
+  json = appendOptionalJSONStringText(json, 'content', message.content)
+  json = appendJSONText(json, buildJSONField('seq', stringifyJSONNumber(message.seq)))
+  json = appendJSONText(json, buildJSONField('isRead', stringifyJSONBoolean(message.isRead)))
+  json = appendJSONText(json, buildJSONField('status', stringifyJSONNumber(message.status as number)))
+  json = appendOptionalJSONStringText(json, 'attachedInfo', message.attachedInfo)
+  json = appendOptionalJSONStringText(json, 'ex', message.ex)
+  json = appendOptionalJSONStringText(json, 'localEx', message.localEx)
+  if (message.textElem != null) { json = appendJSONText(json, buildJSONField('textElem', stringifyOpenIMTextElemForMessage(message))) }
+  if (message.cardElem != null) { json = appendJSONText(json, buildJSONField('cardElem', stringifyOpenIMCardElemForMessage(message))) }
+  if (message.pictureElem != null) { json = appendJSONText(json, buildJSONField('pictureElem', stringifyOpenIMPictureElemForMessage(message))) }
+  if (message.soundElem != null) { json = appendJSONText(json, buildJSONField('soundElem', stringifyOpenIMSoundElemForMessage(message))) }
+  if (message.videoElem != null) { json = appendJSONText(json, buildJSONField('videoElem', stringifyOpenIMVideoElemForMessage(message))) }
+  if (message.fileElem != null) { json = appendJSONText(json, buildJSONField('fileElem', stringifyOpenIMFileElemForMessage(message))) }
+  if (message.mergeElem != null) { json = appendJSONText(json, buildJSONField('mergeElem', stringifyOpenIMMergeElemForMessage(message))) }
+  if (message.atTextElem != null) { json = appendJSONText(json, buildJSONField('atTextElem', stringifyOpenIMAtTextElemForMessage(message))) }
+  if (message.quoteElem != null) { json = appendJSONText(json, buildJSONField('quoteElem', stringifyOpenIMQuoteElemForMessage(message))) }
+  if (message.faceElem != null) { json = appendJSONText(json, buildJSONField('faceElem', stringifyOpenIMFaceElemForMessage(message))) }
+  if (message.locationElem != null) { json = appendJSONText(json, buildJSONField('locationElem', stringifyOpenIMLocationElemForMessage(message))) }
+  if (message.customElem != null) { json = appendJSONText(json, buildJSONField('customElem', stringifyOpenIMCustomElemForMessage(message))) }
+  if (message.advancedTextElem != null) { json = appendJSONText(json, buildJSONField('advancedTextElem', stringifyOpenIMAdvancedTextElemForMessage(message))) }
+  if (message.attachedInfoElem != null) { json = appendJSONText(json, buildJSONField('attachedInfoElem', stringifyOpenIMAttachedInfoElem(message.attachedInfoElem as OpenIMAttachedInfoElem))) }
+  return '{' + json + '}'
+}
+
+export function stringifyOpenIMMessage(message : OpenIMMessageItem | null) : string {
+  if (message == null) { return '{}' }
+  return stringifyOpenIMMessageItem(message as OpenIMMessageItem)
+}
+
+export function stringifyOpenIMMessageList(messages : Array<OpenIMMessageItem>) : string {
+  const items : Array<string> = []
+  messages.forEach((message : OpenIMMessageItem) => { items.push(stringifyOpenIMMessageItem(message)) })
+  return '[' + items.join(',') + ']'
+}
+
+export function stringifyOpenIMMessagePayload(value : any | null) : string {
+  if (value == null) { return '{}' }
+  if (value instanceof Array) { return stringifyOpenIMMessageList(value as Array<OpenIMMessageItem>) }
+  return stringifyOpenIMMessage(value as OpenIMMessageItem)
+}
+
+function isRequiredNumberField(value : UTSJSONObject, key : string) : boolean {
+  const raw = readNativeValue(value, key)
+  return raw != null && typeof raw == 'number'
+}
+
+function isRequiredStringField(value : UTSJSONObject, key : string) : boolean {
+  const raw = readNativeValue(value, key)
+  return raw != null && typeof raw == 'string'
+}
+
+function isOptionalNumberField(value : UTSJSONObject, key : string) : boolean {
+  const raw = readNativeValue(value, key)
+  return raw == null || typeof raw == 'number'
+}
+
+function isCommonRequiredField(value : UTSJSONObject, key : string) : boolean {
+  if (key == 'conversationType' || key == 'recvMsgOpt' || key == 'unreadCount' || key == 'latestMsgSendTime' || key == 'draftTextTime' || key == 'burnDuration' || key == 'minSeq' || key == 'maxSeq' || key == 'msgDestructTime' || key == 'groupAtType' || key == 'updateUnreadCountTime' || key == 'status' || key == 'type' || key == 'createTime' || key == 'sendTime' || key == 'sessionType' || key == 'msgFrom' || key == 'contentType' || key == 'senderPlatformID' || key == 'seq' || key == 'revokeTime' || key == 'readTime' || key == 'addSource' || key == 'memberCount' || key == 'groupType' || key == 'needVerification' || key == 'lookMemberInfo' || key == 'applyMemberFriend' || key == 'notificationUpdateTime' || key == 'roleLevel' || key == 'joinTime' || key == 'joinSource' || key == 'muteEndTime' || key == 'handleResult' || key == 'handleTime' || key == 'reqTime' || key == 'handledTime') {
+    return isRequiredNumberField(value, key)
+  }
+  return isRequiredStringField(value, key)
+}
+
+function parseNativeConversationItemData(data : string) : OpenIMConversationItem | null { return JSON.parseObject<OpenIMConversationItem>(data) }
+
+function parseNativeConversationListData(data : string) : Array<OpenIMConversationItem> | null { return JSON.parseArray<OpenIMConversationItem>(data) }
+
+function parseNativeUserInfoData(data : string) : OpenIMUserInfo | null { return JSON.parseObject<OpenIMUserInfo>(data) }
+
+function parseNativeUserInfoListData(data : string) : Array<OpenIMUserInfo> | null { return JSON.parseArray<OpenIMUserInfo>(data) }
+
+function parseNativeFriendUserListData(data : string) : Array<OpenIMFriendUserItem> | null { return JSON.parseArray<OpenIMFriendUserItem>(data) }
+
+function parseNativeBlackUserListData(data : string) : Array<OpenIMBlackUserItem> | null { return JSON.parseArray<OpenIMBlackUserItem>(data) }
+
+function parseNativeGroupData(data : string) : OpenIMGroupItem | null { return JSON.parseObject<OpenIMGroupItem>(data) }
+
+function parseNativeGroupListData(data : string) : Array<OpenIMGroupItem> | null { return JSON.parseArray<OpenIMGroupItem>(data) }
+
+function parseNativeGroupMemberListData(data : string) : Array<OpenIMGroupMemberItem> | null { return JSON.parseArray<OpenIMGroupMemberItem>(data) }
+
+function parseNativeFriendApplicationListData(data : string) : Array<OpenIMFriendApplicationItem> | null { return JSON.parseArray<OpenIMFriendApplicationItem>(data) }
+
+function parseNativeGroupApplicationListData(data : string) : Array<OpenIMGroupApplicationItem> | null { return JSON.parseArray<OpenIMGroupApplicationItem>(data) }
+
+function parseNativeMessageData(data : string) : OpenIMMessageItem | null { return JSON.parseObject<OpenIMMessageItem>(data) }
+
+function parseNativeMessageListData(data : string) : Array<OpenIMMessageItem> | null { return JSON.parseArray<OpenIMMessageItem>(data) }
+
+function parseNativeAdvancedHistoryMessageListData(data : string) : OpenIMAdvancedHistoryMessageListResult | null { return JSON.parseObject<OpenIMAdvancedHistoryMessageListResult>(data) }
+
+function parseNativeStringListData(data : string) : Array<string> | null { return JSON.parseArray<string>(data) }
+
+const nativeParserHelpers : NativeParserHelpers = {
+  parseNativeAny: (data : string) : any | null => { return parseNativeAny(data) },
+  parseNativeJSONObjectListData: (data : string) : Array<UTSJSONObject> | null => { return parseNativeJSONObjectListData(data) },
+  parseNativeConversationItemData: (data : string) : OpenIMConversationItem | null => { return parseNativeConversationItemData(data) },
+  parseNativeConversationListData: (data : string) : Array<OpenIMConversationItem> | null => { return parseNativeConversationListData(data) },
+  parseNativeUserInfoData: (data : string) : OpenIMUserInfo | null => { return parseNativeUserInfoData(data) },
+  parseNativeUserInfoListData: (data : string) : Array<OpenIMUserInfo> | null => { return parseNativeUserInfoListData(data) },
+  parseNativeFriendUserListData: (data : string) : Array<OpenIMFriendUserItem> | null => { return parseNativeFriendUserListData(data) },
+  parseNativeBlackUserListData: (data : string) : Array<OpenIMBlackUserItem> | null => { return parseNativeBlackUserListData(data) },
+  parseNativeGroupData: (data : string) : OpenIMGroupItem | null => { return parseNativeGroupData(data) },
+  parseNativeGroupListData: (data : string) : Array<OpenIMGroupItem> | null => { return parseNativeGroupListData(data) },
+  parseNativeGroupMemberListData: (data : string) : Array<OpenIMGroupMemberItem> | null => { return parseNativeGroupMemberListData(data) },
+  parseNativeFriendApplicationListData: (data : string) : Array<OpenIMFriendApplicationItem> | null => { return parseNativeFriendApplicationListData(data) },
+  parseNativeGroupApplicationListData: (data : string) : Array<OpenIMGroupApplicationItem> | null => { return parseNativeGroupApplicationListData(data) },
+  parseNativeMessageData: (data : string) : OpenIMMessageItem | null => { return parseNativeMessageData(data) },
+  parseNativeMessageListData: (data : string) : Array<OpenIMMessageItem> | null => { return parseNativeMessageListData(data) },
+  parseNativeAdvancedHistoryMessageListData: (data : string) : OpenIMAdvancedHistoryMessageListResult | null => { return parseNativeAdvancedHistoryMessageListData(data) },
+  parseNativeStringListData: (data : string) : Array<string> | null => { return parseNativeStringListData(data) },
+  readStringParam: (value : any | null, key : string) : string => { return readStringParam(value, key) },
+  readNumberParam: (value : any | null, key : string) : number => { return readNumberParam(value, key) },
+  readBooleanParam: (value : any | null, key : string) : boolean => { return readBooleanParam(value, key) },
+  isRequiredField: (value : UTSJSONObject, key : string) : boolean => { return isCommonRequiredField(value, key) },
+  isOptionalNumberField: (value : UTSJSONObject, key : string) : boolean => { return isOptionalNumberField(value, key) }
+}
+
+function getNativeParserHelpers() : NativeParserHelpers { return nativeParserHelpers }
+
+export function parseNativeUploadFileResult(data : string) : OpenIMUploadFileResult | null { return parseNativeUploadFileResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeUploadFileProgressEvent(data : string) : OpenIMUploadFileProgressEvent | null { return parseNativeUploadFileProgressEventCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeUploadLogsProgressEvent(data : string) : OpenIMUploadLogsProgressEvent | null { return parseNativeUploadLogsProgressEventCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeConversationEventList(data : string) : OpenIMConversationListResult | null { return parseNativeConversationEventListCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeConversationObject(data : string) : OpenIMConversationItem | null { return parseNativeConversationObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeConversationListResult(data : string) : OpenIMConversationListResult | null { return parseNativeConversationListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeConversationListResultFallback(data : string) : OpenIMConversationListResult | null { return parseNativeConversationListResultFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeUserListResult(data : string) : OpenIMUserListResult | null { return parseNativeUserListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeUserObject(data : string) : OpenIMUserInfo | null { return parseNativeUserObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeUserStatusListResult(data : string) : OpenIMUserStatusListResult | null { return parseNativeUserStatusListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeUserStatusEventList(data : string) : OpenIMUserStatusListResult | null { return parseNativeUserStatusEventListCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeFriendListResult(data : string) : OpenIMFriendListResult | null { return parseNativeFriendListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeFriendListResultFallback(data : string) : OpenIMFriendListResult | null { return parseNativeFriendListResultFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeFriendObject(data : string) : OpenIMFriendUserItem | null { return parseNativeFriendObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeBlackListResult(data : string) : OpenIMBlackListResult | null { return parseNativeBlackListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeBlackUserObject(data : string) : OpenIMBlackUserItem | null { return parseNativeBlackUserObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupListResult(data : string) : OpenIMGroupListResult | null { return parseNativeGroupListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupListResultFallback(data : string) : OpenIMGroupListResult | null { return parseNativeGroupListResultFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupObject(data : string) : OpenIMGroupItem | null { return parseNativeGroupObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupMemberListResult(data : string) : OpenIMGroupMemberListResult | null { return parseNativeGroupMemberListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupMemberListResultFallback(data : string) : OpenIMGroupMemberListResult | null { return parseNativeGroupMemberListResultFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupMemberObject(data : string) : OpenIMGroupMemberItem | null { return parseNativeGroupMemberObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeFriendApplicationListResult(data : string) : OpenIMFriendApplicationListResult | null { return parseNativeFriendApplicationListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeFriendApplicationListResultFallback(data : string) : OpenIMFriendApplicationListResult | null { return parseNativeFriendApplicationListResultFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeFriendApplicationObject(data : string) : OpenIMFriendApplicationItem | null { return parseNativeFriendApplicationObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupApplicationListResult(data : string) : OpenIMGroupApplicationListResult | null { return parseNativeGroupApplicationListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupApplicationListResultFallback(data : string) : OpenIMGroupApplicationListResult | null { return parseNativeGroupApplicationListResultFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeGroupApplicationObject(data : string) : OpenIMGroupApplicationItem | null { return parseNativeGroupApplicationObjectCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeConversationInputStatus(data : string) : OpenIMConversationInputStatusItem | null { return parseNativeConversationInputStatusCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeUserCommand(data : string) : OpenIMUserCommandItem | null { return parseNativeUserCommandCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeMessageRevoked(data : string) : OpenIMMessageRevokedItem | null { return parseNativeMessageRevokedCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeMessageReceiptList(data : string) : OpenIMMessageReceiptListResult | null { return parseNativeMessageReceiptListCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeAdvancedHistoryMessageList(data : string) : OpenIMAdvancedHistoryMessageListResult | null { return parseNativeAdvancedHistoryMessageListCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeAdvancedHistoryMessageListFallback(data : string) : OpenIMAdvancedHistoryMessageListResult | null { return parseNativeAdvancedHistoryMessageListFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeMessageEventList(data : string) : OpenIMMessageListResult | null { return parseNativeMessageEventListCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeMessageEventListFallback(data : string) : OpenIMMessageListResult | null { return parseNativeMessageEventListFallbackCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeFindMessageResult(data : string) : OpenIMFindMessageResult | null { return parseNativeFindMessageResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeMessageListResult(data : string) : OpenIMFindMessageResult | null { return parseNativeMessageListResultCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeSearchMessageResult(data : string) : OpenIMSearchMessageResult | null { return parseNativeSearchMessageResultCommon(data, getNativeParserHelpers()) }
+
+
+export function parseNativeLoginStatus(data : string) : OpenIMLoginStatus {
+  return parseNativeLoginStatusCommon(data)
+}

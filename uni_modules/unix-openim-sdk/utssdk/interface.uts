@@ -1,0 +1,1305 @@
+export type OpenIMMessageStatus = 0 | 1 | 2 | 3 | 4 | 5
+
+export type OpenIMPlatform = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11
+
+export type OpenIMLogLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
+export type OpenIMMessageType =
+  101 | 102 | 103 | 104 | 105 | 106 | 107 | 108 | 109 | 110 |
+  111 | 113 | 114 | 115 | 117 | 118 | 119 | 120 | 121 | 122 |
+  143 | 200 | 201 | 202 | 203 | 1201 | 1202 | 1203 | 1204 |
+  1205 | 1206 | 1207 | 1208 | 1209 | 1210 | 1300 | 1303 |
+  1304 | 1305 | 1306 | 1307 | 1308 | 1400 | 1501 | 1502 |
+  1503 | 1504 | 1505 | 1506 | 1507 | 1508 | 1509 | 1510 |
+  1511 | 1512 | 1513 | 1514 | 1515 | 1516 | 1517 | 1518 |
+  1519 | 1520 | 1651 | 1652 | 1701 | 1702 | 1703 | 1704 |
+  2001 | 2101 | 2102 | 2103 | 2150 | 2200 | 2210 | 2300 |
+  2400 | 2401 | 2500
+
+export type OpenIMSessionType = 0 | 1 | 2 | 3 | 4
+
+export type OpenIMLoginStatus = 1 | 2 | 3
+
+export declare const OpenIMMessageStatusNotExist : OpenIMMessageStatus
+export declare const OpenIMMessageStatusSending : OpenIMMessageStatus
+export declare const OpenIMMessageStatusSucceed : OpenIMMessageStatus
+export declare const OpenIMMessageStatusFailed : OpenIMMessageStatus
+export declare const OpenIMMessageStatusDeleted : OpenIMMessageStatus
+export declare const OpenIMMessageStatusFiltered : OpenIMMessageStatus
+
+export declare const OpenIMPlatformIOS : OpenIMPlatform
+export declare const OpenIMPlatformAndroid : OpenIMPlatform
+export declare const OpenIMPlatformWindows : OpenIMPlatform
+export declare const OpenIMPlatformMacOSX : OpenIMPlatform
+export declare const OpenIMPlatformWeb : OpenIMPlatform
+export declare const OpenIMPlatformMiniWeb : OpenIMPlatform
+export declare const OpenIMPlatformLinux : OpenIMPlatform
+export declare const OpenIMPlatformAndroidPad : OpenIMPlatform
+export declare const OpenIMPlatformIPad : OpenIMPlatform
+export declare const OpenIMPlatformAdmin : OpenIMPlatform
+export declare const OpenIMPlatformHarmony : OpenIMPlatform
+
+export declare const OpenIMLogLevelPanic : OpenIMLogLevel
+export declare const OpenIMLogLevelFatal : OpenIMLogLevel
+export declare const OpenIMLogLevelError : OpenIMLogLevel
+export declare const OpenIMLogLevelWarn : OpenIMLogLevel
+export declare const OpenIMLogLevelInfo : OpenIMLogLevel
+export declare const OpenIMLogLevelDebug : OpenIMLogLevel
+export declare const OpenIMLogLevelVerbose : OpenIMLogLevel
+
+export declare const OpenIMMessageTypeText : OpenIMMessageType
+export declare const OpenIMMessageTypePicture : OpenIMMessageType
+export declare const OpenIMMessageTypeVoice : OpenIMMessageType
+export declare const OpenIMMessageTypeVideo : OpenIMMessageType
+export declare const OpenIMMessageTypeFile : OpenIMMessageType
+export declare const OpenIMMessageTypeAtText : OpenIMMessageType
+export declare const OpenIMMessageTypeMerge : OpenIMMessageType
+export declare const OpenIMMessageTypeCard : OpenIMMessageType
+export declare const OpenIMMessageTypeLocation : OpenIMMessageType
+export declare const OpenIMMessageTypeCustom : OpenIMMessageType
+export declare const OpenIMMessageTypeRevoke : OpenIMMessageType
+export declare const OpenIMMessageTypeTyping : OpenIMMessageType
+export declare const OpenIMMessageTypeQuote : OpenIMMessageType
+export declare const OpenIMMessageTypeFace : OpenIMMessageType
+export declare const OpenIMMessageTypeAdvancedText : OpenIMMessageType
+export declare const OpenIMMessageTypeMarkdownText : OpenIMMessageType
+export declare const OpenIMMessageTypeCustomNotTriggerConversation : OpenIMMessageType
+export declare const OpenIMMessageTypeCustomOnlineOnly : OpenIMMessageType
+export declare const OpenIMMessageTypeReactionModifier : OpenIMMessageType
+export declare const OpenIMMessageTypeReactionDeleter : OpenIMMessageType
+export declare const OpenIMMessageTypeStream : OpenIMMessageType
+export declare const OpenIMMessageTypeCommon : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupMsg : OpenIMMessageType
+export declare const OpenIMMessageTypeSignalMsg : OpenIMMessageType
+export declare const OpenIMMessageTypeCustomNotification : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendApplicationApproved : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendApplicationRejected : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendApplication : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendAdded : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendDeleted : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendRemarkSet : OpenIMMessageType
+export declare const OpenIMMessageTypeBlackAdded : OpenIMMessageType
+export declare const OpenIMMessageTypeBlackDeleted : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendInfoUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeFriendsInfoUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeConversationChanged : OpenIMMessageType
+export declare const OpenIMMessageTypeUserInfoUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeUserStatusChanged : OpenIMMessageType
+export declare const OpenIMMessageTypeUserCommandAdded : OpenIMMessageType
+export declare const OpenIMMessageTypeUserCommandDeleted : OpenIMMessageType
+export declare const OpenIMMessageTypeUserCommandUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeUserSubscribeOnlineStatus : OpenIMMessageType
+export declare const OpenIMMessageTypeOANotification : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupCreated : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupInfoUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeJoinGroupApplication : OpenIMMessageType
+export declare const OpenIMMessageTypeMemberQuit : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupApplicationAccepted : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupApplicationRejected : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupOwnerTransferred : OpenIMMessageType
+export declare const OpenIMMessageTypeMemberKicked : OpenIMMessageType
+export declare const OpenIMMessageTypeMemberInvited : OpenIMMessageType
+export declare const OpenIMMessageTypeMemberEnter : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupDismissed : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupMemberMuted : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupMemberCancelMuted : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupMuted : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupCancelMuted : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupMemberInfoUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupMemberSetToAdmin : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupMemberSetToOrdinaryUser : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupAnnouncementUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeGroupNameUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeSuperGroupUpdated : OpenIMMessageType
+export declare const OpenIMMessageTypeMsgDeleted : OpenIMMessageType
+export declare const OpenIMMessageTypeBurnMessageChange : OpenIMMessageType
+export declare const OpenIMMessageTypeConversationPrivateChat : OpenIMMessageType
+export declare const OpenIMMessageTypeConversationUnread : OpenIMMessageType
+export declare const OpenIMMessageTypeClearConversation : OpenIMMessageType
+export declare const OpenIMMessageTypeConversationGroupChanged : OpenIMMessageType
+export declare const OpenIMMessageTypeBusinessNotification : OpenIMMessageType
+export declare const OpenIMMessageTypeRevokeMessage : OpenIMMessageType
+export declare const OpenIMMessageTypeDeleteMessages : OpenIMMessageType
+export declare const OpenIMMessageTypeModifyMessage : OpenIMMessageType
+export declare const OpenIMMessageTypeDeleteUserAllMessagesInConversation : OpenIMMessageType
+export declare const OpenIMMessageTypeHasReadReceipt : OpenIMMessageType
+export declare const OpenIMMessageTypeHasResetUnreadReceipt : OpenIMMessageType
+export declare const OpenIMMessageTypeHasGroupReadReceipt : OpenIMMessageType
+export declare const OpenIMMessageTypePinned : OpenIMMessageType
+export declare const OpenIMMessageTypePinnedRead : OpenIMMessageType
+export declare const OpenIMMessageTypeStreamNotification : OpenIMMessageType
+
+export declare const OpenIMSessionTypeSingle : OpenIMSessionType
+export declare const OpenIMSessionTypeWriteGroup : OpenIMSessionType
+export declare const OpenIMSessionTypeGroup : OpenIMSessionType
+export declare const OpenIMSessionTypeNotification : OpenIMSessionType
+
+export declare const OpenIMLoginStatusLogout : OpenIMLoginStatus
+export declare const OpenIMLoginStatusLogging : OpenIMLoginStatus
+export declare const OpenIMLoginStatusLogged : OpenIMLoginStatus
+
+export type OpenIMSendMessageOptions = {
+  operationID ?: string | null
+  message : OpenIMMessageItem
+  recvID : string
+  groupID : string
+  offlinePushInfo ?: OpenIMOfflinePush | null
+  isOnlineOnly ?: boolean | null
+}
+
+export type OpenIMUploadFileParams = {
+  filepath : string
+  name : string
+  contentType : string
+  uuid : string
+  cause ?: string | null
+}
+
+export type OpenIMCreateSoundMessageParams = {
+  soundPath : string
+  duration : number
+}
+
+export type OpenIMCreateVideoMessageParams = {
+  videoPath : string
+  videoType : string
+  duration : number
+  snapshotPath : string
+}
+
+export type OpenIMCreateFileMessageParams = {
+  filePath : string
+  fileName : string
+}
+
+export type OpenIMUploadFileResult = {
+  url ?: string | null
+  uri ?: string | null
+  uuid ?: string | null
+  size ?: number | null
+  typ ?: number | null
+  mediaID ?: string | null
+}
+
+export type OpenIMMarkMessagesAsReadByMsgIDParams = {
+  conversationID : string
+  clientMsgIDs : string
+}
+
+export type OpenIMUpdateFcmTokenParams = {
+  fcmToken : string
+  expireTime : number
+}
+
+export type OpenIMUploadLogsParams = {
+  line : number
+  ex : string
+}
+
+export type OpenIMUploadFileProgressStage = 'uploadComplete'
+
+export type OpenIMUploadFileProgressEvent = {
+  operationID ?: string | null
+  stage : OpenIMUploadFileProgressStage
+  total : number
+  current : number
+  storageSize : number
+}
+
+export type OpenIMUploadLogsProgressEvent = {
+  operationID ?: string | null
+  current : number
+  size : number
+  percent : number
+}
+
+export type OpenIMSendMessageProgressEvent = {
+  operationID ?: string | null
+  progress : number
+}
+
+export type OpenIMMessageKeyParams = {
+  conversationID : string
+  clientMsgID : string
+}
+
+export type OpenIMSetMessageLocalExParams = {
+  conversationID : string
+  clientMsgID : string
+  localEx : string
+}
+
+export type OpenIMSetConversationBoolean = true | false
+export type OpenIMSetSelfInfoRecvMsgOpt = 0 | 1 | 2
+export type OpenIMUpdateFriendBoolean = true | false
+export type OpenIMGroupNeedVerification = 0 | 1 | 2
+export type OpenIMGroupOption = 0 | 1
+export type OpenIMGroupDisplayIsRead = true | false
+export type OpenIMGroupMemberRoleLevel = 20 | 60 | 100
+
+export type OpenIMSetConversationParams = {
+  conversationID : string
+  recvMsgOpt ?: number | null
+  isPinned ?: OpenIMSetConversationBoolean | null
+  isPrivateChat ?: OpenIMSetConversationBoolean | null
+  burnDuration ?: number | null
+  groupAtType ?: number | null
+  ex ?: string | null
+}
+
+export type OpenIMSetSelfInfoParams = {
+  nickname ?: string | null
+  faceURL ?: string | null
+  ex ?: string | null
+  globalRecvMsgOpt ?: OpenIMSetSelfInfoRecvMsgOpt | null
+}
+
+export type OpenIMUpdateFriendsParams = {
+  friendUserIDs : Array<string>
+  isPinned ?: OpenIMUpdateFriendBoolean | null
+  remark ?: string | null
+  ex ?: string | null
+}
+
+export type OpenIMInsertSingleMessageParams = {
+  message : OpenIMMessageItem
+  recvID : string
+  sendID : string
+}
+
+export type OpenIMInsertGroupMessageParams = {
+  message : OpenIMMessageItem
+  groupID : string
+  sendID : string
+}
+
+export type OpenIMInputStateParams = {
+  conversationID : string
+  userID ?: string | null
+  focus : boolean
+}
+
+export type OpenIMSetConversationDraftParams = {
+  conversationID : string
+  draftText : string
+}
+
+export type OpenIMAddFriendParams = {
+  toUserID : string
+  reqMsg : string
+  ex ?: string | null
+}
+
+export type OpenIMSearchFriendsParams = {
+  keywordList : Array<string>
+  isSearchUserID : boolean
+  isSearchNickname : boolean
+  isSearchRemark : boolean
+}
+
+export type OpenIMGetSpecifiedFriendsInfoParams = {
+  userIDList : Array<string>
+  filterBlack : boolean
+}
+
+export type OpenIMFriendApplicationHandleParams = {
+  toUserID : string
+  handleMsg : string
+}
+
+export type OpenIMAddBlackParams = {
+  toUserID : string
+  ex ?: string | null
+}
+
+export type OpenIMGroupUserListParams = {
+  groupID : string
+  userIDList : Array<string>
+}
+
+export type OpenIMGroupInviteParams = {
+  groupID : string
+  reason : string
+  userIDList : Array<string>
+}
+
+export type OpenIMGroupMemberListByJoinTimeFilterParams = {
+  groupID : string
+  offset : number
+  count : number
+  joinTimeBegin : number
+  joinTimeEnd ?: number | null
+  userIDList : Array<string>
+}
+
+export type OpenIMSearchGroupMembersParams = {
+  groupID : string
+  keywordList : Array<string>
+  isSearchUserID : boolean
+  isSearchMemberNickname : boolean
+}
+
+export type OpenIMCreateGroupInfo = {
+  groupName : string
+  groupType : 2
+  notification ?: string | null
+  introduction ?: string | null
+  faceURL ?: string | null
+  ex ?: string | null
+}
+
+export type OpenIMCreateGroupParams = {
+  groupInfo : OpenIMCreateGroupInfo
+  memberUserIDs : Array<string>
+  adminUserIDs ?: Array<string> | null
+}
+
+export type OpenIMSetGroupInfoParams = {
+  groupID : string
+  groupName ?: string | null
+  notification ?: string | null
+  introduction ?: string | null
+  faceURL ?: string | null
+  ex ?: string | null
+  needVerification ?: OpenIMGroupNeedVerification | null
+  lookMemberInfo ?: OpenIMGroupOption | null
+  applyMemberFriend ?: OpenIMGroupOption | null
+  displayIsRead ?: OpenIMGroupDisplayIsRead | null
+}
+
+export type OpenIMSetGroupMemberInfoParams = {
+  groupID : string
+  userID : string
+  nickname ?: string | null
+  faceURL ?: string | null
+  roleLevel ?: OpenIMGroupMemberRoleLevel | null
+  ex ?: string | null
+}
+
+export type OpenIMJoinGroupParams = {
+  groupID : string
+  reqMsg : string
+  joinSource : number
+  ex ?: string | null
+}
+
+export type OpenIMSearchGroupsParams = {
+  keywordList : Array<string>
+  isSearchGroupID : boolean
+  isSearchGroupName : boolean
+}
+
+export type OpenIMChangeGroupMuteParams = {
+  groupID : string
+  isMute : boolean
+}
+
+export type OpenIMChangeGroupMemberMuteParams = {
+  groupID : string
+  userID : string
+  mutedSeconds : number
+}
+
+export type OpenIMTransferGroupOwnerParams = {
+  groupID : string
+  newOwnerUserID : string
+}
+
+export type OpenIMGroupApplicationHandleParams = {
+  groupID : string
+  fromUserID : string
+  handleMsg : string
+}
+
+export type OpenIMFindMessageParams = {
+  conversationID : string
+  clientMsgIDList : Array<string>
+}
+
+export type OpenIMCreateCustomMessageParams = {
+  data : string
+  extension : string
+  descriptionText : string
+}
+
+export type OpenIMCreateQuoteMessageParams = {
+  text : string
+  message : string
+}
+
+export type OpenIMCreateAdvancedQuoteMessageParams = {
+  text : string
+  message : string
+  messageEntityList : Array<OpenIMMessageEntity>
+}
+
+export type OpenIMCreateAdvancedTextMessageParams = {
+  text : string
+  messageEntityList : Array<OpenIMMessageEntity>
+}
+
+export type OpenIMCreateTextAtMessageParams = {
+  text : string
+  atUserIDList : Array<string>
+  atUsersInfo ?: Array<OpenIMAtUsersInfoItem> | null
+  quoteMessage ?: OpenIMMessageItem | null
+}
+
+export type OpenIMCreateMergerMessageParams = {
+  messageList : Array<OpenIMMessageItem>
+  title : string
+  abstractList : Array<string>
+}
+
+export type OpenIMCreateFaceMessageParams = {
+  index : number
+  data : string
+}
+
+export type OpenIMCreateLocationMessageParams = {
+  descriptionText : string
+  longitude : number
+  latitude : number
+}
+
+export type OpenIMMessageEntity = {
+  type ?: string | null
+  offset ?: number | null
+  length ?: number | null
+  url ?: string | null
+  ex ?: string | null
+  info ?: string | null
+}
+
+export type OpenIMTextElem = {
+  content ?: string | null
+}
+
+export type OpenIMCardElem = {
+  userID ?: string | null
+  nickname ?: string | null
+  faceURL ?: string | null
+  ex ?: string | null
+}
+
+export type OpenIMAtUsersInfoItem = {
+  atUserID ?: string | null
+  groupNickname ?: string | null
+}
+
+export type OpenIMAtTextElem = {
+  text ?: string | null
+  atUserList ?: Array<string> | null
+  atUsersInfo ?: Array<OpenIMAtUsersInfoItem> | null
+  quoteMessage ?: OpenIMMessageItemRef | null
+  isAtSelf ?: boolean | null
+}
+
+export type OpenIMNotificationElem = {
+  detail ?: string | null
+}
+
+export type OpenIMAdvancedTextElem = {
+  text ?: string | null
+  messageEntityList ?: Array<OpenIMMessageEntity> | null
+}
+
+export type OpenIMTypingElem = {
+  msgTips ?: string | null
+}
+
+export type OpenIMFileElem = {
+  filePath ?: string | null
+  uuid ?: string | null
+  sourceUrl ?: string | null
+  fileName ?: string | null
+  fileSize ?: number | null
+}
+
+export type OpenIMFaceElem = {
+  index ?: number | null
+  data ?: string | null
+}
+
+export type OpenIMLocationElem = {
+  descriptionText ?: string | null
+  longitude ?: number | null
+  latitude ?: number | null
+}
+
+export type OpenIMCustomElem = {
+  data ?: string | null
+  descriptionText ?: string | null
+  extensionText ?: string | null
+}
+
+export type OpenIMMergeElem = {
+  title ?: string | null
+  abstractList ?: Array<string> | null
+  multiMessage ?: Array<OpenIMMessageItemRef> | null
+  messageEntityList ?: Array<OpenIMMessageEntity> | null
+}
+
+export type OpenIMOfflinePush = {
+  title ?: string | null
+  desc ?: string | null
+  ex ?: string | null
+  iOSPushSound ?: string | null
+  iOSBadgeCount ?: boolean | null
+}
+
+export type OpenIMPicture = {
+  uuid ?: string | null
+  type ?: string | null
+  size ?: number | null
+  width ?: number | null
+  height ?: number | null
+  url ?: string | null
+}
+
+export type OpenIMPictureElem = {
+  sourcePath ?: string | null
+  sourcePicture ?: OpenIMPicture | null
+  bigPicture ?: OpenIMPicture | null
+  snapshotPicture ?: OpenIMPicture | null
+}
+
+export type OpenIMAttachedGroupHasReadInfo = {
+  hasReadCount ?: number | null
+  unreadCount ?: number | null
+  hasReadUserIDList ?: Array<string> | null
+  groupMemberCount ?: number | null
+}
+
+export type OpenIMUploadProgress = {
+  total ?: number | null
+  save ?: number | null
+  current ?: number | null
+  uploadID ?: string | null
+}
+
+export type OpenIMAttachedInfoElem = {
+  groupHasReadInfo ?: OpenIMAttachedGroupHasReadInfo | null
+  isPrivateChat ?: boolean | null
+  isEncryption ?: boolean | null
+  inEncryptStatus ?: boolean | null
+  burnDuration ?: number | null
+  hasReadTime ?: number | null
+  messageEntityList ?: Array<OpenIMMessageEntity> | null
+  uploadProgress ?: OpenIMUploadProgress | null
+}
+
+export type OpenIMQuoteElem = {
+  text ?: string | null
+  quoteMessage ?: OpenIMMessageItemRef | null
+  messageEntityList ?: Array<OpenIMMessageEntity> | null
+}
+
+export type OpenIMSoundElem = {
+  uuid ?: string | null
+  soundPath ?: string | null
+  sourceUrl ?: string | null
+  dataSize ?: number | null
+  duration ?: number | null
+}
+
+export type OpenIMVideoElem = {
+  videoPath ?: string | null
+  videoUUID ?: string | null
+  videoUrl ?: string | null
+  videoType ?: string | null
+  videoSize ?: number | null
+  duration ?: number | null
+  snapshotPath ?: string | null
+  snapshotUUID ?: string | null
+  snapshotSize ?: number | null
+  snapshotUrl ?: string | null
+  snapshotWidth ?: number | null
+  snapshotHeight ?: number | null
+}
+
+export type OpenIMMessageItemRef = {
+  clientMsgID ?: string | null
+  serverMsgID ?: string | null
+  createTime : number
+  sendTime : number
+  sessionType : OpenIMSessionType
+  sendID ?: string | null
+  recvID ?: string | null
+  msgFrom : number
+  contentType : OpenIMMessageType
+  senderPlatformID : OpenIMPlatform
+  senderNickname ?: string | null
+  senderFaceUrl ?: string | null
+  groupID ?: string | null
+  content ?: string | null
+  seq : number
+  isRead : boolean
+  status : OpenIMMessageStatus
+  attachedInfo ?: string | null
+  ex ?: string | null
+  localEx ?: string | null
+  textElem ?: OpenIMTextElem | null
+  cardElem ?: OpenIMCardElem | null
+  pictureElem ?: OpenIMPictureElem | null
+  soundElem ?: OpenIMSoundElem | null
+  videoElem ?: OpenIMVideoElem | null
+  fileElem ?: OpenIMFileElem | null
+  faceElem ?: OpenIMFaceElem | null
+  locationElem ?: OpenIMLocationElem | null
+  customElem ?: OpenIMCustomElem | null
+}
+
+export type OpenIMMessageItem = {
+  clientMsgID ?: string | null
+  serverMsgID ?: string | null
+  createTime : number
+  sendTime : number
+  sessionType : OpenIMSessionType
+  sendID ?: string | null
+  recvID ?: string | null
+  msgFrom : number
+  contentType : OpenIMMessageType
+  senderPlatformID : OpenIMPlatform
+  senderNickname ?: string | null
+  senderFaceUrl ?: string | null
+  groupID ?: string | null
+  content ?: string | null
+  seq : number
+  isRead : boolean
+  status : OpenIMMessageStatus
+  offlinePush ?: OpenIMOfflinePush | null
+  attachedInfo ?: string | null
+  ex ?: string | null
+  localEx ?: string | null
+  textElem ?: OpenIMTextElem | null
+  cardElem ?: OpenIMCardElem | null
+  pictureElem ?: OpenIMPictureElem | null
+  soundElem ?: OpenIMSoundElem | null
+  videoElem ?: OpenIMVideoElem | null
+  fileElem ?: OpenIMFileElem | null
+  mergeElem ?: OpenIMMergeElem | null
+  atTextElem ?: OpenIMAtTextElem | null
+  faceElem ?: OpenIMFaceElem | null
+  locationElem ?: OpenIMLocationElem | null
+  customElem ?: OpenIMCustomElem | null
+  quoteElem ?: OpenIMQuoteElem | null
+  notificationElem ?: OpenIMNotificationElem | null
+  advancedTextElem ?: OpenIMAdvancedTextElem | null
+  typingElem ?: OpenIMTypingElem | null
+  attachedInfoElem ?: OpenIMAttachedInfoElem | null
+}
+
+export type OpenIMConversationItem = {
+  conversationID : string
+  conversationType : OpenIMSessionType
+  userID ?: string | null
+  groupID ?: string | null
+  showName : string
+  faceURL : string
+  recvMsgOpt : number
+  unreadCount : number
+  latestMsg ?: string | null
+  latestMsgSendTime : number
+  draftText : string
+  draftTextTime : number
+  isPinned : boolean
+  isPrivateChat : boolean
+  attachedInfo : string
+  ex : string
+  burnDuration : number
+  minSeq : number
+  maxSeq : number
+  msgDestructTime : number
+  groupAtType : number
+  isMsgDestruct : boolean
+  isNotInGroup : boolean
+  updateUnreadCountTime : number
+}
+
+export type OpenIMConversationListResult = {
+  conversations : Array<OpenIMConversationItem>
+}
+
+export type OpenIMUserListResult = {
+  users : Array<OpenIMUserInfo>
+}
+
+export type OpenIMUserStatusItem = {
+  userID : string
+  status : number
+  platformIDs : Array<number>
+}
+
+export type OpenIMUserStatusListResult = {
+  statuses : Array<OpenIMUserStatusItem>
+}
+
+export type OpenIMFriendListResult = {
+  friends : Array<OpenIMFriendUserItem>
+}
+
+export type OpenIMBlackListResult = {
+  blackUsers : Array<OpenIMBlackUserItem>
+}
+
+export type OpenIMGroupListResult = {
+  groups : Array<OpenIMGroupItem>
+}
+
+export type OpenIMGroupMemberListResult = {
+  members : Array<OpenIMGroupMemberItem>
+}
+
+export type OpenIMFriendApplicationListResult = {
+  applications : Array<OpenIMFriendApplicationItem>
+}
+
+export type OpenIMGroupApplicationListResult = {
+  applications : Array<OpenIMGroupApplicationItem>
+}
+
+export type OpenIMMessageListResult = {
+  messages : Array<OpenIMMessageItem>
+}
+
+export type OpenIMUserInfo = {
+  userID : string
+  nickname : string
+  faceURL : string
+  ex : string
+  createTime ?: number | null
+  attachedInfo ?: string | null
+  globalRecvMsgOpt ?: number | null
+}
+
+export type OpenIMPublicUserItem = OpenIMUserInfo
+
+export type OpenIMFriendUserItem = {
+  ownerUserID : string
+  userID : string
+  nickname : string
+  faceURL : string
+  remark : string
+  createTime : number
+  addSource : number
+  operatorUserID : string
+  ex : string
+  attachedInfo : string
+  isPinned : boolean
+}
+
+export type OpenIMBlackUserItem = {
+  ownerUserID : string
+  userID : string
+  nickname : string
+  faceURL : string
+  createTime : number
+  addSource : number
+  operatorUserID : string
+  ex : string
+  attachedInfo : string
+}
+
+export type OpenIMGroupItem = {
+  groupID : string
+  groupName : string
+  notification : string
+  introduction : string
+  faceURL : string
+  ownerUserID : string
+  createTime : number
+  memberCount : number
+  status : number
+  creatorUserID : string
+  groupType : number
+  needVerification : number
+  lookMemberInfo : number
+  applyMemberFriend : number
+  notificationUpdateTime : number
+  notificationUserID : string
+  ex : string
+  attachedInfo : string
+}
+
+export type OpenIMGroupMemberItem = {
+  groupID : string
+  userID : string
+  nickname : string
+  faceURL : string
+  roleLevel : number
+  joinTime : number
+  joinSource : number
+  operatorUserID : string
+  ex : string
+  muteEndTime : number
+  inviterUserID : string
+  attachedInfo : string
+}
+
+export type OpenIMFriendApplicationItem = {
+  fromUserID : string
+  fromNickname : string
+  fromFaceURL : string
+  toUserID : string
+  toNickname : string
+  toFaceURL : string
+  handleResult : number
+  reqMsg : string
+  createTime : number
+  handlerUserID : string
+  handleMsg : string
+  handleTime : number
+  ex : string
+  attachedInfo : string
+}
+
+export type OpenIMGroupApplicationItem = {
+  groupID : string
+  groupName : string
+  notification : string
+  introduction : string
+  groupFaceURL : string
+  ownerUserID : string
+  createTime : number
+  status : number
+  creatorUserID : string
+  groupType : number
+  memberCount : number
+  userID : string
+  nickname : string
+  userFaceURL : string
+  handleResult : number
+  reqMsg : string
+  handledMsg : string
+  reqTime : number
+  joinSource : number
+  inviterUserID : string
+  handleUserID : string
+  handledTime : number
+  ex : string
+  attachedInfo : string
+}
+
+export type OpenIMMessageRevokedItem = {
+  revokerID : string
+  revokerRole : number
+  clientMsgID : string
+  revokerNickname : string
+  revokeTime : number
+  sourceMessageSendTime : number
+  sourceMessageSendID : string
+  sourceMessageSenderNickname : string
+  sessionType : OpenIMSessionType
+  seq : number
+  ex : string
+  isAdminRevoke : boolean
+}
+
+export type OpenIMMessageReceiptItem = {
+  groupID : string
+  userID : string
+  msgIDList : Array<string>
+  readTime : number
+  msgFrom : number
+  contentType : OpenIMMessageType
+  sessionType : OpenIMSessionType
+}
+
+export type OpenIMMessageReceiptListResult = {
+  receipts : Array<OpenIMMessageReceiptItem>
+}
+
+export type OpenIMConversationInputStatusItem = {
+  conversationID : string
+  userID : string
+  platformIDs : Array<number>
+}
+
+export type OpenIMUserCommandItem = {
+  userID : string
+  type : number
+  uuid : string
+  createTime : number
+  value : string
+  ex : string
+}
+
+export type OpenIMGetOneConversationParams = {
+  sourceID : string
+  sessionType : OpenIMSessionType
+}
+
+export type OpenIMPageParams = {
+  offset : number
+  count : number
+}
+
+export type OpenIMGetGroupMemberListParams = {
+  groupID : string
+  filter : number
+  offset : number
+  count : number
+}
+
+export type OpenIMGetAdvancedHistoryMessageListParams = {
+  conversationID : string
+  startClientMsgID : string
+  count : number
+  lastMinSeq ?: number | null
+}
+
+export type OpenIMAdvancedHistoryMessageListResult = {
+  messageList : Array<OpenIMMessageItem>
+  isEnd : boolean
+  errCode : number
+  errMsg : string
+}
+
+export type OpenIMSearchLocalMessagesParams = {
+  conversationID ?: string | null
+  keywordList : Array<string>
+  keywordListMatchType : number
+  senderUserIDList : Array<string>
+  messageTypeList : Array<OpenIMMessageType>
+  searchTimePosition : number
+  searchTimePeriod : number
+  pageIndex : number
+  count : number
+}
+
+export type OpenIMApplicationListParams = {
+  offset ?: number | null
+  count ?: number | null
+}
+
+export type OpenIMSearchMessageResultItem = {
+  conversationID : string
+  conversationType : OpenIMSessionType
+  showName : string
+  faceURL : string
+  latestMsgSendTime ?: number | null
+  messageCount : number
+  messageList : Array<OpenIMMessageItem>
+}
+
+export type OpenIMFindMessageResultItem = OpenIMSearchMessageResultItem
+
+export type OpenIMSearchMessageResult = {
+  totalCount : number
+  searchResultItems : Array<OpenIMSearchMessageResultItem>
+}
+
+export type OpenIMFindMessageResult = {
+  totalCount : number
+  findResultItems : Array<OpenIMFindMessageResultItem>
+}
+
+export type OpenIMError = {
+  errCode : number
+  errMsg : string
+}
+
+export type OpenIMInitConfig = {
+  platformID : OpenIMPlatform
+  apiAddr : string
+  wsAddr : string
+  dataDir ?: string | null
+  logFilePath ?: string | null
+  logLevel : OpenIMLogLevel
+  isLogStandardOutput : boolean
+  systemType : string
+}
+
+export type OpenIMSDKEventName =
+  'onConnecting' |
+  'onConnectSuccess' |
+  'onConnectFailed' |
+  'onKickedOffline' |
+  'onUserTokenExpired' |
+  'onUserTokenInvalid' |
+  'onRecvNewMessage' |
+  'onRecvOfflineNewMessage' |
+  'onRecvOnlineOnlyMessage' |
+  'onMsgDeleted' |
+  'onNewRecvMessageRevoked' |
+  'onRecvC2CReadReceipt' |
+  'onRecvNewMessages' |
+  'onRecvOfflineNewMessages' |
+  'onConversationChanged' |
+  'onConversationUserInputStatusChanged' |
+  'onNewConversation' |
+  'onSyncServerFailed' |
+  'onSyncServerFinish' |
+  'onSyncServerProgress' |
+  'onSyncServerStart' |
+  'onSendMessageProgress' |
+  'onUploadFileProgress' |
+  'onUploadLogsProgress' |
+  'onTotalUnreadMessageCountChanged' |
+  'onRecvCustomBusinessMessage' |
+  'onBlackAdded' |
+  'onBlackDeleted' |
+  'onFriendAdded' |
+  'onFriendApplicationAccepted' |
+  'onFriendApplicationAdded' |
+  'onFriendApplicationDeleted' |
+  'onFriendApplicationRejected' |
+  'onFriendDeleted' |
+  'onFriendInfoChanged' |
+  'onGroupApplicationAccepted' |
+  'onGroupApplicationAdded' |
+  'onGroupApplicationDeleted' |
+  'onGroupApplicationRejected' |
+  'onGroupDismissed' |
+  'onGroupInfoChanged' |
+  'onGroupMemberAdded' |
+  'onGroupMemberDeleted' |
+  'onGroupMemberInfoChanged' |
+  'onJoinedGroupAdded' |
+  'onJoinedGroupDeleted' |
+  'onSelfInfoUpdated' |
+  'onUserCommandAdd' |
+  'onUserCommandDelete' |
+  'onUserCommandUpdate' |
+  'onUserStatusChanged'
+
+export type OpenIMSDKEvent = {
+  eventName : OpenIMSDKEventName
+  payload : string
+  errCode : number
+  errMsg : string
+}
+
+export type OpenIMSDKRawEventHandler = (event : OpenIMSDKEvent) => void
+export type OpenIMVoidEventHandler = () => void
+export type OpenIMErrorEventHandler = (errCode : number, errMsg : string) => void
+export type OpenIMStringEventHandler = (payload : string) => void
+export type OpenIMBooleanEventHandler = (value : boolean) => void
+export type OpenIMNumberEventHandler = (value : number) => void
+export type OpenIMMessageEventHandler = (message : OpenIMMessageItem | null) => void
+export type OpenIMMessageListEventHandler = (result : OpenIMMessageListResult | null) => void
+export type OpenIMMessageRevokedEventHandler = (revoked : OpenIMMessageRevokedItem | null) => void
+export type OpenIMMessageReceiptListEventHandler = (result : OpenIMMessageReceiptListResult | null) => void
+export type OpenIMConversationListEventHandler = (result : OpenIMConversationListResult | null) => void
+export type OpenIMConversationInputStatusEventHandler = (status : OpenIMConversationInputStatusItem | null) => void
+export type OpenIMFriendEventHandler = (friend : OpenIMFriendUserItem | null) => void
+export type OpenIMBlackUserEventHandler = (blackUser : OpenIMBlackUserItem | null) => void
+export type OpenIMFriendApplicationEventHandler = (application : OpenIMFriendApplicationItem | null) => void
+export type OpenIMGroupEventHandler = (group : OpenIMGroupItem | null) => void
+export type OpenIMGroupMemberEventHandler = (member : OpenIMGroupMemberItem | null) => void
+export type OpenIMGroupApplicationEventHandler = (application : OpenIMGroupApplicationItem | null) => void
+export type OpenIMUserEventHandler = (user : OpenIMUserInfo | null) => void
+export type OpenIMUserStatusListEventHandler = (result : OpenIMUserStatusListResult | null) => void
+export type OpenIMUserCommandEventHandler = (command : OpenIMUserCommandItem | null) => void
+export type OpenIMSendMessageProgressEventHandler = (progress : OpenIMSendMessageProgressEvent | null) => void
+export type OpenIMUploadFileProgressEventHandler = (progress : OpenIMUploadFileProgressEvent | null) => void
+export type OpenIMUploadLogsProgressEventHandler = (progress : OpenIMUploadLogsProgressEvent | null) => void
+
+export type OpenIMSDKEventSubscription = {
+  id : string
+  eventName : OpenIMSDKEventName
+}
+
+export type OpenIMSDKEventHandlerSubscription = {
+  id : string
+  eventName : OpenIMSDKEventName
+  handler : OpenIMSDKRawEventHandler
+}
+
+export type OffSDKEvent = (subscription : OpenIMSDKEventSubscription) => void
+export type OffSDKEventName = (eventName : OpenIMSDKEventName) => void
+export type InitSDK = (config : OpenIMInitConfig, operationID ?: string | null) => Promise<boolean>
+export type Login = (userID : string, token : string, operationID ?: string | null) => Promise<string>
+export type Logout = (operationID ?: string | null) => Promise<string>
+export type GetLoginStatus = (operationID ?: string | null) => Promise<OpenIMLoginStatus>
+export type GetLoginUserID = () => Promise<string>
+export type CreateTextMessage = (text : string, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export type SendMessage = (options : OpenIMSendMessageOptions) => Promise<OpenIMMessageItem>
+export type UploadFile = (params : OpenIMUploadFileParams, operationID ?: string | null) => Promise<OpenIMUploadFileResult | null>
+
+export type OpenIMSDKInstance = {
+  off : OffSDKEvent
+  initSDK : InitSDK
+  login : Login
+  logout : Logout
+  getLoginStatus : GetLoginStatus
+  getLoginUserID : GetLoginUserID
+  createTextMessage : CreateTextMessage
+  sendMessage : SendMessage
+  uploadFile : UploadFile
+}
+
+export declare function off(subscription : OpenIMSDKEventSubscription) : void
+export declare function offEvent(eventName : OpenIMSDKEventName) : void
+export declare function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
+export declare function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
+export declare function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription
+export declare function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
+export declare function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
+export declare function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription
+export declare function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
+export declare function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
+export declare function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
+export declare function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
+export declare function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription
+export declare function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription
+export declare function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription
+export declare function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription
+export declare function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription
+export declare function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription
+export declare function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription
+export declare function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription
+export declare function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription
+export declare function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription
+export declare function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription
+export declare function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription
+export declare function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription
+export declare function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription
+export declare function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription
+export declare function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription
+export declare function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription
+export declare function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription
+export declare function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription
+export declare function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription
+export declare function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription
+export declare function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription
+export declare function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
+export declare function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
+export declare function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription
+export declare function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription
+export declare function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription
+export declare function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription
+export declare function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription
+export declare const initSDK : InitSDK
+export declare const login : Login
+export declare const logout : Logout
+export declare const getLoginStatus : GetLoginStatus
+export declare const getLoginUserID : GetLoginUserID
+export declare const getSdkVersion : () => string
+export declare const getOpenIMDataPath : () => string
+export declare const unInitSDK : (operationID ?: string | null) => void
+
+export declare const getAllConversationList : (operationID ?: string | null) => Promise<OpenIMConversationListResult | null>
+export declare const getOneConversation : (params : OpenIMGetOneConversationParams, operationID ?: string | null) => Promise<OpenIMConversationItem | null>
+export declare const getAdvancedHistoryMessageList : (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) => Promise<OpenIMAdvancedHistoryMessageListResult | null>
+export declare const getAdvancedHistoryMessageListReverse : (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) => Promise<OpenIMAdvancedHistoryMessageListResult | null>
+export declare const getSpecifiedGroupsInfo : (params : Array<string>, operationID ?: string | null) => Promise<OpenIMGroupListResult | null>
+export declare const deleteConversationAndDeleteAllMsg : (conversationID : string, operationID ?: string | null) => Promise<string>
+export declare const markConversationMessageAsRead : (conversationID : string, operationID ?: string | null) => Promise<string>
+export declare const getGroupMemberList : (params : OpenIMGetGroupMemberListParams, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
+export declare const setMessageLocalEx : (params : OpenIMSetMessageLocalExParams, operationID ?: string | null) => Promise<string>
+export declare const revokeMessage : (params : OpenIMMessageKeyParams, operationID ?: string | null) => Promise<string>
+export declare const setConversation : (params : OpenIMSetConversationParams, operationID ?: string | null) => Promise<string>
+export declare const setAppBackgroundStatus : (data : boolean, operationID ?: string | null) => Promise<string>
+export declare const setAppBadge : (appUnreadCount : number, operationID ?: string | null) => Promise<string>
+export declare const networkStatusChanged : (operationID ?: string | null) => Promise<string>
+export declare const getSelfUserInfo : (operationID ?: string | null) => Promise<OpenIMUserInfo | null>
+export declare const getUsersInfo : (data : Array<string>, operationID ?: string | null) => Promise<OpenIMUserListResult | null>
+export declare const setSelfInfo : (data : OpenIMSetSelfInfoParams, operationID ?: string | null) => Promise<string>
+export declare const deleteMessageFromLocalStorage : (params : OpenIMMessageKeyParams, operationID ?: string | null) => Promise<string>
+export declare const deleteMessage : (params : OpenIMMessageKeyParams, operationID ?: string | null) => Promise<string>
+export declare const deleteAllMsgFromLocal : (operationID ?: string | null) => Promise<string>
+export declare const deleteAllMsgFromLocalAndSvr : (operationID ?: string | null) => Promise<string>
+export declare const insertSingleMessageToLocalStorage : (params : OpenIMInsertSingleMessageParams, operationID ?: string | null) => Promise<string>
+export declare const insertGroupMessageToLocalStorage : (params : OpenIMInsertGroupMessageParams, operationID ?: string | null) => Promise<string>
+export declare const changeInputStates : (params : OpenIMInputStateParams, operationID ?: string | null) => Promise<string>
+export declare const getInputstates : (params : OpenIMInputStateParams, operationID ?: string | null) => Promise<string>
+export declare const clearConversationAndDeleteAllMsg : (conversationID : string, operationID ?: string | null) => Promise<string>
+export declare const hideConversation : (conversationID : string, operationID ?: string | null) => Promise<string>
+export declare const hideAllConversations : (operationID ?: string | null) => Promise<string>
+export declare const markAllConversationMessageAsRead : (operationID ?: string | null) => Promise<string>
+export declare const markMessagesAsReadByMsgID : (params : OpenIMMarkMessagesAsReadByMsgIDParams, operationID ?: string | null) => Promise<string>
+export declare const searchConversation : (searchParam : string, operationID ?: string | null) => Promise<OpenIMConversationListResult | null>
+export declare const getConversationListSplit : (params : OpenIMPageParams, operationID ?: string | null) => Promise<OpenIMConversationListResult | null>
+export declare const getConversationIDBySessionType : (params : OpenIMGetOneConversationParams, operationID ?: string | null) => Promise<string>
+export declare const getMultipleConversation : (data : Array<string>, operationID ?: string | null) => Promise<OpenIMConversationListResult | null>
+export declare const deleteConversation : (conversationID : string, operationID ?: string | null) => Promise<string>
+export declare const setConversationDraft : (params : OpenIMSetConversationDraftParams, operationID ?: string | null) => Promise<string>
+export declare const getTotalUnreadMsgCount : (operationID ?: string | null) => Promise<number | null>
+export declare const searchLocalMessages : (params : OpenIMSearchLocalMessagesParams, operationID ?: string | null) => Promise<OpenIMSearchMessageResult | null>
+export declare const addFriend : (params : OpenIMAddFriendParams, operationID ?: string | null) => Promise<string>
+export declare const searchFriends : (params : OpenIMSearchFriendsParams, operationID ?: string | null) => Promise<OpenIMFriendListResult | null>
+export declare const getSpecifiedFriendsInfo : (params : OpenIMGetSpecifiedFriendsInfoParams, operationID ?: string | null) => Promise<OpenIMFriendListResult | null>
+export declare const getFriendApplicationListAsRecipient : (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) => Promise<OpenIMFriendApplicationListResult | null>
+export declare const getFriendApplicationListAsApplicant : (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) => Promise<OpenIMFriendApplicationListResult | null>
+export declare const getFriendApplicationUnhandledCount : (params : OpenIMPageParams, operationID ?: string | null) => Promise<number | null>
+export declare const getFriendList : (filterBlack ?: boolean | null, operationID ?: string | null) => Promise<OpenIMFriendListResult | null>
+export declare const getFriendListPage : (params : OpenIMPageParams, operationID ?: string | null) => Promise<OpenIMFriendListResult | null>
+export declare const updateFriends : (params : OpenIMUpdateFriendsParams, operationID ?: string | null) => Promise<string>
+export declare const checkFriend : (data : Array<string>, operationID ?: string | null) => Promise<Array<boolean> | null>
+export declare const acceptFriendApplication : (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) => Promise<string>
+export declare const refuseFriendApplication : (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) => Promise<string>
+export declare const deleteFriend : (userID : string, operationID ?: string | null) => Promise<string>
+export declare const addBlack : (params : OpenIMAddBlackParams, operationID ?: string | null) => Promise<string>
+export declare const removeBlack : (userID : string, operationID ?: string | null) => Promise<string>
+export declare const getBlackList : (operationID ?: string | null) => Promise<OpenIMBlackListResult | null>
+export declare const inviteUserToGroup : (params : OpenIMGroupInviteParams, operationID ?: string | null) => Promise<string>
+export declare const kickGroupMember : (params : OpenIMGroupInviteParams, operationID ?: string | null) => Promise<string>
+export declare const isJoinGroup : (groupID : string, operationID ?: string | null) => Promise<boolean>
+export declare const getSpecifiedGroupMembersInfo : (params : OpenIMGroupUserListParams, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
+export declare const getUsersInGroup : (params : OpenIMGroupUserListParams, operationID ?: string | null) => Promise<Array<string> | null>
+export declare const getGroupMemberListByJoinTimeFilter : (params : OpenIMGroupMemberListByJoinTimeFilterParams, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
+export declare const searchGroupMembers : (params : OpenIMSearchGroupMembersParams, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
+export declare const getJoinedGroupList : (operationID ?: string | null) => Promise<OpenIMGroupListResult | null>
+export declare const getJoinedGroupListPage : (params : OpenIMPageParams, operationID ?: string | null) => Promise<OpenIMGroupListResult | null>
+export declare const createGroup : (params : OpenIMCreateGroupParams, operationID ?: string | null) => Promise<OpenIMGroupItem | null>
+export declare const setGroupInfo : (params : OpenIMSetGroupInfoParams, operationID ?: string | null) => Promise<string>
+export declare const setGroupMemberInfo : (params : OpenIMSetGroupMemberInfoParams, operationID ?: string | null) => Promise<string>
+export declare const joinGroup : (params : OpenIMJoinGroupParams, operationID ?: string | null) => Promise<string>
+export declare const searchGroups : (params : OpenIMSearchGroupsParams, operationID ?: string | null) => Promise<OpenIMGroupListResult | null>
+export declare const quitGroup : (groupID : string, operationID ?: string | null) => Promise<string>
+export declare const dismissGroup : (groupID : string, operationID ?: string | null) => Promise<string>
+export declare const changeGroupMute : (params : OpenIMChangeGroupMuteParams, operationID ?: string | null) => Promise<string>
+export declare const changeGroupMemberMute : (params : OpenIMChangeGroupMemberMuteParams, operationID ?: string | null) => Promise<string>
+export declare const transferGroupOwner : (params : OpenIMTransferGroupOwnerParams, operationID ?: string | null) => Promise<string>
+export declare const getGroupApplicationListAsApplicant : (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) => Promise<OpenIMGroupApplicationListResult | null>
+export declare const getGroupApplicationListAsRecipient : (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) => Promise<OpenIMGroupApplicationListResult | null>
+export declare const getGroupApplicationUnhandledCount : (params : OpenIMPageParams, operationID ?: string | null) => Promise<number | null>
+export declare const acceptGroupApplication : (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) => Promise<string>
+export declare const refuseGroupApplication : (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) => Promise<string>
+export declare const getGroupMemberOwnerAndAdmin : (groupID : string, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
+export declare const findMessageList : (params : Array<OpenIMFindMessageParams>, operationID ?: string | null) => Promise<OpenIMFindMessageResult | null>
+export declare const updateFcmToken : (params : OpenIMUpdateFcmTokenParams, operationID ?: string | null) => Promise<string>
+export declare const subscribeUsersStatus : (data : Array<string>, operationID ?: string | null) => Promise<string>
+export declare const unsubscribeUsersStatus : (data : Array<string>, operationID ?: string | null) => Promise<string>
+export declare const getUserStatus : (data : Array<string>, operationID ?: string | null) => Promise<OpenIMUserStatusListResult | null>
+export declare const getSubscribeUsersStatus : (operationID ?: string | null) => Promise<OpenIMUserStatusListResult | null>
+
+export declare const createTextMessage : CreateTextMessage
+export declare const createImageMessageFromFullPath : (imageFullPath : string, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createImageMessageByURL : (params : OpenIMPictureElem, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createCustomMessage : (params : OpenIMCreateCustomMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createQuoteMessage : (params : OpenIMCreateQuoteMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createAdvancedQuoteMessage : (params : OpenIMCreateAdvancedQuoteMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createAdvancedTextMessage : (params : OpenIMCreateAdvancedTextMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createTextAtMessage : (params : OpenIMCreateTextAtMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createSoundMessageFromFullPath : (params : OpenIMCreateSoundMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createSoundMessageByURL : (params : OpenIMSoundElem, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createVideoMessageFromFullPath : (params : OpenIMCreateVideoMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createVideoMessageByURL : (params : OpenIMVideoElem, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createFileMessageFromFullPath : (params : OpenIMCreateFileMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createFileMessageByURL : (params : OpenIMFileElem, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createMergerMessage : (params : OpenIMCreateMergerMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createForwardMessage : (message : OpenIMMessageItem, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createFaceMessage : (params : OpenIMCreateFaceMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createLocationMessage : (params : OpenIMCreateLocationMessageParams, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+export declare const createCardMessage : (card : OpenIMCardElem, operationID ?: string | null) => Promise<OpenIMMessageItem | null>
+
+export declare const sendMessage : SendMessage
+export declare const sendMessageNotOss : (options : OpenIMSendMessageOptions) => Promise<OpenIMMessageItem>
+
+export declare const uploadFile : UploadFile
+export declare const uploadLogs : (params : OpenIMUploadLogsParams, operationID ?: string | null) => Promise<string>
