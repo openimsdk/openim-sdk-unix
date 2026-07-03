@@ -4,6 +4,8 @@
 
 底层 IM 能力来自 [OpenIM SDK Core](https://github.com/openimsdk/openim-sdk-core)。本项目将 OpenIM 移动端原生 SDK 封装为 uni-app x 的 `unix-openim-sdk` UTS 插件，提供 Promise 风格 API、类型化事件订阅和 Android/iOS 原生桥接实现。
 
+HarmonyOS 端适配已完成，作为商业版能力提供。当前开源仓库和插件市场公开包仅包含 App Android/App iOS 实现，不包含 HarmonyOS 商业版源码、HAR 或平台配置。
+
 本仓库同时包含一个 uni-app x demo 页面，可用于在 HBuilderX 中调试插件 API。
 
 ## 文档 📚
@@ -26,7 +28,7 @@ OpenIM 服务端、REST API 和 SDK 文档请访问 [https://docs.openim.io/](ht
 - 平台：App iOS
 - 编译模式：uni-app x 蒸汽模式
 
-插件目标仍为 App Android 和 App iOS。Android 侧依赖自定义基座或正式包验证原生 SDK 能力。
+开源版本目标仍为 App Android 和 App iOS。Android 侧依赖自定义基座或正式包验证原生 SDK 能力；HarmonyOS 端能力请使用商业版。
 
 ### 从插件市场安装
 

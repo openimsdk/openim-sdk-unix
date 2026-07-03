@@ -6,6 +6,7 @@ Unix OpenIM SDK 是面向 uni-app x 的 OpenIM 原生 SDK UTS 插件，提供 Pr
 
 - App Android：支持
 - App iOS：支持
+- App HarmonyOS：商业版支持，已完成适配；公开插件包不包含 HarmonyOS 源码、HAR 和平台配置
 - Web：不支持
 - 小程序：不支持
 

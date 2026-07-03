@@ -6,6 +6,7 @@ Unix OpenIM SDK is a Promise-style UTS plugin for using the native OpenIM SDK in
 
 - Android App: supported
 - iOS App: supported
+- HarmonyOS App: supported in the commercial edition. This open-source package does not include HarmonyOS source code, HAR artifacts, or platform configuration.
 - Web and Mini Program: not supported
 
 ## License
