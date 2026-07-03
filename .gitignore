@@ -3,6 +3,19 @@ unpackage/
 .hbuilderx/
 env.js
 .DS_Store
+
+# Local OpenIM automation data
+.openim-test-accounts.json
+static/openim-test-config.json
+test-results/
+openim-automation-assets/
+openim-automation-results/
+
+# Private HarmonyOS commercial support
+uni_modules/unix-openim-sdk/utssdk/app-harmony/
+harmony-configs/
+*.har
+
 *.zip
 *.apk
 *.ipa

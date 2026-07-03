@@ -1,7 +1,7 @@
 {
   "id": "unix-openim-sdk",
   "displayName": "Unix OpenIM SDK",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Promise-style UTS wrapper for OpenIM native SDK on Android and iOS",
   "keywords": [
     "openim",
