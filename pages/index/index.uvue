@@ -43,11 +43,9 @@
 				<text class="section-title">Message Read / Storage</text>
 				<view class="button-grid">
 					<button class="action-button" @click="handleGetHistoryByConversationID">21 History</button>
-					<button class="action-button" @click="handleGetAdvancedHistoryReverse">22 History Reverse</button>
 					<button class="action-button" @click="handleSearchLocalMessages">23 Search Messages</button>
 					<button class="action-button" @click="handleFindMessageList">24 Find Cached Msg</button>
 					<button class="action-button" @click="handleSetMessageLocalEx">25 Set LocalEx</button>
-					<button class="action-button" @click="handleMarkMessagesAsReadByMsgID">26 Mark Msg Read</button>
 					<button class="action-button" @click="handleInsertSingleMessage">27 Insert Single</button>
 					<button class="action-button" @click="handleInsertGroupMessage">28 Insert Group</button>
 				</view>
@@ -115,7 +113,6 @@
 					<button class="action-button" @click="handleGetGroupMemberList">63 Group Members</button>
 					<button class="action-button" @click="handleGetSpecifiedGroupMembersInfo">64 Specified Members</button>
 					<button class="action-button" @click="handleGetUsersInGroup">65 Users In Group</button>
-					<button class="action-button" @click="handleGetGroupMemberListByJoinTimeFilter">66 Members By Join Time</button>
 					<button class="action-button" @click="handleSearchGroupMembers">67 Search Members</button>
 					<button class="action-button" @click="handleGetGroupMemberOwnerAndAdmin">68 Owner Admin</button>
 					<button class="action-button" @click="handleGetGroupApplicationListAsApplicant">69 Group Apps Applicant</button>
@@ -214,7 +211,6 @@
 		OpenIMGroupItem,
 		OpenIMGroupListResult,
 		OpenIMGroupMemberItem,
-		OpenIMGroupMemberListByJoinTimeFilterParams,
 		OpenIMGroupMemberListResult,
 		OpenIMGroupUserListParams,
 		OpenIMApplicationListParams,
@@ -257,7 +253,6 @@
 		OpenIMAddFriendParams,
 		OpenIMGetSpecifiedFriendsInfoParams,
 		OpenIMInputStateParams,
-		OpenIMMarkMessagesAsReadByMsgIDParams,
 		OpenIMSoundElem,
 		OpenIMUpdateFriendsParams,
 		OpenIMUpdateFcmTokenParams,
@@ -268,7 +263,7 @@
 		OpenIMUploadLogsProgressEvent,
 		OpenIMUserInfo,
 		OpenIMUserListResult,
-		OpenIMSDKEventSubscription,
+		OpenIMSDKUnsubscribe,
 		OpenIMMessageRevokedItem,
 		OpenIMMessageReceiptListResult,
 		OpenIMConversationInputStatusItem,
@@ -277,7 +272,6 @@
 		OpenIMVideoElem,
 		OpenIMFileElem,
 		OpenIMCardElem,
-		off,
 		onConnecting,
 		onConnectSuccess,
 		onConnectFailed,
@@ -339,7 +333,6 @@
 		getAllConversationList,
 		getOneConversation,
 		getAdvancedHistoryMessageList,
-		getAdvancedHistoryMessageListReverse,
 		getSpecifiedGroupsInfo,
 		deleteConversationAndDeleteAllMsg,
 		markConversationMessageAsRead,
@@ -365,7 +358,6 @@
 		hideConversation,
 		hideAllConversations,
 		markAllConversationMessageAsRead,
-		markMessagesAsReadByMsgID,
 		searchConversation,
 		getConversationListSplit,
 		getConversationIDBySessionType,
@@ -395,7 +387,6 @@
 		isJoinGroup,
 		getSpecifiedGroupMembersInfo,
 		getUsersInGroup,
-		getGroupMemberListByJoinTimeFilter,
 		searchGroupMembers,
 		getJoinedGroupList,
 		getJoinedGroupListPage,
@@ -700,7 +691,7 @@
 	}
 
 	// SDK event subscriptions
-	let sdkEventSubscriptions : Array<OpenIMSDKEventSubscription> = []
+	let sdkEventUnsubscribes : Array<OpenIMSDKUnsubscribe> = []
 
 	function updateStatusForSDKEventName(eventName : string) {
 		if (eventName == 'onConnecting') {
@@ -739,13 +730,13 @@
 		setResult('event: ' + eventName + '\nerrCode: ' + errCode.toString() + '\nerrMsg: ' + errMsg)
 	}
 
-	function addSDKEventSubscription(subscription : OpenIMSDKEventSubscription) {
-		sdkEventSubscriptions.push(subscription)
+	function addSDKEventSubscription(unsubscribe : OpenIMSDKUnsubscribe) {
+		sdkEventUnsubscribes.push(unsubscribe)
 	}
 
 	function unregisterSDKEvents() {
-		sdkEventSubscriptions.forEach((subscription : OpenIMSDKEventSubscription) => { off(subscription) })
-		sdkEventSubscriptions = []
+		sdkEventUnsubscribes.forEach((unsubscribe : OpenIMSDKUnsubscribe) => { unsubscribe() })
+		sdkEventUnsubscribes = []
 	}
 
 	function registerSDKEvents() {
@@ -915,11 +906,9 @@
 	function handleGetInputstates() { const params : OpenIMInputStateParams = { conversationID: requireConversationID(), userID: demoPeerUserID, focus: false }; runAPI<string>('Getting input state', 'Input state loaded', getInputstates(params, 'uvue_get_input'), noCache) }
 
 	function handleGetHistoryByConversationID() { const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: requireConversationID(), startClientMsgID: '', count: 20 }; runAPI<OpenIMAdvancedHistoryMessageListResult | null>('Getting history', 'History loaded', getAdvancedHistoryMessageList(params, 'uvue_history'), cacheHistory) }
-	function handleGetAdvancedHistoryReverse() { const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: requireConversationID(), startClientMsgID: '', count: 20 }; runAPI<OpenIMAdvancedHistoryMessageListResult | null>('Getting reverse history', 'Reverse history loaded', getAdvancedHistoryMessageListReverse(params, 'uvue_history_reverse'), cacheHistory) }
 	function handleSearchLocalMessages() { const params : OpenIMSearchLocalMessagesParams = { conversationID: requireConversationID(), keywordList: ['uni-app'], keywordListMatchType: 0, senderUserIDList: [], messageTypeList: [OpenIMMessageTypeText], searchTimePosition: 0, searchTimePeriod: 0, pageIndex: 1, count: 20 }; runAPI<OpenIMSearchMessageResult | null>('Searching local messages', 'Local messages searched', searchLocalMessages(params, 'uvue_search_local_messages'), noCache) }
 	function handleFindMessageList() { const clientMsgID = requireClientMsgID(); if (clientMsgID.length == 0) { failMissing('Create, send, or load a message before finding it.'); return }; const params : Array<OpenIMFindMessageParams> = [{ conversationID: requireConversationID(), clientMsgIDList: [clientMsgID] }]; runAPI<OpenIMFindMessageResult | null>('Finding cached message', 'Cached message found', findMessageList(params, 'uvue_find_message'), noCache) }
 	function handleSetMessageLocalEx() { const params = messageKeyParams(); if (params == null) { failMissing('Create, send, or load a message before setting localEx.'); return }; const localExParams : OpenIMSetMessageLocalExParams = { conversationID: params.conversationID, clientMsgID: params.clientMsgID, localEx: 'local ex from uni-app x' }; runAPI<string>('Setting message localEx', 'Message localEx set', setMessageLocalEx(localExParams, 'uvue_set_local_ex'), noCache) }
-	function handleMarkMessagesAsReadByMsgID() { const clientMsgID = requireClientMsgID(); if (clientMsgID.length == 0) { failMissing('Create, send, or load a message before marking it read.'); return }; const params : OpenIMMarkMessagesAsReadByMsgIDParams = { conversationID: requireConversationID(), clientMsgIDs: clientMsgID }; runAPI<string>('Marking message read', 'Message read marked', markMessagesAsReadByMsgID(params, 'uvue_mark_message_read'), noCache) }
 	function handleInsertSingleMessage() { const message = requireCachedMessage(); if (message == null) { failMissing('Create a message before inserting it.'); return }; const params : OpenIMInsertSingleMessageParams = { message: message, recvID: demoPeerUserID, sendID: demoUserID }; runAPI<string>('Inserting single message', 'Insert single done', insertSingleMessageToLocalStorage(params, 'uvue_insert_single'), noCache) }
 	function handleInsertGroupMessage() { const message = requireCachedMessage(); if (message == null) { failMissing('Create a message before inserting it.'); return }; const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group list or group conversation before inserting group message.'); return }; const params : OpenIMInsertGroupMessageParams = { message: message, groupID: groupID, sendID: demoUserID }; runAPI<string>('Inserting group message', 'Insert group done', insertGroupMessageToLocalStorage(params, 'uvue_insert_group'), noCache) }
 
@@ -967,7 +956,6 @@
 	function handleGetGroupMemberList() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load joined groups or group conversation first.'); return }; const params : OpenIMGetGroupMemberListParams = { groupID: groupID, filter: 0, offset: 0, count: 20 }; runAPI<OpenIMGroupMemberListResult | null>('Getting group members', 'Group members loaded', getGroupMemberList(params, 'uvue_group_members'), cacheGroupMembers) }
 	function handleGetSpecifiedGroupMembersInfo() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const userID = cachedGroupMember != null ? (cachedGroupMember as OpenIMGroupMemberItem).userID : demoUserID; const params : OpenIMGroupUserListParams = { groupID: groupID, userIDList: [userID] }; runAPI<OpenIMGroupMemberListResult | null>('Getting specified members', 'Specified members loaded', getSpecifiedGroupMembersInfo(params, 'uvue_specified_members'), cacheGroupMembers) }
 	function handleGetUsersInGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMGroupUserListParams = { groupID: groupID, userIDList: [demoUserID] }; runAPI<Array<string> | null>('Getting users in group', 'Users in group loaded', getUsersInGroup(params, 'uvue_users_in_group'), noCache) }
-	function handleGetGroupMemberListByJoinTimeFilter() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMGroupMemberListByJoinTimeFilterParams = { groupID: groupID, offset: 0, count: 20, joinTimeBegin: 0, joinTimeEnd: 0, userIDList: [] }; runAPI<OpenIMGroupMemberListResult | null>('Getting members by join time', 'Members by join time loaded', getGroupMemberListByJoinTimeFilter(params, 'uvue_members_join_time'), cacheGroupMembers) }
 	function handleSearchGroupMembers() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMSearchGroupMembersParams = { groupID: groupID, keywordList: [demoUserID], isSearchUserID: true, isSearchMemberNickname: true }; runAPI<OpenIMGroupMemberListResult | null>('Searching group members', 'Group members searched', searchGroupMembers(params, 'uvue_search_group_members'), cacheGroupMembers) }
 	function handleGetGroupMemberOwnerAndAdmin() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<OpenIMGroupMemberListResult | null>('Getting owner admin', 'Owner admin loaded', getGroupMemberOwnerAndAdmin(groupID, 'uvue_owner_admin'), cacheGroupMembers) }
 	function handleGetGroupApplicationListAsApplicant() { runAPI<OpenIMGroupApplicationListResult | null>('Getting group apps applicant', 'Group apps applicant loaded', getGroupApplicationListAsApplicant(defaultApplicationParams(), 'uvue_group_apps_applicant'), cacheGroupApplications) }

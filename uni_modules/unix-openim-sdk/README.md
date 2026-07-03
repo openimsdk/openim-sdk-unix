@@ -55,7 +55,7 @@ type UnixOpenIMError = {
 
 Long-lived event subscriptions use typed helpers such as `onConnectSuccess`, `onRecvNewMessages`, `onSendMessageProgress`, `onUploadFileProgress`, and `onUploadLogsProgress`.
 
-Use `off(subscription)` to remove one subscription, or `offEvent(eventName)` to clear all handlers for a specific event.
+Each subscription returns an `unsubscribe` function. Call it to remove that listener, or use `offEvent(eventName)` to clear all handlers for a specific event.
 
 ## Local Media Paths
 

@@ -20,6 +20,7 @@ import {
   OpenIMSDKEventHandlerSubscription,
   OpenIMSDKEventName,
   OpenIMSDKEventSubscription,
+  OpenIMSDKUnsubscribe,
   OpenIMSDKRawEventHandler,
   OpenIMStringEventHandler,
   OpenIMUploadFileProgressEventHandler,
@@ -73,13 +74,14 @@ export function ensureNativeEventsBound() {
   }
 }
 
-export function onSDKEvent(eventName : OpenIMSDKEventName, handler : OpenIMSDKRawEventHandler) : OpenIMSDKEventSubscription {
+export function onSDKEvent(eventName : OpenIMSDKEventName, handler : OpenIMSDKRawEventHandler) : OpenIMSDKUnsubscribe {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   const subscription : OpenIMSDKEventHandlerSubscription = { id: subscriptionID, eventName: eventName, handler: handler }
   sdkEventHandlers.push(subscription)
-  return { id: subscriptionID, eventName: eventName }
+  const eventSubscription : OpenIMSDKEventSubscription = { id: subscriptionID, eventName: eventName }
+  return () => { offSDKEvent(eventSubscription) }
 }
 
 export function offSDKEvent(subscription : OpenIMSDKEventSubscription) {
@@ -101,62 +103,62 @@ export function offSDKEventName(eventName : OpenIMSDKEventName) {
 function readBooleanPayload(payload : string) : boolean { return payload == 'true' }
 function readNumberPayload(payload : string) : number { return parseFloat(payload) }
 function parseSendMessageProgress(payload : string) : OpenIMSendMessageProgressEvent | null { return JSON.parseObject<OpenIMSendMessageProgressEvent>(payload) }
-function onVoidEvent(eventName : OpenIMSDKEventName, handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent(eventName, (_event : OpenIMSDKEvent) => { handler() }) }
-function onErrorEvent(eventName : OpenIMSDKEventName, handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(event.errCode, event.errMsg) }) }
-function onMessageEvent(eventName : OpenIMSDKEventName, handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(parseNativeMessage(event.payload)) }) }
-function onMessageListEvent(eventName : OpenIMSDKEventName, handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(parseNativeMessageEventList(event.payload)) }) }
-function onConversationListEvent(eventName : OpenIMSDKEventName, handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(parseNativeConversationEventList(event.payload)) }) }
-function onBooleanEvent(eventName : OpenIMSDKEventName, handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(readBooleanPayload(event.payload)) }) }
-function onNumberEvent(eventName : OpenIMSDKEventName, handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(readNumberPayload(event.payload)) }) }
+function onVoidEvent(eventName : OpenIMSDKEventName, handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent(eventName, (_event : OpenIMSDKEvent) => { handler() }) }
+function onErrorEvent(eventName : OpenIMSDKEventName, handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(event.errCode, event.errMsg) }) }
+function onMessageEvent(eventName : OpenIMSDKEventName, handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(parseNativeMessage(event.payload)) }) }
+function onMessageListEvent(eventName : OpenIMSDKEventName, handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(parseNativeMessageEventList(event.payload)) }) }
+function onConversationListEvent(eventName : OpenIMSDKEventName, handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(parseNativeConversationEventList(event.payload)) }) }
+function onBooleanEvent(eventName : OpenIMSDKEventName, handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(readBooleanPayload(event.payload)) }) }
+function onNumberEvent(eventName : OpenIMSDKEventName, handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent(eventName, (event : OpenIMSDKEvent) => { handler(readNumberPayload(event.payload)) }) }
 
-export function onConnectingEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onVoidEvent('onConnecting', handler) }
-export function onConnectSuccessEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onVoidEvent('onConnectSuccess', handler) }
-export function onConnectFailedEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onErrorEvent('onConnectFailed', handler) }
-export function onKickedOfflineEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onVoidEvent('onKickedOffline', handler) }
-export function onUserTokenExpiredEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onVoidEvent('onUserTokenExpired', handler) }
-export function onUserTokenInvalidEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onErrorEvent('onUserTokenInvalid', handler) }
-export function onRecvNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMessageEvent('onRecvNewMessage', handler) }
-export function onRecvOfflineNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMessageEvent('onRecvOfflineNewMessage', handler) }
-export function onRecvOnlineOnlyMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMessageEvent('onRecvOnlineOnlyMessage', handler) }
-export function onMsgDeletedEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMessageEvent('onMsgDeleted', handler) }
-export function onNewRecvMessageRevokedEvent(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onNewRecvMessageRevoked', (event : OpenIMSDKEvent) => { handler(parseNativeMessageRevoked(event.payload)) }) }
-export function onRecvC2CReadReceiptEvent(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onRecvC2CReadReceipt', (event : OpenIMSDKEvent) => { handler(parseNativeMessageReceiptList(event.payload)) }) }
-export function onRecvNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onMessageListEvent('onRecvNewMessages', handler) }
-export function onRecvOfflineNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onMessageListEvent('onRecvOfflineNewMessages', handler) }
-export function onConversationChangedEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onConversationListEvent('onConversationChanged', handler) }
-export function onConversationUserInputStatusChangedEvent(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onConversationUserInputStatusChanged', (event : OpenIMSDKEvent) => { handler(parseNativeConversationInputStatus(event.payload)) }) }
-export function onNewConversationEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onConversationListEvent('onNewConversation', handler) }
-export function onSyncServerFailedEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onBooleanEvent('onSyncServerFailed', handler) }
-export function onSyncServerFinishEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onBooleanEvent('onSyncServerFinish', handler) }
-export function onSyncServerProgressEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onNumberEvent('onSyncServerProgress', handler) }
-export function onSyncServerStartEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onBooleanEvent('onSyncServerStart', handler) }
-export function onSendMessageProgressEvent(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onSendMessageProgress', (event : OpenIMSDKEvent) => { handler(parseSendMessageProgress(event.payload)) }) }
-export function onUploadFileProgressEvent(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onUploadFileProgress', (event : OpenIMSDKEvent) => { handler(parseNativeUploadFileProgressEvent(event.payload)) }) }
-export function onUploadLogsProgressEvent(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onUploadLogsProgress', (event : OpenIMSDKEvent) => { handler(parseNativeUploadLogsProgressEvent(event.payload)) }) }
-export function onTotalUnreadMessageCountChangedEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onNumberEvent('onTotalUnreadMessageCountChanged', handler) }
-export function onRecvCustomBusinessMessageEvent(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onRecvCustomBusinessMessage', (event : OpenIMSDKEvent) => { handler(event.payload) }) }
-export function onBlackAddedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onBlackAdded', (event : OpenIMSDKEvent) => { handler(parseNativeBlackUserObject(event.payload)) }) }
-export function onBlackDeletedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onBlackDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeBlackUserObject(event.payload)) }) }
-export function onFriendAddedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onFriendAdded', (event : OpenIMSDKEvent) => { handler(parseNativeFriendObject(event.payload)) }) }
-export function onFriendApplicationAcceptedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onFriendApplicationAccepted', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
-export function onFriendApplicationAddedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onFriendApplicationAdded', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
-export function onFriendApplicationDeletedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onFriendApplicationDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
-export function onFriendApplicationRejectedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onFriendApplicationRejected', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
-export function onFriendDeletedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onFriendDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeFriendObject(event.payload)) }) }
-export function onFriendInfoChangedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onFriendInfoChanged', (event : OpenIMSDKEvent) => { handler(parseNativeFriendObject(event.payload)) }) }
-export function onGroupApplicationAcceptedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupApplicationAccepted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
-export function onGroupApplicationAddedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupApplicationAdded', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
-export function onGroupApplicationDeletedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupApplicationDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
-export function onGroupApplicationRejectedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupApplicationRejected', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
-export function onGroupDismissedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupDismissed', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
-export function onGroupInfoChangedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupInfoChanged', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
-export function onGroupMemberAddedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupMemberAdded', (event : OpenIMSDKEvent) => { handler(parseNativeGroupMemberObject(event.payload)) }) }
-export function onGroupMemberDeletedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupMemberDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupMemberObject(event.payload)) }) }
-export function onGroupMemberInfoChangedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onGroupMemberInfoChanged', (event : OpenIMSDKEvent) => { handler(parseNativeGroupMemberObject(event.payload)) }) }
-export function onJoinedGroupAddedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onJoinedGroupAdded', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
-export function onJoinedGroupDeletedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onJoinedGroupDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
-export function onSelfInfoUpdatedEvent(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onSelfInfoUpdated', (event : OpenIMSDKEvent) => { handler(parseNativeUserObject(event.payload)) }) }
-export function onUserCommandAddEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onUserCommandAdd', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
-export function onUserCommandDeleteEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onUserCommandDelete', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
-export function onUserCommandUpdateEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onUserCommandUpdate', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
-export function onUserStatusChangedEvent(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription { return onSDKEvent('onUserStatusChanged', (event : OpenIMSDKEvent) => { handler(parseNativeUserStatusEventList(event.payload)) }) }
+export function onConnectingEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onVoidEvent('onConnecting', handler) }
+export function onConnectSuccessEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onVoidEvent('onConnectSuccess', handler) }
+export function onConnectFailedEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe { return onErrorEvent('onConnectFailed', handler) }
+export function onKickedOfflineEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onVoidEvent('onKickedOffline', handler) }
+export function onUserTokenExpiredEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onVoidEvent('onUserTokenExpired', handler) }
+export function onUserTokenInvalidEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe { return onErrorEvent('onUserTokenInvalid', handler) }
+export function onRecvNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onMessageEvent('onRecvNewMessage', handler) }
+export function onRecvOfflineNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onMessageEvent('onRecvOfflineNewMessage', handler) }
+export function onRecvOnlineOnlyMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onMessageEvent('onRecvOnlineOnlyMessage', handler) }
+export function onMsgDeletedEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onMessageEvent('onMsgDeleted', handler) }
+export function onNewRecvMessageRevokedEvent(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onNewRecvMessageRevoked', (event : OpenIMSDKEvent) => { handler(parseNativeMessageRevoked(event.payload)) }) }
+export function onRecvC2CReadReceiptEvent(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onRecvC2CReadReceipt', (event : OpenIMSDKEvent) => { handler(parseNativeMessageReceiptList(event.payload)) }) }
+export function onRecvNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe { return onMessageListEvent('onRecvNewMessages', handler) }
+export function onRecvOfflineNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe { return onMessageListEvent('onRecvOfflineNewMessages', handler) }
+export function onConversationChangedEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe { return onConversationListEvent('onConversationChanged', handler) }
+export function onConversationUserInputStatusChangedEvent(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onConversationUserInputStatusChanged', (event : OpenIMSDKEvent) => { handler(parseNativeConversationInputStatus(event.payload)) }) }
+export function onNewConversationEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe { return onConversationListEvent('onNewConversation', handler) }
+export function onSyncServerFailedEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onBooleanEvent('onSyncServerFailed', handler) }
+export function onSyncServerFinishEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onBooleanEvent('onSyncServerFinish', handler) }
+export function onSyncServerProgressEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe { return onNumberEvent('onSyncServerProgress', handler) }
+export function onSyncServerStartEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onBooleanEvent('onSyncServerStart', handler) }
+export function onSendMessageProgressEvent(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onSendMessageProgress', (event : OpenIMSDKEvent) => { handler(parseSendMessageProgress(event.payload)) }) }
+export function onUploadFileProgressEvent(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUploadFileProgress', (event : OpenIMSDKEvent) => { handler(parseNativeUploadFileProgressEvent(event.payload)) }) }
+export function onUploadLogsProgressEvent(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUploadLogsProgress', (event : OpenIMSDKEvent) => { handler(parseNativeUploadLogsProgressEvent(event.payload)) }) }
+export function onTotalUnreadMessageCountChangedEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe { return onNumberEvent('onTotalUnreadMessageCountChanged', handler) }
+export function onRecvCustomBusinessMessageEvent(handler : OpenIMStringEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onRecvCustomBusinessMessage', (event : OpenIMSDKEvent) => { handler(event.payload) }) }
+export function onBlackAddedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onBlackAdded', (event : OpenIMSDKEvent) => { handler(parseNativeBlackUserObject(event.payload)) }) }
+export function onBlackDeletedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onBlackDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeBlackUserObject(event.payload)) }) }
+export function onFriendAddedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onFriendAdded', (event : OpenIMSDKEvent) => { handler(parseNativeFriendObject(event.payload)) }) }
+export function onFriendApplicationAcceptedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onFriendApplicationAccepted', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
+export function onFriendApplicationAddedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onFriendApplicationAdded', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
+export function onFriendApplicationDeletedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onFriendApplicationDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
+export function onFriendApplicationRejectedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onFriendApplicationRejected', (event : OpenIMSDKEvent) => { handler(parseNativeFriendApplicationObject(event.payload)) }) }
+export function onFriendDeletedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onFriendDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeFriendObject(event.payload)) }) }
+export function onFriendInfoChangedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onFriendInfoChanged', (event : OpenIMSDKEvent) => { handler(parseNativeFriendObject(event.payload)) }) }
+export function onGroupApplicationAcceptedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupApplicationAccepted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
+export function onGroupApplicationAddedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupApplicationAdded', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
+export function onGroupApplicationDeletedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupApplicationDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
+export function onGroupApplicationRejectedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupApplicationRejected', (event : OpenIMSDKEvent) => { handler(parseNativeGroupApplicationObject(event.payload)) }) }
+export function onGroupDismissedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupDismissed', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
+export function onGroupInfoChangedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupInfoChanged', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
+export function onGroupMemberAddedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupMemberAdded', (event : OpenIMSDKEvent) => { handler(parseNativeGroupMemberObject(event.payload)) }) }
+export function onGroupMemberDeletedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupMemberDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupMemberObject(event.payload)) }) }
+export function onGroupMemberInfoChangedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onGroupMemberInfoChanged', (event : OpenIMSDKEvent) => { handler(parseNativeGroupMemberObject(event.payload)) }) }
+export function onJoinedGroupAddedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onJoinedGroupAdded', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
+export function onJoinedGroupDeletedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onJoinedGroupDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
+export function onSelfInfoUpdatedEvent(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onSelfInfoUpdated', (event : OpenIMSDKEvent) => { handler(parseNativeUserObject(event.payload)) }) }
+export function onUserCommandAddEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserCommandAdd', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
+export function onUserCommandDeleteEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserCommandDelete', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
+export function onUserCommandUpdateEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserCommandUpdate', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
+export function onUserStatusChangedEvent(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserStatusChanged', (event : OpenIMSDKEvent) => { handler(parseNativeUserStatusEventList(event.payload)) }) }

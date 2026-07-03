@@ -324,11 +324,6 @@ class NativeOpenIMSDK {
         Open_im_sdkGetAdvancedHistoryMessageList(callback, operationID, options)
     }
 
-    static func getAdvancedHistoryMessageListReverse(_ operationID: String, _ options: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
-        let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        Open_im_sdkGetAdvancedHistoryMessageListReverse(callback, operationID, options)
-    }
-
     static func getSpecifiedGroupsInfo(_ operationID: String, _ groupIDList: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
         Open_im_sdkGetSpecifiedGroupsInfo(callback, operationID, groupIDList)
@@ -617,11 +612,6 @@ class NativeOpenIMSDK {
         Open_im_sdkMarkAllConversationMessageAsRead(callback, operationID)
     }
 
-    static func markMessagesAsReadByMsgID(_ operationID: String, _ conversationID: String, _ clientMsgIDList: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
-        let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        Open_im_sdkMarkMessagesAsReadByMsgID(callback, operationID, conversationID, clientMsgIDList)
-    }
-
     static func searchConversation(_ operationID: String, _ searchParam: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
         Open_im_sdkSearchConversation(callback, operationID, searchParam)
@@ -757,11 +747,6 @@ class NativeOpenIMSDK {
     static func getUsersInGroup(_ operationID: String, _ groupID: String, _ userIDList: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
         Open_im_sdkGetUsersInGroup(callback, operationID, groupID, userIDList)
-    }
-
-    static func getGroupMemberListByJoinTimeFilter(_ operationID: String, _ groupID: String, _ offset: NSNumber, _ count: NSNumber, _ joinTimeBegin: NSNumber, _ joinTimeEnd: NSNumber, _ userIDList: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
-        let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        Open_im_sdkGetGroupMemberListByJoinTimeFilter(callback, operationID, groupID, offset.int32Value, count.int32Value, joinTimeBegin.int64Value, joinTimeEnd.int64Value, userIDList)
     }
 
     static func searchGroupMembers(_ operationID: String, _ searchParam: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {

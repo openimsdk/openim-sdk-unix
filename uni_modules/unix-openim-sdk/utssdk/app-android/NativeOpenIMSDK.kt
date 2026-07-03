@@ -289,10 +289,6 @@ object NativeOpenIMSDK {
     Open_im_sdk.getAdvancedHistoryMessageList(OpenIMBaseCallback(resolve, reject), operationID, options)
   }
 
-  fun getAdvancedHistoryMessageListReverse(operationID: String, options: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.getAdvancedHistoryMessageListReverse(OpenIMBaseCallback(resolve, reject), operationID, options)
-  }
-
   fun getSpecifiedGroupsInfo(operationID: String, groupIDList: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
     Open_im_sdk.getSpecifiedGroupsInfo(OpenIMBaseCallback(resolve, reject), operationID, groupIDList)
   }
@@ -569,10 +565,6 @@ object NativeOpenIMSDK {
     Open_im_sdk.markAllConversationMessageAsRead(OpenIMBaseCallback(resolve, reject), operationID)
   }
 
-  fun markMessagesAsReadByMsgID(operationID: String, conversationID: String, clientMsgIDList: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.markMessagesAsReadByMsgID(OpenIMBaseCallback(resolve, reject), operationID, conversationID, clientMsgIDList)
-  }
-
   fun searchConversation(operationID: String, options: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
     Open_im_sdk.searchConversation(OpenIMBaseCallback(resolve, reject), operationID, options)
   }
@@ -681,10 +673,6 @@ object NativeOpenIMSDK {
 
   fun getUsersInGroup(operationID: String, groupID: String, userIDList: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
     Open_im_sdk.getUsersInGroup(OpenIMBaseCallback(resolve, reject), operationID, groupID, userIDList)
-  }
-
-  fun getGroupMemberListByJoinTimeFilter(operationID: String, groupID: String, offset: Number, count: Number, joinTimeBegin: Number, joinTimeEnd: Number, userIDList: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.getGroupMemberListByJoinTimeFilter(OpenIMBaseCallback(resolve, reject), operationID, groupID, offset.toInt(), count.toInt(), joinTimeBegin.toLong(), joinTimeEnd.toLong(), userIDList)
   }
 
   fun searchGroupMembers(operationID: String, options: String, resolve: OpenIMResolveString, reject: OpenIMReject) {

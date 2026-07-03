@@ -181,11 +181,6 @@ export type OpenIMUploadFileResult = {
   mediaID ?: string | null
 }
 
-export type OpenIMMarkMessagesAsReadByMsgIDParams = {
-  conversationID : string
-  clientMsgIDs : string
-}
-
 export type OpenIMUpdateFcmTokenParams = {
   fcmToken : string
   expireTime : number
@@ -320,15 +315,6 @@ export type OpenIMGroupUserListParams = {
 export type OpenIMGroupInviteParams = {
   groupID : string
   reason : string
-  userIDList : Array<string>
-}
-
-export type OpenIMGroupMemberListByJoinTimeFilterParams = {
-  groupID : string
-  offset : number
-  count : number
-  joinTimeBegin : number
-  joinTimeEnd ?: number | null
   userIDList : Array<string>
 }
 
@@ -1101,13 +1087,14 @@ export type OpenIMSDKEventSubscription = {
   eventName : OpenIMSDKEventName
 }
 
+export type OpenIMSDKUnsubscribe = () => void
+
 export type OpenIMSDKEventHandlerSubscription = {
   id : string
   eventName : OpenIMSDKEventName
   handler : OpenIMSDKRawEventHandler
 }
 
-export type OffSDKEvent = (subscription : OpenIMSDKEventSubscription) => void
 export type OffSDKEventName = (eventName : OpenIMSDKEventName) => void
 export type InitSDK = (config : OpenIMInitConfig, operationID ?: string | null) => Promise<boolean>
 export type Login = (userID : string, token : string, operationID ?: string | null) => Promise<string>
@@ -1119,7 +1106,6 @@ export type SendMessage = (options : OpenIMSendMessageOptions) => Promise<OpenIM
 export type UploadFile = (params : OpenIMUploadFileParams, operationID ?: string | null) => Promise<OpenIMUploadFileResult | null>
 
 export type OpenIMSDKInstance = {
-  off : OffSDKEvent
   initSDK : InitSDK
   login : Login
   logout : Logout
@@ -1130,59 +1116,58 @@ export type OpenIMSDKInstance = {
   uploadFile : UploadFile
 }
 
-export declare function off(subscription : OpenIMSDKEventSubscription) : void
 export declare function offEvent(eventName : OpenIMSDKEventName) : void
-export declare function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
-export declare function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
-export declare function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription
-export declare function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
-export declare function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription
-export declare function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription
-export declare function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
-export declare function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
-export declare function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
-export declare function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription
-export declare function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription
-export declare function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription
-export declare function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription
-export declare function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription
-export declare function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription
-export declare function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription
-export declare function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription
-export declare function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription
-export declare function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription
-export declare function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription
-export declare function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription
-export declare function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription
-export declare function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription
-export declare function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription
-export declare function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription
-export declare function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription
-export declare function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription
-export declare function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription
-export declare function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription
-export declare function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription
-export declare function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription
-export declare function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription
-export declare function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
-export declare function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription
-export declare function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription
-export declare function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription
-export declare function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription
-export declare function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription
-export declare function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription
+export declare function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe
+export declare function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe
+export declare function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe
+export declare function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe
+export declare function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe
+export declare function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe
+export declare function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe
+export declare function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe
+export declare function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKUnsubscribe
+export declare function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKUnsubscribe
+export declare function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe
+export declare function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe
+export declare function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe
+export declare function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKUnsubscribe
+export declare function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe
+export declare function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe
+export declare function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe
+export declare function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe
+export declare function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe
+export declare function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKUnsubscribe
+export declare function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe
+export declare function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKUnsubscribe
+export declare function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe
+export declare function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe
+export declare function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe
+export declare function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe
+export declare function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe
+export declare function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe
+export declare function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe
+export declare function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe
+export declare function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe
+export declare function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe
 export declare const initSDK : InitSDK
 export declare const login : Login
 export declare const logout : Logout
@@ -1195,7 +1180,6 @@ export declare const unInitSDK : (operationID ?: string | null) => void
 export declare const getAllConversationList : (operationID ?: string | null) => Promise<OpenIMConversationListResult | null>
 export declare const getOneConversation : (params : OpenIMGetOneConversationParams, operationID ?: string | null) => Promise<OpenIMConversationItem | null>
 export declare const getAdvancedHistoryMessageList : (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) => Promise<OpenIMAdvancedHistoryMessageListResult | null>
-export declare const getAdvancedHistoryMessageListReverse : (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) => Promise<OpenIMAdvancedHistoryMessageListResult | null>
 export declare const getSpecifiedGroupsInfo : (params : Array<string>, operationID ?: string | null) => Promise<OpenIMGroupListResult | null>
 export declare const deleteConversationAndDeleteAllMsg : (conversationID : string, operationID ?: string | null) => Promise<string>
 export declare const markConversationMessageAsRead : (conversationID : string, operationID ?: string | null) => Promise<string>
@@ -1221,7 +1205,6 @@ export declare const clearConversationAndDeleteAllMsg : (conversationID : string
 export declare const hideConversation : (conversationID : string, operationID ?: string | null) => Promise<string>
 export declare const hideAllConversations : (operationID ?: string | null) => Promise<string>
 export declare const markAllConversationMessageAsRead : (operationID ?: string | null) => Promise<string>
-export declare const markMessagesAsReadByMsgID : (params : OpenIMMarkMessagesAsReadByMsgIDParams, operationID ?: string | null) => Promise<string>
 export declare const searchConversation : (searchParam : string, operationID ?: string | null) => Promise<OpenIMConversationListResult | null>
 export declare const getConversationListSplit : (params : OpenIMPageParams, operationID ?: string | null) => Promise<OpenIMConversationListResult | null>
 export declare const getConversationIDBySessionType : (params : OpenIMGetOneConversationParams, operationID ?: string | null) => Promise<string>
@@ -1251,7 +1234,6 @@ export declare const kickGroupMember : (params : OpenIMGroupInviteParams, operat
 export declare const isJoinGroup : (groupID : string, operationID ?: string | null) => Promise<boolean>
 export declare const getSpecifiedGroupMembersInfo : (params : OpenIMGroupUserListParams, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
 export declare const getUsersInGroup : (params : OpenIMGroupUserListParams, operationID ?: string | null) => Promise<Array<string> | null>
-export declare const getGroupMemberListByJoinTimeFilter : (params : OpenIMGroupMemberListByJoinTimeFilterParams, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
 export declare const searchGroupMembers : (params : OpenIMSearchGroupMembersParams, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
 export declare const getJoinedGroupList : (operationID ?: string | null) => Promise<OpenIMGroupListResult | null>
 export declare const getJoinedGroupListPage : (params : OpenIMPageParams, operationID ?: string | null) => Promise<OpenIMGroupListResult | null>

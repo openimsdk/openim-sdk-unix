@@ -11,7 +11,6 @@ import {
   OpenIMCreateVideoMessageParams,
   OpenIMCreateFileMessageParams,
   OpenIMUploadFileResult,
-  OpenIMMarkMessagesAsReadByMsgIDParams,
   OpenIMUpdateFcmTokenParams,
   OpenIMUploadLogsParams,
   OpenIMUploadFileProgressStage,
@@ -41,7 +40,6 @@ import {
   OpenIMAddBlackParams,
   OpenIMGroupUserListParams,
   OpenIMGroupInviteParams,
-  OpenIMGroupMemberListByJoinTimeFilterParams,
   OpenIMSearchGroupMembersParams,
   OpenIMCreateGroupInfo,
   OpenIMCreateGroupParams,
@@ -150,10 +148,7 @@ import {
   OpenIMSendMessageProgressEventHandler,
   OpenIMUploadFileProgressEventHandler,
   OpenIMUploadLogsProgressEventHandler,
-  OpenIMSDKEventSubscription,
-  OpenIMSDKEventHandlerSubscription,
-  OffSDKEvent,
-  OffSDKEventName,
+  OpenIMSDKUnsubscribe,
   InitSDK,
   Login,
   Logout,
@@ -166,8 +161,6 @@ import {
 } from '../interface.uts'
 import {
   ensureNativeEventsBound,
-  onSDKEvent,
-  offSDKEvent,
   offSDKEventName,
   onConnectingEvent,
   onConnectSuccessEvent,
@@ -496,110 +489,109 @@ function resolveGroupApplicationListNative(invoke : (resolve : (data : string) =
 function resolveMessageListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFindMessageResult | null> { return new Promise<OpenIMFindMessageResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeMessageListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveAdvancedHistoryNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return new Promise<OpenIMAdvancedHistoryMessageListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeAdvancedHistoryMessageList(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 
-export function off(subscription : OpenIMSDKEventSubscription) { offSDKEvent(subscription) }
 export function offEvent(eventName : OpenIMSDKEventName) { offSDKEventName(eventName) }
 @UTSJS.keepAlive
-export function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectingEvent(handler) }
+export function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onConnectingEvent(handler) }
 @UTSJS.keepAlive
-export function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectSuccessEvent(handler) }
+export function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onConnectSuccessEvent(handler) }
 @UTSJS.keepAlive
-export function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onConnectFailedEvent(handler) }
+export function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe { return onConnectFailedEvent(handler) }
 @UTSJS.keepAlive
-export function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onKickedOfflineEvent(handler) }
+export function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onKickedOfflineEvent(handler) }
 @UTSJS.keepAlive
-export function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onUserTokenExpiredEvent(handler) }
+export function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onUserTokenExpiredEvent(handler) }
 @UTSJS.keepAlive
-export function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onUserTokenInvalidEvent(handler) }
+export function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe { return onUserTokenInvalidEvent(handler) }
 @UTSJS.keepAlive
-export function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessageEvent(handler) }
+export function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onRecvNewMessageEvent(handler) }
 @UTSJS.keepAlive
-export function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessageEvent(handler) }
+export function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onRecvOfflineNewMessageEvent(handler) }
 @UTSJS.keepAlive
-export function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOnlineOnlyMessageEvent(handler) }
+export function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onRecvOnlineOnlyMessageEvent(handler) }
 @UTSJS.keepAlive
-export function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMsgDeletedEvent(handler) }
+export function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onMsgDeletedEvent(handler) }
 @UTSJS.keepAlive
-export function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription { return onNewRecvMessageRevokedEvent(handler) }
+export function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKUnsubscribe { return onNewRecvMessageRevokedEvent(handler) }
 @UTSJS.keepAlive
-export function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription { return onRecvC2CReadReceiptEvent(handler) }
+export function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKUnsubscribe { return onRecvC2CReadReceiptEvent(handler) }
 @UTSJS.keepAlive
-export function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessagesEvent(handler) }
+export function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe { return onRecvNewMessagesEvent(handler) }
 @UTSJS.keepAlive
-export function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessagesEvent(handler) }
+export function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe { return onRecvOfflineNewMessagesEvent(handler) }
 @UTSJS.keepAlive
-export function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onConversationChangedEvent(handler) }
+export function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe { return onConversationChangedEvent(handler) }
 @UTSJS.keepAlive
-export function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription { return onConversationUserInputStatusChangedEvent(handler) }
+export function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKUnsubscribe { return onConversationUserInputStatusChangedEvent(handler) }
 @UTSJS.keepAlive
-export function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onNewConversationEvent(handler) }
+export function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe { return onNewConversationEvent(handler) }
 @UTSJS.keepAlive
-export function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFailedEvent(handler) }
+export function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerFailedEvent(handler) }
 @UTSJS.keepAlive
-export function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFinishEvent(handler) }
+export function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerFinishEvent(handler) }
 @UTSJS.keepAlive
-export function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onSyncServerProgressEvent(handler) }
+export function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerProgressEvent(handler) }
 @UTSJS.keepAlive
-export function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerStartEvent(handler) }
+export function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerStartEvent(handler) }
 @UTSJS.keepAlive
-export function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription { return onSendMessageProgressEvent(handler) }
+export function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKUnsubscribe { return onSendMessageProgressEvent(handler) }
 @UTSJS.keepAlive
-export function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadFileProgressEvent(handler) }
+export function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKUnsubscribe { return onUploadFileProgressEvent(handler) }
 @UTSJS.keepAlive
-export function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadLogsProgressEvent(handler) }
+export function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKUnsubscribe { return onUploadLogsProgressEvent(handler) }
 @UTSJS.keepAlive
-export function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onTotalUnreadMessageCountChangedEvent(handler) }
+export function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe { return onTotalUnreadMessageCountChangedEvent(handler) }
 @UTSJS.keepAlive
-export function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription { return onRecvCustomBusinessMessageEvent(handler) }
+export function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKUnsubscribe { return onRecvCustomBusinessMessageEvent(handler) }
 @UTSJS.keepAlive
-export function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackAddedEvent(handler) }
+export function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe { return onBlackAddedEvent(handler) }
 @UTSJS.keepAlive
-export function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackDeletedEvent(handler) }
+export function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe { return onBlackDeletedEvent(handler) }
 @UTSJS.keepAlive
-export function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendAddedEvent(handler) }
+export function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onFriendAddedEvent(handler) }
 @UTSJS.keepAlive
-export function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAcceptedEvent(handler) }
+export function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationAcceptedEvent(handler) }
 @UTSJS.keepAlive
-export function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAddedEvent(handler) }
+export function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationAddedEvent(handler) }
 @UTSJS.keepAlive
-export function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationDeletedEvent(handler) }
+export function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationDeletedEvent(handler) }
 @UTSJS.keepAlive
-export function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationRejectedEvent(handler) }
+export function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationRejectedEvent(handler) }
 @UTSJS.keepAlive
-export function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendDeletedEvent(handler) }
+export function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onFriendDeletedEvent(handler) }
 @UTSJS.keepAlive
-export function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendInfoChangedEvent(handler) }
+export function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onFriendInfoChangedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAcceptedEvent(handler) }
+export function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationAcceptedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAddedEvent(handler) }
+export function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationAddedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationDeletedEvent(handler) }
+export function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationDeletedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationRejectedEvent(handler) }
+export function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationRejectedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupDismissedEvent(handler) }
+export function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onGroupDismissedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupInfoChangedEvent(handler) }
+export function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onGroupInfoChangedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberAddedEvent(handler) }
+export function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onGroupMemberAddedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberDeletedEvent(handler) }
+export function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onGroupMemberDeletedEvent(handler) }
 @UTSJS.keepAlive
-export function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberInfoChangedEvent(handler) }
+export function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onGroupMemberInfoChangedEvent(handler) }
 @UTSJS.keepAlive
-export function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupAddedEvent(handler) }
+export function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onJoinedGroupAddedEvent(handler) }
 @UTSJS.keepAlive
-export function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupDeletedEvent(handler) }
+export function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onJoinedGroupDeletedEvent(handler) }
 @UTSJS.keepAlive
-export function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription { return onSelfInfoUpdatedEvent(handler) }
+export function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe { return onSelfInfoUpdatedEvent(handler) }
 @UTSJS.keepAlive
-export function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onUserCommandAddEvent(handler) }
+export function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onUserCommandAddEvent(handler) }
 @UTSJS.keepAlive
-export function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onUserCommandDeleteEvent(handler) }
+export function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onUserCommandDeleteEvent(handler) }
 @UTSJS.keepAlive
-export function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKEventSubscription { return onUserCommandUpdateEvent(handler) }
+export function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onUserCommandUpdateEvent(handler) }
 @UTSJS.keepAlive
-export function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription { return onUserStatusChangedEvent(handler) }
+export function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe { return onUserStatusChangedEvent(handler) }
 
 export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); resolve(NativeOpenIMSDK.initSDK(normalizeOperationID(operationID), normalizeInitConfig(config)) == 'true') }) }
 export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.login(normalizeOperationID(operationID), userID, token, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
@@ -613,7 +605,6 @@ export const unInitSDK = function (operationID ?: string | null) { NativeOpenIMS
 export const getAllConversationList = function (operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getAllConversationList(normalizeOperationID(operationID), resolve, reject) }) }
 export const getOneConversation = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<OpenIMConversationItem | null> { return resolveConversationObjectNative((resolve, reject) => { NativeOpenIMSDK.getOneConversation(normalizeOperationID(operationID), params.sessionType, params.sourceID, resolve, reject) }) }
 export const getAdvancedHistoryMessageList = function (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return resolveAdvancedHistoryNative((resolve, reject) => { NativeOpenIMSDK.getAdvancedHistoryMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
-export const getAdvancedHistoryMessageListReverse = function (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return resolveAdvancedHistoryNative((resolve, reject) => { NativeOpenIMSDK.getAdvancedHistoryMessageListReverse(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
 export const getSpecifiedGroupsInfo = function (params : Array<string>, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getSpecifiedGroupsInfo(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
 export const deleteConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
 export const markConversationMessageAsRead = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markConversationMessageAsRead(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
@@ -639,7 +630,6 @@ export const clearConversationAndDeleteAllMsg = function (conversationID : strin
 export const hideConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideConversation(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
 export const hideAllConversations = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideAllConversations(normalizeOperationID(operationID), resolve, reject) }) }
 export const markAllConversationMessageAsRead = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markAllConversationMessageAsRead(normalizeOperationID(operationID), resolve, reject) }) }
-export const markMessagesAsReadByMsgID = function (params : OpenIMMarkMessagesAsReadByMsgIDParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markMessagesAsReadByMsgID(normalizeOperationID(operationID), params.conversationID, params.clientMsgIDs, resolve, reject) }) }
 export const searchConversation = function (searchParam : string, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.searchConversation(normalizeOperationID(operationID), searchParam, resolve, reject) }) }
 export const getConversationListSplit = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getConversationListSplit(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }
 export const getConversationIDBySessionType = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getConversationIDBySessionType(normalizeOperationID(operationID), params.sourceID, params.sessionType)) }) }
@@ -669,7 +659,6 @@ export const kickGroupMember = function (params : OpenIMGroupInviteParams, opera
 export const isJoinGroup = function (groupID : string, operationID ?: string | null) : Promise<boolean> { return resolveBooleanNative((resolve, reject) => { NativeOpenIMSDK.isJoinGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }
 export const getSpecifiedGroupMembersInfo = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { NativeOpenIMSDK.getSpecifiedGroupMembersInfo(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), (data : string) => { resolve(parseNativeGroupMemberListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 export const getUsersInGroup = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<Array<string> | null> { return resolveStringListNative((resolve, reject) => { NativeOpenIMSDK.getUsersInGroup(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), resolve, reject) }) }
-export const getGroupMemberListByJoinTimeFilter = function (params : OpenIMGroupMemberListByJoinTimeFilterParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { NativeOpenIMSDK.getGroupMemberListByJoinTimeFilter(normalizeOperationID(operationID), params.groupID, params.offset, params.count, params.joinTimeBegin, optionalNumber(params.joinTimeEnd), stringifyJSON(params.userIDList), (data : string) => { resolve(parseNativeGroupMemberListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 export const searchGroupMembers = function (params : OpenIMSearchGroupMembersParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative((resolve, reject) => { NativeOpenIMSDK.searchGroupMembers(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
 export const getJoinedGroupList = function (operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupList(normalizeOperationID(operationID), resolve, reject) }) }
 export const getJoinedGroupListPage = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupListPage(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }
