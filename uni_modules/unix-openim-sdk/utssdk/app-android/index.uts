@@ -14,7 +14,6 @@ import {
   OpenIMUploadFileResult,
   OpenIMUpdateFcmTokenParams,
   OpenIMUploadLogsParams,
-  OpenIMUploadFileProgressStage,
   OpenIMUploadFileProgressEvent,
   OpenIMUploadLogsProgressEvent,
   OpenIMSendMessageProgressEvent,
@@ -109,7 +108,6 @@ import {
   OpenIMMessageReceiptItem,
   OpenIMMessageReceiptListResult,
   OpenIMConversationInputStatusItem,
-  OpenIMUserCommandItem,
   OpenIMGetOneConversationParams,
   OpenIMPageParams,
   OpenIMGetGroupMemberListParams,
@@ -145,7 +143,6 @@ import {
   OpenIMGroupApplicationEventHandler,
   OpenIMUserEventHandler,
   OpenIMUserStatusListEventHandler,
-  OpenIMUserCommandEventHandler,
   OpenIMSendMessageProgressEventHandler,
   OpenIMUploadFileProgressEventHandler,
   OpenIMUploadLogsProgressEventHandler,
@@ -210,9 +207,6 @@ import {
   onJoinedGroupAddedEvent,
   onJoinedGroupDeletedEvent,
   onSelfInfoUpdatedEvent,
-  onUserCommandAddEvent,
-  onUserCommandDeleteEvent,
-  onUserCommandUpdateEvent,
   onUserStatusChangedEvent
 } from './events.uts'
 import {
@@ -256,7 +250,6 @@ import {
   parseNativeGroupApplicationListResultFallback,
   parseNativeGroupApplicationObject,
   parseNativeConversationInputStatus,
-  parseNativeUserCommand,
   parseNativeMessageRevoked,
   parseNativeMessageReceiptList,
   parseNativeAdvancedHistoryMessageList,
@@ -333,9 +326,6 @@ export const OpenIMMessageTypeFriendsInfoUpdated : OpenIMMessageType = 1210
 export const OpenIMMessageTypeConversationChanged : OpenIMMessageType = 1300
 export const OpenIMMessageTypeUserInfoUpdated : OpenIMMessageType = 1303
 export const OpenIMMessageTypeUserStatusChanged : OpenIMMessageType = 1304
-export const OpenIMMessageTypeUserCommandAdded : OpenIMMessageType = 1305
-export const OpenIMMessageTypeUserCommandDeleted : OpenIMMessageType = 1306
-export const OpenIMMessageTypeUserCommandUpdated : OpenIMMessageType = 1307
 export const OpenIMMessageTypeUserSubscribeOnlineStatus : OpenIMMessageType = 1308
 export const OpenIMMessageTypeOANotification : OpenIMMessageType = 1400
 export const OpenIMMessageTypeGroupCreated : OpenIMMessageType = 1501
@@ -577,12 +567,6 @@ export function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSD
 export function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onJoinedGroupDeletedEvent(handler) }
 @UTSJS.keepAlive
 export function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe { return onSelfInfoUpdatedEvent(handler) }
-@UTSJS.keepAlive
-export function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onUserCommandAddEvent(handler) }
-@UTSJS.keepAlive
-export function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onUserCommandDeleteEvent(handler) }
-@UTSJS.keepAlive
-export function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onUserCommandUpdateEvent(handler) }
 @UTSJS.keepAlive
 export function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe { return onUserStatusChangedEvent(handler) }
 

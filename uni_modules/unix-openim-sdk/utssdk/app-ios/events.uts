@@ -25,7 +25,6 @@ import {
   OpenIMStringEventHandler,
   OpenIMUploadFileProgressEventHandler,
   OpenIMUploadLogsProgressEventHandler,
-  OpenIMUserCommandEventHandler,
   OpenIMUserEventHandler,
   OpenIMUserStatusListEventHandler,
   OpenIMVoidEventHandler
@@ -45,7 +44,6 @@ import {
   parseNativeMessageRevoked,
   parseNativeUploadFileProgressEvent,
   parseNativeUploadLogsProgressEvent,
-  parseNativeUserCommand,
   parseNativeUserObject,
   parseNativeUserStatusEventList
 } from './native-call.uts'
@@ -158,7 +156,4 @@ export function onGroupMemberInfoChangedEvent(handler : OpenIMGroupMemberEventHa
 export function onJoinedGroupAddedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onJoinedGroupAdded', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
 export function onJoinedGroupDeletedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onJoinedGroupDeleted', (event : OpenIMSDKEvent) => { handler(parseNativeGroupObject(event.payload)) }) }
 export function onSelfInfoUpdatedEvent(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onSelfInfoUpdated', (event : OpenIMSDKEvent) => { handler(parseNativeUserObject(event.payload)) }) }
-export function onUserCommandAddEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserCommandAdd', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
-export function onUserCommandDeleteEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserCommandDelete', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
-export function onUserCommandUpdateEvent(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserCommandUpdate', (event : OpenIMSDKEvent) => { handler(parseNativeUserCommand(event.payload)) }) }
 export function onUserStatusChangedEvent(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe { return onSDKEvent('onUserStatusChanged', (event : OpenIMSDKEvent) => { handler(parseNativeUserStatusEventList(event.payload)) }) }

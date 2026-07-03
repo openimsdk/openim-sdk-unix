@@ -52,10 +52,8 @@ import {
   OpenIMTypingElem,
   OpenIMUploadFileResult,
   OpenIMUploadFileProgressEvent,
-  OpenIMUploadFileProgressStage,
   OpenIMUploadLogsProgressEvent,
   OpenIMUploadProgress,
-  OpenIMUserCommandItem,
   OpenIMUserInfo,
   OpenIMUserListResult,
   OpenIMUserStatusItem,
@@ -217,8 +215,7 @@ export function parseNativeUploadFileResultCommon(data : string, helpers : Nativ
 export function parseNativeUploadFileProgressEventCommon(data : string, helpers : NativeParserHelpers) : OpenIMUploadFileProgressEvent | null {
   const raw = helpers.parseNativeAny(data)
   if (raw instanceof UTSJSONObject) {
-    if (helpers.isRequiredField(raw, 'stage') == false) { return null }
-    return { operationID: helpers.readStringParam(raw, 'operationID'), stage: helpers.readStringParam(raw, 'stage') as OpenIMUploadFileProgressStage, total: helpers.readNumberParam(raw, 'total'), current: helpers.readNumberParam(raw, 'current'), storageSize: helpers.readNumberParam(raw, 'storageSize') }
+    return { progress: helpers.readNumberParam(raw, 'progress') }
   }
   return null
 }
@@ -226,7 +223,7 @@ export function parseNativeUploadFileProgressEventCommon(data : string, helpers 
 export function parseNativeUploadLogsProgressEventCommon(data : string, helpers : NativeParserHelpers) : OpenIMUploadLogsProgressEvent | null {
   const raw = helpers.parseNativeAny(data)
   if (raw instanceof UTSJSONObject) {
-    return { operationID: helpers.readStringParam(raw, 'operationID'), current: helpers.readNumberParam(raw, 'current'), size: helpers.readNumberParam(raw, 'size'), percent: helpers.readNumberParam(raw, 'percent') }
+    return { progress: helpers.readNumberParam(raw, 'progress') }
   }
   return null
 }
@@ -619,14 +616,6 @@ export function parseNativeConversationInputStatusCommon(data : string, helpers 
   const raw = helpers.parseNativeAny(data)
   if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'conversationID') && helpers.isRequiredField(raw, 'userID')) {
     return { conversationID: helpers.readStringParam(raw, 'conversationID'), userID: helpers.readStringParam(raw, 'userID'), platformIDs: parseNativeNumberListValue(readNativeValue(raw, 'platformIDs')) }
-  }
-  return null
-}
-
-export function parseNativeUserCommandCommon(data : string, helpers : NativeParserHelpers) : OpenIMUserCommandItem | null {
-  const raw = helpers.parseNativeAny(data)
-  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'userID') && helpers.isRequiredField(raw, 'type') && helpers.isRequiredField(raw, 'uuid') && helpers.isRequiredField(raw, 'createTime')) {
-    return { userID: helpers.readStringParam(raw, 'userID'), type: helpers.readNumberParam(raw, 'type'), uuid: helpers.readStringParam(raw, 'uuid'), createTime: helpers.readNumberParam(raw, 'createTime'), value: helpers.readStringParam(raw, 'value'), ex: helpers.readStringParam(raw, 'ex') }
   }
   return null
 }

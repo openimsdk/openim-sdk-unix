@@ -172,25 +172,21 @@ class OpenIMUserListenerNative: NSObject, Open_im_sdk_callbackOnUserListenerProt
     private let emit: OpenIMMessageEvent
     init(emit: @escaping OpenIMMessageEvent) { self.emit = emit }
     func onSelfInfoUpdated(_ userInfo: String?) { emit("onSelfInfoUpdated", userInfo ?? "") }
-    func onUserCommandAdd(_ userCommand: String?) { emit("onUserCommandAdd", userCommand ?? "") }
-    func onUserCommandDelete(_ userCommand: String?) { emit("onUserCommandDelete", userCommand ?? "") }
-    func onUserCommandUpdate(_ userCommand: String?) { emit("onUserCommandUpdate", userCommand ?? "") }
+    func onUserCommandAdd(_ userCommand: String?) {}
+    func onUserCommandDelete(_ userCommand: String?) {}
+    func onUserCommandUpdate(_ userCommand: String?) {}
     func onUserStatusChanged(_ userOnlineStatus: String?) { emit("onUserStatusChanged", userOnlineStatus ?? "") }
 }
 
 class OpenIMUploadFileCallback: NSObject, Open_im_sdk_callbackUploadFileCallbackProtocol {
-    private let operationID: String
     private let emit: OpenIMMessageEvent
 
-    init(operationID: String, emit: @escaping OpenIMMessageEvent) {
-        self.operationID = operationID
+    init(_ emit: @escaping OpenIMMessageEvent) {
         self.emit = emit
     }
 
-    private func emitProgress(_ stage: String, _ fields: [String: Any]) {
-        var payload = fields
-        payload["operationID"] = operationID
-        payload["stage"] = stage
+    private func emitProgress(_ progress: Double) {
+        let payload: [String: Any] = ["progress": NSNumber(value: progress)]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
               let json = String(data: data, encoding: .utf8) else { return }
         DispatchQueue.main.async { [emit] in
@@ -214,11 +210,7 @@ class OpenIMUploadFileCallback: NSObject, Open_im_sdk_callbackUploadFileCallback
     }
 
     func uploadComplete(_ fileSize: Int64, streamSize: Int64, storageSize: Int64) {
-        emitProgress("uploadComplete", [
-            "total": NSNumber(value: fileSize),
-            "current": NSNumber(value: streamSize),
-            "storageSize": NSNumber(value: storageSize)
-        ])
+        emitProgress(100.0)
     }
 
     func uploadID(_ uploadID: String?) {
@@ -229,22 +221,15 @@ class OpenIMUploadFileCallback: NSObject, Open_im_sdk_callbackUploadFileCallback
 }
 
 class OpenIMUploadLogProgress: NSObject, Open_im_sdk_callbackUploadLogProgressProtocol {
-    private let operationID: String
     private let emit: OpenIMMessageEvent
 
-    init(operationID: String, emit: @escaping OpenIMMessageEvent) {
-        self.operationID = operationID
+    init(_ emit: @escaping OpenIMMessageEvent) {
         self.emit = emit
     }
 
     func onProgress(_ current: Int64, size: Int64) {
         let percent = size > 0 ? Double(current) * 100.0 / Double(size) : 0.0
-        let payload: [String: Any] = [
-            "operationID": operationID,
-            "current": NSNumber(value: current),
-            "size": NSNumber(value: size),
-            "percent": NSNumber(value: percent)
-        ]
+        let payload: [String: Any] = ["progress": NSNumber(value: percent)]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
               let json = String(data: data, encoding: .utf8) else { return }
         DispatchQueue.main.async { [emit] in
@@ -266,7 +251,7 @@ class NativeOpenIMSDK {
 
     static func uploadFile(_ operationID: String, _ uploadData: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        let uploadCallback = OpenIMUploadFileCallback(operationID: operationID) { eventName, payload in
+        let uploadCallback = OpenIMUploadFileCallback { eventName, payload in
             NativeOpenIMSDK.nativeEventEmit?(eventName, payload, NSNumber(value: 0), "")
         }
         Open_im_sdkUploadFile(callback, operationID, uploadData, uploadCallback)
@@ -860,7 +845,7 @@ class NativeOpenIMSDK {
 
     static func uploadLogs(_ operationID: String, _ line: NSNumber, _ ex: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        let progress = OpenIMUploadLogProgress(operationID: operationID) { eventName, payload in
+        let progress = OpenIMUploadLogProgress { eventName, payload in
             NativeOpenIMSDK.nativeEventEmit?(eventName, payload, NSNumber(value: 0), "")
         }
         Open_im_sdkUploadLogs(callback, operationID, line.intValue, ex, progress)

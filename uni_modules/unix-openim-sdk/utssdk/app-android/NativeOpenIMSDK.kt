@@ -161,19 +161,17 @@ class OpenIMGroupListenerNative(private val emit: OpenIMMessageEvent) : OnGroupL
 
 class OpenIMUserListenerNative(private val emit: OpenIMMessageEvent) : OnUserListener {
   override fun onSelfInfoUpdated(userInfo: String?) { emit("onSelfInfoUpdated", userInfo ?: "") }
-  override fun onUserCommandAdd(userCommand: String?) { emit("onUserCommandAdd", userCommand ?: "") }
-  override fun onUserCommandDelete(userCommand: String?) { emit("onUserCommandDelete", userCommand ?: "") }
-  override fun onUserCommandUpdate(userCommand: String?) { emit("onUserCommandUpdate", userCommand ?: "") }
+  override fun onUserCommandAdd(userCommand: String?) {}
+  override fun onUserCommandDelete(userCommand: String?) {}
+  override fun onUserCommandUpdate(userCommand: String?) {}
   override fun onUserStatusChanged(userOnlineStatus: String?) { emit("onUserStatusChanged", userOnlineStatus ?: "") }
 }
 
 class OpenIMUploadFileCallback(
-  private val operationID: String,
   private val emit: OpenIMMessageEvent
 ) : UploadFileCallback {
-  private fun emitProgress(stage: String, payload: JSONObject) {
-    payload.put("operationID", operationID)
-    payload.put("stage", stage)
+  private fun emitProgress(progress: Long) {
+    val payload = JSONObject().put("progress", progress)
     emit("onUploadFileProgress", payload.toString())
   }
 
@@ -187,12 +185,7 @@ class OpenIMUploadFileCallback(
 
   override fun partSize(partSize: Long, num: Long) {}
 
-  override fun uploadComplete(size: Long, partSize: Long, num: Long) {
-    emitProgress("uploadComplete", JSONObject()
-      .put("total", size)
-      .put("current", partSize)
-      .put("storageSize", num))
-  }
+  override fun uploadComplete(size: Long, partSize: Long, num: Long) { emitProgress(100) }
 
   override fun uploadID(uploadID: String?) {}
 
@@ -200,16 +193,11 @@ class OpenIMUploadFileCallback(
 }
 
 class OpenIMUploadLogProgress(
-  private val operationID: String,
   private val emit: OpenIMMessageEvent
 ) : UploadLogProgress {
   override fun onProgress(current: Long, size: Long) {
     val percent = if (size > 0) current * 100 / size else 0L
-    val payload = JSONObject()
-      .put("operationID", operationID)
-      .put("current", current)
-      .put("size", size)
-      .put("percent", percent)
+    val payload = JSONObject().put("progress", percent)
     emit("onUploadLogsProgress", payload.toString())
   }
 }
@@ -236,7 +224,7 @@ object NativeOpenIMSDK {
       OpenIMBaseCallback(resolve, reject),
       operationID,
       data,
-      OpenIMUploadFileCallback(operationID) { eventName, payload ->
+      OpenIMUploadFileCallback { eventName, payload ->
         nativeEventEmit?.invoke(eventName, payload, 0, "")
       }
     )
@@ -764,7 +752,7 @@ object NativeOpenIMSDK {
   }
 
   fun uploadLogs(operationID: String, line: Number, ex: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.uploadLogs(OpenIMBaseCallback(resolve, reject), operationID, line.toLong(), ex, OpenIMUploadLogProgress(operationID) { eventName, payload ->
+    Open_im_sdk.uploadLogs(OpenIMBaseCallback(resolve, reject), operationID, line.toLong(), ex, OpenIMUploadLogProgress { eventName, payload ->
       nativeEventEmit?.invoke(eventName, payload, 0, "")
     })
   }

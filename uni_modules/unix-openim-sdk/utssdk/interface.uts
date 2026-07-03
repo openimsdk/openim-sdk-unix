@@ -85,9 +85,6 @@ export declare const OpenIMMessageTypeFriendsInfoUpdated : OpenIMMessageType
 export declare const OpenIMMessageTypeConversationChanged : OpenIMMessageType
 export declare const OpenIMMessageTypeUserInfoUpdated : OpenIMMessageType
 export declare const OpenIMMessageTypeUserStatusChanged : OpenIMMessageType
-export declare const OpenIMMessageTypeUserCommandAdded : OpenIMMessageType
-export declare const OpenIMMessageTypeUserCommandDeleted : OpenIMMessageType
-export declare const OpenIMMessageTypeUserCommandUpdated : OpenIMMessageType
 export declare const OpenIMMessageTypeUserSubscribeOnlineStatus : OpenIMMessageType
 export declare const OpenIMMessageTypeOANotification : OpenIMMessageType
 export declare const OpenIMMessageTypeGroupCreated : OpenIMMessageType
@@ -191,21 +188,12 @@ export type OpenIMUploadLogsParams = {
   ex : string
 }
 
-export type OpenIMUploadFileProgressStage = 'uploadComplete'
-
 export type OpenIMUploadFileProgressEvent = {
-  operationID ?: string | null
-  stage : OpenIMUploadFileProgressStage
-  total : number
-  current : number
-  storageSize : number
+  progress : number
 }
 
 export type OpenIMUploadLogsProgressEvent = {
-  operationID ?: string | null
-  current : number
-  size : number
-  percent : number
+  progress : number
 }
 
 export type OpenIMSendMessageProgressEvent = {
@@ -902,15 +890,6 @@ export type OpenIMConversationInputStatusItem = {
   platformIDs : Array<number>
 }
 
-export type OpenIMUserCommandItem = {
-  userID : string
-  type : number
-  uuid : string
-  createTime : number
-  value : string
-  ex : string
-}
-
 export type OpenIMGetOneConversationParams = {
   sourceID : string
   sessionType : OpenIMSessionType
@@ -1045,9 +1024,6 @@ export type OpenIMSDKEventName =
   'onJoinedGroupAdded' |
   'onJoinedGroupDeleted' |
   'onSelfInfoUpdated' |
-  'onUserCommandAdd' |
-  'onUserCommandDelete' |
-  'onUserCommandUpdate' |
   'onUserStatusChanged'
 
 export type OpenIMSDKEvent = {
@@ -1077,7 +1053,6 @@ export type OpenIMGroupMemberEventHandler = (member : OpenIMGroupMemberItem | nu
 export type OpenIMGroupApplicationEventHandler = (application : OpenIMGroupApplicationItem | null) => void
 export type OpenIMUserEventHandler = (user : OpenIMUserInfo | null) => void
 export type OpenIMUserStatusListEventHandler = (result : OpenIMUserStatusListResult | null) => void
-export type OpenIMUserCommandEventHandler = (command : OpenIMUserCommandItem | null) => void
 export type OpenIMSendMessageProgressEventHandler = (progress : OpenIMSendMessageProgressEvent | null) => void
 export type OpenIMUploadFileProgressEventHandler = (progress : OpenIMUploadFileProgressEvent | null) => void
 export type OpenIMUploadLogsProgressEventHandler = (progress : OpenIMUploadLogsProgressEvent | null) => void
@@ -1164,9 +1139,6 @@ export declare function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEven
 export declare function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe
 export declare function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe
 export declare function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe
-export declare function onUserCommandAdd(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe
-export declare function onUserCommandDelete(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe
-export declare function onUserCommandUpdate(handler : OpenIMUserCommandEventHandler) : OpenIMSDKUnsubscribe
 export declare function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe
 export declare const initSDK : InitSDK
 export declare const login : Login

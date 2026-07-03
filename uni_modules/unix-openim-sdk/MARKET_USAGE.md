@@ -204,6 +204,8 @@ createTextMessage('hello').then((message) => {
 
 `uploadFile.filepath` 必须是真实可读的 POSIX 绝对路径，例如 App 沙盒目录中的文件路径。不要传 `uni.env.USER_DATA_PATH`、`unifile://usr/...` 或只相对于业务目录的路径；这些路径在原生 OpenIM Core 中可能不可直接访问。
 
+上传文件和上传日志进度回调 payload 统一为 `{ progress: number }`。
+
 ```uts
 onUploadFileProgress((progress) => {
   console.log('upload progress', progress)
