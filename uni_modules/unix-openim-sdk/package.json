@@ -2,20 +2,19 @@
   "id": "unix-openim-sdk",
   "displayName": "Unix OpenIM SDK",
   "version": "0.1.1",
-  "description": "Promise-style UTS wrapper for OpenIM native SDK on Android and iOS",
+  "description": "OpenIM：由IM技术专家打造的基于 Go 实现的即时通讯（IM）项目，从服务端到客户端SDK开源即时通讯（IM）整体解决方案，可以轻松替代第三方IM云服务，打造具备聊天、社交功能的app。",
   "keywords": [
-    "openim",
-    "im",
-    "uts",
+    "即时通讯",
+    "IM",
     "uni-app-x",
-    "android",
-    "ios"
-  ],
+    "Chat",
+    "OpenIM"
+],
   "license": "AGPL-3.0-only",
   "engines": {
     "HBuilderX": ">=5.7.0",
-    "uni-app": "^3.1.0",
-    "uni-app-x": "^3.1.0"
+    "uni-app": "",
+    "uni-app-x": "^5.07"
   },
   "uni_modules": {
     "platforms": {
@@ -24,14 +23,39 @@
       "web": "n",
       "mp-weixin": "n",
       "cloud": {
-        "tcb": "-",
-        "aliyun": "-",
-        "alipay": "-"
-      }
+        "tcb": "x",
+        "aliyun": "x",
+        "alipay": "x"
+    },
+    "client": {
+        "uni-app-x": {
+            "app": {
+                "android": {
+                    "extVersion": "0.1.0",
+                    "minVersion": "21"
+                },
+                "harmony": {
+                    "extVersion": "0.1.1",
+                    "minVersion": "20"
+                },
+                "ios": {
+                    "extVersion": "0.1.0",
+                    "minVersion": "12"
+                }
+            },
+            "mp": {
+                "weixin": "x"
+            },
+            "web": {
+                "chrome": "x",
+                "safari": "x"
+            }
+        }
+    }
     }
   },
   "dcloudext": {
-    "type": "",
+    "type": "uts",
     "sale": {
       "regular": {
         "price": "0.00"
@@ -44,13 +68,14 @@
       "qq": ""
     },
     "declaration": {
-      "ads": "",
-      "data": "",
-      "permissions": ""
+      "ads": "无",
+      "data": "无",
+      "permissions": "无"
     },
     "npmurl": "",
-    "darkmode": "-",
-    "i18n": "-",
-    "widescreen": "-"
-  }
+    "darkmode": "x",
+    "i18n": "x",
+    "widescreen": "x"
+},
+"repository": "https://github.com/openimsdk/openim-sdk-unix"
 }
