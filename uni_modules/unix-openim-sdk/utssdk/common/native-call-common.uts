@@ -8,6 +8,8 @@ import {
   OpenIMBlackListResult,
   OpenIMBlackUserItem,
   OpenIMCardElem,
+  OpenIMCheckFriendResult,
+  OpenIMCheckFriendResultItem,
   OpenIMConversationInputStatusItem,
   OpenIMConversationItem,
   OpenIMConversationListResult,
@@ -390,6 +392,52 @@ export function parseNativeUserObjectCommon(data : string, helpers : NativeParse
   if (typedItem != null && isValidParsedUser(typedItem, helpers)) { return typedItem }
   const raw = helpers.parseNativeAny(data)
   if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'userID')) { return parseNativeUserItem(raw, helpers) }
+  return null
+}
+
+function isNativeJSONArrayText(data : string) : boolean {
+  const trimmed = data.trim()
+  return trimmed.length >= 2 && trimmed.substring(0, 1) == '[' && trimmed.substring(trimmed.length - 1, trimmed.length) == ']'
+}
+
+function parseNativeJSONObjectListValue(value : any | null, helpers : NativeParserHelpers) : Array<UTSJSONObject> | null {
+  const text = stringifyNativeValue(value)
+  if (text == null || isNativeJSONArrayText(text) == false) { return null }
+  return helpers.parseNativeJSONObjectListData(text)
+}
+
+function parseNativeCheckFriendItem(item : UTSJSONObject, helpers : NativeParserHelpers) : OpenIMCheckFriendResultItem | null {
+  if (helpers.isRequiredField(item, 'userID') == false || helpers.isRequiredField(item, 'result') == false) { return null }
+  return { userID: helpers.readStringParam(item, 'userID'), result: helpers.readNumberParam(item, 'result') }
+}
+
+function parseNativeCheckFriendList(rawList : Array<UTSJSONObject>, helpers : NativeParserHelpers) : Array<OpenIMCheckFriendResultItem> | null {
+  const items : Array<OpenIMCheckFriendResultItem> = []
+  let valid = true
+  rawList.forEach((item : UTSJSONObject) => {
+    const parsed = parseNativeCheckFriendItem(item, helpers)
+    if (parsed != null) { items.push(parsed) } else { valid = false }
+  })
+  if (valid == false) { return null }
+  return items
+}
+
+export function parseNativeCheckFriendResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMCheckFriendResult | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject) {
+    const rawList = parseNativeJSONObjectListValue(readNativeValue(raw, 'result'), helpers)
+    if (rawList == null) { return null }
+    const items = parseNativeCheckFriendList(rawList, helpers)
+    if (items == null) { return null }
+    return { result: items }
+  }
+  if (isNativeJSONArrayText(data)) {
+    const rawList = helpers.parseNativeJSONObjectListData(data)
+    if (rawList == null) { return null }
+    const items = parseNativeCheckFriendList(rawList, helpers)
+    if (items == null) { return null }
+    return { result: items }
+  }
   return null
 }
 

@@ -87,6 +87,7 @@ import {
   OpenIMConversationItem,
   OpenIMConversationListResult,
   OpenIMUserListResult,
+  OpenIMCheckFriendResult,
   OpenIMUserStatusItem,
   OpenIMUserStatusListResult,
   OpenIMFriendListResult,
@@ -232,6 +233,7 @@ import {
   parseNativeUserObject,
   parseNativeUserStatusListResult,
   parseNativeUserStatusEventList,
+  parseNativeCheckFriendResult,
   parseNativeFriendListResult,
   parseNativeFriendListResultFallback,
   parseNativeFriendObject,
@@ -427,16 +429,6 @@ function stringifySetGroupMemberInfoPayload(params : OpenIMSetGroupMemberInfoPar
 function resolveStringNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<string> { return new Promise<string>((resolve, reject) => { invoke(resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function parseNativeNumberValue(data : string) : number | null { return data.length > 0 ? parseFloat(data) : null }
 function parseNativeBooleanValue(data : string) : boolean { return data == 'true' }
-function parseNativeBooleanListValue(data : string) : Array<boolean> | null {
-  const trimmed = data.trim()
-  if (trimmed.length < 2) { return null }
-  const result : Array<boolean> = []
-  const body = trimmed.substring(1, trimmed.length - 1)
-  if (body.length == 0) { return result }
-  const items = body.split(',')
-  items.forEach((item : string) => { result.push(item.trim() == 'true') })
-  return result
-}
 function parseNativeStringListValue(data : string) : Array<string> | null {
   const trimmed = data.trim()
   if (trimmed.length < 2) { return null }
@@ -455,8 +447,11 @@ function parseNativeStringListValue(data : string) : Array<string> | null {
 }
 function resolveNumberNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<number | null> { return new Promise<number | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeNumberValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveBooleanNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeBooleanValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
-function resolveBooleanListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<Array<boolean> | null> { return new Promise<Array<boolean> | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeBooleanListValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveStringListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<Array<string> | null> { return new Promise<Array<string> | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeStringListValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function parseCheckFriendResult(data : string) : OpenIMCheckFriendResult | null {
+	return parseNativeCheckFriendResult(data)
+}
+function resolveCheckFriendNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMCheckFriendResult | null> { return new Promise<OpenIMCheckFriendResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseCheckFriendResult(data)) } catch (error) { rejectNativeError(reject, -1, 'checkFriend returned unparseable data: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveConversationObjectNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMConversationItem | null> { return new Promise<OpenIMConversationItem | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeConversationObject(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveConversationListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMConversationListResult | null> { return new Promise<OpenIMConversationListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeConversationListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveUserObjectNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMUserInfo | null> { return new Promise<OpenIMUserInfo | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeUserObject(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
@@ -471,6 +466,18 @@ function resolveGroupMemberListNative(invoke : (resolve : (data : string) => voi
 function resolveGroupApplicationListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupApplicationListResult | null> { return new Promise<OpenIMGroupApplicationListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeGroupApplicationListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveMessageListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFindMessageResult | null> { return new Promise<OpenIMFindMessageResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeMessageListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveAdvancedHistoryNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return new Promise<OpenIMAdvancedHistoryMessageListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeAdvancedHistoryMessageList(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveSendMessageData(data : string, apiName : string, resolve : (value : OpenIMMessageItem) => void, reject : (reason : any | null) => void) {
+  try {
+    const message = parseNativeMessage(data)
+    if (message != null) {
+      resolve(message)
+    } else {
+      rejectNativeError(reject, -1, apiName + ' returned invalid message data')
+    }
+  } catch (error) {
+    rejectNativeError(reject, -1, apiName + ' returned unparseable message data: ' + stringifyJSON(error))
+  }
+}
 
 export function offEvent(eventName : OpenIMSDKEventName) { offSDKEventName(eventName) }
 @UTSJS.keepAlive
@@ -602,14 +609,13 @@ export const deleteAllMsgFromLocalAndSvr = function (operationID ?: string | nul
 export const insertSingleMessageToLocalStorage = function (params : OpenIMInsertSingleMessageParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.insertSingleMessageToLocalStorage(normalizeOperationID(operationID), stringifyOpenIMMessagePayload(params.message), params.recvID, params.sendID, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 export const insertGroupMessageToLocalStorage = function (params : OpenIMInsertGroupMessageParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.insertGroupMessageToLocalStorage(normalizeOperationID(operationID), stringifyOpenIMMessagePayload(params.message), params.groupID, params.sendID, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 export const changeInputStates = function (params : OpenIMInputStateParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeInputStates(normalizeOperationID(operationID), params.conversationID, optionalBoolean(params.focus), resolve, reject) }) }
-export const getInputstates = function (params : OpenIMInputStateParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.getInputStates(normalizeOperationID(operationID), params.conversationID, optionalString(params.userID), resolve, reject) }) }
 export const clearConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.clearConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
 export const hideConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideConversation(normalizeOperationID(operationID), conversationID, resolve, reject) }) }
 export const hideAllConversations = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideAllConversations(normalizeOperationID(operationID), resolve, reject) }) }
 export const markAllConversationMessageAsRead = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markAllConversationMessageAsRead(normalizeOperationID(operationID), resolve, reject) }) }
 export const searchConversation = function (searchParam : string, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.searchConversation(normalizeOperationID(operationID), searchParam, resolve, reject) }) }
 export const getConversationListSplit = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getConversationListSplit(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }
-export const getConversationIDBySessionType = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getConversationIDBySessionType(params.sourceID, '', params.sessionType)) }) }
+export const getConversationIDBySessionType = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getConversationIDBySessionType(normalizeOperationID(operationID), params.sourceID, params.sessionType)) }) }
 export const getMultipleConversation = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getMultipleConversation(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
 export const deleteConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return deleteConversationAndDeleteAllMsg(conversationID, operationID) }
 export const setConversationDraft = function (params : OpenIMSetConversationDraftParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setConversationDraft(normalizeOperationID(operationID), params.conversationID, params.draftText, resolve, reject) }) }
@@ -624,7 +630,7 @@ export const getFriendApplicationUnhandledCount = function (params : OpenIMPageP
 export const getFriendList = function (filterBlack ?: boolean | null, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return resolveFriendListNative((resolve, reject) => { NativeOpenIMSDK.getFriendList(normalizeOperationID(operationID), optionalBoolean(filterBlack), resolve, reject) }) }
 export const getFriendListPage = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return resolveFriendListNative((resolve, reject) => { NativeOpenIMSDK.getFriendListPage(normalizeOperationID(operationID), params.offset, params.count, false, resolve, reject) }) }
 export const updateFriends = function (params : OpenIMUpdateFriendsParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifyUpdateFriendsPayload(params); NativeOpenIMSDK.updateFriends(op, payload, resolve, reject) }) }
-export const checkFriend = function (data : Array<string>, operationID ?: string | null) : Promise<Array<boolean> | null> { return resolveBooleanListNative((resolve, reject) => { NativeOpenIMSDK.checkFriend(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
+export const checkFriend = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMCheckFriendResult | null> { return resolveCheckFriendNative((resolve, reject) => { NativeOpenIMSDK.checkFriend(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
 export const acceptFriendApplication = function (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.acceptFriendApplication(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
 export const refuseFriendApplication = function (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.refuseFriendApplication(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
 export const deleteFriend = function (userID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteFriend(normalizeOperationID(operationID), userID, resolve, reject) }) }
@@ -654,7 +660,6 @@ export const getGroupApplicationListAsRecipient = function (params ?: OpenIMAppl
 export const getGroupApplicationUnhandledCount = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<number | null> { return resolveNumberNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationUnhandledCount(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
 export const acceptGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.acceptGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }
 export const refuseGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.refuseGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }
-export const getGroupMemberOwnerAndAdmin = function (groupID : string, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative((resolve, reject) => { NativeOpenIMSDK.getGroupMemberOwnerAndAdmin(normalizeOperationID(operationID), groupID, resolve, reject) }) }
 export const findMessageList = function (params : Array<OpenIMFindMessageParams>, operationID ?: string | null) : Promise<OpenIMFindMessageResult | null> { return resolveMessageListNative((resolve, reject) => { NativeOpenIMSDK.findMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
 export const updateFcmToken = function (params : OpenIMUpdateFcmTokenParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.updateFcmToken(normalizeOperationID(operationID), params.fcmToken, params.expireTime, resolve, reject) }) }
 export const subscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.subscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
@@ -682,8 +687,8 @@ export const createFaceMessage = function (params : OpenIMCreateFaceMessageParam
 export const createLocationMessage = function (params : OpenIMCreateLocationMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createLocationMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createLocationMessage(op, params.descriptionText, params.longitude, params.latitude))) }) }
 export const createCardMessage = function (card : OpenIMCardElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCardMessage(op, stringifyJSON(card)))) }) }
 
-export const sendMessage = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessage(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { const message = parseNativeMessage(data); if (message != null) { resolve(message) } else { rejectNativeError(reject, -1, 'sendMessage returned invalid message data') } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
-export const sendMessageNotOss = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessageNotOss(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { const message = parseNativeMessage(data); if (message != null) { resolve(message) } else { rejectNativeError(reject, -1, 'sendMessageNotOss returned invalid message data') } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const sendMessage = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessage(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessage', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+export const sendMessageNotOss = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessageNotOss(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessageNotOss', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 
 export const uploadFile = function (params : OpenIMUploadFileParams, operationID ?: string | null) : Promise<OpenIMUploadFileResult | null> {
   return new Promise<OpenIMUploadFileResult | null>((resolve, reject) => {

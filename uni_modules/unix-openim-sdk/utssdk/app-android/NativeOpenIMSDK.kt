@@ -739,10 +739,6 @@ object NativeOpenIMSDK {
     Open_im_sdk.refuseGroupApplication(OpenIMBaseCallback(resolve, reject), operationID, groupID, fromUserID, handleMsg)
   }
 
-  fun getGroupMemberOwnerAndAdmin(operationID: String, groupID: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.getGroupMemberOwnerAndAdmin(OpenIMBaseCallback(resolve, reject), operationID, groupID)
-  }
-
   fun findMessageList(operationID: String, findOptions: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
     Open_im_sdk.findMessageList(OpenIMBaseCallback(resolve, reject), operationID, findOptions)
   }
@@ -802,7 +798,7 @@ object NativeOpenIMSDK {
   }
 
   fun createAdvancedQuoteMessage(operationID: String, text: String, quoteMessage: String, messageEntityList: String): String {
-    return Open_im_sdk.createAdvancedQuoteMessage(operationID, text, messageEntityList, quoteMessage) ?: ""
+    return Open_im_sdk.createAdvancedQuoteMessage(operationID, text, quoteMessage, messageEntityList) ?: ""
   }
 
   fun createAdvancedTextMessage(operationID: String, text: String, messageEntityList: String): String {
@@ -857,8 +853,8 @@ object NativeOpenIMSDK {
     return Open_im_sdk.createCardMessage(operationID, cardInfo) ?: ""
   }
 
-  fun getConversationIDBySessionType(sourceID: String, groupID: String, sessionType: Number): String {
-    return Open_im_sdk.getConversationIDBySessionType(sourceID, groupID, sessionType.toLong()) ?: ""
+  fun getConversationIDBySessionType(operationID: String, sourceID: String, sessionType: Number): String {
+    return Open_im_sdk.getConversationIDBySessionType(operationID, sourceID, sessionType.toLong()) ?: ""
   }
 
   private fun applyNativeEventListeners() {

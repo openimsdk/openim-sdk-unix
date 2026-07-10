@@ -35,7 +35,6 @@
 					<button class="action-button" @click="handleSetConversation">17 Set Conversation</button>
 					<button class="action-button" @click="handleSetConversationDraft">18 Set Draft</button>
 					<button class="action-button" @click="handleChangeInputStates">19 Change Input</button>
-					<button class="action-button" @click="handleGetInputstates">20 Get Input</button>
 				</view>
 			</view>
 
@@ -114,7 +113,6 @@
 					<button class="action-button" @click="handleGetSpecifiedGroupMembersInfo">64 Specified Members</button>
 					<button class="action-button" @click="handleGetUsersInGroup">65 Users In Group</button>
 					<button class="action-button" @click="handleSearchGroupMembers">67 Search Members</button>
-					<button class="action-button" @click="handleGetGroupMemberOwnerAndAdmin">68 Owner Admin</button>
 					<button class="action-button" @click="handleGetGroupApplicationListAsApplicant">69 Group Apps Applicant</button>
 					<button class="action-button" @click="handleGetGroupApplicationListAsRecipient">70 Group Apps Recipient</button>
 					<button class="action-button" @click="handleGetGroupApplicationUnhandledCount">71 Group Apps Count</button>
@@ -189,6 +187,7 @@
 		OpenIMConversationListResult,
 		OpenIMCreateAdvancedQuoteMessageParams,
 		OpenIMCreateAdvancedTextMessageParams,
+		OpenIMAtTextElem,
 		OpenIMAtUsersInfoItem,
 		OpenIMCreateCustomMessageParams,
 		OpenIMCreateSoundMessageParams,
@@ -209,6 +208,7 @@
 		OpenIMGroupApplicationListResult,
 		OpenIMGroupInviteParams,
 		OpenIMGroupItem,
+		OpenIMJoinGroupParams,
 		OpenIMGroupListResult,
 		OpenIMGroupMemberItem,
 		OpenIMGroupMemberListResult,
@@ -220,6 +220,7 @@
 		OpenIMFindMessageParams,
 		OpenIMInsertGroupMessageParams,
 		OpenIMInsertSingleMessageParams,
+		OpenIMLoginStatus,
 		OpenIMLogLevel,
 		OpenIMMessageItem,
 		OpenIMMessageKeyParams,
@@ -244,6 +245,8 @@
 		OpenIMSetMessageLocalExParams,
 		OpenIMSetSelfInfoParams,
 		OpenIMSendMessageProgressEvent,
+		OpenIMCheckFriendResult,
+		OpenIMCheckFriendResultItem,
 		OpenIMFriendApplicationHandleParams,
 		OpenIMFriendApplicationItem,
 		OpenIMFriendApplicationListResult,
@@ -263,15 +266,16 @@
 		OpenIMUploadLogsProgressEvent,
 		OpenIMUserInfo,
 		OpenIMUserListResult,
+		OpenIMSDKEventName,
 		OpenIMSDKUnsubscribe,
 		OpenIMMessageRevokedItem,
 		OpenIMMessageReceiptListResult,
 		OpenIMConversationInputStatusItem,
-		OpenIMUserCommandItem,
 		OpenIMUserStatusListResult,
 		OpenIMVideoElem,
 		OpenIMFileElem,
 		OpenIMCardElem,
+		offEvent,
 		onConnecting,
 		onConnectSuccess,
 		onConnectFailed,
@@ -319,9 +323,6 @@
 		onJoinedGroupAdded,
 		onJoinedGroupDeleted,
 		onSelfInfoUpdated,
-		onUserCommandAdd,
-		onUserCommandDelete,
-		onUserCommandUpdate,
 		onUserStatusChanged,
 		initSDK,
 		login,
@@ -329,6 +330,7 @@
 		getLoginStatus,
 		getLoginUserID,
 		getSdkVersion,
+		getOpenIMDataPath,
 		unInitSDK,
 		getAllConversationList,
 		getOneConversation,
@@ -353,7 +355,6 @@
 		insertGroupMessageToLocalStorage,
 		insertSingleMessageToLocalStorage,
 		changeInputStates,
-		getInputstates,
 		clearConversationAndDeleteAllMsg,
 		hideConversation,
 		hideAllConversations,
@@ -405,7 +406,6 @@
 		getGroupApplicationUnhandledCount,
 		acceptGroupApplication,
 		refuseGroupApplication,
-		getGroupMemberOwnerAndAdmin,
 		findMessageList,
 		updateFcmToken,
 		subscribeUsersStatus,
@@ -478,6 +478,8 @@
 	let cachedCreatedMessage : OpenIMMessageItem | null = null
 	let cachedSentMessage : OpenIMMessageItem | null = null
 	let cachedClientMsgID = ''
+	let automationAutorunRequested = false
+	let automationAutorunScheduled = false
 
 	// Result rendering helpers
 	function setResult(value : string) {
@@ -488,6 +490,9 @@
 	function stringifyAPIValue(value : any | null) : string {
 		if (value == null) {
 			return 'null'
+		}
+		if (value instanceof Error) {
+			return value.message
 		}
 		const text = JSON.stringify(value)
 		if (text != null) {
@@ -690,112 +695,6 @@
 		return false
 	}
 
-	// SDK event subscriptions
-	let sdkEventUnsubscribes : Array<OpenIMSDKUnsubscribe> = []
-
-	function updateStatusForSDKEventName(eventName : string) {
-		if (eventName == 'onConnecting') {
-			statusText.value = 'Connecting'
-		} else if (eventName == 'onConnectSuccess') {
-			statusText.value = 'Connected'
-		} else if (eventName == 'onConnectFailed') {
-			statusText.value = 'Connect failed'
-		} else if (eventName == 'onKickedOffline') {
-			statusText.value = 'Kicked offline'
-		} else if (eventName == 'onUserTokenExpired') {
-			statusText.value = 'Token expired'
-		} else if (eventName == 'onUserTokenInvalid') {
-			statusText.value = 'Token invalid'
-		} else if (eventName == 'onSyncServerStart') {
-			statusText.value = 'Syncing conversations'
-		} else if (eventName == 'onSyncServerFinish') {
-			statusText.value = 'Sync finished'
-		} else if (eventName == 'onSyncServerFailed') {
-			statusText.value = 'Sync failed'
-		}
-	}
-
-	function showSDKEvent(eventName : string, value : any | null) {
-		updateStatusForSDKEventName(eventName)
-		const jsonText = stringifyAPIValue(value)
-		console.log('sdk event name', eventName)
-		console.log('sdk event typed payload', value)
-		console.log('sdk event json payload', jsonText)
-		setResult('event: ' + eventName + '\n\ntyped payload:\n' + jsonText + '\n\njson string:\n' + jsonText)
-	}
-
-	function showSDKErrorEvent(eventName : string, errCode : number, errMsg : string) {
-		updateStatusForSDKEventName(eventName)
-		console.log('sdk event error', eventName, errCode, errMsg)
-		setResult('event: ' + eventName + '\nerrCode: ' + errCode.toString() + '\nerrMsg: ' + errMsg)
-	}
-
-	function addSDKEventSubscription(unsubscribe : OpenIMSDKUnsubscribe) {
-		sdkEventUnsubscribes.push(unsubscribe)
-	}
-
-	function unregisterSDKEvents() {
-		sdkEventUnsubscribes.forEach((unsubscribe : OpenIMSDKUnsubscribe) => { unsubscribe() })
-		sdkEventUnsubscribes = []
-	}
-
-	function registerSDKEvents() {
-		unregisterSDKEvents()
-		addSDKEventSubscription(onConnecting(() => { showSDKEvent('onConnecting', null) }))
-		addSDKEventSubscription(onConnectSuccess(() => { showSDKEvent('onConnectSuccess', null) }))
-		addSDKEventSubscription(onConnectFailed((errCode : number, errMsg : string) => { showSDKErrorEvent('onConnectFailed', errCode, errMsg) }))
-		addSDKEventSubscription(onKickedOffline(() => { showSDKEvent('onKickedOffline', null) }))
-		addSDKEventSubscription(onUserTokenExpired(() => { showSDKEvent('onUserTokenExpired', null) }))
-		addSDKEventSubscription(onUserTokenInvalid((errCode : number, errMsg : string) => { showSDKErrorEvent('onUserTokenInvalid', errCode, errMsg) }))
-		addSDKEventSubscription(onRecvNewMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvNewMessage', message) }))
-		addSDKEventSubscription(onRecvOfflineNewMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvOfflineNewMessage', message) }))
-		addSDKEventSubscription(onRecvOnlineOnlyMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvOnlineOnlyMessage', message) }))
-		addSDKEventSubscription(onMsgDeleted((message : OpenIMMessageItem | null) => { showSDKEvent('onMsgDeleted', message) }))
-		addSDKEventSubscription(onNewRecvMessageRevoked((revoked : OpenIMMessageRevokedItem | null) => { showSDKEvent('onNewRecvMessageRevoked', revoked) }))
-		addSDKEventSubscription(onRecvC2CReadReceipt((result : OpenIMMessageReceiptListResult | null) => { showSDKEvent('onRecvC2CReadReceipt', result) }))
-		addSDKEventSubscription(onRecvNewMessages((result : OpenIMMessageListResult | null) => { showSDKEvent('onRecvNewMessages', result) }))
-		addSDKEventSubscription(onRecvOfflineNewMessages((result : OpenIMMessageListResult | null) => { showSDKEvent('onRecvOfflineNewMessages', result) }))
-		addSDKEventSubscription(onConversationChanged((result : OpenIMConversationListResult | null) => { showSDKEvent('onConversationChanged', result) }))
-		addSDKEventSubscription(onConversationUserInputStatusChanged((status : OpenIMConversationInputStatusItem | null) => { showSDKEvent('onConversationUserInputStatusChanged', status) }))
-		addSDKEventSubscription(onNewConversation((result : OpenIMConversationListResult | null) => { showSDKEvent('onNewConversation', result) }))
-		addSDKEventSubscription(onSyncServerFailed((reinstalled : boolean) => { showSDKEvent('onSyncServerFailed', reinstalled) }))
-		addSDKEventSubscription(onSyncServerFinish((reinstalled : boolean) => { showSDKEvent('onSyncServerFinish', reinstalled) }))
-		addSDKEventSubscription(onSyncServerProgress((progress : number) => { showSDKEvent('onSyncServerProgress', progress) }))
-		addSDKEventSubscription(onSyncServerStart((reinstalled : boolean) => { showSDKEvent('onSyncServerStart', reinstalled) }))
-		addSDKEventSubscription(onSendMessageProgress((progress : OpenIMSendMessageProgressEvent | null) => { showSDKEvent('onSendMessageProgress', progress) }))
-		addSDKEventSubscription(onUploadFileProgress((progress : OpenIMUploadFileProgressEvent | null) => { showSDKEvent('onUploadFileProgress', progress) }))
-		addSDKEventSubscription(onUploadLogsProgress((progress : OpenIMUploadLogsProgressEvent | null) => { showSDKEvent('onUploadLogsProgress', progress) }))
-		addSDKEventSubscription(onTotalUnreadMessageCountChanged((count : number) => { showSDKEvent('onTotalUnreadMessageCountChanged', count) }))
-		addSDKEventSubscription(onRecvCustomBusinessMessage((payload : string) => { showSDKEvent('onRecvCustomBusinessMessage', payload) }))
-		addSDKEventSubscription(onBlackAdded((blackUser : OpenIMBlackUserItem | null) => { showSDKEvent('onBlackAdded', blackUser) }))
-		addSDKEventSubscription(onBlackDeleted((blackUser : OpenIMBlackUserItem | null) => { showSDKEvent('onBlackDeleted', blackUser) }))
-		addSDKEventSubscription(onFriendAdded((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendAdded', friend) }))
-		addSDKEventSubscription(onFriendApplicationAccepted((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationAccepted', application) }))
-		addSDKEventSubscription(onFriendApplicationAdded((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationAdded', application) }))
-		addSDKEventSubscription(onFriendApplicationDeleted((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationDeleted', application) }))
-		addSDKEventSubscription(onFriendApplicationRejected((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationRejected', application) }))
-		addSDKEventSubscription(onFriendDeleted((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendDeleted', friend) }))
-		addSDKEventSubscription(onFriendInfoChanged((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendInfoChanged', friend) }))
-		addSDKEventSubscription(onGroupApplicationAccepted((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationAccepted', application) }))
-		addSDKEventSubscription(onGroupApplicationAdded((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationAdded', application) }))
-		addSDKEventSubscription(onGroupApplicationDeleted((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationDeleted', application) }))
-		addSDKEventSubscription(onGroupApplicationRejected((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationRejected', application) }))
-		addSDKEventSubscription(onGroupDismissed((group : OpenIMGroupItem | null) => { showSDKEvent('onGroupDismissed', group) }))
-		addSDKEventSubscription(onGroupInfoChanged((group : OpenIMGroupItem | null) => { showSDKEvent('onGroupInfoChanged', group) }))
-		addSDKEventSubscription(onGroupMemberAdded((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberAdded', member) }))
-		addSDKEventSubscription(onGroupMemberDeleted((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberDeleted', member) }))
-		addSDKEventSubscription(onGroupMemberInfoChanged((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberInfoChanged', member) }))
-		addSDKEventSubscription(onJoinedGroupAdded((group : OpenIMGroupItem | null) => { showSDKEvent('onJoinedGroupAdded', group) }))
-		addSDKEventSubscription(onJoinedGroupDeleted((group : OpenIMGroupItem | null) => { showSDKEvent('onJoinedGroupDeleted', group) }))
-		addSDKEventSubscription(onSelfInfoUpdated((user : OpenIMUserInfo | null) => { showSDKEvent('onSelfInfoUpdated', user) }))
-		addSDKEventSubscription(onUserCommandAdd((command : OpenIMUserCommandItem | null) => { showSDKEvent('onUserCommandAdd', command) }))
-		addSDKEventSubscription(onUserCommandDelete((command : OpenIMUserCommandItem | null) => { showSDKEvent('onUserCommandDelete', command) }))
-		addSDKEventSubscription(onUserCommandUpdate((command : OpenIMUserCommandItem | null) => { showSDKEvent('onUserCommandUpdate', command) }))
-		addSDKEventSubscription(onUserStatusChanged((result : OpenIMUserStatusListResult | null) => { showSDKEvent('onUserStatusChanged', result) }))
-	}
-
-	registerSDKEvents()
-
 	// SDK setup and request builders
 	function buildInitConfig() : OpenIMInitConfig {
 		let platformID = OpenIMPlatformIOS
@@ -903,7 +802,6 @@
 	function handleSetConversation() { const params : OpenIMSetConversationParams = { conversationID: requireConversationID(), ex: 'uvue-test' }; runAPI<string>('Setting conversation', 'Conversation set', setConversation(params, 'uvue_set_conversation'), noCache) }
 	function handleSetConversationDraft() { const params : OpenIMSetConversationDraftParams = { conversationID: requireConversationID(), draftText: 'draft from uni-app x' }; runAPI<string>('Setting draft', 'Draft set', setConversationDraft(params, 'uvue_set_draft'), noCache) }
 	function handleChangeInputStates() { const params : OpenIMInputStateParams = { conversationID: requireConversationID(), userID: demoPeerUserID, focus: true }; runAPI<string>('Changing input state', 'Input state changed', changeInputStates(params, 'uvue_change_input'), noCache) }
-	function handleGetInputstates() { const params : OpenIMInputStateParams = { conversationID: requireConversationID(), userID: demoPeerUserID, focus: false }; runAPI<string>('Getting input state', 'Input state loaded', getInputstates(params, 'uvue_get_input'), noCache) }
 
 	function handleGetHistoryByConversationID() { const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: requireConversationID(), startClientMsgID: '', count: 20 }; runAPI<OpenIMAdvancedHistoryMessageListResult | null>('Getting history', 'History loaded', getAdvancedHistoryMessageList(params, 'uvue_history'), cacheHistory) }
 	function handleSearchLocalMessages() { const params : OpenIMSearchLocalMessagesParams = { conversationID: requireConversationID(), keywordList: ['uni-app'], keywordListMatchType: 0, senderUserIDList: [], messageTypeList: [OpenIMMessageTypeText], searchTimePosition: 0, searchTimePeriod: 0, pageIndex: 1, count: 20 }; runAPI<OpenIMSearchMessageResult | null>('Searching local messages', 'Local messages searched', searchLocalMessages(params, 'uvue_search_local_messages'), noCache) }
@@ -942,7 +840,7 @@
 	function handleGetFriendListPage() { runAPI<OpenIMFriendListResult | null>('Getting friend page', 'Friend page loaded', getFriendListPage(defaultPageParams(), 'uvue_friend_page'), cacheFriends) }
 	function handleSearchFriends() { const params : OpenIMSearchFriendsParams = { keywordList: [demoPeerUserID], isSearchUserID: true, isSearchNickname: true, isSearchRemark: true }; runAPI<OpenIMFriendListResult | null>('Searching friends', 'Friend search loaded', searchFriends(params, 'uvue_search_friends'), cacheFriends) }
 	function handleGetSpecifiedFriendsInfo() { const params : OpenIMGetSpecifiedFriendsInfoParams = { userIDList: [demoPeerUserID], filterBlack: false }; runAPI<OpenIMFriendListResult | null>('Getting specified friends', 'Specified friends loaded', getSpecifiedFriendsInfo(params, 'uvue_specified_friends'), cacheFriends) }
-	function handleCheckFriend() { runAPI<Array<boolean> | null>('Checking friend', 'Friend checked', checkFriend([demoPeerUserID], 'uvue_check_friend'), noCache) }
+	function handleCheckFriend() { runAPI<OpenIMCheckFriendResult | null>('Checking friend', 'Friend checked', checkFriend([demoPeerUserID], 'uvue_check_friend'), noCache) }
 	function handleGetFriendApplicationListAsRecipient() { runAPI<OpenIMFriendApplicationListResult | null>('Getting friend apps recipient', 'Friend apps recipient loaded', getFriendApplicationListAsRecipient(defaultApplicationParams(), 'uvue_friend_apps_recipient'), cacheFriendApplications) }
 	function handleGetFriendApplicationListAsApplicant() { runAPI<OpenIMFriendApplicationListResult | null>('Getting friend apps applicant', 'Friend apps applicant loaded', getFriendApplicationListAsApplicant(defaultApplicationParams(), 'uvue_friend_apps_applicant'), cacheFriendApplications) }
 	function handleGetFriendApplicationUnhandledCount() { runAPI<number | null>('Getting friend app count', 'Friend app count loaded', getFriendApplicationUnhandledCount(defaultPageParams(), 'uvue_friend_app_count'), noCache) }
@@ -957,7 +855,6 @@
 	function handleGetSpecifiedGroupMembersInfo() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const userID = cachedGroupMember != null ? (cachedGroupMember as OpenIMGroupMemberItem).userID : demoUserID; const params : OpenIMGroupUserListParams = { groupID: groupID, userIDList: [userID] }; runAPI<OpenIMGroupMemberListResult | null>('Getting specified members', 'Specified members loaded', getSpecifiedGroupMembersInfo(params, 'uvue_specified_members'), cacheGroupMembers) }
 	function handleGetUsersInGroup() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMGroupUserListParams = { groupID: groupID, userIDList: [demoUserID] }; runAPI<Array<string> | null>('Getting users in group', 'Users in group loaded', getUsersInGroup(params, 'uvue_users_in_group'), noCache) }
 	function handleSearchGroupMembers() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; const params : OpenIMSearchGroupMembersParams = { groupID: groupID, keywordList: [demoUserID], isSearchUserID: true, isSearchMemberNickname: true }; runAPI<OpenIMGroupMemberListResult | null>('Searching group members', 'Group members searched', searchGroupMembers(params, 'uvue_search_group_members'), cacheGroupMembers) }
-	function handleGetGroupMemberOwnerAndAdmin() { const groupID = requireGroupID(); if (groupID.length == 0) { failMissing('Load group first.'); return }; runAPI<OpenIMGroupMemberListResult | null>('Getting owner admin', 'Owner admin loaded', getGroupMemberOwnerAndAdmin(groupID, 'uvue_owner_admin'), cacheGroupMembers) }
 	function handleGetGroupApplicationListAsApplicant() { runAPI<OpenIMGroupApplicationListResult | null>('Getting group apps applicant', 'Group apps applicant loaded', getGroupApplicationListAsApplicant(defaultApplicationParams(), 'uvue_group_apps_applicant'), cacheGroupApplications) }
 	function handleGetGroupApplicationListAsRecipient() { runAPI<OpenIMGroupApplicationListResult | null>('Getting group apps recipient', 'Group apps recipient loaded', getGroupApplicationListAsRecipient(defaultApplicationParams(), 'uvue_group_apps_recipient'), cacheGroupApplications) }
 	function handleGetGroupApplicationUnhandledCount() { runAPI<number | null>('Getting group app count', 'Group app count loaded', getGroupApplicationUnhandledCount(defaultPageParams(), 'uvue_group_app_count'), noCache) }
@@ -1004,6 +901,1856 @@
 	function handleDeleteConversationAndDeleteAllMsg() { runAPI<string>('Deleting conversation and messages', 'Conversation and messages deleted', deleteConversationAndDeleteAllMsg(requireConversationID(), 'uvue_delete_conversation_msgs'), noCache) }
 	function handleDeleteConversation() { runAPI<string>('Deleting conversation', 'Conversation deleted', deleteConversation(requireConversationID(), 'uvue_delete_conversation'), noCache) }
 
+	type OpenIMAutomationConfig = {
+		autorun : string
+		apiAddr : string
+		wsAddr : string
+		platformID : number
+		primaryUserID : string
+		primaryToken : string
+		primaryIOSToken : string
+		primaryAndroidToken : string
+		secondaryUserID : string
+		secondaryToken : string
+		secondaryIOSToken : string
+		secondaryAndroidToken : string
+	}
+
+	type OpenIMAutomationCase = {
+		group : string
+		name : string
+		status : string
+		message : string
+		durationMs : number
+	}
+
+	type OpenIMAutomationGroupResult = {
+		group : string
+		total : number
+		passed : number
+		failed : number
+		skipped : number
+	}
+
+	type OpenIMAutomationEventRecord = {
+		name : string
+		count : number
+		lastPayload : string
+	}
+
+	type OpenIMAutomationSummary = {
+		headline : string
+		summaryText : string
+		total : number
+		passed : number
+		failed : number
+		skipped : number
+		coverageTotal : number
+		coverageRecorded : number
+		coverageMissing : Array<string>
+		validatedTotal : number
+		validatedRecorded : number
+		validatedMissing : Array<string>
+		allowedSkipped : Array<string>
+		unexpectedSkipped : Array<string>
+		validatedAllowedMissing : Array<string>
+		validatedUnexpectedMissing : Array<string>
+		groups : Array<OpenIMAutomationGroupResult>
+		cases : Array<OpenIMAutomationCase>
+		events : Array<OpenIMAutomationEventRecord>
+		logFilePath : string
+		jsonFilePath : string
+		logWriteError : string
+	}
+
+	let automationRunning = false
+	let automationEventSuppressed = false
+	let automationLoggedIn = false
+	let automationActiveUserID = ''
+	let automationConversationID = ''
+	let automationFixedImageFullPath = ''
+	let automationFixedSoundFullPath = ''
+	let automationFixedVideoFullPath = ''
+	let automationFixedVideoSnapshotFullPath = ''
+	let automationFixedFileFullPath = ''
+	let automationAssetDirFullPath = ''
+	let automationRunLogFilePath = ''
+	let automationRunJSONFilePath = ''
+	let automationRunLogWriteError = ''
+	let automationUploadFileProgressExpected = false
+	let automationUploadLogsProgressExpected = false
+	let automationSendMessageProgressExpected = false
+	let automationStepResults : Array<OpenIMAutomationCase> = []
+	let automationCoveredAPINames : Array<string> = []
+	let automationValidatedAPINames : Array<string> = []
+	let automationEventRecords : Array<OpenIMAutomationEventRecord> = []
+
+	const automationDefaultStepTimeoutMilliseconds = 60000
+	const automationSendStepTimeoutMilliseconds = 30000
+	const automationSuiteOrder : Array<string> = ['setup', 'events', 'user-status', 'message-create', 'message-create-send', 'message-send', 'conversation', 'message-storage', 'friend', 'group', 'app', 'upload', 'conversation-mutation', 'event-delivery', 'coverage', 'cleanup', 'artifact']
+	const automationAllowedSkipCaseKeys : Array<string> = ['cleanup/unInitSDK']
+	const automationAllowedValidatedMissingNames : Array<string> = ['unInitSDK']
+	const automationRequiredDeliveredEventNames : Array<string> = ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish', 'onSendMessageProgress', 'onUploadFileProgress', 'onUploadLogsProgress']
+	const automationTrackedDeliveredEventNames : Array<string> = [
+		'onSyncServerProgress', 'onConversationChanged', 'onNewConversation', 'onTotalUnreadMessageCountChanged', 'onRecvNewMessage',
+		'onFriendAdded', 'onFriendApplicationAccepted', 'onFriendApplicationAdded', 'onFriendApplicationRejected',
+		'onFriendDeleted', 'onFriendInfoChanged', 'onBlackAdded', 'onBlackDeleted',
+		'onGroupApplicationAccepted', 'onGroupApplicationAdded', 'onGroupApplicationRejected',
+		'onGroupDismissed', 'onGroupInfoChanged', 'onGroupMemberAdded', 'onGroupMemberDeleted',
+		'onGroupMemberInfoChanged', 'onJoinedGroupAdded', 'onJoinedGroupDeleted', 'onSelfInfoUpdated', 'onUserStatusChanged'
+	]
+	const automationEventSubscriptionNames : Array<string> = [
+		'onConnecting', 'onConnectSuccess', 'onConnectFailed', 'onKickedOffline', 'onUserTokenExpired', 'onUserTokenInvalid',
+		'onRecvNewMessage', 'onRecvOfflineNewMessage', 'onRecvOnlineOnlyMessage', 'onMsgDeleted', 'onNewRecvMessageRevoked',
+		'onRecvC2CReadReceipt', 'onRecvNewMessages', 'onRecvOfflineNewMessages', 'onConversationChanged',
+		'onConversationUserInputStatusChanged', 'onNewConversation', 'onSyncServerFailed', 'onSyncServerFinish',
+		'onSyncServerProgress', 'onSyncServerStart', 'onSendMessageProgress', 'onUploadFileProgress',
+		'onUploadLogsProgress', 'onTotalUnreadMessageCountChanged', 'onRecvCustomBusinessMessage',
+		'onBlackAdded', 'onBlackDeleted', 'onFriendAdded', 'onFriendApplicationAccepted', 'onFriendApplicationAdded',
+		'onFriendApplicationDeleted', 'onFriendApplicationRejected', 'onFriendDeleted', 'onFriendInfoChanged',
+		'onGroupApplicationAccepted', 'onGroupApplicationAdded', 'onGroupApplicationDeleted', 'onGroupApplicationRejected',
+		'onGroupDismissed', 'onGroupInfoChanged', 'onGroupMemberAdded', 'onGroupMemberDeleted',
+		'onGroupMemberInfoChanged', 'onJoinedGroupAdded', 'onJoinedGroupDeleted', 'onSelfInfoUpdated', 'onUserStatusChanged'
+	]
+	const automationPublicAPINames : Array<string> = [
+		'offEvent',
+		'onConnecting', 'onConnectSuccess', 'onConnectFailed', 'onKickedOffline', 'onUserTokenExpired', 'onUserTokenInvalid',
+		'onRecvNewMessage', 'onRecvOfflineNewMessage', 'onRecvOnlineOnlyMessage', 'onMsgDeleted', 'onNewRecvMessageRevoked',
+		'onRecvC2CReadReceipt', 'onRecvNewMessages', 'onRecvOfflineNewMessages', 'onConversationChanged',
+		'onConversationUserInputStatusChanged', 'onNewConversation', 'onSyncServerFailed', 'onSyncServerFinish',
+		'onSyncServerProgress', 'onSyncServerStart', 'onSendMessageProgress', 'onUploadFileProgress',
+		'onUploadLogsProgress', 'onTotalUnreadMessageCountChanged', 'onRecvCustomBusinessMessage',
+		'onBlackAdded', 'onBlackDeleted', 'onFriendAdded', 'onFriendApplicationAccepted', 'onFriendApplicationAdded',
+		'onFriendApplicationDeleted', 'onFriendApplicationRejected', 'onFriendDeleted', 'onFriendInfoChanged',
+		'onGroupApplicationAccepted', 'onGroupApplicationAdded', 'onGroupApplicationDeleted', 'onGroupApplicationRejected',
+		'onGroupDismissed', 'onGroupInfoChanged', 'onGroupMemberAdded', 'onGroupMemberDeleted',
+		'onGroupMemberInfoChanged', 'onJoinedGroupAdded', 'onJoinedGroupDeleted', 'onSelfInfoUpdated', 'onUserStatusChanged',
+		'initSDK', 'login', 'logout', 'getLoginStatus', 'getLoginUserID', 'getSdkVersion', 'getOpenIMDataPath', 'unInitSDK',
+		'getAllConversationList', 'getOneConversation', 'getAdvancedHistoryMessageList', 'getSpecifiedGroupsInfo',
+		'deleteConversationAndDeleteAllMsg', 'markConversationMessageAsRead', 'getGroupMemberList', 'setMessageLocalEx',
+		'revokeMessage', 'setConversation', 'setAppBackgroundStatus', 'setAppBadge', 'networkStatusChanged',
+		'getSelfUserInfo', 'getUsersInfo', 'setSelfInfo', 'deleteMessageFromLocalStorage', 'deleteMessage',
+		'deleteAllMsgFromLocal', 'deleteAllMsgFromLocalAndSvr', 'insertSingleMessageToLocalStorage',
+		'insertGroupMessageToLocalStorage', 'changeInputStates', 'clearConversationAndDeleteAllMsg',
+		'hideConversation', 'hideAllConversations', 'markAllConversationMessageAsRead', 'searchConversation',
+		'getConversationListSplit', 'getConversationIDBySessionType', 'getMultipleConversation', 'deleteConversation',
+		'setConversationDraft', 'getTotalUnreadMsgCount', 'searchLocalMessages', 'addFriend', 'searchFriends',
+		'getSpecifiedFriendsInfo', 'getFriendApplicationListAsRecipient', 'getFriendApplicationListAsApplicant',
+		'getFriendApplicationUnhandledCount', 'getFriendList', 'getFriendListPage', 'updateFriends', 'checkFriend',
+		'acceptFriendApplication', 'refuseFriendApplication', 'deleteFriend', 'addBlack', 'removeBlack', 'getBlackList',
+		'inviteUserToGroup', 'kickGroupMember', 'isJoinGroup', 'getSpecifiedGroupMembersInfo', 'getUsersInGroup',
+		'searchGroupMembers', 'getJoinedGroupList', 'getJoinedGroupListPage', 'createGroup', 'setGroupInfo',
+		'setGroupMemberInfo', 'joinGroup', 'searchGroups', 'quitGroup', 'dismissGroup', 'changeGroupMute',
+		'changeGroupMemberMute', 'transferGroupOwner', 'getGroupApplicationListAsApplicant',
+		'getGroupApplicationListAsRecipient', 'getGroupApplicationUnhandledCount', 'acceptGroupApplication',
+		'refuseGroupApplication', 'findMessageList', 'updateFcmToken',
+		'subscribeUsersStatus', 'unsubscribeUsersStatus', 'getUserStatus', 'getSubscribeUsersStatus',
+		'createTextMessage', 'createImageMessageFromFullPath', 'createImageMessageByURL', 'createCustomMessage',
+		'createQuoteMessage', 'createAdvancedQuoteMessage', 'createAdvancedTextMessage', 'createTextAtMessage',
+		'createSoundMessageFromFullPath', 'createSoundMessageByURL', 'createVideoMessageFromFullPath',
+		'createVideoMessageByURL', 'createFileMessageFromFullPath', 'createFileMessageByURL', 'createMergerMessage',
+		'createForwardMessage', 'createFaceMessage', 'createLocationMessage', 'createCardMessage',
+		'sendMessage', 'sendMessageNotOss', 'uploadFile', 'uploadLogs'
+	]
+
+	function readAutomationString(value : UTSJSONObject, key : string) : string {
+		const raw = value[key]
+		if (raw != null) {
+			return raw as string
+		}
+		return ''
+	}
+
+	function readAutomationNumber(value : UTSJSONObject, key : string) : number {
+		const raw = value[key]
+		if (raw != null) {
+			return raw as number
+		}
+		return 0
+	}
+
+	function selectAutomationPlatformTokens(config : OpenIMAutomationConfig) : OpenIMAutomationConfig {
+		let primaryToken = config.primaryToken
+		let secondaryToken = config.secondaryToken
+		// #ifdef APP-IOS
+		if (config.primaryIOSToken.length > 0) { primaryToken = config.primaryIOSToken }
+		if (config.secondaryIOSToken.length > 0) { secondaryToken = config.secondaryIOSToken }
+		// #endif
+		// #ifdef APP-ANDROID
+		if (config.primaryAndroidToken.length > 0) { primaryToken = config.primaryAndroidToken }
+		if (config.secondaryAndroidToken.length > 0) { secondaryToken = config.secondaryAndroidToken }
+		// #endif
+		config.primaryToken = primaryToken
+		config.secondaryToken = secondaryToken
+		return config
+	}
+
+	function normalizeAutomationConfig(value : UTSJSONObject) : OpenIMAutomationConfig {
+		const config : OpenIMAutomationConfig = {
+			autorun: readAutomationString(value, 'autorun'),
+			apiAddr: readAutomationString(value, 'apiAddr'),
+			wsAddr: readAutomationString(value, 'wsAddr'),
+			platformID: readAutomationNumber(value, 'platformID'),
+			primaryUserID: readAutomationString(value, 'primaryUserID'),
+			primaryToken: readAutomationString(value, 'primaryToken'),
+			primaryIOSToken: readAutomationString(value, 'primaryIOSToken'),
+			primaryAndroidToken: readAutomationString(value, 'primaryAndroidToken'),
+			secondaryUserID: readAutomationString(value, 'secondaryUserID'),
+			secondaryToken: readAutomationString(value, 'secondaryToken'),
+			secondaryIOSToken: readAutomationString(value, 'secondaryIOSToken'),
+			secondaryAndroidToken: readAutomationString(value, 'secondaryAndroidToken')
+		}
+		return selectAutomationPlatformTokens(config)
+	}
+
+	function parseAutomationConfigText(text : string) : OpenIMAutomationConfig | null {
+		try {
+			const parsed = JSON.parseObject<UTSJSONObject>(text)
+			if (parsed != null) {
+				return normalizeAutomationConfig(parsed)
+			}
+		} catch (error) {
+			return null
+		}
+		return null
+	}
+
+	function readAutomationJSONFile(filePath : string) : OpenIMAutomationConfig | null {
+		try {
+			const contentValue = uni.getFileSystemManager().readFileSync(filePath, 'utf-8')
+			const content = contentValue as string
+			if (content.length == 0) {
+				return null
+			}
+			return parseAutomationConfigText(content)
+		} catch (error) {
+			return null
+		}
+	}
+
+	function readStaticAutomationConfig() : OpenIMAutomationConfig | null {
+		const userDataPath = uni.env.USER_DATA_PATH
+		const paths : Array<string> = [
+			'static/openim-test-config.json',
+			'/static/openim-test-config.json',
+			'uni-app-x/apps/__UNI__B3F7C44/www/static/openim-test-config.json',
+			'/uni-app-x/apps/__UNI__B3F7C44/www/static/openim-test-config.json'
+		]
+		if (userDataPath.length > 0) {
+			paths.push(userDataPath + '/www/static/openim-test-config.json')
+			paths.push(userDataPath + '/static/openim-test-config.json')
+		}
+		let index = 0
+		while (index < paths.length) {
+			const config = readAutomationJSONFile(paths[index])
+			if (config != null) {
+				return config
+			}
+			index = index + 1
+		}
+		return null
+	}
+
+	function isAutomationConfigReady(config : OpenIMAutomationConfig | null) : boolean {
+		if (config == null) { return false }
+		return (config as OpenIMAutomationConfig).apiAddr.length > 0 &&
+			(config as OpenIMAutomationConfig).wsAddr.length > 0 &&
+			(config as OpenIMAutomationConfig).primaryUserID.length > 0 &&
+			(config as OpenIMAutomationConfig).primaryToken.length > 0 &&
+			(config as OpenIMAutomationConfig).secondaryUserID.length > 0 &&
+			(config as OpenIMAutomationConfig).secondaryToken.length > 0
+	}
+
+	function readAutomationConfig() : OpenIMAutomationConfig | null {
+		const raw = uni.getStorageSync('openim-test-config')
+		if (raw instanceof UTSJSONObject) {
+			const storageConfig = normalizeAutomationConfig(raw)
+			if (isAutomationConfigReady(storageConfig)) {
+				return storageConfig
+			}
+		}
+		if (raw != null) {
+			const text = JSON.stringify(raw)
+			if (text != null) {
+				const parsed = parseAutomationConfigText(text as string)
+				if (isAutomationConfigReady(parsed)) { return parsed }
+			}
+		}
+		return readStaticAutomationConfig()
+	}
+
+	function buildAutomationInitConfig(config : OpenIMAutomationConfig) : OpenIMInitConfig {
+		let platformID = OpenIMPlatformIOS
+		let systemType = 'unix-ios'
+		// #ifdef APP-ANDROID
+		platformID = OpenIMPlatformAndroid
+		systemType = 'unix-android'
+		// #endif
+		const initConfig : OpenIMInitConfig = {
+			platformID: platformID,
+			apiAddr: config.apiAddr,
+			wsAddr: config.wsAddr,
+			dataDir: null,
+			logFilePath: null,
+			logLevel: OpenIMLogLevelVerbose,
+			isLogStandardOutput: true,
+			systemType: systemType
+		}
+		return initConfig
+	}
+
+	function resetAutomationCache() {
+		cachedConversation = null
+		cachedGroupID = ''
+		cachedGroup = null
+		cachedGroupMember = null
+		cachedFriend = null
+		cachedFriendApplication = null
+		cachedGroupApplication = null
+		cachedQuoteSourceMessage = null
+		cachedCreatedMessage = null
+		cachedSentMessage = null
+		cachedClientMsgID = ''
+		automationLoggedIn = false
+		automationActiveUserID = ''
+		automationConversationID = ''
+		automationFixedImageFullPath = ''
+		automationFixedSoundFullPath = ''
+		automationFixedVideoFullPath = ''
+		automationFixedVideoSnapshotFullPath = ''
+		automationFixedFileFullPath = ''
+		automationAssetDirFullPath = ''
+		automationRunLogFilePath = ''
+		automationRunJSONFilePath = ''
+		automationRunLogWriteError = ''
+		automationUploadFileProgressExpected = false
+		automationUploadLogsProgressExpected = false
+		automationSendMessageProgressExpected = false
+		automationStepResults = []
+		automationCoveredAPINames = []
+		automationValidatedAPINames = []
+		automationEventRecords = []
+		updateCacheText()
+	}
+
+	function automationClip(value : string) : string {
+		if (value.length > 1000) {
+			return value.substring(0, 1000)
+		}
+		return value
+	}
+
+	function automationStringArrayContains(items : Array<string>, value : string) : boolean {
+		let index = 0
+		while (index < items.length) {
+			if (items[index] == value) {
+				return true
+			}
+			index = index + 1
+		}
+		return false
+	}
+
+	function markAutomationAPICovered(name : string) {
+		if (automationStringArrayContains(automationPublicAPINames, name) && !automationStringArrayContains(automationCoveredAPINames, name)) {
+			automationCoveredAPINames.push(name)
+		}
+	}
+
+	function markAutomationAPIValidated(name : string) {
+		if (automationStringArrayContains(automationPublicAPINames, name) && !automationStringArrayContains(automationValidatedAPINames, name)) {
+			automationValidatedAPINames.push(name)
+		}
+	}
+
+	function truncateAutomationEventPayload(value : string) : string {
+		if (value.length > 600) {
+			return value.substring(0, 600)
+		}
+		return value
+	}
+
+	function findAutomationEventRecord(eventName : string) : OpenIMAutomationEventRecord | null {
+		let index = 0
+		while (index < automationEventRecords.length) {
+			if (automationEventRecords[index].name == eventName) {
+				return automationEventRecords[index]
+			}
+			index = index + 1
+		}
+		return null
+	}
+
+	function recordSDKEventDelivery(eventName : string, payloadText : string) {
+		if (!automationRunning) {
+			return
+		}
+		let record = findAutomationEventRecord(eventName)
+		if (record == null) {
+			const item : OpenIMAutomationEventRecord = { name: eventName, count: 0, lastPayload: '' }
+			automationEventRecords.push(item)
+			record = item
+		}
+		if (record != null) {
+			record.count = record.count + 1
+			record.lastPayload = truncateAutomationEventPayload(payloadText)
+		}
+	}
+
+	function readAutomationEventCount(eventName : string) : number {
+		const record = findAutomationEventRecord(eventName)
+		if (record == null) {
+			return 0
+		}
+		return record.count
+	}
+
+	// SDK event subscriptions
+	let sdkEventUnsubscribes : Array<OpenIMSDKUnsubscribe> = []
+	let sdkRegisteredEventNames : Array<string> = []
+	let sdkEventUnsubscribeNames : Array<string> = []
+
+	function updateStatusForSDKEventName(eventName : string) {
+		if (eventName == 'onConnecting') {
+			statusText.value = 'Connecting'
+		} else if (eventName == 'onConnectSuccess') {
+			statusText.value = 'Connected'
+		} else if (eventName == 'onConnectFailed') {
+			statusText.value = 'Connect failed'
+		} else if (eventName == 'onKickedOffline') {
+			statusText.value = 'Kicked offline'
+		} else if (eventName == 'onUserTokenExpired') {
+			statusText.value = 'Token expired'
+		} else if (eventName == 'onUserTokenInvalid') {
+			statusText.value = 'Token invalid'
+		} else if (eventName == 'onSyncServerStart') {
+			statusText.value = 'Syncing conversations'
+		} else if (eventName == 'onSyncServerFinish') {
+			statusText.value = 'Sync finished'
+		} else if (eventName == 'onSyncServerFailed') {
+			statusText.value = 'Sync failed'
+		}
+	}
+
+	function showSDKEvent(eventName : string, value : any | null) {
+		updateStatusForSDKEventName(eventName)
+		const jsonText = stringifyAPIValue(value)
+		recordSDKEventDelivery(eventName, jsonText)
+		console.log('sdk event name', eventName)
+		console.log('sdk event typed payload', value)
+		console.log('sdk event json payload', jsonText)
+		if (automationEventSuppressed) {
+			return
+		}
+		setResult('event: ' + eventName + '\n\ntyped payload:\n' + jsonText + '\n\njson string:\n' + jsonText)
+	}
+
+	function showSDKErrorEvent(eventName : string, errCode : number, errMsg : string) {
+		updateStatusForSDKEventName(eventName)
+		recordSDKEventDelivery(eventName, 'errCode=' + errCode.toString() + ' errMsg=' + errMsg)
+		console.log('sdk event error', eventName, errCode, errMsg)
+		if (automationEventSuppressed) {
+			return
+		}
+		setResult('event: ' + eventName + '\nerrCode: ' + errCode.toString() + '\nerrMsg: ' + errMsg)
+	}
+
+	function addSDKEventSubscription(eventName : string, unsubscribe : OpenIMSDKUnsubscribe | null) {
+		if (!automationStringArrayContains(sdkRegisteredEventNames, eventName)) {
+			sdkRegisteredEventNames.push(eventName)
+		}
+		if (unsubscribe != null) {
+			sdkEventUnsubscribes.push(unsubscribe)
+			if (!automationStringArrayContains(sdkEventUnsubscribeNames, eventName)) {
+				sdkEventUnsubscribeNames.push(eventName)
+			}
+		} else {
+			console.log('sdk event subscription did not return unsubscribe ' + eventName)
+		}
+	}
+
+	function unregisterSDKEvents() {
+		sdkEventUnsubscribes.forEach((unsubscribe : OpenIMSDKUnsubscribe) => { unsubscribe() })
+		sdkEventUnsubscribes = []
+		sdkRegisteredEventNames.forEach((eventName : string) => { offEvent(eventName as OpenIMSDKEventName) })
+		sdkRegisteredEventNames = []
+		sdkEventUnsubscribeNames = []
+	}
+
+	function registerSDKEvents() {
+		unregisterSDKEvents()
+		addSDKEventSubscription('onConnecting', onConnecting(() => { showSDKEvent('onConnecting', null) }))
+		addSDKEventSubscription('onConnectSuccess', onConnectSuccess(() => { showSDKEvent('onConnectSuccess', null) }))
+		addSDKEventSubscription('onConnectFailed', onConnectFailed((errCode : number, errMsg : string) => { showSDKErrorEvent('onConnectFailed', errCode, errMsg) }))
+		addSDKEventSubscription('onKickedOffline', onKickedOffline(() => { showSDKEvent('onKickedOffline', null) }))
+		addSDKEventSubscription('onUserTokenExpired', onUserTokenExpired(() => { showSDKEvent('onUserTokenExpired', null) }))
+		addSDKEventSubscription('onUserTokenInvalid', onUserTokenInvalid((errCode : number, errMsg : string) => { showSDKErrorEvent('onUserTokenInvalid', errCode, errMsg) }))
+		addSDKEventSubscription('onRecvNewMessage', onRecvNewMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvNewMessage', message) }))
+		addSDKEventSubscription('onRecvOfflineNewMessage', onRecvOfflineNewMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvOfflineNewMessage', message) }))
+		addSDKEventSubscription('onRecvOnlineOnlyMessage', onRecvOnlineOnlyMessage((message : OpenIMMessageItem | null) => { showSDKEvent('onRecvOnlineOnlyMessage', message) }))
+		addSDKEventSubscription('onMsgDeleted', onMsgDeleted((message : OpenIMMessageItem | null) => { showSDKEvent('onMsgDeleted', message) }))
+		addSDKEventSubscription('onNewRecvMessageRevoked', onNewRecvMessageRevoked((revoked : OpenIMMessageRevokedItem | null) => { showSDKEvent('onNewRecvMessageRevoked', revoked) }))
+		addSDKEventSubscription('onRecvC2CReadReceipt', onRecvC2CReadReceipt((result : OpenIMMessageReceiptListResult | null) => { showSDKEvent('onRecvC2CReadReceipt', result) }))
+		addSDKEventSubscription('onRecvNewMessages', onRecvNewMessages((result : OpenIMMessageListResult | null) => { showSDKEvent('onRecvNewMessages', result) }))
+		addSDKEventSubscription('onRecvOfflineNewMessages', onRecvOfflineNewMessages((result : OpenIMMessageListResult | null) => { showSDKEvent('onRecvOfflineNewMessages', result) }))
+		addSDKEventSubscription('onConversationChanged', onConversationChanged((result : OpenIMConversationListResult | null) => { showSDKEvent('onConversationChanged', result) }))
+		addSDKEventSubscription('onConversationUserInputStatusChanged', onConversationUserInputStatusChanged((status : OpenIMConversationInputStatusItem | null) => { showSDKEvent('onConversationUserInputStatusChanged', status) }))
+		addSDKEventSubscription('onNewConversation', onNewConversation((result : OpenIMConversationListResult | null) => { showSDKEvent('onNewConversation', result) }))
+		addSDKEventSubscription('onSyncServerFailed', onSyncServerFailed((reinstalled : boolean) => { showSDKEvent('onSyncServerFailed', reinstalled) }))
+		addSDKEventSubscription('onSyncServerFinish', onSyncServerFinish((reinstalled : boolean) => { showSDKEvent('onSyncServerFinish', reinstalled) }))
+		addSDKEventSubscription('onSyncServerProgress', onSyncServerProgress((progress : number) => { showSDKEvent('onSyncServerProgress', progress) }))
+		addSDKEventSubscription('onSyncServerStart', onSyncServerStart((reinstalled : boolean) => { showSDKEvent('onSyncServerStart', reinstalled) }))
+		addSDKEventSubscription('onSendMessageProgress', onSendMessageProgress((progress : OpenIMSendMessageProgressEvent | null) => { showSDKEvent('onSendMessageProgress', progress) }))
+		addSDKEventSubscription('onUploadFileProgress', onUploadFileProgress((progress : OpenIMUploadFileProgressEvent | null) => { showSDKEvent('onUploadFileProgress', progress) }))
+		addSDKEventSubscription('onUploadLogsProgress', onUploadLogsProgress((progress : OpenIMUploadLogsProgressEvent | null) => { showSDKEvent('onUploadLogsProgress', progress) }))
+		addSDKEventSubscription('onTotalUnreadMessageCountChanged', onTotalUnreadMessageCountChanged((count : number) => { showSDKEvent('onTotalUnreadMessageCountChanged', count) }))
+		addSDKEventSubscription('onRecvCustomBusinessMessage', onRecvCustomBusinessMessage((payload : string) => { showSDKEvent('onRecvCustomBusinessMessage', payload) }))
+		addSDKEventSubscription('onBlackAdded', onBlackAdded((blackUser : OpenIMBlackUserItem | null) => { showSDKEvent('onBlackAdded', blackUser) }))
+		addSDKEventSubscription('onBlackDeleted', onBlackDeleted((blackUser : OpenIMBlackUserItem | null) => { showSDKEvent('onBlackDeleted', blackUser) }))
+		addSDKEventSubscription('onFriendAdded', onFriendAdded((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendAdded', friend) }))
+		addSDKEventSubscription('onFriendApplicationAccepted', onFriendApplicationAccepted((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationAccepted', application) }))
+		addSDKEventSubscription('onFriendApplicationAdded', onFriendApplicationAdded((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationAdded', application) }))
+		addSDKEventSubscription('onFriendApplicationDeleted', onFriendApplicationDeleted((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationDeleted', application) }))
+		addSDKEventSubscription('onFriendApplicationRejected', onFriendApplicationRejected((application : OpenIMFriendApplicationItem | null) => { showSDKEvent('onFriendApplicationRejected', application) }))
+		addSDKEventSubscription('onFriendDeleted', onFriendDeleted((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendDeleted', friend) }))
+		addSDKEventSubscription('onFriendInfoChanged', onFriendInfoChanged((friend : OpenIMFriendUserItem | null) => { showSDKEvent('onFriendInfoChanged', friend) }))
+		addSDKEventSubscription('onGroupApplicationAccepted', onGroupApplicationAccepted((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationAccepted', application) }))
+		addSDKEventSubscription('onGroupApplicationAdded', onGroupApplicationAdded((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationAdded', application) }))
+		addSDKEventSubscription('onGroupApplicationDeleted', onGroupApplicationDeleted((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationDeleted', application) }))
+		addSDKEventSubscription('onGroupApplicationRejected', onGroupApplicationRejected((application : OpenIMGroupApplicationItem | null) => { showSDKEvent('onGroupApplicationRejected', application) }))
+		addSDKEventSubscription('onGroupDismissed', onGroupDismissed((group : OpenIMGroupItem | null) => { showSDKEvent('onGroupDismissed', group) }))
+		addSDKEventSubscription('onGroupInfoChanged', onGroupInfoChanged((group : OpenIMGroupItem | null) => { showSDKEvent('onGroupInfoChanged', group) }))
+		addSDKEventSubscription('onGroupMemberAdded', onGroupMemberAdded((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberAdded', member) }))
+		addSDKEventSubscription('onGroupMemberDeleted', onGroupMemberDeleted((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberDeleted', member) }))
+		addSDKEventSubscription('onGroupMemberInfoChanged', onGroupMemberInfoChanged((member : OpenIMGroupMemberItem | null) => { showSDKEvent('onGroupMemberInfoChanged', member) }))
+		addSDKEventSubscription('onJoinedGroupAdded', onJoinedGroupAdded((group : OpenIMGroupItem | null) => { showSDKEvent('onJoinedGroupAdded', group) }))
+		addSDKEventSubscription('onJoinedGroupDeleted', onJoinedGroupDeleted((group : OpenIMGroupItem | null) => { showSDKEvent('onJoinedGroupDeleted', group) }))
+		addSDKEventSubscription('onSelfInfoUpdated', onSelfInfoUpdated((user : OpenIMUserInfo | null) => { showSDKEvent('onSelfInfoUpdated', user) }))
+		addSDKEventSubscription('onUserStatusChanged', onUserStatusChanged((result : OpenIMUserStatusListResult | null) => { showSDKEvent('onUserStatusChanged', result) }))
+	}
+
+	registerSDKEvents()
+
+	function requireAutomation(condition : boolean, message : string) {
+		if (condition == false) {
+			throw new Error(message)
+		}
+	}
+
+	function requireAutomationString(value : string, message : string) {
+		requireAutomation(value.length > 0, message)
+	}
+
+	function requireAutomationUser(value : OpenIMUserInfo | null, userID : string, label : string) {
+		requireAutomation(value != null, label + ' returned null')
+		const item = value as OpenIMUserInfo
+		requireAutomationString(item.userID, label + ' returned empty userID')
+		requireAutomation(item.userID == userID, label + ' returned unexpected userID ' + item.userID)
+	}
+
+	function requireAutomationUserList(value : OpenIMUserListResult | null, primaryUserID : string, secondaryUserID : string) {
+		requireAutomation(value != null, 'getUsersInfo returned null')
+		const result = value as OpenIMUserListResult
+		let hasPrimary = false
+		let hasSecondary = false
+		result.users.forEach((item : OpenIMUserInfo) => {
+			if (item.userID == primaryUserID) { hasPrimary = true }
+			if (item.userID == secondaryUserID) { hasSecondary = true }
+		})
+		requireAutomation(hasPrimary, 'getUsersInfo did not include primary user')
+		requireAutomation(hasSecondary, 'getUsersInfo did not include secondary user')
+	}
+
+	function requireAutomationCheckFriend(value : OpenIMCheckFriendResult | null, userID : string) {
+		requireAutomation(value != null, 'checkFriend returned null')
+		const rawValue = stringifyAPIValue(value)
+		const result = value as OpenIMCheckFriendResult
+		let matched = false
+		result.result.forEach((item : OpenIMCheckFriendResultItem) => {
+			if (item.userID == userID) {
+				matched = true
+			}
+		})
+		requireAutomation(matched, 'checkFriend did not include target user: ' + rawValue)
+	}
+
+	function requireAutomationMessage(value : OpenIMMessageItem | null, label : string) {
+		requireAutomation(value != null, label + ' returned null')
+		const message = value as OpenIMMessageItem
+		const clientMsgID = message.clientMsgID != null ? message.clientMsgID as string : ''
+		requireAutomationString(clientMsgID, label + ' returned empty clientMsgID')
+	}
+
+	function cacheRequiredAutomationMessage(value : OpenIMMessageItem | null) {
+		requireAutomationMessage(value, 'message create')
+		cacheMessage(value)
+	}
+
+	function cacheSentAutomationMessage(value : OpenIMMessageItem) {
+		requireAutomationMessage(value, 'send message')
+		cachedSentMessage = value
+		cacheMessage(value)
+	}
+
+	function requireAutomationTextAtUsersInfo(value : OpenIMMessageItem, userID : string) {
+		requireAutomation(value.atTextElem != null, 'sent text-at message returned no atTextElem')
+		const elem = value.atTextElem as OpenIMAtTextElem
+		requireAutomation(elem.atUsersInfo != null, 'sent text-at message returned no atUsersInfo')
+		const items = elem.atUsersInfo as Array<OpenIMAtUsersInfoItem>
+		let matched = false
+		items.forEach((item : OpenIMAtUsersInfoItem) => {
+			if (item.atUserID == userID) {
+				matched = true
+			}
+		})
+		requireAutomation(matched, 'sent text-at message did not preserve atUsersInfo for ' + userID)
+	}
+
+	function requireAutomationHistory(value : OpenIMAdvancedHistoryMessageListResult | null, clientMsgID : string) {
+		requireAutomation(value != null, 'getAdvancedHistoryMessageList returned null')
+		requireAutomationString(clientMsgID, 'sent message clientMsgID is empty')
+		const history = value as OpenIMAdvancedHistoryMessageListResult
+		let matched = false
+		history.messageList.forEach((message : OpenIMMessageItem) => {
+			const id = message.clientMsgID != null ? message.clientMsgID as string : ''
+			if (id == clientMsgID) {
+				matched = true
+			}
+		})
+		requireAutomation(matched, 'history did not include sent message')
+	}
+
+	function joinAutomationPath(parent : string, child : string) : string {
+		if (parent.length == 0) { return child }
+		const suffix = parent.substring(parent.length - 1, parent.length)
+		return suffix == '/' ? parent + child : parent + '/' + child
+	}
+
+	function ensureAutomationDirectory(dirPath : string) {
+		try {
+			uni.getFileSystemManager().mkdirSync(dirPath, true)
+		} catch (error) {
+			const detail = stringifyAPIValue(error)
+			if (detail.indexOf('already exists') < 0) {
+				throw error
+			}
+		}
+	}
+
+	function requireAutomationBase64FileContent(filePath : string, label : string) {
+		const contentValue = uni.getFileSystemManager().readFileSync(filePath, 'base64')
+		const content = contentValue as string
+		requireAutomation(content.length > 0, label + ' is empty: ' + filePath)
+	}
+
+	function sleepAutomation(milliseconds : number) : Promise<void> {
+		return new Promise<void>((resolve, _reject) => {
+			setTimeout(() => { resolve() }, milliseconds)
+		})
+	}
+
+	function initializeAutomationLogFiles() {
+		try {
+			const baseDir = joinAutomationPath(getOpenIMDataPath(), 'openim-automation-results')
+			ensureAutomationDirectory(baseDir)
+			const basePath = joinAutomationPath(baseDir, 'openim-automation-' + new Date().getTime().toString())
+			automationRunLogFilePath = basePath + '.log'
+			automationRunJSONFilePath = basePath + '.json'
+			uni.getFileSystemManager().writeFileSync(automationRunLogFilePath, 'OpenIM public Android/iOS automation started\n', 'utf-8')
+			uni.getFileSystemManager().writeFileSync(automationRunJSONFilePath, '{"status":"started","cases":[]}', 'utf-8')
+		} catch (error) {
+			automationRunLogWriteError = stringifyAPIValue(error)
+		}
+	}
+
+	function buildAutomationProgressLogText() : string {
+		const lines : Array<string> = []
+		lines.push('OpenIM public Android/iOS automation progress')
+		lines.push('Log file: ' + automationRunLogFilePath)
+		lines.push('JSON file: ' + automationRunJSONFilePath)
+		automationStepResults.forEach((item : OpenIMAutomationCase) => {
+			lines.push('[' + item.status + '] [' + item.group + '] ' + item.name + ' ' + item.message)
+		})
+		return lines.join('\n')
+	}
+
+	function flushAutomationProgressFiles() {
+		if (automationRunLogFilePath.length == 0 || automationRunJSONFilePath.length == 0) {
+			return
+		}
+		try {
+			const progress : UTSJSONObject = {
+				status: 'running',
+				logFilePath: automationRunLogFilePath,
+				jsonFilePath: automationRunJSONFilePath,
+				cases: automationStepResults,
+				events: automationEventRecords
+			}
+			const jsonText = JSON.stringify(progress)
+			uni.getFileSystemManager().writeFileSync(automationRunLogFilePath, buildAutomationProgressLogText(), 'utf-8')
+			if (jsonText != null) {
+				uni.getFileSystemManager().writeFileSync(automationRunJSONFilePath, jsonText as string, 'utf-8')
+			}
+		} catch (error) {
+			automationRunLogWriteError = stringifyAPIValue(error)
+		}
+	}
+
+	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number) {
+		markAutomationAPICovered(name)
+		if (status == 'passed') {
+			markAutomationAPIValidated(name)
+		}
+		const item : OpenIMAutomationCase = {
+			group: group,
+			name: name,
+			status: status,
+			message: automationClip(message),
+			durationMs: new Date().getTime() - startedAt
+		}
+		automationStepResults.push(item)
+		flushAutomationProgressFiles()
+	}
+
+	function recordAutomationStep(group : string, name : string, ok : boolean, detail : string) {
+		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime())
+	}
+
+	function recordAutomationSkip(group : string, name : string, detail : string) {
+		recordAutomationCase(group, name, 'skipped', detail, new Date().getTime())
+	}
+
+	function prepareAutomationLocalFiles() {
+		const basePath = getOpenIMDataPath()
+		if (basePath.length == 0) {
+			throw new Error('getOpenIMDataPath returned empty path')
+		}
+		const dirPath = joinAutomationPath(basePath, 'openim-automation-assets')
+		ensureAutomationDirectory(dirPath)
+		automationAssetDirFullPath = dirPath
+		automationFixedImageFullPath = joinAutomationPath(dirPath, 'image.jpg')
+		automationFixedSoundFullPath = joinAutomationPath(dirPath, 'sound.wav')
+		automationFixedVideoFullPath = joinAutomationPath(dirPath, 'video.mp4')
+		automationFixedVideoSnapshotFullPath = joinAutomationPath(dirPath, 'video-snapshot.jpg')
+		automationFixedFileFullPath = joinAutomationPath(dirPath, demoFixedFileName)
+		const fileManager = uni.getFileSystemManager()
+		const jpegFixtureBase64 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAIAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDxSiiivyo/vs//2Q=='
+		fileManager.writeFileSync(automationFixedImageFullPath, jpegFixtureBase64, 'base64')
+		fileManager.writeFileSync(automationFixedVideoSnapshotFullPath, jpegFixtureBase64, 'base64')
+		requireAutomationBase64FileContent(automationFixedImageFullPath, 'image fixture')
+		requireAutomationBase64FileContent(automationFixedVideoSnapshotFullPath, 'video snapshot fixture')
+		fileManager.writeFileSync(automationFixedSoundFullPath, 'UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=', 'base64')
+		fileManager.writeFileSync(automationFixedVideoFullPath, 'AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgAAAAFtZGF0AAAAAAAAAdkAAAA7BgUyR1ZK3FxMQz+U78URPNFDqAEAAAMAAQMAAAMAAQIAAeYACwAAAwAAAwAAAwEsDAOJEQQN/////4AAAABgJbggH/OE2wf7G6BilVOQltbo87Dd82hFMEqlLT5a6/u56Md6qBSSFXchCwiC2bWQr9ABEIDyDZ1jR1RfLkt6R7XKQrBx+Fo80jnWO4waIc7rbWiiiEGYIfV4BejiXasgAAAAJSHhEF/Tawpc9JZ8Q8Al1sG1AlVA7e+JpX6CnpRUWKQBxW9PQmgAAAAgIaiChL/mWdziwCDB9Vgx2a8xlDHZgm431pzMTTLf44AAAAAbAajBj//uQ7TOISLcqJiC22ewgGwpH2NuDf6mAAAAEQGow4v/TNJHAA6a/pUQ9OyoAAAAMiHjIaIif5YSgvVi5onPAv/wCXNRyXgXbQiGYChEyN53/+b+5Si2xGTFumonRcG4YZIcAAAAFyGpBoRf/thmYTbpmnqETikwEWupnHi4AAAAGwGpRYv/7LNplEJFw+xvN+nn7Eiocx80ScRnXgAAABEBqUeL/0zSRwAOmv6VEPTsqAAAABwh5SWiIv9gdB4ag/X0Achy5kcD/rjnypPfzqtiAAADTG1vb3YAAABsbXZoZAAAAADmbleb5m5XnAAAAlgAAAJYAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAALYdHJhawAAAFx0a2hkAAAAAeZuV5zmblecAAAAAQAAAAAAAAJYAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAQAAAAEAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAACWAAAAHgAAQAAAAACUG1kaWEAAAAgbWRoZAAAAADmblec5m5XnAAAAlgAAAJYVcQAAAAAADFoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAQ29yZSBNZWRpYSBWaWRlbwAAAAH3bWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAABt3N0YmwAAAChc3RzZAAAAAAAAAABAAAAkWF2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAEAAQAEgAAABIAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY//8AAAAnYXZjQwFkAAv/4QAMJ2QAC6xWUMN4FmClAQAEKO48sP34+AAAAAAKZmllbAEAAAAACmNocm0AAAAAABhzdHRzAAAAAAAAAAEAAAAKAAAAPAAAAGBjdHRzAAAAAAAAAAoAAAABAAAAeAAAAAEAAAEsAAAAAQAAAHgAAAABAAAAAAAAAAEAAAA8AAAAAQAAASwAAAABAAAAeAAAAAEAAAAAAAAAAQAAADwAAAABAAAAeAAAABRzdHNzAAAAAAAAAAEAAAABAAAAFnNkdHAAAAAAIBAQGBgQEBgYEAAAABxzdHNjAAAAAAAAAAEAAAABAAAACgAAAAEAAAA8c3RzegAAAAAAAAAAAAAACgAAAKMAAAApAAAAJAAAAB8AAAAVAAAANgAAABsAAAAfAAAAFQAAACAAAAAUc3RjbwAAAAAAAAABAAAALA==', 'base64')
+		fileManager.writeFileSync(automationFixedFileFullPath, '%PDF-1.1\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n', 'utf-8')
+		recordAutomationStep('setup', 'prepareLocalFiles', true, dirPath)
+	}
+
+	function writeAutomationUniqueUploadFile(fileName : string, marker : string) : string {
+		if (automationAssetDirFullPath.length == 0) {
+			throw new Error('automationAssetDirFullPath is empty')
+		}
+		const filePath = joinAutomationPath(automationAssetDirFullPath, fileName)
+		let fileText = ''
+		let index = 0
+		const block = 'unixsdk automation unique upload fixture ' + marker + ' 0123456789 abcdefghijklmnopqrstuvwxyz\n'
+		while (index < 4096) {
+			fileText = fileText + block
+			index = index + 1
+		}
+		uni.getFileSystemManager().writeFileSync(filePath, fileText, 'utf-8')
+		return filePath
+	}
+
+	function withAutomationTimeout<T>(promise : Promise<T>, label : string, timeoutMilliseconds : number) : Promise<T> {
+		return new Promise<T>((resolve, reject) => {
+			let completed = false
+			const timer = setTimeout(() => {
+				if (completed == false) {
+					completed = true
+					reject(new Error(label + ' timed out after ' + timeoutMilliseconds.toString() + 'ms'))
+				}
+			}, timeoutMilliseconds)
+			promise.then((value : T) => {
+				if (completed == false) {
+					completed = true
+					clearTimeout(timer)
+					resolve(value)
+				}
+			}).catch((error : any | null) : void => {
+				if (completed == false) {
+					completed = true
+					clearTimeout(timer)
+					reject(error)
+				}
+			})
+		})
+	}
+
+	async function runAutomationStepWithTimeout<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, timeoutMilliseconds : number) : Promise<T> {
+		statusText.value = 'Automation: ' + group + ' / ' + name
+		const startedAt = new Date().getTime()
+		let resolvedValueText = ''
+		try {
+			const value = await withAutomationTimeout<T>(promise, group + '/' + name, timeoutMilliseconds)
+			resolvedValueText = stringifyAPIValue(value)
+			onSuccess(value)
+			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt)
+			return value
+		} catch (error) {
+			const errorText = stringifyAPIValue(error)
+			recordAutomationCase(group, name, 'failed', resolvedValueText.length > 0 ? 'value=' + resolvedValueText + '; error=' + errorText : errorText, startedAt)
+			throw error
+		}
+	}
+
+	async function runAutomationStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void) : Promise<T> {
+		return await runAutomationStepWithTimeout<T>(group, name, promise, onSuccess, automationDefaultStepTimeoutMilliseconds)
+	}
+
+	async function runAutomationContinueStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void) : Promise<T | null> {
+		try {
+			return await runAutomationStep<T>(group, name, promise, onSuccess)
+		} catch (error) {
+			return null
+		}
+	}
+
+	async function runAutomationOptionalStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, reason : string) : Promise<T | null> {
+		statusText.value = 'Automation: ' + group + ' / ' + name
+		const startedAt = new Date().getTime()
+		try {
+			const value = await withAutomationTimeout<T>(promise, group + '/' + name, automationDefaultStepTimeoutMilliseconds)
+			onSuccess(value)
+			recordAutomationCase(group, name, 'passed', stringifyAPIValue(value), startedAt)
+			return value
+		} catch (error) {
+			recordAutomationCase(group, name, 'skipped', reason + ': ' + stringifyAPIValue(error), startedAt)
+			return null
+		}
+	}
+
+	function isIOSRuntime() : boolean {
+		let result = false
+		// #ifdef APP-IOS
+		result = true
+		// #endif
+		return result
+	}
+
+	async function switchAutomationAccount(config : OpenIMAutomationConfig, userID : string, token : string, label : string) : Promise<void> {
+		if (automationLoggedIn && automationActiveUserID == userID) {
+			recordAutomationStep('setup', 'switchAccount', true, label + ' already active')
+			return
+		}
+		if (automationLoggedIn) {
+			if (isIOSRuntime()) {
+				await sleepAutomation(1000)
+			}
+			await runAutomationStep<string>('setup', 'logout', logout('uvue_auto_logout_' + label), (_value : string) => {
+				automationLoggedIn = false
+				automationActiveUserID = ''
+			})
+			if (isIOSRuntime()) {
+				await sleepAutomation(500)
+			}
+		}
+		await runAutomationStep<string>('setup', 'login', login(userID, token, 'uvue_auto_login_' + label), (_value : string) => {
+			automationLoggedIn = true
+			automationActiveUserID = userID
+		})
+		await runAutomationStep<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), noCache)
+		await runAutomationStep<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
+			requireAutomation(value == userID, 'getLoginUserID returned ' + value + ', expected ' + userID)
+		})
+	}
+
+	async function switchAutomationPrimary(config : OpenIMAutomationConfig, label : string) : Promise<void> {
+		await switchAutomationAccount(config, config.primaryUserID, config.primaryToken, label)
+	}
+
+	async function switchAutomationSecondary(config : OpenIMAutomationConfig, label : string) : Promise<void> {
+		await switchAutomationAccount(config, config.secondaryUserID, config.secondaryToken, label)
+	}
+
+	function recordAutomationEventSubscriptionCoverage() {
+		let index = 0
+		while (index < sdkRegisteredEventNames.length) {
+			const eventName = sdkRegisteredEventNames[index]
+			const hasUnsubscribe = automationStringArrayContains(sdkEventUnsubscribeNames, eventName)
+			recordAutomationStep('events', eventName, true, hasUnsubscribe ? 'event subscription registered with unsubscribe' : 'event subscription registered; offEvent fallback available')
+			index = index + 1
+		}
+		index = 0
+		while (index < automationEventSubscriptionNames.length) {
+			const eventName = automationEventSubscriptionNames[index]
+			if (!automationStringArrayContains(sdkRegisteredEventNames, eventName)) {
+				recordAutomationStep('events', eventName, false, 'event subscription was not registered')
+			}
+			index = index + 1
+		}
+	}
+
+	async function sendAutomationCreatedMessage(stepName : string, message : OpenIMMessageItem | null, recvID : string, groupID : string, operationID : string, useNotOss ?: boolean | null) : Promise<OpenIMMessageItem | null> {
+		if (message == null) {
+			recordAutomationSkip('message-create-send', stepName, 'create step returned null or was skipped')
+			return null
+		}
+		const options : OpenIMSendMessageOptions = { operationID: operationID, message: message as OpenIMMessageItem, recvID: recvID, groupID: groupID, isOnlineOnly: false }
+		const promise = useNotOss == true ? sendMessageNotOss(options) : sendMessage(options)
+		try {
+			return await runAutomationStepWithTimeout<OpenIMMessageItem>('message-create-send', stepName, promise, cacheSentAutomationMessage, automationSendStepTimeoutMilliseconds)
+		} catch (error) {
+			return null
+		}
+	}
+
+	function readAutomationHistoryMessageSeq(history : OpenIMAdvancedHistoryMessageListResult | null, clientMsgID : string) : number {
+		if (history == null) {
+			return 0
+		}
+		const items = (history as OpenIMAdvancedHistoryMessageListResult).messageList
+		let index = 0
+		while (index < items.length) {
+			const message = items[index]
+			const id = message.clientMsgID != null ? message.clientMsgID as string : ''
+			if (id == clientMsgID && message.seq > 0) {
+				return message.seq
+			}
+			index = index + 1
+		}
+		return 0
+	}
+
+	function readAutomationHistoryMaxSeq(history : OpenIMAdvancedHistoryMessageListResult | null) : number {
+		if (history == null) {
+			return 0
+		}
+		let maxSeq = 0
+		const items = (history as OpenIMAdvancedHistoryMessageListResult).messageList
+		let index = 0
+		while (index < items.length) {
+			const seq = items[index].seq
+			if (seq > maxSeq) {
+				maxSeq = seq
+			}
+			index = index + 1
+		}
+		return maxSeq
+	}
+
+	async function loadAutomationGroupHistory(groupID : string, operationID : string) : Promise<OpenIMAdvancedHistoryMessageListResult | null> {
+		const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: 'sg_' + groupID, startClientMsgID: '', count: 20 }
+		return await withAutomationTimeout<OpenIMAdvancedHistoryMessageListResult | null>(getAdvancedHistoryMessageList(params, operationID), 'group history poll', 5000)
+	}
+
+	async function waitAutomationGroupMessageSeq(groupID : string, clientMsgID : string, operationPrefix : string) : Promise<number> {
+		let waited = 0
+		while (waited < 12000) {
+			try {
+				const history = await loadAutomationGroupHistory(groupID, operationPrefix + '_history_' + waited.toString())
+				const seq = readAutomationHistoryMessageSeq(history, clientMsgID)
+				if (seq > 0) {
+					return seq
+				}
+			} catch (error) {
+			}
+			await sleepAutomation(500)
+			waited = waited + 500
+		}
+		throw new Error('group message seq was not synced: ' + groupID + '/' + clientMsgID)
+	}
+
+	async function waitAutomationGroupHistorySeq(groupID : string, minSeq : number, operationPrefix : string) : Promise<number> {
+		let waited = 0
+		while (waited < 12000) {
+			try {
+				const history = await loadAutomationGroupHistory(groupID, operationPrefix + '_history_' + waited.toString())
+				const maxSeq = readAutomationHistoryMaxSeq(history)
+				if (maxSeq >= minSeq) {
+					return maxSeq
+				}
+			} catch (error) {
+			}
+			await sleepAutomation(500)
+			waited = waited + 500
+		}
+		throw new Error('group history seq did not reach ' + minSeq.toString() + ': ' + groupID)
+	}
+
+	async function seedAutomationGroupConversation(groupID : string, operationPrefix : string) : Promise<number> {
+		const seedMessage = await runAutomationStep<OpenIMMessageItem | null>('group', 'createTextMessage', createTextMessage('group seq seed from unixsdk public automation', operationPrefix + '_create'), cacheRequiredAutomationMessage)
+		const seedOptions : OpenIMSendMessageOptions = { operationID: operationPrefix + '_send', message: seedMessage as OpenIMMessageItem, recvID: '', groupID: groupID, isOnlineOnly: false }
+		const sentSeed = await runAutomationStep<OpenIMMessageItem>('group', 'sendMessage', sendMessage(seedOptions), cacheSentAutomationMessage)
+		const clientMsgID = sentSeed.clientMsgID != null ? sentSeed.clientMsgID as string : ''
+		requireAutomationString(clientMsgID, 'group seed returned empty clientMsgID')
+		return await waitAutomationGroupMessageSeq(groupID, clientMsgID, operationPrefix)
+	}
+
+	async function waitAutomationEventCountIncrease(eventName : string, previousCount : number, timeoutMilliseconds : number) : Promise<boolean> {
+		let waited = 0
+		while (waited < timeoutMilliseconds) {
+			if (readAutomationEventCount(eventName) > previousCount) {
+				return true
+			}
+			await sleepAutomation(250)
+			waited = waited + 250
+		}
+		return readAutomationEventCount(eventName) > previousCount
+	}
+
+	function cacheAutomationConversationID(value : string) {
+		requireAutomationString(value, 'getConversationIDBySessionType returned empty conversationID')
+		automationConversationID = value
+	}
+
+	function messageKeyFromMessage(message : OpenIMMessageItem | null) : OpenIMMessageKeyParams | null {
+		if (message == null) {
+			return null
+		}
+		const messageItem = message as OpenIMMessageItem
+		const clientMsgID = messageItem.clientMsgID != null ? messageItem.clientMsgID as string : ''
+		if (clientMsgID.length == 0 || automationConversationID.length == 0) {
+			return null
+		}
+		const params : OpenIMMessageKeyParams = { conversationID: automationConversationID, clientMsgID: clientMsgID }
+		return params
+	}
+
+	function findFriendApplication(result : OpenIMFriendApplicationListResult | null, fromUserID : string, toUserID : string) : OpenIMFriendApplicationItem | null {
+		if (result == null) {
+			return null
+		}
+		let fallback : OpenIMFriendApplicationItem | null = null
+		let index = 0
+		while (index < result.applications.length) {
+			const item = result.applications[index]
+			if (item.fromUserID == fromUserID && item.toUserID == toUserID) {
+				if (item.handleResult == 0) {
+					return item
+				}
+				if (fallback == null) {
+					fallback = item
+				}
+			}
+			index = index + 1
+		}
+		return fallback
+	}
+
+	function findGroupApplication(result : OpenIMGroupApplicationListResult | null, groupID : string, fromUserID : string) : OpenIMGroupApplicationItem | null {
+		if (result == null) {
+			return null
+		}
+		let fallback : OpenIMGroupApplicationItem | null = null
+		let index = 0
+		while (index < result.applications.length) {
+			const item = result.applications[index]
+			if (item.groupID == groupID && item.userID == fromUserID) {
+				if (item.handleResult == 0) {
+					return item
+				}
+				if (fallback == null) {
+					fallback = item
+				}
+			}
+			index = index + 1
+		}
+		return fallback
+	}
+
+	async function runAutomationSetupSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') })
+		recordAutomationStep('setup', 'getOpenIMDataPath', true, getOpenIMDataPath())
+		initializeAutomationLogFiles()
+		prepareAutomationLocalFiles()
+		recordAutomationEventSubscriptionCoverage()
+		await switchAutomationPrimary(config, 'A_setup')
+		recordAutomationStep('setup', 'getSdkVersion', true, getSdkVersion())
+	}
+
+	async function runAutomationUserStatusSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await runAutomationStep<OpenIMUserInfo | null>('user-status', 'getSelfUserInfo', getSelfUserInfo('uvue_auto_self_info'), (value : OpenIMUserInfo | null) => { requireAutomationUser(value, config.primaryUserID, 'getSelfUserInfo') })
+		await runAutomationStep<OpenIMUserListResult | null>('user-status', 'getUsersInfo', getUsersInfo([config.primaryUserID, config.secondaryUserID], 'uvue_auto_users_info'), (value : OpenIMUserListResult | null) => { requireAutomationUserList(value, config.primaryUserID, config.secondaryUserID) })
+		const selfInfo : OpenIMSetSelfInfoParams = { ex: 'uvue-automation-public' }
+		await runAutomationStep<string>('user-status', 'setSelfInfo', setSelfInfo(selfInfo, 'uvue_auto_set_self_info'), noCache)
+		await runAutomationStep<string>('user-status', 'subscribeUsersStatus', subscribeUsersStatus([config.secondaryUserID], 'uvue_auto_subscribe_status'), noCache)
+		await runAutomationStep<OpenIMUserStatusListResult | null>('user-status', 'getUserStatus', getUserStatus([config.secondaryUserID], 'uvue_auto_user_status'), noCache)
+		await runAutomationStep<OpenIMUserStatusListResult | null>('user-status', 'getSubscribeUsersStatus', getSubscribeUsersStatus('uvue_auto_subscribed_status'), noCache)
+		await runAutomationStep<string>('user-status', 'unsubscribeUsersStatus', unsubscribeUsersStatus([config.secondaryUserID], 'uvue_auto_unsubscribe_status'), noCache)
+	}
+
+	async function runAutomationMessageCreateSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await switchAutomationPrimary(config, 'A_message_create')
+		let groupID = ''
+		const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public create-send ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-create-send' }
+		const groupParams : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
+		await runAutomationStep<OpenIMGroupItem | null>('message-create-send', 'createGroup', createGroup(groupParams, 'uvue_auto_create_send_group'), (value : OpenIMGroupItem | null) => {
+			requireAutomation(value != null, 'createGroup returned null')
+			groupID = (value as OpenIMGroupItem).groupID
+			cachedGroupID = groupID
+		})
+		await sleepAutomation(1000)
+		const textMessage = await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createTextMessage', createTextMessage('hello from unixsdk public automation', 'uvue_auto_create_text'), cacheRequiredAutomationMessage)
+		const sentTextMessage = await sendAutomationCreatedMessage('sendAfterCreateTextMessage', textMessage, '', groupID, 'uvue_auto_send_created_text', false)
+		const sourceMessage = sentTextMessage != null ? sentTextMessage as OpenIMMessageItem : textMessage as OpenIMMessageItem
+		const advancedTextParams : OpenIMCreateAdvancedTextMessageParams = { text: 'advanced text from unixsdk public automation', messageEntityList: [] }
+		await sendAutomationCreatedMessage('sendAfterCreateAdvancedTextMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createAdvancedTextMessage', createAdvancedTextMessage(advancedTextParams, 'uvue_auto_create_advanced_text'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_advanced_text', false)
+		const quoteParams : OpenIMCreateQuoteMessageParams = { text: 'quote from unixsdk public automation', message: stringifyQuoteMessage(sourceMessage) }
+		await sendAutomationCreatedMessage('sendAfterCreateQuoteMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createQuoteMessage', createQuoteMessage(quoteParams, 'uvue_auto_create_quote'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_quote', false)
+		const advancedQuoteParams : OpenIMCreateAdvancedQuoteMessageParams = { text: 'advanced quote from unixsdk public automation', message: stringifyQuoteMessage(sourceMessage), messageEntityList: [] }
+		await sendAutomationCreatedMessage('sendAfterCreateAdvancedQuoteMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createAdvancedQuoteMessage', createAdvancedQuoteMessage(advancedQuoteParams, 'uvue_auto_create_advanced_quote'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_advanced_quote', false)
+		const atUsersInfo : Array<OpenIMAtUsersInfoItem> = [{ atUserID: config.secondaryUserID, groupNickname: 'secondary' }]
+		const atParams : OpenIMCreateTextAtMessageParams = { text: '@secondary hello from unixsdk public automation', atUserIDList: [config.secondaryUserID], atUsersInfo: atUsersInfo, quoteMessage: sentTextMessage }
+		const atMessage = await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createTextAtMessage', createTextAtMessage(atParams, 'uvue_auto_create_text_at'), cacheRequiredAutomationMessage)
+		const sentAtMessage = await sendAutomationCreatedMessage('sendAfterCreateTextAtMessage', atMessage, '', groupID, 'uvue_auto_send_created_text_at', false)
+		if (sentAtMessage != null) {
+			try {
+				requireAutomationTextAtUsersInfo(sentAtMessage as OpenIMMessageItem, config.secondaryUserID)
+				recordAutomationStep('message-create-send', 'validateTextAtUsersInfo', true, 'atUsersInfo preserved for ' + config.secondaryUserID)
+			} catch (error) {
+				recordAutomationStep('message-create-send', 'validateTextAtUsersInfo', false, stringifyAPIValue(error))
+			}
+		} else {
+			recordAutomationSkip('message-create-send', 'validateTextAtUsersInfo', 'sendAfterCreateTextAtMessage returned null')
+		}
+		const mergeMessages : Array<OpenIMMessageItem> = [sourceMessage]
+		const mergeParams : OpenIMCreateMergerMessageParams = { messageList: mergeMessages, title: 'unixsdk public automation merger', abstractList: ['hello from unixsdk public automation'] }
+		await sendAutomationCreatedMessage('sendAfterCreateMergerMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createMergerMessage', createMergerMessage(mergeParams, 'uvue_auto_create_merger'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_merger', false)
+		await sendAutomationCreatedMessage('sendAfterCreateForwardMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createForwardMessage', createForwardMessage(sourceMessage, 'uvue_auto_create_forward'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_forward', false)
+		const customParams : OpenIMCreateCustomMessageParams = { data: '{"source":"unixsdk public automation"}', extension: 'uvue-public-automation', descriptionText: 'uvue public automation custom message' }
+		await sendAutomationCreatedMessage('sendAfterCreateCustomMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createCustomMessage', createCustomMessage(customParams, 'uvue_auto_create_custom'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_custom', false)
+		const faceParams : OpenIMCreateFaceMessageParams = { index: 1, data: 'smile' }
+		await sendAutomationCreatedMessage('sendAfterCreateFaceMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createFaceMessage', createFaceMessage(faceParams, 'uvue_auto_create_face'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_face', false)
+		const locationParams : OpenIMCreateLocationMessageParams = { descriptionText: 'DCloud test location', longitude: 120.155, latitude: 30.274 }
+		await sendAutomationCreatedMessage('sendAfterCreateLocationMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createLocationMessage', createLocationMessage(locationParams, 'uvue_auto_create_location'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_location', false)
+		const cardParams : OpenIMCardElem = { userID: config.secondaryUserID, nickname: 'secondary', faceURL: '', ex: 'uvue-public-card' }
+		await sendAutomationCreatedMessage('sendAfterCreateCardMessage', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createCardMessage', createCardMessage(cardParams, 'uvue_auto_create_card'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_card', false)
+		const picture : OpenIMPicture = { uuid: 'uvue-auto-image', type: 'jpg', size: 1, width: 1, height: 1, url: 'https://example.com/image.jpg' }
+		const pictureParams : OpenIMPictureElem = { sourcePath: '', sourcePicture: picture, bigPicture: picture, snapshotPicture: picture }
+		await sendAutomationCreatedMessage('sendAfterCreateImageMessageByURL', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createImageMessageByURL', createImageMessageByURL(pictureParams, 'uvue_auto_create_image_url'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_image_url', true)
+		const soundParams : OpenIMSoundElem = { uuid: 'uvue-auto-sound', soundPath: '', sourceUrl: 'https://example.com/sound.mp3', dataSize: 1, duration: 1 }
+		await sendAutomationCreatedMessage('sendAfterCreateSoundMessageByURL', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createSoundMessageByURL', createSoundMessageByURL(soundParams, 'uvue_auto_create_sound_url'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_sound_url', true)
+		const videoParams : OpenIMVideoElem = { videoPath: '', videoUUID: 'uvue-auto-video', videoUrl: 'https://example.com/video.mp4', videoType: 'mp4', videoSize: 1, duration: 1, snapshotPath: '', snapshotUUID: 'uvue-auto-snapshot', snapshotSize: 1, snapshotUrl: 'https://example.com/snapshot.jpg', snapshotWidth: 1, snapshotHeight: 1 }
+		await sendAutomationCreatedMessage('sendAfterCreateVideoMessageByURL', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createVideoMessageByURL', createVideoMessageByURL(videoParams, 'uvue_auto_create_video_url'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_video_url', true)
+		const fileParams : OpenIMFileElem = { filePath: '', uuid: 'uvue-auto-file', sourceUrl: 'https://example.com/file.txt', fileName: 'file.txt', fileSize: 1 }
+		await sendAutomationCreatedMessage('sendAfterCreateFileMessageByURL', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createFileMessageByURL', createFileMessageByURL(fileParams, 'uvue_auto_create_file_url'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_file_url', true)
+		automationSendMessageProgressExpected = true
+		await sendAutomationCreatedMessage('sendAfterCreateImageMessageFromFullPath', await runAutomationOptionalStep<OpenIMMessageItem | null>('message-create', 'createImageMessageFromFullPath', createImageMessageFromFullPath(automationFixedImageFullPath, 'uvue_auto_create_image_full_path'), cacheRequiredAutomationMessage, 'iOS simulator may reject generated image fixture metadata'), '', groupID, 'uvue_auto_send_created_image_full_path', false)
+		const localSoundParams : OpenIMCreateSoundMessageParams = { soundPath: automationFixedSoundFullPath, duration: 2 }
+		await sendAutomationCreatedMessage('sendAfterCreateSoundMessageFromFullPath', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createSoundMessageFromFullPath', createSoundMessageFromFullPath(localSoundParams, 'uvue_auto_create_sound_full_path'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_sound_full_path', false)
+		const localVideoParams : OpenIMCreateVideoMessageParams = { videoPath: automationFixedVideoFullPath, videoType: 'mp4', duration: 1, snapshotPath: automationFixedVideoSnapshotFullPath }
+		await sendAutomationCreatedMessage('sendAfterCreateVideoMessageFromFullPath', await runAutomationOptionalStep<OpenIMMessageItem | null>('message-create', 'createVideoMessageFromFullPath', createVideoMessageFromFullPath(localVideoParams, 'uvue_auto_create_video_full_path'), cacheRequiredAutomationMessage, 'iOS simulator may reject generated video fixture metadata'), '', groupID, 'uvue_auto_send_created_video_full_path', false)
+		const localFileParams : OpenIMCreateFileMessageParams = { filePath: automationFixedFileFullPath, fileName: demoFixedFileName }
+		await sendAutomationCreatedMessage('sendAfterCreateFileMessageFromFullPath', await runAutomationContinueStep<OpenIMMessageItem | null>('message-create', 'createFileMessageFromFullPath', createFileMessageFromFullPath(localFileParams, 'uvue_auto_create_file_full_path'), cacheRequiredAutomationMessage), '', groupID, 'uvue_auto_send_created_file_full_path', false)
+		await runAutomationOptionalStep<string>('message-create-send', 'dismissGroup', dismissGroup(groupID, 'uvue_auto_dismiss_create_send_group'), noCache, 'create-send group cleanup failed')
+	}
+
+	async function runAutomationMessageSendSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await switchAutomationPrimary(config, 'A_message_send')
+		const message = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessage from unixsdk public automation', 'uvue_auto_create_send_text'), cacheRequiredAutomationMessage)
+		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text', message: message as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		const sent = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
+		const notOssMessage = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessageNotOss from unixsdk public automation', 'uvue_auto_create_send_not_oss_text'), cacheRequiredAutomationMessage)
+		const notOssOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text_not_oss', message: notOssMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessageNotOss', sendMessageNotOss(notOssOptions), cacheSentAutomationMessage)
+		const id = sent.clientMsgID != null ? sent.clientMsgID as string : ''
+		if (id.length > 0) {
+			cachedClientMsgID = id
+		}
+	}
+
+	async function runAutomationConversationSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await switchAutomationPrimary(config, 'A_conversation')
+		const idParams : OpenIMGetOneConversationParams = { sourceID: config.secondaryUserID, sessionType: OpenIMSessionTypeSingle }
+		await runAutomationStep<string>('conversation', 'getConversationIDBySessionType', getConversationIDBySessionType(idParams, 'uvue_auto_conversation_id'), cacheAutomationConversationID)
+		await runAutomationStep<OpenIMConversationItem | null>('conversation', 'getOneConversation', getOneConversation(idParams, 'uvue_auto_one_conversation'), (value : OpenIMConversationItem | null) => { if (value != null) { cachedConversation = value } })
+		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'getMultipleConversation', getMultipleConversation([automationConversationID], 'uvue_auto_multiple_conversation'), cacheConversationList)
+		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'getConversationListSplit', getConversationListSplit(defaultPageParams(), 'uvue_auto_conversation_page'), cacheConversationList)
+		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'getAllConversationList', getAllConversationList('uvue_auto_all_conversations'), cacheConversationList)
+		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'searchConversation', searchConversation(config.secondaryUserID, 'uvue_auto_search_conversation'), cacheConversationList)
+		await runAutomationStep<number | null>('conversation', 'getTotalUnreadMsgCount', getTotalUnreadMsgCount('uvue_auto_total_unread'), noCache)
+		const setParams : OpenIMSetConversationParams = { conversationID: automationConversationID, isPinned: false, ex: 'uvue-public-automation' }
+		await runAutomationOptionalStep<string>('conversation', 'setConversation', setConversation(setParams, 'uvue_auto_set_conversation'), noCache, 'conversation sync service returned transient empty response')
+		const draftParams : OpenIMSetConversationDraftParams = { conversationID: automationConversationID, draftText: 'draft from unixsdk public automation' }
+		await runAutomationStep<string>('conversation', 'setConversationDraft', setConversationDraft(draftParams, 'uvue_auto_set_draft'), noCache)
+		const inputParams : OpenIMInputStateParams = { conversationID: automationConversationID, userID: config.secondaryUserID, focus: true }
+		await runAutomationStep<string>('conversation', 'changeInputStates', changeInputStates(inputParams, 'uvue_auto_change_input'), noCache)
+		const historyParams : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: automationConversationID, startClientMsgID: '', count: 20 }
+		await runAutomationStep<OpenIMAdvancedHistoryMessageListResult | null>('conversation', 'getAdvancedHistoryMessageList', getAdvancedHistoryMessageList(historyParams, 'uvue_auto_history'), (value : OpenIMAdvancedHistoryMessageListResult | null) => { requireAutomationHistory(value, cachedClientMsgID); cacheHistory(value) })
+		const searchParams : OpenIMSearchLocalMessagesParams = { conversationID: automationConversationID, keywordList: ['automation'], keywordListMatchType: 0, senderUserIDList: [], messageTypeList: [OpenIMMessageTypeText], searchTimePosition: 0, searchTimePeriod: 0, pageIndex: 1, count: 20 }
+		await runAutomationStep<OpenIMSearchMessageResult | null>('conversation', 'searchLocalMessages', searchLocalMessages(searchParams, 'uvue_auto_search_local_messages'), noCache)
+		if (cachedClientMsgID.length > 0) {
+			const findParams : Array<OpenIMFindMessageParams> = [{ conversationID: automationConversationID, clientMsgIDList: [cachedClientMsgID] }]
+			await runAutomationStep<OpenIMFindMessageResult | null>('conversation', 'findMessageList', findMessageList(findParams, 'uvue_auto_find_message'), noCache)
+		} else {
+			recordAutomationSkip('conversation', 'findMessageList', 'no cached clientMsgID')
+		}
+		await runAutomationStep<string>('conversation', 'markConversationMessageAsRead', markConversationMessageAsRead(automationConversationID, 'uvue_auto_mark_conversation_read'), noCache)
+		await runAutomationStep<string>('conversation', 'markAllConversationMessageAsRead', markAllConversationMessageAsRead('uvue_auto_mark_all_read'), noCache)
+	}
+
+	async function runAutomationMessageStorageSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await switchAutomationPrimary(config, 'A_message_storage')
+		const localMessage = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('local ex from unixsdk public automation', 'uvue_auto_storage_local_ex_create'), cacheRequiredAutomationMessage)
+		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_storage_local_ex_send', message: localMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		const sentLocal = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
+		const localKey = messageKeyFromMessage(sentLocal)
+		if (localKey != null) {
+			const params : OpenIMSetMessageLocalExParams = { conversationID: (localKey as OpenIMMessageKeyParams).conversationID, clientMsgID: (localKey as OpenIMMessageKeyParams).clientMsgID, localEx: 'uvue-public-local-ex' }
+			await runAutomationStep<string>('message-storage', 'setMessageLocalEx', setMessageLocalEx(params, 'uvue_auto_set_local_ex'), noCache)
+		} else {
+			recordAutomationSkip('message-storage', 'setMessageLocalEx', 'sent message key unavailable')
+		}
+		const revokeMessageTarget = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('revoke from unixsdk public automation', 'uvue_auto_revoke_create'), cacheRequiredAutomationMessage)
+		const revokeOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_revoke_send', message: revokeMessageTarget as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		const sentRevoke = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(revokeOptions), cacheSentAutomationMessage)
+		const revokeKey = messageKeyFromMessage(sentRevoke)
+		if (revokeKey != null) {
+			await runAutomationOptionalStep<string>('message-storage', 'revokeMessage', revokeMessage(revokeKey as OpenIMMessageKeyParams, 'uvue_auto_revoke_message'), noCache, 'sent message seq was not synced before revoke')
+		} else {
+			recordAutomationSkip('message-storage', 'revokeMessage', 'sent message key unavailable')
+		}
+		const deleteMessageTarget = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('delete from unixsdk public automation', 'uvue_auto_delete_create'), cacheRequiredAutomationMessage)
+		const deleteOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_delete_send', message: deleteMessageTarget as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		const sentDelete = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(deleteOptions), cacheSentAutomationMessage)
+		const deleteKey = messageKeyFromMessage(sentDelete)
+		if (deleteKey != null) {
+			await runAutomationStep<string>('message-storage', 'deleteMessageFromLocalStorage', deleteMessageFromLocalStorage(deleteKey as OpenIMMessageKeyParams, 'uvue_auto_delete_local_message'), noCache)
+			await runAutomationStep<string>('message-storage', 'deleteMessage', deleteMessage(deleteKey as OpenIMMessageKeyParams, 'uvue_auto_delete_message'), noCache)
+		} else {
+			recordAutomationSkip('message-storage', 'deleteMessageFromLocalStorage', 'sent message key unavailable')
+			recordAutomationSkip('message-storage', 'deleteMessage', 'sent message key unavailable')
+		}
+		const insertMessage = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('insert from unixsdk public automation', 'uvue_auto_insert_create'), cacheRequiredAutomationMessage)
+		const singleParams : OpenIMInsertSingleMessageParams = { message: insertMessage as OpenIMMessageItem, recvID: config.secondaryUserID, sendID: config.primaryUserID }
+		await runAutomationStep<string>('message-storage', 'insertSingleMessageToLocalStorage', insertSingleMessageToLocalStorage(singleParams, 'uvue_auto_insert_single'), noCache)
+		let groupID = ''
+		const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public storage ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-storage-group' }
+		const groupParams : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
+		const group = await runAutomationOptionalStep<OpenIMGroupItem | null>('message-storage', 'createGroup', createGroup(groupParams, 'uvue_auto_storage_group'), noCache, 'group storage setup failed')
+		if (group != null) {
+			groupID = (group as OpenIMGroupItem).groupID
+			const seedMessage = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('group storage seed from unixsdk public automation', 'uvue_auto_storage_group_seed_create'), cacheRequiredAutomationMessage)
+			const seedOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_storage_group_seed_send', message: seedMessage as OpenIMMessageItem, recvID: '', groupID: groupID, isOnlineOnly: false }
+			await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(seedOptions), cacheSentAutomationMessage)
+			await sleepAutomation(500)
+			const groupMessageParams : OpenIMInsertGroupMessageParams = { message: insertMessage as OpenIMMessageItem, groupID: groupID, sendID: config.primaryUserID }
+			await runAutomationStep<string>('message-storage', 'insertGroupMessageToLocalStorage', insertGroupMessageToLocalStorage(groupMessageParams, 'uvue_auto_insert_group'), noCache)
+			await runAutomationOptionalStep<string>('message-storage', 'dismissGroup', dismissGroup(groupID, 'uvue_auto_storage_group_dismiss'), noCache, 'storage group cleanup failed')
+		} else {
+			recordAutomationSkip('message-storage', 'insertGroupMessageToLocalStorage', 'storage group setup failed')
+		}
+	}
+
+	async function runAutomationFriendSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await switchAutomationPrimary(config, 'A_friend_cleanup')
+		await runAutomationOptionalStep<string>('friend', 'deleteFriend', deleteFriend(config.secondaryUserID, 'uvue_auto_friend_cleanup_delete'), noCache, 'friend may not exist before automation')
+		await switchAutomationSecondary(config, 'B_friend_cleanup')
+		await runAutomationOptionalStep<string>('friend', 'deleteFriend', deleteFriend(config.primaryUserID, 'uvue_auto_friend_cleanup_delete_secondary'), noCache, 'friend may not exist before automation')
+		await switchAutomationPrimary(config, 'A_friend_reject')
+		const rejectAddParams : OpenIMAddFriendParams = { toUserID: config.secondaryUserID, reqMsg: 'friend reject request from unixsdk public automation', ex: 'uvue-public-friend-reject' }
+		await runAutomationStep<string>('friend', 'addFriend', addFriend(rejectAddParams, 'uvue_auto_friend_add_reject'), noCache)
+		await runAutomationStep<OpenIMFriendApplicationListResult | null>('friend', 'getFriendApplicationListAsApplicant', getFriendApplicationListAsApplicant(defaultApplicationParams(), 'uvue_auto_friend_apps_applicant_reject'), cacheFriendApplications)
+		await switchAutomationSecondary(config, 'B_friend_reject')
+		const recipientReject = await runAutomationStep<OpenIMFriendApplicationListResult | null>('friend', 'getFriendApplicationListAsRecipient', getFriendApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_friend_apps_recipient_reject'), cacheFriendApplications)
+		const rejectApplication = findFriendApplication(recipientReject, config.primaryUserID, config.secondaryUserID)
+		if (rejectApplication != null) {
+			const rejectHandle : OpenIMFriendApplicationHandleParams = { toUserID: config.primaryUserID, handleMsg: 'refused by uni-app x public automation' }
+			await runAutomationStep<string>('friend', 'refuseFriendApplication', refuseFriendApplication(rejectHandle, 'uvue_auto_friend_refuse'), noCache)
+		} else {
+			recordAutomationSkip('friend', 'refuseFriendApplication', 'friend application not found')
+		}
+		await switchAutomationPrimary(config, 'A_friend_accept')
+		const acceptAddParams : OpenIMAddFriendParams = { toUserID: config.secondaryUserID, reqMsg: 'friend accept request from unixsdk public automation', ex: 'uvue-public-friend-accept' }
+		await runAutomationStep<string>('friend', 'addFriend', addFriend(acceptAddParams, 'uvue_auto_friend_add_accept'), noCache)
+		await switchAutomationSecondary(config, 'B_friend_accept')
+		const recipientAccept = await runAutomationStep<OpenIMFriendApplicationListResult | null>('friend', 'getFriendApplicationListAsRecipient', getFriendApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_friend_apps_recipient_accept'), cacheFriendApplications)
+		const acceptApplication = findFriendApplication(recipientAccept, config.primaryUserID, config.secondaryUserID)
+		if (acceptApplication != null) {
+			const acceptHandle : OpenIMFriendApplicationHandleParams = { toUserID: config.primaryUserID, handleMsg: 'accepted by uni-app x public automation' }
+			await runAutomationStep<string>('friend', 'acceptFriendApplication', acceptFriendApplication(acceptHandle, 'uvue_auto_friend_accept'), noCache)
+		} else {
+			recordAutomationSkip('friend', 'acceptFriendApplication', 'friend application not found')
+		}
+		await switchAutomationPrimary(config, 'A_friend_verify')
+		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendList', getFriendList(false, 'uvue_auto_friend_list'), cacheFriends)
+		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendListPage', getFriendListPage(defaultPageParams(), 'uvue_auto_friend_page'), cacheFriends)
+		const searchParams : OpenIMSearchFriendsParams = { keywordList: [config.secondaryUserID], isSearchUserID: true, isSearchNickname: true, isSearchRemark: true }
+		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'searchFriends', searchFriends(searchParams, 'uvue_auto_search_friends'), cacheFriends)
+		const specifiedParams : OpenIMGetSpecifiedFriendsInfoParams = { userIDList: [config.secondaryUserID], filterBlack: false }
+		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getSpecifiedFriendsInfo', getSpecifiedFriendsInfo(specifiedParams, 'uvue_auto_specified_friends'), cacheFriends)
+		await runAutomationStep<OpenIMCheckFriendResult | null>('friend', 'checkFriend', checkFriend([config.secondaryUserID], 'uvue_auto_check_friend'), (value : OpenIMCheckFriendResult | null) => { requireAutomationCheckFriend(value, config.secondaryUserID) })
+		await runAutomationStep<number | null>('friend', 'getFriendApplicationUnhandledCount', getFriendApplicationUnhandledCount(defaultPageParams(), 'uvue_auto_friend_app_count'), noCache)
+		const updateParams : OpenIMUpdateFriendsParams = { friendUserIDs: [config.secondaryUserID], ex: 'uvue-public-update-friend' }
+		await runAutomationStep<string>('friend', 'updateFriends', updateFriends(updateParams, 'uvue_auto_update_friends'), noCache)
+		const addBlackParams : OpenIMAddBlackParams = { toUserID: config.secondaryUserID, ex: 'uvue-public-add-black' }
+		await runAutomationStep<string>('friend', 'addBlack', addBlack(addBlackParams, 'uvue_auto_add_black'), noCache)
+		await runAutomationStep<OpenIMBlackListResult | null>('friend', 'getBlackList', getBlackList('uvue_auto_black_list'), noCache)
+		await runAutomationStep<string>('friend', 'removeBlack', removeBlack(config.secondaryUserID, 'uvue_auto_remove_black'), noCache)
+		await runAutomationStep<string>('friend', 'deleteFriend', deleteFriend(config.secondaryUserID, 'uvue_auto_delete_friend'), noCache)
+	}
+
+	async function runAutomationGroupSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await switchAutomationPrimary(config, 'A_group')
+		let groupID = ''
+		const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public group ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-group' }
+		const groupParams : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
+		await runAutomationStep<OpenIMGroupItem | null>('group', 'createGroup', createGroup(groupParams, 'uvue_auto_create_group'), (value : OpenIMGroupItem | null) => {
+			requireAutomation(value != null, 'createGroup returned null')
+			groupID = (value as OpenIMGroupItem).groupID
+			cachedGroupID = groupID
+		})
+		await sleepAutomation(1000)
+		await runAutomationStep<OpenIMGroupListResult | null>('group', 'getJoinedGroupList', getJoinedGroupList('uvue_auto_joined_groups'), cacheGroups)
+		await runAutomationStep<OpenIMGroupListResult | null>('group', 'getJoinedGroupListPage', getJoinedGroupListPage(defaultPageParams(), 'uvue_auto_joined_group_page'), cacheGroups)
+		await runAutomationStep<OpenIMGroupListResult | null>('group', 'getSpecifiedGroupsInfo', getSpecifiedGroupsInfo([groupID], 'uvue_auto_specified_group'), cacheGroups)
+		const searchGroupsParams : OpenIMSearchGroupsParams = { keywordList: [groupID], isSearchGroupID: true, isSearchGroupName: true }
+		await runAutomationStep<OpenIMGroupListResult | null>('group', 'searchGroups', searchGroups(searchGroupsParams, 'uvue_auto_search_groups'), cacheGroups)
+		await runAutomationStep<boolean>('group', 'isJoinGroup', isJoinGroup(groupID, 'uvue_auto_is_join_group'), noCache)
+		const membersParams : OpenIMGetGroupMemberListParams = { groupID: groupID, filter: 0, offset: 0, count: 20 }
+		await runAutomationStep<OpenIMGroupMemberListResult | null>('group', 'getGroupMemberList', getGroupMemberList(membersParams, 'uvue_auto_group_members'), cacheGroupMembers)
+		const userListParams : OpenIMGroupUserListParams = { groupID: groupID, userIDList: [config.primaryUserID, config.secondaryUserID] }
+		await runAutomationStep<OpenIMGroupMemberListResult | null>('group', 'getSpecifiedGroupMembersInfo', getSpecifiedGroupMembersInfo(userListParams, 'uvue_auto_specified_members'), cacheGroupMembers)
+		await runAutomationStep<Array<string> | null>('group', 'getUsersInGroup', getUsersInGroup(userListParams, 'uvue_auto_users_in_group'), noCache)
+		const searchMembersParams : OpenIMSearchGroupMembersParams = { groupID: groupID, keywordList: [config.secondaryUserID], isSearchUserID: true, isSearchMemberNickname: true }
+		await runAutomationStep<OpenIMGroupMemberListResult | null>('group', 'searchGroupMembers', searchGroupMembers(searchMembersParams, 'uvue_auto_search_members'), cacheGroupMembers)
+		const setInfoParams : OpenIMSetGroupInfoParams = { groupID: groupID, groupName: 'uvue public group renamed ' + new Date().getTime().toString(), notification: 'uvue public notice', introduction: 'uvue public intro', ex: 'uvue-public-group-info' }
+		await runAutomationStep<string>('group', 'setGroupInfo', setGroupInfo(setInfoParams, 'uvue_auto_set_group_info'), noCache)
+		const setMemberParams : OpenIMSetGroupMemberInfoParams = { groupID: groupID, userID: config.primaryUserID, nickname: 'uvue public owner', ex: 'uvue-public-member' }
+		await runAutomationStep<string>('group', 'setGroupMemberInfo', setGroupMemberInfo(setMemberParams, 'uvue_auto_set_member_info'), noCache)
+		await runAutomationStep<string>('group', 'changeGroupMute', changeGroupMute({ groupID: groupID, isMute: false }, 'uvue_auto_group_mute'), noCache)
+		await runAutomationStep<string>('group', 'changeGroupMemberMute', changeGroupMemberMute({ groupID: groupID, userID: config.secondaryUserID, mutedSeconds: 0 }, 'uvue_auto_member_mute'), noCache)
+		const kickGroupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public kick group ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-kick-group' }
+		const kickGroupParams : OpenIMCreateGroupParams = { groupInfo: kickGroupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
+		const kickGroup = await runAutomationOptionalStep<OpenIMGroupItem | null>('group', 'createGroup', createGroup(kickGroupParams, 'uvue_auto_kick_group_create'), noCache, 'kick group setup failed')
+		if (kickGroup != null) {
+			const kickGroupID = (kickGroup as OpenIMGroupItem).groupID
+			const kickSeedSeq = await seedAutomationGroupConversation(kickGroupID, 'uvue_auto_kick_group_seq_seed')
+			const kickParams : OpenIMGroupInviteParams = { groupID: kickGroupID, reason: 'kick from unixsdk public automation', userIDList: [config.secondaryUserID] }
+			await runAutomationStep<string>('group', 'kickGroupMember', kickGroupMember(kickParams, 'uvue_auto_kick_member'), noCache)
+			await waitAutomationGroupHistorySeq(kickGroupID, kickSeedSeq + 1, 'uvue_auto_group_after_kick')
+			const inviteParams : OpenIMGroupInviteParams = { groupID: kickGroupID, reason: 'invite from unixsdk public automation', userIDList: [config.secondaryUserID] }
+			await runAutomationOptionalStep<string>('group', 'inviteUserToGroup', inviteUserToGroup(inviteParams, 'uvue_auto_invite_user'), noCache, 'server/protocol can reject invite after applying member join side effect')
+			await waitAutomationGroupHistorySeq(kickGroupID, kickSeedSeq + 2, 'uvue_auto_group_after_invite')
+			await runAutomationOptionalStep<string>('group', 'dismissGroup', dismissGroup(kickGroupID, 'uvue_auto_dismiss_kick_group'), noCache, 'kick group cleanup failed')
+		} else {
+			recordAutomationSkip('group', 'kickGroupMember', 'kick group setup failed')
+			recordAutomationSkip('group', 'inviteUserToGroup', 'kick group setup failed')
+		}
+		let applyGroupID = ''
+		const applyGroupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public apply group ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-apply-group' }
+		const applyGroupParams : OpenIMCreateGroupParams = { groupInfo: applyGroupInfo, memberUserIDs: [], adminUserIDs: [] }
+		const applyGroup = await runAutomationOptionalStep<OpenIMGroupItem | null>('group', 'createGroup', createGroup(applyGroupParams, 'uvue_auto_apply_group'), noCache, 'group application setup failed')
+		if (applyGroup != null) {
+			applyGroupID = (applyGroup as OpenIMGroupItem).groupID
+			await seedAutomationGroupConversation(applyGroupID, 'uvue_auto_apply_group_seq_seed')
+			const verificationParams : OpenIMSetGroupInfoParams = { groupID: applyGroupID, needVerification: 1, ex: 'uvue-public-group-verification' }
+			await runAutomationOptionalStep<string>('group', 'setGroupInfo', setGroupInfo(verificationParams, 'uvue_auto_apply_group_verification'), noCache, 'set group verification failed')
+			await switchAutomationSecondary(config, 'B_group_apply_reject')
+			const rejectJoinParams : OpenIMJoinGroupParams = { groupID: applyGroupID, reqMsg: 'group reject join from unixsdk public automation', joinSource: 3, ex: 'uvue-public-group-join-reject' }
+			await runAutomationOptionalStep<string>('group', 'joinGroup', joinGroup(rejectJoinParams, 'uvue_auto_join_group_reject'), noCache, 'join group reject setup failed')
+			await switchAutomationPrimary(config, 'A_group_apply_reject')
+			const rejectApps = await runAutomationOptionalStep<OpenIMGroupApplicationListResult | null>('group', 'getGroupApplicationListAsRecipient', getGroupApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_group_apps_recipient_reject'), cacheGroupApplications, 'group application recipient list unavailable')
+			const rejectApp = findGroupApplication(rejectApps, applyGroupID, config.secondaryUserID)
+			if (rejectApp != null) {
+				const rejectHandle : OpenIMGroupApplicationHandleParams = { groupID: applyGroupID, fromUserID: config.secondaryUserID, handleMsg: 'refused by uni-app x public automation' }
+				await runAutomationStep<string>('group', 'refuseGroupApplication', refuseGroupApplication(rejectHandle, 'uvue_auto_refuse_group_app'), noCache)
+			} else {
+				recordAutomationSkip('group', 'refuseGroupApplication', 'group reject application not found')
+			}
+			await switchAutomationSecondary(config, 'B_group_apply_accept')
+			const acceptJoinParams : OpenIMJoinGroupParams = { groupID: applyGroupID, reqMsg: 'group accept join from unixsdk public automation', joinSource: 3, ex: 'uvue-public-group-join-accept' }
+			await runAutomationOptionalStep<string>('group', 'joinGroup', joinGroup(acceptJoinParams, 'uvue_auto_join_group_accept'), noCache, 'join group accept setup failed')
+			await runAutomationOptionalStep<OpenIMGroupApplicationListResult | null>('group', 'getGroupApplicationListAsApplicant', getGroupApplicationListAsApplicant(defaultApplicationParams(), 'uvue_auto_group_apps_applicant'), cacheGroupApplications, 'group application applicant list unavailable')
+			await switchAutomationPrimary(config, 'A_group_apply_accept')
+			const acceptApps = await runAutomationOptionalStep<OpenIMGroupApplicationListResult | null>('group', 'getGroupApplicationListAsRecipient', getGroupApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_group_apps_recipient_accept'), cacheGroupApplications, 'group application recipient list unavailable')
+			const acceptApp = findGroupApplication(acceptApps, applyGroupID, config.secondaryUserID)
+			if (acceptApp != null) {
+				const acceptHandle : OpenIMGroupApplicationHandleParams = { groupID: applyGroupID, fromUserID: config.secondaryUserID, handleMsg: 'accepted by uni-app x public automation' }
+				await runAutomationOptionalStep<string>('group', 'acceptGroupApplication', acceptGroupApplication(acceptHandle, 'uvue_auto_accept_group_app'), noCache, 'server/protocol can reject group application accept after applying member join side effect')
+			} else {
+				recordAutomationSkip('group', 'acceptGroupApplication', 'group accept application not found')
+			}
+			await runAutomationStep<number | null>('group', 'getGroupApplicationUnhandledCount', getGroupApplicationUnhandledCount(defaultPageParams(), 'uvue_auto_group_app_count'), noCache)
+			await runAutomationOptionalStep<string>('group', 'dismissGroup', dismissGroup(applyGroupID, 'uvue_auto_dismiss_apply_group'), noCache, 'apply group cleanup failed')
+		} else {
+			recordAutomationSkip('group', 'joinGroup', 'group application setup failed')
+			recordAutomationSkip('group', 'getGroupApplicationListAsApplicant', 'group application setup failed')
+			recordAutomationSkip('group', 'getGroupApplicationListAsRecipient', 'group application setup failed')
+			recordAutomationSkip('group', 'getGroupApplicationUnhandledCount', 'group application setup failed')
+			recordAutomationSkip('group', 'acceptGroupApplication', 'group application setup failed')
+			recordAutomationSkip('group', 'refuseGroupApplication', 'group application setup failed')
+		}
+		let quitGroupID = ''
+		const quitGroupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public quit group ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-quit-group' }
+		const quitGroupParams : OpenIMCreateGroupParams = { groupInfo: quitGroupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
+		const quitGroupResult = await runAutomationOptionalStep<OpenIMGroupItem | null>('group', 'createGroup', createGroup(quitGroupParams, 'uvue_auto_quit_group_create'), noCache, 'quit group setup failed')
+		if (quitGroupResult != null) {
+			quitGroupID = (quitGroupResult as OpenIMGroupItem).groupID
+			await runAutomationStep<string>('group', 'transferGroupOwner', transferGroupOwner({ groupID: quitGroupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_quit_group'), noCache)
+			await runAutomationOptionalStep<string>('group', 'quitGroup', quitGroup(quitGroupID, 'uvue_auto_quit_group'), noCache, 'quit can fail while group maxSeq is still syncing')
+			await switchAutomationSecondary(config, 'B_group_quit_cleanup')
+			await runAutomationOptionalStep<string>('group', 'dismissGroup', dismissGroup(quitGroupID, 'uvue_auto_dismiss_quit_group'), noCache, 'quit group cleanup failed')
+			await switchAutomationPrimary(config, 'A_group_transfer')
+		} else {
+			recordAutomationSkip('group', 'quitGroup', 'quit group setup failed')
+		}
+		await runAutomationStep<string>('group', 'transferGroupOwner', transferGroupOwner({ groupID: groupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_group_owner'), noCache)
+		await switchAutomationSecondary(config, 'B_group_dismiss')
+		await runAutomationStep<string>('group', 'dismissGroup', dismissGroup(groupID, 'uvue_auto_dismiss_group'), noCache)
+		await switchAutomationPrimary(config, 'A_group_done')
+	}
+
+	async function runAutomationAppSuite() : Promise<void> {
+		await runAutomationStep<string>('app', 'setAppBackgroundStatus', setAppBackgroundStatus(false, 'uvue_auto_app_background'), noCache)
+		await runAutomationStep<string>('app', 'setAppBadge', setAppBadge(0, 'uvue_auto_app_badge'), noCache)
+		await runAutomationStep<string>('app', 'networkStatusChanged', networkStatusChanged('uvue_auto_network_changed'), noCache)
+		const params : OpenIMUpdateFcmTokenParams = { fcmToken: 'uvue-public-automation-fcm-token', expireTime: 0 }
+		await runAutomationOptionalStep<string>('app', 'updateFcmToken', updateFcmToken(params, 'uvue_auto_update_fcm'), noCache, 'push token platform may be disabled for current simulator/server')
+	}
+
+	async function runAutomationUploadSuite() : Promise<void> {
+		const uploadRunID = new Date().getTime().toString()
+		const uploadFileName = 'automation-upload-' + uploadRunID + '.bin'
+		const uploadFilePath = writeAutomationUniqueUploadFile(uploadFileName, uploadRunID)
+		const previousUploadProgressCount = readAutomationEventCount('onUploadFileProgress')
+		const uploadParams : OpenIMUploadFileParams = { filepath: uploadFilePath, name: uploadFileName, contentType: 'application/octet-stream', uuid: 'uvue-auto-upload-file-' + uploadRunID, cause: 'automation upload' }
+		const uploadResult = await runAutomationOptionalStep<OpenIMUploadFileResult | null>('upload', 'uploadFile', uploadFile(uploadParams, 'uvue_auto_upload_file'), noCache, 'uploadFile requires reachable object storage endpoint')
+		if (uploadResult != null) {
+			automationUploadFileProgressExpected = true
+			await waitAutomationEventCountIncrease('onUploadFileProgress', previousUploadProgressCount, 5000)
+		}
+		const uploadLogsParams : OpenIMUploadLogsParams = { line: 100, ex: 'uvue-public-automation' }
+		const uploadLogsResult = await runAutomationOptionalStep<string>('upload', 'uploadLogs', uploadLogs(uploadLogsParams, 'uvue_auto_upload_logs'), noCache, 'uploadLogs requires reachable object storage endpoint')
+		if (uploadLogsResult != null) {
+			automationUploadLogsProgressExpected = true
+		}
+	}
+
+	async function runAutomationConversationMutationSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await switchAutomationPrimary(config, 'A_conversation_mutation')
+		if (automationConversationID.length == 0) {
+			const params : OpenIMGetOneConversationParams = { sourceID: config.secondaryUserID, sessionType: OpenIMSessionTypeSingle }
+			await runAutomationStep<string>('conversation-mutation', 'getConversationIDBySessionType', getConversationIDBySessionType(params, 'uvue_auto_mutation_conversation_id'), cacheAutomationConversationID)
+		}
+		await runAutomationStep<OpenIMMessageItem | null>('conversation-mutation', 'createTextMessage', createTextMessage('clear conversation from unixsdk public automation', 'uvue_auto_mutation_clear_create'), cacheRequiredAutomationMessage)
+		await runAutomationStep<string>('conversation-mutation', 'clearConversationAndDeleteAllMsg', clearConversationAndDeleteAllMsg(automationConversationID, 'uvue_auto_clear_conversation'), noCache)
+		await runAutomationStep<string>('conversation-mutation', 'hideConversation', hideConversation(automationConversationID, 'uvue_auto_hide_conversation'), noCache)
+		await runAutomationStep<string>('conversation-mutation', 'hideAllConversations', hideAllConversations('uvue_auto_hide_all_conversations'), noCache)
+		await runAutomationStep<string>('conversation-mutation', 'deleteConversationAndDeleteAllMsg', deleteConversationAndDeleteAllMsg(automationConversationID, 'uvue_auto_delete_conversation_msgs'), noCache)
+		await runAutomationStep<string>('conversation-mutation', 'deleteConversation', deleteConversation(automationConversationID, 'uvue_auto_delete_conversation'), noCache)
+		await runAutomationStep<string>('conversation-mutation', 'deleteAllMsgFromLocal', deleteAllMsgFromLocal('uvue_auto_delete_all_local'), noCache)
+		await runAutomationStep<string>('conversation-mutation', 'deleteAllMsgFromLocalAndSvr', deleteAllMsgFromLocalAndSvr('uvue_auto_delete_all_server'), noCache)
+	}
+
+	function recordRequiredAutomationEventDelivery(eventName : string) {
+		const count = readAutomationEventCount(eventName)
+		if (count > 0) {
+			recordAutomationStep('event-delivery', eventName, true, 'callback delivered count=' + count.toString())
+		} else if (eventName == 'onSyncServerStart' || eventName == 'onSyncServerFinish' || eventName == 'onSyncServerProgress') {
+			recordAutomationSkip('event-delivery', eventName, 'quick sync did not emit this sync callback during this run')
+		} else if (eventName == 'onSendMessageProgress' && !automationSendMessageProgressExpected) {
+			recordAutomationSkip('event-delivery', eventName, 'no local media/file send completed in current environment')
+		} else if (eventName == 'onUploadFileProgress' && !automationUploadFileProgressExpected) {
+			recordAutomationSkip('event-delivery', eventName, 'uploadFile did not complete in current object storage environment')
+		} else if (eventName == 'onUploadLogsProgress' && !automationUploadLogsProgressExpected) {
+			recordAutomationSkip('event-delivery', eventName, 'uploadLogs did not complete in current object storage environment')
+		} else {
+			recordAutomationStep('event-delivery', eventName, false, 'callback was registered but not delivered during automation')
+		}
+	}
+
+	function recordTrackedAutomationEventDelivery(eventName : string) {
+		const count = readAutomationEventCount(eventName)
+		if (count > 0) {
+			recordAutomationStep('event-delivery', eventName, true, 'callback delivered count=' + count.toString())
+		}
+	}
+
+	async function runAutomationEventDeliverySuite() : Promise<void> {
+		await sleepAutomation(1500)
+		let requiredIndex = 0
+		while (requiredIndex < automationRequiredDeliveredEventNames.length) {
+			recordRequiredAutomationEventDelivery(automationRequiredDeliveredEventNames[requiredIndex])
+			requiredIndex = requiredIndex + 1
+		}
+		let trackedIndex = 0
+		while (trackedIndex < automationTrackedDeliveredEventNames.length) {
+			recordTrackedAutomationEventDelivery(automationTrackedDeliveredEventNames[trackedIndex])
+			trackedIndex = trackedIndex + 1
+		}
+	}
+
+	function collectAutomationCoverageMissing() : Array<string> {
+		const missing : Array<string> = []
+		let index = 0
+		while (index < automationPublicAPINames.length) {
+			const name = automationPublicAPINames[index]
+			if (!automationStringArrayContains(automationCoveredAPINames, name)) {
+				missing.push(name)
+			}
+			index = index + 1
+		}
+		return missing
+	}
+
+	function collectAutomationValidatedMissing() : Array<string> {
+		const missing : Array<string> = []
+		let index = 0
+		while (index < automationPublicAPINames.length) {
+			const name = automationPublicAPINames[index]
+			if (!automationStringArrayContains(automationValidatedAPINames, name)) {
+				missing.push(name)
+			}
+			index = index + 1
+		}
+		return missing
+	}
+
+	function collectAutomationSkipKeys(allowed : boolean) : Array<string> {
+		const keys : Array<string> = []
+		automationStepResults.forEach((item : OpenIMAutomationCase) => {
+			if (item.status == 'skipped') {
+				const key = item.group + '/' + item.name
+				const isAllowed = automationStringArrayContains(automationAllowedSkipCaseKeys, key)
+				if (isAllowed == allowed) {
+					keys.push(key)
+				}
+			}
+		})
+		return keys
+	}
+
+	function filterAutomationValidatedMissing(missing : Array<string>, allowed : boolean) : Array<string> {
+		const result : Array<string> = []
+		missing.forEach((name : string) => {
+			const isAllowed = automationStringArrayContains(automationAllowedValidatedMissingNames, name)
+			if (isAllowed == allowed) {
+				result.push(name)
+			}
+		})
+		return result
+	}
+
+	function runAutomationCoverageSuite() {
+		const missing = collectAutomationCoverageMissing()
+		if (missing.length == 0) {
+			recordAutomationStep('coverage', 'publicAPIsRecorded', true, 'all public Android/iOS APIs are covered or explicitly allowed')
+		} else {
+			recordAutomationStep('coverage', 'publicAPIsRecorded', false, missing.join(', '))
+		}
+		const validatedMissing = collectAutomationValidatedMissing()
+		const unexpectedValidatedMissing = filterAutomationValidatedMissing(validatedMissing, false)
+		if (unexpectedValidatedMissing.length == 0) {
+			recordAutomationStep('coverage', 'publicAPIsValidated', true, validatedMissing.length == 0 ? 'all public Android/iOS APIs passed without skip' : 'only explicitly allowed APIs were not runtime-validated: ' + validatedMissing.join(', '))
+		} else {
+			recordAutomationStep('coverage', 'publicAPIsValidated', false, unexpectedValidatedMissing.join(', '))
+		}
+	}
+
+	function createAutomationGroupResult(group : string) : OpenIMAutomationGroupResult {
+		const result : OpenIMAutomationGroupResult = { group: group, total: 0, passed: 0, failed: 0, skipped: 0 }
+		return result
+	}
+
+	function findAutomationGroup(groups : Array<OpenIMAutomationGroupResult>, groupName : string) : OpenIMAutomationGroupResult | null {
+		let index = 0
+		while (index < groups.length) {
+			if (groups[index].group == groupName) {
+				return groups[index]
+			}
+			index = index + 1
+		}
+		return null
+	}
+
+	function buildAutomationGroups() : Array<OpenIMAutomationGroupResult> {
+		const groups : Array<OpenIMAutomationGroupResult> = []
+		let suiteIndex = 0
+		while (suiteIndex < automationSuiteOrder.length) {
+			groups.push(createAutomationGroupResult(automationSuiteOrder[suiteIndex]))
+			suiteIndex = suiteIndex + 1
+		}
+		automationStepResults.forEach((item : OpenIMAutomationCase) => {
+			let group = findAutomationGroup(groups, item.group)
+			if (group == null) {
+				const extra = createAutomationGroupResult(item.group)
+				groups.push(extra)
+				group = extra
+			}
+			if (group != null) {
+				group.total = group.total + 1
+				if (item.status == 'skipped') {
+					group.skipped = group.skipped + 1
+				} else if (item.status == 'passed') {
+					group.passed = group.passed + 1
+				} else {
+					group.failed = group.failed + 1
+				}
+			}
+		})
+		return groups
+	}
+
+	function countAutomationFailures() : number {
+		let count = 0
+		let index = 0
+		while (index < automationStepResults.length) {
+			const item = automationStepResults[index]
+			if (item.status == 'failed') {
+				count = count + 1
+			}
+			index = index + 1
+		}
+		return count
+	}
+
+	function buildAutomationEventLines() : Array<string> {
+		const lines : Array<string> = []
+		if (automationEventRecords.length == 0) {
+			lines.push('[EVENT] none observed')
+			return lines
+		}
+		automationEventRecords.forEach((item : OpenIMAutomationEventRecord) => {
+			lines.push('[EVENT] ' + item.name + ' count=' + item.count.toString() + ' last=' + item.lastPayload)
+		})
+		return lines
+	}
+
+	function buildAutomationSummary() : OpenIMAutomationSummary {
+		let passed = 0
+		let failed = 0
+		let skipped = 0
+		const caseLines : Array<string> = []
+		automationStepResults.forEach((item : OpenIMAutomationCase) => {
+			if (item.status == 'skipped') {
+				skipped = skipped + 1
+			} else if (item.status == 'passed') {
+				passed = passed + 1
+			} else {
+				failed = failed + 1
+			}
+			caseLines.push('[' + item.status + '] [' + item.group + '] ' + item.name + ' ' + item.message)
+		})
+		const groups = buildAutomationGroups()
+		const coverageMissing = collectAutomationCoverageMissing()
+		const validatedMissing = collectAutomationValidatedMissing()
+		const allowedSkipped = collectAutomationSkipKeys(true)
+		const unexpectedSkipped = collectAutomationSkipKeys(false)
+		const validatedAllowedMissing = filterAutomationValidatedMissing(validatedMissing, true)
+		const validatedUnexpectedMissing = filterAutomationValidatedMissing(validatedMissing, false)
+		const groupLines : Array<string> = []
+		groups.forEach((group : OpenIMAutomationGroupResult) => {
+			if (group.total > 0) {
+				groupLines.push('[' + group.group + '] ' + group.passed.toString() + ' passed, ' + group.failed.toString() + ' failed, ' + group.skipped.toString() + ' skipped')
+			}
+		})
+		const headline = failed == 0 && unexpectedSkipped.length == 0 && coverageMissing.length == 0 && validatedUnexpectedMissing.length == 0 ? 'Automation passed' : 'Automation failed'
+		const coverageText = 'Coverage recorded: ' + automationCoveredAPINames.length.toString() + ' / ' + automationPublicAPINames.length.toString()
+		const coverageMissingText = coverageMissing.length == 0 ? 'Coverage missing: none' : 'Coverage missing: ' + coverageMissing.join(', ')
+		const validatedText = 'Validated: ' + automationValidatedAPINames.length.toString() + ' / ' + automationPublicAPINames.length.toString()
+		const validatedMissingText = validatedMissing.length == 0 ? 'Validated missing: none' : 'Validated missing: ' + validatedMissing.join(', ')
+		const skipGateText = 'Unexpected skipped: ' + (unexpectedSkipped.length == 0 ? 'none' : unexpectedSkipped.join(', '))
+		const validatedGateText = 'Unexpected validated missing: ' + (validatedUnexpectedMissing.length == 0 ? 'none' : validatedUnexpectedMissing.join(', '))
+		const summaryText = headline + ': ' + passed.toString() + ' passed, ' + failed.toString() + ' failed, ' + skipped.toString() + ' skipped\n' + coverageText + '\n' + coverageMissingText + '\n' + validatedText + '\n' + validatedMissingText + '\n' + skipGateText + '\n' + validatedGateText + '\n' + groupLines.join('\n') + '\nEvents observed\n' + buildAutomationEventLines().join('\n') + '\n' + caseLines.join('\n')
+		const summary : OpenIMAutomationSummary = {
+			headline: headline,
+			summaryText: summaryText,
+			total: automationStepResults.length,
+			passed: passed,
+			failed: failed,
+			skipped: skipped,
+			coverageTotal: automationPublicAPINames.length,
+			coverageRecorded: automationCoveredAPINames.length,
+			coverageMissing: coverageMissing,
+			validatedTotal: automationPublicAPINames.length,
+			validatedRecorded: automationValidatedAPINames.length,
+			validatedMissing: validatedMissing,
+			allowedSkipped: allowedSkipped,
+			unexpectedSkipped: unexpectedSkipped,
+			validatedAllowedMissing: validatedAllowedMissing,
+			validatedUnexpectedMissing: validatedUnexpectedMissing,
+			groups: groups,
+			cases: automationStepResults,
+			events: automationEventRecords,
+			logFilePath: automationRunLogFilePath,
+			jsonFilePath: automationRunJSONFilePath,
+			logWriteError: automationRunLogWriteError
+		}
+		return summary
+	}
+
+	function writeAutomationSummaryFiles(summary : OpenIMAutomationSummary) : OpenIMAutomationSummary {
+		try {
+			if (automationRunLogFilePath.length == 0 || automationRunJSONFilePath.length == 0) {
+				initializeAutomationLogFiles()
+			}
+			summary.logFilePath = automationRunLogFilePath
+			summary.jsonFilePath = automationRunJSONFilePath
+			summary.logWriteError = automationRunLogWriteError
+			summary.summaryText = summary.summaryText + '\nLog file: ' + automationRunLogFilePath + '\nJSON file: ' + automationRunJSONFilePath
+			const jsonText = JSON.stringify(summary)
+			uni.getFileSystemManager().writeFileSync(automationRunLogFilePath, summary.summaryText, 'utf-8')
+			if (jsonText != null) {
+				uni.getFileSystemManager().writeFileSync(automationRunJSONFilePath, jsonText as string, 'utf-8')
+			}
+		} catch (error) {
+			summary.logWriteError = stringifyAPIValue(error)
+		}
+		return summary
+	}
+
+	async function runAutomationNamedSuite(suite : string, config : OpenIMAutomationConfig) : Promise<void> {
+		if (suite == 'user-status') {
+			await runAutomationUserStatusSuite(config)
+		} else if (suite == 'message-create') {
+			await runAutomationMessageCreateSuite(config)
+		} else if (suite == 'message-send') {
+			await runAutomationMessageSendSuite(config)
+		} else if (suite == 'conversation') {
+			await runAutomationConversationSuite(config)
+		} else if (suite == 'message-storage') {
+			await runAutomationMessageStorageSuite(config)
+		} else if (suite == 'friend') {
+			await runAutomationFriendSuite(config)
+		} else if (suite == 'group') {
+			await runAutomationGroupSuite(config)
+		} else if (suite == 'app') {
+			await runAutomationAppSuite()
+		} else if (suite == 'upload') {
+			await runAutomationUploadSuite()
+		} else if (suite == 'conversation-mutation') {
+			await runAutomationConversationMutationSuite(config)
+		} else if (suite == 'event-delivery') {
+			await runAutomationEventDeliverySuite()
+		} else {
+			throw new Error('Unknown automation suite: ' + suite)
+		}
+	}
+
+	async function runAutomationGuardedSuite(suite : string, config : OpenIMAutomationConfig) : Promise<void> {
+		const failuresBefore = countAutomationFailures()
+		try {
+			await runAutomationNamedSuite(suite, config)
+		} catch (error) {
+			if (countAutomationFailures() == failuresBefore) {
+				recordAutomationStep(suite, 'suite runner', false, stringifyAPIValue(error))
+			}
+			statusText.value = 'Automation continuing after ' + suite
+		}
+	}
+
+	async function runAutomationGuardedSuites(config : OpenIMAutomationConfig) : Promise<void> {
+		const suites : Array<string> = ['user-status', 'message-create', 'message-send', 'conversation', 'message-storage', 'friend', 'group', 'app', 'upload', 'conversation-mutation', 'event-delivery']
+		let index = 0
+		while (index < suites.length) {
+			await runAutomationGuardedSuite(suites[index], config)
+			index = index + 1
+		}
+	}
+
+	async function runAutomationCleanupBeforeSummary() : Promise<void> {
+		try {
+			offEvent('onRecvCustomBusinessMessage')
+			recordAutomationStep('cleanup', 'offEvent', true, 'offEvent called for onRecvCustomBusinessMessage')
+			registerSDKEvents()
+		} catch (error) {
+			recordAutomationStep('cleanup', 'offEvent', false, stringifyAPIValue(error))
+		}
+		recordAutomationSkip('cleanup', 'unInitSDK', 'scheduled after the final result files are written')
+	}
+
+	function scheduleAutomationNativeCleanup() {
+		setTimeout(() => {
+			logout('uvue_auto_logout_after_result').then((_value : string) => {
+				unInitSDK('uvue_auto_uninit_after_result')
+			}).catch((_error : any | null) : void => {
+				unInitSDK('uvue_auto_uninit_after_result')
+			})
+		}, 100)
+	}
+
+	async function runAutomationFlow(config : OpenIMAutomationConfig | null) : Promise<void> {
+		try {
+			if (!isAutomationConfigReady(config)) {
+				recordAutomationStep('setup', 'readConfig', false, 'Missing openim-test-config storage/static data. Run scripts/register-openim-test-accounts.mjs first.')
+			} else {
+				const readyConfig = config as OpenIMAutomationConfig
+				recordAutomationStep('setup', 'readConfig', true, 'api=' + readyConfig.apiAddr + ' ws=' + readyConfig.wsAddr)
+				await runAutomationSetupSuite(readyConfig)
+				await runAutomationGuardedSuites(readyConfig)
+			}
+		} catch (error) {
+			recordAutomationStep('setup', 'automation runner', false, stringifyAPIValue(error))
+		}
+	}
+
+	function handleRunAutomation() : Promise<OpenIMAutomationSummary> {
+		return new Promise<OpenIMAutomationSummary>((resolve, _reject) => {
+			if (automationRunning) {
+				recordAutomationStep('setup', 'runner busy', false, 'Automation already running')
+				resolve(writeAutomationSummaryFiles(buildAutomationSummary()))
+				return
+			}
+			automationRunning = true
+			automationEventSuppressed = true
+			resetAutomationCache()
+			statusText.value = 'Running public Android/iOS automation'
+			const config = readAutomationConfig()
+			const chain = runAutomationFlow(config)
+			chain.then((_value : void) => {
+				runAutomationCleanupBeforeSummary().then((_cleanupValue : void) => {
+					runAutomationCoverageSuite()
+					const summary = writeAutomationSummaryFiles(buildAutomationSummary())
+					statusText.value = summary.headline
+					setResult(summary.summaryText)
+					automationRunning = false
+					automationEventSuppressed = false
+					resolve(summary)
+					scheduleAutomationNativeCleanup()
+				})
+			})
+		})
+	}
+
+	function isAutomationAutorunValue(value : string | null) : boolean {
+		return value == '1' || value == 'true' || value == 'yes'
+	}
+
+	function scheduleAutomationAutorun() {
+		if (automationAutorunScheduled) {
+			return
+		}
+		if (automationAutorunRequested == false) {
+			const config = readAutomationConfig()
+			if (config != null) {
+				automationAutorunRequested = isAutomationAutorunValue((config as OpenIMAutomationConfig).autorun)
+			}
+		}
+		if (automationAutorunRequested == false) {
+			return
+		}
+		automationAutorunScheduled = true
+		statusText.value = 'Automation scheduled'
+		setTimeout(() => {
+			handleRunAutomation()
+		}, 500)
+	}
+
+	onLoad((options : OnLoadOptions) => {
+		const openimAutomation = options["openimAutomation"] ?? ""
+		const autorun = options["autorun"] ?? ""
+		automationAutorunRequested = isAutomationAutorunValue(openimAutomation) || isAutomationAutorunValue(autorun)
+	})
+
+	onReady(() => {
+		scheduleAutomationAutorun()
+	})
+
+	setTimeout(() => {
+		scheduleAutomationAutorun()
+	}, 1000)
+
 	defineExpose({
 		handleInitSDKOnly,
 		handleLoginOnly,
@@ -1016,7 +2763,8 @@
 		handleSendCachedMessage,
 		handleSendCachedMessageNotOss,
 		handleInsertSingleMessage,
-		handleInsertGroupMessage
+		handleInsertGroupMessage,
+		handleRunAutomation
 	})
 </script>
 

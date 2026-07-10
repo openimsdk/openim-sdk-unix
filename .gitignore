@@ -22,6 +22,7 @@ harmony-configs/
 *.app/
 *.xcarchive/
 *.xcframework/
+**/_CodeSignature/
 *.aar
 *.log
 coverage/

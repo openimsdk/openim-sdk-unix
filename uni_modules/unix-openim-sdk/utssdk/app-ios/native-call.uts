@@ -1,11 +1,12 @@
 import { UTSiOS } from 'DCloudUTSFoundation'
-import { normalizeOperationID, stringifyJSON, rejectNativeError, readNativeValue, NativeParserHelpers, buildJSONField, stringifyJSONString, stringifyJSONNumber, stringifyJSONBoolean, appendJSONText, appendOptionalJSONStringText, appendOptionalJSONNumberText, appendOptionalJSONBooleanText, stringifyStringList, stringifyOpenIMMessageEntityList, parseNativeUploadFileResultCommon, parseNativeUploadFileProgressEventCommon, parseNativeUploadLogsProgressEventCommon, parseNativeConversationEventListCommon, parseNativeConversationObjectCommon, parseNativeConversationListResultCommon, parseNativeConversationListResultFallbackCommon, parseNativeUserListResultCommon, parseNativeUserObjectCommon, parseNativeUserStatusListResultCommon, parseNativeUserStatusEventListCommon, parseNativeFriendListResultCommon, parseNativeFriendListResultFallbackCommon, parseNativeFriendObjectCommon, parseNativeBlackListResultCommon, parseNativeBlackUserObjectCommon, parseNativeGroupListResultCommon, parseNativeGroupListResultFallbackCommon, parseNativeGroupObjectCommon, parseNativeGroupMemberListResultCommon, parseNativeGroupMemberListResultFallbackCommon, parseNativeGroupMemberObjectCommon, parseNativeFriendApplicationListResultCommon, parseNativeFriendApplicationListResultFallbackCommon, parseNativeFriendApplicationObjectCommon, parseNativeGroupApplicationListResultCommon, parseNativeGroupApplicationListResultFallbackCommon, parseNativeGroupApplicationObjectCommon, parseNativeConversationInputStatusCommon, parseNativeMessageCommon, parseNativeAdvancedHistoryMessageListCommon, parseNativeAdvancedHistoryMessageListFallbackCommon, parseNativeMessageEventListCommon, parseNativeMessageEventListFallbackCommon, parseNativeFindMessageResultCommon, parseNativeMessageListResultCommon, parseNativeSearchMessageResultCommon, parseNativeMessageRevokedCommon, parseNativeMessageReceiptListCommon, parseNativeLoginStatusCommon } from '../common/native-call-common.uts'
+import { normalizeOperationID, stringifyJSON, rejectNativeError, readNativeValue, NativeParserHelpers, buildJSONField, stringifyJSONString, stringifyJSONNumber, stringifyJSONBoolean, appendJSONText, appendOptionalJSONStringText, appendOptionalJSONNumberText, appendOptionalJSONBooleanText, stringifyStringList, stringifyOpenIMMessageEntityList, parseNativeUploadFileResultCommon, parseNativeUploadFileProgressEventCommon, parseNativeUploadLogsProgressEventCommon, parseNativeConversationEventListCommon, parseNativeConversationObjectCommon, parseNativeConversationListResultCommon, parseNativeConversationListResultFallbackCommon, parseNativeUserListResultCommon, parseNativeUserObjectCommon, parseNativeUserStatusListResultCommon, parseNativeUserStatusEventListCommon, parseNativeCheckFriendResultCommon, parseNativeFriendListResultCommon, parseNativeFriendListResultFallbackCommon, parseNativeFriendObjectCommon, parseNativeBlackListResultCommon, parseNativeBlackUserObjectCommon, parseNativeGroupListResultCommon, parseNativeGroupListResultFallbackCommon, parseNativeGroupObjectCommon, parseNativeGroupMemberListResultCommon, parseNativeGroupMemberListResultFallbackCommon, parseNativeGroupMemberObjectCommon, parseNativeFriendApplicationListResultCommon, parseNativeFriendApplicationListResultFallbackCommon, parseNativeFriendApplicationObjectCommon, parseNativeGroupApplicationListResultCommon, parseNativeGroupApplicationListResultFallbackCommon, parseNativeGroupApplicationObjectCommon, parseNativeConversationInputStatusCommon, parseNativeMessageCommon, parseNativeAdvancedHistoryMessageListCommon, parseNativeAdvancedHistoryMessageListFallbackCommon, parseNativeMessageEventListCommon, parseNativeMessageEventListFallbackCommon, parseNativeFindMessageResultCommon, parseNativeMessageListResultCommon, parseNativeSearchMessageResultCommon, parseNativeMessageRevokedCommon, parseNativeMessageReceiptListCommon, parseNativeLoginStatusCommon } from '../common/native-call-common.uts'
 export { normalizeOperationID, stringifyJSON, rejectNativeError, stringifyOpenIMMessageEntityList }
 import {
   OpenIMInitConfig,
   OpenIMAdvancedHistoryMessageListResult,
   OpenIMBlackListResult,
   OpenIMBlackUserItem,
+  OpenIMCheckFriendResult,
   OpenIMAdvancedTextElem,
   OpenIMAtTextElem,
   OpenIMAtUsersInfoItem,
@@ -94,7 +95,21 @@ export function normalizeInitConfig(config : OpenIMInitConfig) : string {
 }
 
 export function parseNativeMessage(data : string) : OpenIMMessageItem | null {
-  return parseNativeMessageCommon(data, getNativeParserHelpers())
+  const message = parseNativeMessageCommon(data, getNativeParserHelpers())
+  if (message == null || (message.content != null && (message.content as string).length > 0)) {
+    return message
+  }
+  const raw = parseNativeAny(data)
+  if (raw instanceof UTSJSONObject) {
+    const atTextElem = readNativeValue(raw, 'atTextElem')
+    if (atTextElem instanceof UTSJSONObject) {
+      const content = JSON.stringify(atTextElem)
+      if (content != null) {
+        message.content = content as string
+      }
+    }
+  }
+  return message
 }
 
 export function readStringParam(value : any | null, key : string) : string {
@@ -609,6 +624,8 @@ export function parseNativeUserObject(data : string) : OpenIMUserInfo | null { r
 export function parseNativeUserStatusListResult(data : string) : OpenIMUserStatusListResult | null { return parseNativeUserStatusListResultCommon(data, getNativeParserHelpers()) }
 
 export function parseNativeUserStatusEventList(data : string) : OpenIMUserStatusListResult | null { return parseNativeUserStatusEventListCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeCheckFriendResult(data : string) : OpenIMCheckFriendResult | null { return parseNativeCheckFriendResultCommon(data, getNativeParserHelpers()) }
 
 export function parseNativeFriendListResult(data : string) : OpenIMFriendListResult | null { return parseNativeFriendListResultCommon(data, getNativeParserHelpers()) }
 

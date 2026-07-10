@@ -828,11 +828,6 @@ class NativeOpenIMSDK {
         Open_im_sdkRefuseGroupApplication(callback, operationID, groupID, userID, handleMsg)
     }
 
-    static func getGroupMemberOwnerAndAdmin(_ operationID: String, _ groupID: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
-        let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        Open_im_sdkGetGroupMemberOwnerAndAdmin(callback, operationID, groupID)
-    }
-
     static func findMessageList(_ operationID: String, _ searchParam: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
         Open_im_sdkFindMessageList(callback, operationID, searchParam)

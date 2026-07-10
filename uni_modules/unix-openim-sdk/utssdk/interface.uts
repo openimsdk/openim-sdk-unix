@@ -244,6 +244,15 @@ export type OpenIMUpdateFriendsParams = {
   ex ?: string | null
 }
 
+export type OpenIMCheckFriendResultItem = {
+  userID : string
+  result : number
+}
+
+export type OpenIMCheckFriendResult = {
+  result : Array<OpenIMCheckFriendResultItem>
+}
+
 export type OpenIMInsertSingleMessageParams = {
   message : OpenIMMessageItem
   recvID : string
@@ -1172,7 +1181,6 @@ export declare const deleteAllMsgFromLocalAndSvr : (operationID ?: string | null
 export declare const insertSingleMessageToLocalStorage : (params : OpenIMInsertSingleMessageParams, operationID ?: string | null) => Promise<string>
 export declare const insertGroupMessageToLocalStorage : (params : OpenIMInsertGroupMessageParams, operationID ?: string | null) => Promise<string>
 export declare const changeInputStates : (params : OpenIMInputStateParams, operationID ?: string | null) => Promise<string>
-export declare const getInputstates : (params : OpenIMInputStateParams, operationID ?: string | null) => Promise<string>
 export declare const clearConversationAndDeleteAllMsg : (conversationID : string, operationID ?: string | null) => Promise<string>
 export declare const hideConversation : (conversationID : string, operationID ?: string | null) => Promise<string>
 export declare const hideAllConversations : (operationID ?: string | null) => Promise<string>
@@ -1194,7 +1202,7 @@ export declare const getFriendApplicationUnhandledCount : (params : OpenIMPagePa
 export declare const getFriendList : (filterBlack ?: boolean | null, operationID ?: string | null) => Promise<OpenIMFriendListResult | null>
 export declare const getFriendListPage : (params : OpenIMPageParams, operationID ?: string | null) => Promise<OpenIMFriendListResult | null>
 export declare const updateFriends : (params : OpenIMUpdateFriendsParams, operationID ?: string | null) => Promise<string>
-export declare const checkFriend : (data : Array<string>, operationID ?: string | null) => Promise<Array<boolean> | null>
+export declare const checkFriend : (data : Array<string>, operationID ?: string | null) => Promise<OpenIMCheckFriendResult | null>
 export declare const acceptFriendApplication : (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) => Promise<string>
 export declare const refuseFriendApplication : (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) => Promise<string>
 export declare const deleteFriend : (userID : string, operationID ?: string | null) => Promise<string>
@@ -1224,7 +1232,6 @@ export declare const getGroupApplicationListAsRecipient : (params ?: OpenIMAppli
 export declare const getGroupApplicationUnhandledCount : (params : OpenIMPageParams, operationID ?: string | null) => Promise<number | null>
 export declare const acceptGroupApplication : (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) => Promise<string>
 export declare const refuseGroupApplication : (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) => Promise<string>
-export declare const getGroupMemberOwnerAndAdmin : (groupID : string, operationID ?: string | null) => Promise<OpenIMGroupMemberListResult | null>
 export declare const findMessageList : (params : Array<OpenIMFindMessageParams>, operationID ?: string | null) => Promise<OpenIMFindMessageResult | null>
 export declare const updateFcmToken : (params : OpenIMUpdateFcmTokenParams, operationID ?: string | null) => Promise<string>
 export declare const subscribeUsersStatus : (data : Array<string>, operationID ?: string | null) => Promise<string>
