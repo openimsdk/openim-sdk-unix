@@ -274,7 +274,6 @@ export const OpenIMMessageStatusSucceed : OpenIMMessageStatus = 2
 export const OpenIMMessageStatusFailed : OpenIMMessageStatus = 3
 export const OpenIMMessageStatusDeleted : OpenIMMessageStatus = 4
 export const OpenIMMessageStatusFiltered : OpenIMMessageStatus = 5
-
 export const OpenIMPlatformIOS : OpenIMPlatform = 1
 export const OpenIMPlatformAndroid : OpenIMPlatform = 2
 export const OpenIMPlatformWindows : OpenIMPlatform = 3
@@ -286,7 +285,6 @@ export const OpenIMPlatformAndroidPad : OpenIMPlatform = 8
 export const OpenIMPlatformIPad : OpenIMPlatform = 9
 export const OpenIMPlatformAdmin : OpenIMPlatform = 10
 export const OpenIMPlatformHarmony : OpenIMPlatform = 11
-
 export const OpenIMLogLevelPanic : OpenIMLogLevel = 0
 export const OpenIMLogLevelFatal : OpenIMLogLevel = 1
 export const OpenIMLogLevelError : OpenIMLogLevel = 2
@@ -294,7 +292,6 @@ export const OpenIMLogLevelWarn : OpenIMLogLevel = 3
 export const OpenIMLogLevelInfo : OpenIMLogLevel = 4
 export const OpenIMLogLevelDebug : OpenIMLogLevel = 5
 export const OpenIMLogLevelVerbose : OpenIMLogLevel = 6
-
 export const OpenIMMessageTypeText : OpenIMMessageType = 101
 export const OpenIMMessageTypePicture : OpenIMMessageType = 102
 export const OpenIMMessageTypeVoice : OpenIMMessageType = 103
@@ -373,21 +370,20 @@ export const OpenIMMessageTypeHasGroupReadReceipt : OpenIMMessageType = 2300
 export const OpenIMMessageTypePinned : OpenIMMessageType = 2400
 export const OpenIMMessageTypePinnedRead : OpenIMMessageType = 2401
 export const OpenIMMessageTypeStreamNotification : OpenIMMessageType = 2500
-
 export const OpenIMSessionTypeSingle : OpenIMSessionType = 1
 export const OpenIMSessionTypeWriteGroup : OpenIMSessionType = 2
 export const OpenIMSessionTypeGroup : OpenIMSessionType = 3
 export const OpenIMSessionTypeNotification : OpenIMSessionType = 4
-
 export const OpenIMLoginStatusLogout : OpenIMLoginStatus = 1
 export const OpenIMLoginStatusLogging : OpenIMLoginStatus = 2
 export const OpenIMLoginStatusLogged : OpenIMLoginStatus = 3
+
 
 function optionalString(value ?: string | null) : string { return value != null ? value as string : '' }
 function optionalBoolean(value ?: boolean | null) : boolean { return value != null ? value as boolean : false }
 function optionalNumber(value ?: number | null) : number { return value != null ? value as number : 0 }
 
-function requireLoggedInForCreate(apiName : string, operationID : string, reject : (reason : any | null) => void) : boolean {
+function requireLoggedInForCreate(apiName : string, operationID : string, reject : (reason : any | null) => void) : boolean { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-ANY UTS-COMPAT-CODEC-001
   const loginStatus = parseNativeLoginStatus(NativeOpenIMSDK.getLoginStatus(operationID))
   if (loginStatus != 3) {
     rejectNativeError(reject, -1, apiName + ' requires logged in status')
@@ -403,7 +399,7 @@ function normalizeIOSLocalMediaPath(path : string) : string {
   return path
 }
 
-function rejectUnsupportedIOSLocalMediaPath(apiName : string, path : string, reject : (reason : any | null) => void) : boolean {
+function rejectUnsupportedIOSLocalMediaPath(apiName : string, path : string, reject : (reason : any | null) => void) : boolean { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-ANY UTS-COMPAT-CODEC-001
   if (path.indexOf('unifile://') == 0 || path.indexOf('unifile:') == 0) {
     rejectNativeError(reject, -1, apiName + ' requires a POSIX local path')
     return true
@@ -454,18 +450,9 @@ function parseNativeBooleanValue(data : string) : boolean { return data == 'true
 function parseNativeStringListValue(data : string) : Array<string> | null {
   const trimmed = data.trim()
   if (trimmed.length < 2) { return null }
-  const result : Array<string> = []
-  const body = trimmed.substring(1, trimmed.length - 1)
-  if (body.length == 0) { return result }
-  const items = body.split(',')
-  items.forEach((item : string) => {
-    let value = item.trim()
-    if (value.length >= 2 && value.substring(0, 1) == '"' && value.substring(value.length - 1, value.length) == '"') {
-      value = value.substring(1, value.length - 1)
-    }
-    result.push(value)
-  })
-  return result
+  const parsed = JSON.parseArray<string>(trimmed)
+  if (parsed != null) { return parsed }
+  return null
 }
 function resolveNumberNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<number | null> { return new Promise<number | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeNumberValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveBooleanNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeBooleanValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
@@ -485,7 +472,7 @@ function resolveGroupMemberListNative(invoke : (resolve : (data : string) => voi
 function resolveGroupApplicationListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupApplicationListResult | null> { return new Promise<OpenIMGroupApplicationListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeGroupApplicationListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveMessageListNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFindMessageResult | null> { return new Promise<OpenIMFindMessageResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeMessageListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 function resolveAdvancedHistoryNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return new Promise<OpenIMAdvancedHistoryMessageListResult | null>((resolve, reject) => { invoke((data : string) => { resolve(parseNativeAdvancedHistoryMessageList(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
-function resolveSendMessageData(data : string, apiName : string, resolve : (value : OpenIMMessageItem) => void, reject : (reason : any | null) => void) {
+function resolveSendMessageData(data : string, apiName : string, resolve : (value : OpenIMMessageItem) => void, reject : (reason : any | null) => void) { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-ANY UTS-COMPAT-CODEC-001
   try {
     const message = parseNativeMessage(data)
     if (message != null) {
@@ -499,102 +486,151 @@ function resolveSendMessageData(data : string, apiName : string, resolve : (valu
 }
 
 export function offEvent(eventName : OpenIMSDKEventName) { offSDKEventName(eventName) }
+
 @UTSJS.keepAlive
 export function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onConnectingEvent(handler) }
+
 @UTSJS.keepAlive
 export function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onConnectSuccessEvent(handler) }
+
 @UTSJS.keepAlive
 export function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe { return onConnectFailedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onKickedOfflineEvent(handler) }
+
 @UTSJS.keepAlive
 export function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe { return onUserTokenExpiredEvent(handler) }
+
 @UTSJS.keepAlive
 export function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe { return onUserTokenInvalidEvent(handler) }
+
 @UTSJS.keepAlive
 export function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onRecvNewMessageEvent(handler) }
+
 @UTSJS.keepAlive
 export function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onRecvOfflineNewMessageEvent(handler) }
+
 @UTSJS.keepAlive
 export function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onRecvOnlineOnlyMessageEvent(handler) }
+
 @UTSJS.keepAlive
 export function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe { return onMsgDeletedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKUnsubscribe { return onNewRecvMessageRevokedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKUnsubscribe { return onRecvC2CReadReceiptEvent(handler) }
+
 @UTSJS.keepAlive
 export function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe { return onRecvNewMessagesEvent(handler) }
+
 @UTSJS.keepAlive
 export function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe { return onRecvOfflineNewMessagesEvent(handler) }
+
 @UTSJS.keepAlive
 export function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe { return onConversationChangedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKUnsubscribe { return onConversationUserInputStatusChangedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe { return onNewConversationEvent(handler) }
+
 @UTSJS.keepAlive
 export function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerFailedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerFinishEvent(handler) }
+
 @UTSJS.keepAlive
 export function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerProgressEvent(handler) }
+
 @UTSJS.keepAlive
 export function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe { return onSyncServerStartEvent(handler) }
+
 @UTSJS.keepAlive
 export function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKUnsubscribe { return onSendMessageProgressEvent(handler) }
+
 @UTSJS.keepAlive
 export function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKUnsubscribe { return onUploadFileProgressEvent(handler) }
+
 @UTSJS.keepAlive
 export function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKUnsubscribe { return onUploadLogsProgressEvent(handler) }
+
 @UTSJS.keepAlive
 export function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe { return onTotalUnreadMessageCountChangedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKUnsubscribe { return onRecvCustomBusinessMessageEvent(handler) }
+
 @UTSJS.keepAlive
 export function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe { return onBlackAddedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe { return onBlackDeletedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onFriendAddedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationAcceptedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationAddedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationDeletedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe { return onFriendApplicationRejectedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onFriendDeletedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe { return onFriendInfoChangedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationAcceptedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationAddedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationDeletedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe { return onGroupApplicationRejectedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onGroupDismissedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onGroupInfoChangedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onGroupMemberAddedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onGroupMemberDeletedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe { return onGroupMemberInfoChangedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onJoinedGroupAddedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe { return onJoinedGroupDeletedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe { return onSelfInfoUpdatedEvent(handler) }
+
 @UTSJS.keepAlive
 export function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe { return onUserStatusChangedEvent(handler) }
+
 
 export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); resolve(NativeOpenIMSDK.initSDK(normalizeOperationID(operationID), normalizeInitConfig(config)) == 'true') }) }
 export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.login(normalizeOperationID(operationID), userID, token, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
@@ -604,7 +640,6 @@ export const getLoginUserID = function () : Promise<string> { return new Promise
 export const getSdkVersion = function () : string { return NativeOpenIMSDK.getSdkVersion() }
 export const getOpenIMDataPath = function () : string { return getOpenIMDataPathNative() }
 export const unInitSDK = function (operationID ?: string | null) { NativeOpenIMSDK.unInitSDK(normalizeOperationID(operationID)) }
-
 export const getAllConversationList = function (operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getAllConversationList(normalizeOperationID(operationID), resolve, reject) }) }
 export const getOneConversation = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<OpenIMConversationItem | null> { return resolveConversationObjectNative((resolve, reject) => { NativeOpenIMSDK.getOneConversation(normalizeOperationID(operationID), params.sessionType, params.sourceID, resolve, reject) }) }
 export const getAdvancedHistoryMessageList = function (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return resolveAdvancedHistoryNative((resolve, reject) => { NativeOpenIMSDK.getAdvancedHistoryMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }
@@ -685,7 +720,6 @@ export const subscribeUsersStatus = function (data : Array<string>, operationID 
 export const unsubscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.unsubscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
 export const getUserStatus = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getUserStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }
 export const getSubscribeUsersStatus = function (operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getSubscribeUsersStatus(normalizeOperationID(operationID), resolve, reject) }) }
-
 export const createTextMessage = function (text : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createTextMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createTextMessage(op, text))) }) }
 export const createImageMessageFromFullPath = function (imageFullPath : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> {
   return new Promise<OpenIMMessageItem | null>((resolve, reject) => {
@@ -734,10 +768,8 @@ export const createForwardMessage = function (message : OpenIMMessageItem, opera
 export const createFaceMessage = function (params : OpenIMCreateFaceMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFaceMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFaceMessage(op, params.index, params.data))) }) }
 export const createLocationMessage = function (params : OpenIMCreateLocationMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createLocationMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createLocationMessage(op, params.descriptionText, params.longitude, params.latitude))) }) }
 export const createCardMessage = function (card : OpenIMCardElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCardMessage(op, stringifyJSON(card)))) }) }
-
 export const sendMessage = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessage(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessage', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
 export const sendMessageNotOss = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessageNotOss(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessageNotOss', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
-
 export const uploadFile = function (params : OpenIMUploadFileParams, operationID ?: string | null) : Promise<OpenIMUploadFileResult | null> {
   return new Promise<OpenIMUploadFileResult | null>((resolve, reject) => {
     NativeOpenIMSDK.uploadFile(normalizeOperationID(operationID), stringifyJSON(params), (data : string) => {

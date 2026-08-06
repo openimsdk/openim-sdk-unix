@@ -1,0 +1,9 @@
+# Private HarmonyOS implementation
+utssdk/app-harmony/
+**/*.har
+
+# Local native overrides; the public plugin uses Maven and CocoaPods.
+utssdk/app-android/libs/
+utssdk/app-ios/Frameworks/
+**/*.aar
+**/*.xcframework/

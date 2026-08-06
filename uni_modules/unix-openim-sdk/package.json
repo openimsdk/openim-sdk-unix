@@ -12,9 +12,9 @@
 ],
   "license": "AGPL-3.0-only",
   "engines": {
-    "HBuilderX": ">=5.7.0",
+    "HBuilderX": ">=5.23.2026080313-alpha",
     "uni-app": "",
-    "uni-app-x": "^5.07"
+    "uni-app-x": "^5.23"
   },
   "uni_modules": {
     "platforms": {
@@ -34,10 +34,7 @@
                     "extVersion": "0.1.0",
                     "minVersion": "21"
                 },
-                "harmony": {
-                    "extVersion": "0.1.1",
-                    "minVersion": "20"
-                },
+                "harmony": "x",
                 "ios": {
                     "extVersion": "0.1.0",
                     "minVersion": "12"

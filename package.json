@@ -1,0 +1,30 @@
+{
+  "name": "openim-sdk-unix-workspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bootstrap": "tsx tooling/src/cli.ts generate",
+    "generate": "tsx tooling/src/cli.ts generate",
+    "contract:import": "tsx tooling/src/cli.ts contract:import",
+    "verify": "tsx tooling/src/cli.ts verify",
+    "verify:surface": "tsx tooling/src/cli.ts verify:surface",
+    "verify:policy": "tsx tooling/src/cli.ts verify:policy",
+    "native:import": "tsx tooling/src/cli.ts native:import",
+    "native:verify": "tsx tooling/src/cli.ts native:verify",
+    "enterprise:import": "tsx tooling/src/cli.ts enterprise:import",
+    "enterprise:verify": "tsx tooling/src/cli.ts enterprise:verify",
+    "enterprise:bootstrap": "tsx tooling/src/cli.ts enterprise:bootstrap",
+    "enterprise:monomorphize-harmony": "tsx tooling/src/cli.ts enterprise:monomorphize-harmony",
+    "compile:public": "tsx tooling/src/cli.ts compile --platform all",
+    "compile:android": "tsx tooling/src/cli.ts compile --platform android",
+    "compile:ios": "tsx tooling/src/cli.ts compile --platform ios",
+    "compile:private": "tsx tooling/src/cli.ts compile-private",
+    "test:tooling": "tsx --test tooling/tests/**/*.test.ts",
+    "typecheck:tooling": "tsc -p tooling/tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

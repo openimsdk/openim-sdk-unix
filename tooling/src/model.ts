@@ -1,0 +1,117 @@
+export type Platform = 'android' | 'ios' | 'harmony'
+
+export type CompletionMode = 'promise' | 'sync' | 'void'
+
+export interface SourceByPlatform {
+  android: string
+  ios: string
+  harmony?: string
+}
+
+export interface NativeBinding {
+  kind: 'native' | 'facade-alias' | 'event' | 'none' | 'dynamic-invoke' | 'unsupported'
+  symbol: string
+}
+
+export interface ContractType {
+  id: number
+  name: string
+  declaration: string
+  signatureHash: string
+}
+
+export interface ContractConstant {
+  id: number
+  name: string
+  type: string
+  value: string
+  declaration: SourceByPlatform
+  signatureHash: string
+}
+
+export interface ContractCallable {
+  id: number
+  name: string
+  signature: string
+  completion: CompletionMode
+  responseCodec: string
+  errorPolicy: string
+  rawString: boolean
+  role: 'operation' | 'event-subscription' | 'event-control'
+  declaration: SourceByPlatform
+  binding: Record<Platform, NativeBinding | undefined>
+  signatureHash: string
+}
+
+export interface ContractEvent {
+  id: number
+  name: string
+  callable: string
+  handlerType: string
+  dispatchArguments: SourceByPlatform
+  rawPayload: boolean
+  binding: Record<Platform, 'bound' | 'projected' | 'unsupported-by-native-abi' | 'not-in-edition'>
+  compatibilityRule?: string
+  signatureHash: string
+}
+
+export interface ContractDocument {
+  schemaVersion: 1
+  edition: 'public' | 'enterprise'
+  generatedFrom: {
+    repository: string
+    revision: string
+    interfacePath: string
+    facadePaths: SourceByPlatform
+  }
+  expected: {
+    constants: number
+    types: number
+    callables: number
+    events: number
+  }
+  constants: ContractConstant[]
+  types: ContractType[]
+  callables: ContractCallable[]
+  events: ContractEvent[]
+}
+
+export interface SurfaceSnapshot {
+  schemaVersion: 1
+  edition: 'public' | 'enterprise'
+  counts: ContractDocument['expected']
+  constants: Array<{ id: number; name: string; type: string; value: string; signatureHash: string }>
+  types: Array<{ id: number; name: string; signatureHash: string }>
+  callables: Array<{ id: number; name: string; signature: string; signatureHash: string }>
+  events: Array<{ id: number; name: string; callable: string; handlerType: string; signatureHash: string }>
+  contractHash: string
+}
+
+export interface EnterpriseTypeExtension {
+  id: number
+  target: string
+  kind: 'optional-object-members' | 'string-union-members'
+  addedMembers: string[]
+  privateSignatureHash: string
+}
+
+export interface EnterpriseDeltaDocument {
+  schemaVersion: 1
+  edition: 'enterprise-delta'
+  generatedFrom: {
+    repository: string
+    revision: string
+    publicBaseRevision: string
+    publicBaseContractHash: string
+    interfacePath: string
+    facadePaths: SourceByPlatform
+  }
+  expectedTotal: ContractDocument['expected']
+  expectedDelta: ContractDocument['expected'] & { typeExtensions: number }
+  approvedBaseCallableOverrides: Array<{ name: string; baseSignature: string; enterpriseSignature: string; reason: string }>
+  constants: ContractConstant[]
+  types: ContractType[]
+  typeExtensions: EnterpriseTypeExtension[]
+  callables: ContractCallable[]
+  events: ContractEvent[]
+}

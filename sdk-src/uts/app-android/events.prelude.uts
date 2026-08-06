@@ -1,0 +1,58 @@
+import { NativeOpenIMSDK } from 'uts.sdk.modules.unixOpenimSdk'
+import { UTSAndroid } from 'io.dcloud.uts' // UTS-COMPAT-JSON-001
+import {
+  OpenIMBlackUserEventHandler,
+  OpenIMBooleanEventHandler,
+  OpenIMConversationInputStatusEventHandler,
+  OpenIMConversationListEventHandler,
+  OpenIMErrorEventHandler,
+  OpenIMFriendApplicationEventHandler,
+  OpenIMFriendEventHandler,
+  OpenIMGroupApplicationEventHandler,
+  OpenIMGroupEventHandler,
+  OpenIMGroupMemberEventHandler,
+  OpenIMMessageEventHandler,
+  OpenIMMessageListEventHandler,
+  OpenIMMessageReceiptListEventHandler,
+  OpenIMMessageRevokedEventHandler,
+  OpenIMNumberEventHandler,
+  OpenIMSendMessageProgressEvent,
+  OpenIMSendMessageProgressEventHandler,
+  OpenIMSDKEvent,
+  OpenIMSDKEventHandlerSubscription,
+  OpenIMSDKEventName,
+  OpenIMSDKEventSubscription,
+  OpenIMSDKUnsubscribe,
+  OpenIMSDKRawEventHandler,
+  OpenIMStringEventHandler,
+  OpenIMUploadFileProgressEventHandler,
+  OpenIMUploadLogsProgressEventHandler,
+  OpenIMUserEventHandler,
+  OpenIMUserStatusListEventHandler,
+  OpenIMVoidEventHandler
+} from '../interface.uts'
+import {
+  parseNativeBlackUserObject,
+  parseNativeConversationEventList,
+  parseNativeConversationInputStatus,
+  parseNativeFriendApplicationObject,
+  parseNativeFriendObject,
+  parseNativeGroupApplicationObject,
+  parseNativeGroupMemberObject,
+  parseNativeGroupObject,
+  parseNativeMessage,
+  parseNativeMessageEventList,
+  parseNativeMessageReceiptList,
+  parseNativeMessageRevoked,
+  parseNativeUploadFileProgressEvent,
+  parseNativeUploadLogsProgressEvent,
+  parseNativeUserObject,
+  parseNativeUserStatusEventList
+} from './native-call.uts'
+function readBooleanPayload(payload : string) : boolean { return payload == 'true' }
+function readNumberPayload(payload : string) : number { return parseFloat(payload) }
+function parseSendMessageProgress(payload : string) : OpenIMSendMessageProgressEvent | null {
+  const parsed = JSON.parseObject<OpenIMSendMessageProgressEvent>(payload)
+  if (parsed != null) { return parsed }
+  return null
+}

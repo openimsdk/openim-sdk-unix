@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "differences": [
+    {
+      "id": "BEHAVIOR-ABI-LISTENERS",
+      "status": "approved",
+      "editions": ["public", "enterprise"],
+      "description": "Listener implementations conform to the locked native SDK ABI; native-only callbacks remain edition-scoped."
+    },
+    {
+      "id": "BEHAVIOR-CALLBACK-MAIN",
+      "status": "approved",
+      "editions": ["public", "enterprise"],
+      "description": "Native callbacks are delivered to UTS on the platform main thread."
+    },
+    {
+      "id": "BEHAVIOR-LIFECYCLE-TEARDOWN",
+      "status": "approved",
+      "editions": ["public", "enterprise"],
+      "description": "Callbacks settle exactly once; unInit rejects in-flight operations with the existing rejection shape and code -1, invalidates the session epoch, retires adapter listener references, lets Core unInit release native listener state, and drops late callbacks/events."
+    },
+    {
+      "id": "BEHAVIOR-JSON-CODECS",
+      "status": "approved",
+      "editions": ["public", "enterprise"],
+      "description": "String arrays and progress payloads use concrete JSON parsers, fixing comma splitting, escaped strings, and substring scanning errors."
+    },
+    {
+      "id": "BEHAVIOR-HARMONY-UNSUPPORTED-EVENTS",
+      "status": "approved",
+      "editions": ["enterprise"],
+      "description": "Ten frozen Private events are explicitly unsupported on Harmony because the HAR/native ABI has no corresponding methods or callbacks; they must never be reported as bound."
+    },
+    {
+      "id": "BEHAVIOR-HARMONY-EVENT-BINDING",
+      "status": "approved",
+      "editions": ["enterprise"],
+      "description": "onMessageModified binds EventOnMessageModified rather than EventOnMessageEdited; supported Harmony events bind once per event/epoch and are invalidated before unInit."
+    }
+  ]
+}

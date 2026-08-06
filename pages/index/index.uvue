@@ -480,6 +480,7 @@
 	let cachedClientMsgID = ''
 	let automationAutorunRequested = false
 	let automationAutorunScheduled = false
+	let automationAutorunEvaluated = false
 
 	// Result rendering helpers
 	function setResult(value : string) {
@@ -974,6 +975,7 @@
 	let automationFixedVideoSnapshotFullPath = ''
 	let automationFixedFileFullPath = ''
 	let automationAssetDirFullPath = ''
+	let automationAssetDirFileSystemPath = ''
 	let automationRunLogFilePath = ''
 	let automationRunJSONFilePath = ''
 	let automationRunLogWriteError = ''
@@ -1220,6 +1222,7 @@
 		automationFixedVideoSnapshotFullPath = ''
 		automationFixedFileFullPath = ''
 		automationAssetDirFullPath = ''
+		automationAssetDirFileSystemPath = ''
 		automationRunLogFilePath = ''
 		automationRunJSONFilePath = ''
 		automationRunLogWriteError = ''
@@ -1370,9 +1373,19 @@
 	}
 
 	function unregisterSDKEvents() {
-		sdkEventUnsubscribes.forEach((unsubscribe : OpenIMSDKUnsubscribe) => { unsubscribe() })
+		let unsubscribeIndex : number = 0
+		while (unsubscribeIndex < sdkEventUnsubscribes.length) {
+			const unsubscribe = sdkEventUnsubscribes[unsubscribeIndex]
+			if (unsubscribe != null) { unsubscribe() }
+			unsubscribeIndex = unsubscribeIndex + 1
+		}
 		sdkEventUnsubscribes = []
-		sdkRegisteredEventNames.forEach((eventName : string) => { offEvent(eventName as OpenIMSDKEventName) })
+		let eventNameIndex : number = 0
+		while (eventNameIndex < sdkRegisteredEventNames.length) {
+			const eventName = sdkRegisteredEventNames[eventNameIndex]
+			if (eventName != null) { offEvent(eventName as OpenIMSDKEventName) }
+			eventNameIndex = eventNameIndex + 1
+		}
 		sdkRegisteredEventNames = []
 		sdkEventUnsubscribeNames = []
 	}
@@ -1551,7 +1564,7 @@
 
 	function initializeAutomationLogFiles() {
 		try {
-			const baseDir = joinAutomationPath(getOpenIMDataPath(), 'openim-automation-results')
+			const baseDir = joinAutomationPath(uni.env.USER_DATA_PATH, 'openim-automation-results')
 			ensureAutomationDirectory(baseDir)
 			const basePath = joinAutomationPath(baseDir, 'openim-automation-' + new Date().getTime().toString())
 			automationRunLogFilePath = basePath + '.log'
@@ -1621,35 +1634,44 @@
 	}
 
 	function prepareAutomationLocalFiles() {
-		const basePath = getOpenIMDataPath()
-		if (basePath.length == 0) {
+		const nativeBasePath = getOpenIMDataPath()
+		if (nativeBasePath.length == 0) {
 			throw new Error('getOpenIMDataPath returned empty path')
 		}
-		const dirPath = joinAutomationPath(basePath, 'openim-automation-assets')
-		ensureAutomationDirectory(dirPath)
-		automationAssetDirFullPath = dirPath
-		automationFixedImageFullPath = joinAutomationPath(dirPath, 'image.jpg')
-		automationFixedSoundFullPath = joinAutomationPath(dirPath, 'sound.wav')
-		automationFixedVideoFullPath = joinAutomationPath(dirPath, 'video.mp4')
-		automationFixedVideoSnapshotFullPath = joinAutomationPath(dirPath, 'video-snapshot.jpg')
-		automationFixedFileFullPath = joinAutomationPath(dirPath, demoFixedFileName)
+			const fileSystemBasePath = uni.env.USER_DATA_PATH
+			const fileSystemDirPath = joinAutomationPath(fileSystemBasePath, 'openim-automation-assets')
+		const nativeDirPath = joinAutomationPath(nativeBasePath, 'openim-automation-assets')
+		ensureAutomationDirectory(fileSystemDirPath)
+		automationAssetDirFileSystemPath = fileSystemDirPath
+		automationAssetDirFullPath = nativeDirPath
+		const imageFileSystemPath = joinAutomationPath(fileSystemDirPath, 'image.jpg')
+		const soundFileSystemPath = joinAutomationPath(fileSystemDirPath, 'sound.wav')
+		const videoFileSystemPath = joinAutomationPath(fileSystemDirPath, 'video.mp4')
+		const videoSnapshotFileSystemPath = joinAutomationPath(fileSystemDirPath, 'video-snapshot.jpg')
+		const fileFileSystemPath = joinAutomationPath(fileSystemDirPath, demoFixedFileName)
+		automationFixedImageFullPath = joinAutomationPath(nativeDirPath, 'image.jpg')
+		automationFixedSoundFullPath = joinAutomationPath(nativeDirPath, 'sound.wav')
+		automationFixedVideoFullPath = joinAutomationPath(nativeDirPath, 'video.mp4')
+		automationFixedVideoSnapshotFullPath = joinAutomationPath(nativeDirPath, 'video-snapshot.jpg')
+		automationFixedFileFullPath = joinAutomationPath(nativeDirPath, demoFixedFileName)
 		const fileManager = uni.getFileSystemManager()
 		const jpegFixtureBase64 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAIAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDxSiiivyo/vs//2Q=='
-		fileManager.writeFileSync(automationFixedImageFullPath, jpegFixtureBase64, 'base64')
-		fileManager.writeFileSync(automationFixedVideoSnapshotFullPath, jpegFixtureBase64, 'base64')
-		requireAutomationBase64FileContent(automationFixedImageFullPath, 'image fixture')
-		requireAutomationBase64FileContent(automationFixedVideoSnapshotFullPath, 'video snapshot fixture')
-		fileManager.writeFileSync(automationFixedSoundFullPath, 'UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=', 'base64')
-		fileManager.writeFileSync(automationFixedVideoFullPath, 'AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgAAAAFtZGF0AAAAAAAAAdkAAAA7BgUyR1ZK3FxMQz+U78URPNFDqAEAAAMAAQMAAAMAAQIAAeYACwAAAwAAAwAAAwEsDAOJEQQN/////4AAAABgJbggH/OE2wf7G6BilVOQltbo87Dd82hFMEqlLT5a6/u56Md6qBSSFXchCwiC2bWQr9ABEIDyDZ1jR1RfLkt6R7XKQrBx+Fo80jnWO4waIc7rbWiiiEGYIfV4BejiXasgAAAAJSHhEF/Tawpc9JZ8Q8Al1sG1AlVA7e+JpX6CnpRUWKQBxW9PQmgAAAAgIaiChL/mWdziwCDB9Vgx2a8xlDHZgm431pzMTTLf44AAAAAbAajBj//uQ7TOISLcqJiC22ewgGwpH2NuDf6mAAAAEQGow4v/TNJHAA6a/pUQ9OyoAAAAMiHjIaIif5YSgvVi5onPAv/wCXNRyXgXbQiGYChEyN53/+b+5Si2xGTFumonRcG4YZIcAAAAFyGpBoRf/thmYTbpmnqETikwEWupnHi4AAAAGwGpRYv/7LNplEJFw+xvN+nn7Eiocx80ScRnXgAAABEBqUeL/0zSRwAOmv6VEPTsqAAAABwh5SWiIv9gdB4ag/X0Achy5kcD/rjnypPfzqtiAAADTG1vb3YAAABsbXZoZAAAAADmbleb5m5XnAAAAlgAAAJYAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAALYdHJhawAAAFx0a2hkAAAAAeZuV5zmblecAAAAAQAAAAAAAAJYAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAQAAAAEAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAACWAAAAHgAAQAAAAACUG1kaWEAAAAgbWRoZAAAAADmblec5m5XnAAAAlgAAAJYVcQAAAAAADFoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAQ29yZSBNZWRpYSBWaWRlbwAAAAH3bWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAABt3N0YmwAAAChc3RzZAAAAAAAAAABAAAAkWF2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAEAAQAEgAAABIAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY//8AAAAnYXZjQwFkAAv/4QAMJ2QAC6xWUMN4FmClAQAEKO48sP34+AAAAAAKZmllbAEAAAAACmNocm0AAAAAABhzdHRzAAAAAAAAAAEAAAAKAAAAPAAAAGBjdHRzAAAAAAAAAAoAAAABAAAAeAAAAAEAAAEsAAAAAQAAAHgAAAABAAAAAAAAAAEAAAA8AAAAAQAAASwAAAABAAAAeAAAAAEAAAAAAAAAAQAAADwAAAABAAAAeAAAABRzdHNzAAAAAAAAAAEAAAABAAAAFnNkdHAAAAAAIBAQGBgQEBgYEAAAABxzdHNjAAAAAAAAAAEAAAABAAAACgAAAAEAAAA8c3RzegAAAAAAAAAAAAAACgAAAKMAAAApAAAAJAAAAB8AAAAVAAAANgAAABsAAAAfAAAAFQAAACAAAAAUc3RjbwAAAAAAAAABAAAALA==', 'base64')
-		fileManager.writeFileSync(automationFixedFileFullPath, '%PDF-1.1\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n', 'utf-8')
-		recordAutomationStep('setup', 'prepareLocalFiles', true, dirPath)
+		fileManager.writeFileSync(imageFileSystemPath, jpegFixtureBase64, 'base64')
+		fileManager.writeFileSync(videoSnapshotFileSystemPath, jpegFixtureBase64, 'base64')
+		requireAutomationBase64FileContent(imageFileSystemPath, 'image fixture')
+		requireAutomationBase64FileContent(videoSnapshotFileSystemPath, 'video snapshot fixture')
+		fileManager.writeFileSync(soundFileSystemPath, 'UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=', 'base64')
+		fileManager.writeFileSync(videoFileSystemPath, 'AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgAAAAFtZGF0AAAAAAAAAdkAAAA7BgUyR1ZK3FxMQz+U78URPNFDqAEAAAMAAQMAAAMAAQIAAeYACwAAAwAAAwAAAwEsDAOJEQQN/////4AAAABgJbggH/OE2wf7G6BilVOQltbo87Dd82hFMEqlLT5a6/u56Md6qBSSFXchCwiC2bWQr9ABEIDyDZ1jR1RfLkt6R7XKQrBx+Fo80jnWO4waIc7rbWiiiEGYIfV4BejiXasgAAAAJSHhEF/Tawpc9JZ8Q8Al1sG1AlVA7e+JpX6CnpRUWKQBxW9PQmgAAAAgIaiChL/mWdziwCDB9Vgx2a8xlDHZgm431pzMTTLf44AAAAAbAajBj//uQ7TOISLcqJiC22ewgGwpH2NuDf6mAAAAEQGow4v/TNJHAA6a/pUQ9OyoAAAAMiHjIaIif5YSgvVi5onPAv/wCXNRyXgXbQiGYChEyN53/+b+5Si2xGTFumonRcG4YZIcAAAAFyGpBoRf/thmYTbpmnqETikwEWupnHi4AAAAGwGpRYv/7LNplEJFw+xvN+nn7Eiocx80ScRnXgAAABEBqUeL/0zSRwAOmv6VEPTsqAAAABwh5SWiIv9gdB4ag/X0Achy5kcD/rjnypPfzqtiAAADTG1vb3YAAABsbXZoZAAAAADmbleb5m5XnAAAAlgAAAJYAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAALYdHJhawAAAFx0a2hkAAAAAeZuV5zmblecAAAAAQAAAAAAAAJYAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAQAAAAEAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAACWAAAAHgAAQAAAAACUG1kaWEAAAAgbWRoZAAAAADmblec5m5XnAAAAlgAAAJYVcQAAAAAADFoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAQ29yZSBNZWRpYSBWaWRlbwAAAAH3bWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAABt3N0YmwAAAChc3RzZAAAAAAAAAABAAAAkWF2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAEAAQAEgAAABIAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY//8AAAAnYXZjQwFkAAv/4QAMJ2QAC6xWUMN4FmClAQAEKO48sP34+AAAAAAKZmllbAEAAAAACmNocm0AAAAAABhzdHRzAAAAAAAAAAEAAAAKAAAAPAAAAGBjdHRzAAAAAAAAAAoAAAABAAAAeAAAAAEAAAEsAAAAAQAAAHgAAAABAAAAAAAAAAEAAAA8AAAAAQAAASwAAAABAAAAeAAAAAEAAAAAAAAAAQAAADwAAAABAAAAeAAAABRzdHNzAAAAAAAAAAEAAAABAAAAFnNkdHAAAAAAIBAQGBgQEBgYEAAAABxzdHNjAAAAAAAAAAEAAAABAAAACgAAAAEAAAA8c3RzegAAAAAAAAAAAAAACgAAAKMAAAApAAAAJAAAAB8AAAAVAAAANgAAABsAAAAfAAAAFQAAACAAAAAUc3RjbwAAAAAAAAABAAAALA==', 'base64')
+		fileManager.writeFileSync(fileFileSystemPath, '%PDF-1.1\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n', 'utf-8')
+		recordAutomationStep('setup', 'prepareLocalFiles', true, nativeDirPath)
 	}
 
 	function writeAutomationUniqueUploadFile(fileName : string, marker : string) : string {
-		if (automationAssetDirFullPath.length == 0) {
-			throw new Error('automationAssetDirFullPath is empty')
+		if (automationAssetDirFullPath.length == 0 || automationAssetDirFileSystemPath.length == 0) {
+			throw new Error('automation asset directory is empty')
 		}
-		const filePath = joinAutomationPath(automationAssetDirFullPath, fileName)
+		const fileSystemPath = joinAutomationPath(automationAssetDirFileSystemPath, fileName)
+		const nativeFilePath = joinAutomationPath(automationAssetDirFullPath, fileName)
 		let fileText = ''
 		let index = 0
 		const block = 'unixsdk automation unique upload fixture ' + marker + ' 0123456789 abcdefghijklmnopqrstuvwxyz\n'
@@ -1657,8 +1679,8 @@
 			fileText = fileText + block
 			index = index + 1
 		}
-		uni.getFileSystemManager().writeFileSync(filePath, fileText, 'utf-8')
-		return filePath
+		uni.getFileSystemManager().writeFileSync(fileSystemPath, fileText, 'utf-8')
+		return nativeFilePath
 	}
 
 	function withAutomationTimeout<T>(promise : Promise<T>, label : string, timeoutMilliseconds : number) : Promise<T> {
@@ -2718,9 +2740,10 @@
 	}
 
 	function scheduleAutomationAutorun() {
-		if (automationAutorunScheduled) {
+		if (automationAutorunScheduled || automationAutorunEvaluated) {
 			return
 		}
+		automationAutorunEvaluated = true
 		if (automationAutorunRequested == false) {
 			const config = readAutomationConfig()
 			if (config != null) {

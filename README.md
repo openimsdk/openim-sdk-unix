@@ -24,8 +24,8 @@ OpenIM 服务端、REST API 和 SDK 文档请访问 [https://docs.openim.io/](ht
 
 本仓库当前在本机主要使用以下环境运行和验证：
 
-- HBuilderX：5.14 alpha
-- 平台：App iOS
+- HBuilderX：5.23.2026080313-alpha
+- 平台：App Android、App iOS
 - 编译模式：uni-app x 蒸汽模式
 
 开源版本目标仍为 App Android 和 App iOS。Android 侧依赖自定义基座或正式包验证原生 SDK 能力；HarmonyOS 端能力请使用商业版。
@@ -174,7 +174,31 @@ demo 工程不内置媒体测试素材。在 `pages/index/index.uvue` 中运行�
 pages/index/index.uvue
 ```
 
-使用 HBuilderX 5.7.0 或更高版本打开项目，替换 demo 中的 OpenIM 服务地址和账号占位值，然后使用自定义基座或正式包验证原生 SDK 行为。
+使用精确锁定的 `HBuilderX 5.23.2026080313-alpha` 打开项目，替换 demo 中的 OpenIM 服务地址和账号占位值，然后使用自定义基座或正式包验证原生 SDK 行为。其他 HBuilderX 构建只能用于诊断，不能作为本仓库的发布认证结果。
+
+### 自动化 smoke 测试
+
+可以直接从本地 OpenIM 服务创建两名临时用户，并获取 Android/iOS token：
+
+```bash
+OPENIM_API_BASE=http://127.0.0.1:10002 \
+OPENIM_WS_BASE=ws://127.0.0.1:10001 \
+PLATFORM_IDS=1,2 \
+node scripts/register-openim-test-accounts.mjs
+```
+
+脚本只调用 OpenIM 的 admin token、`user_register`、`get_user_token` 和 `parse_token` 接口，不依赖 Chat。测试默认每次创建新用户；设置 `OPENIM_AUTOMATION_REUSE=1` 才复用本地忽略文件 `.openim-test-accounts.json`。
+
+uni-automator 使用 `uni.connectSocket` 连接测试宿主，因此 Android 和 iOS 自定义基座都必须包含 `uni-websocket`。本项目已在 `manifest.json` 中显式声明该模块；修改模块配置后必须重新制作自定义基座。受控测试入口会先检查基座内容，避免 HBuilderX/Jest 静默等待：
+
+```bash
+node scripts/run-openim-automation.mjs android --device-id emulator-5554
+node scripts/run-openim-automation.mjs ios --device-id <simulator-uuid>
+```
+
+受控入口默认按 Vapor bytecode 模式运行，基座必须同时是 Vapor runtime 并包含 `uni-websocket`。仅在排查旧经典渲染基座时可以显式设置 `OPENIM_TEST_VAPOR=false`；该结果属于诊断证据，不能替代 Vapor 发布认证。正式 Jest 流程还要求 `static/openim-test-config.json` 不启用 autorun，避免初始页和 Jest 重复启动两套流程。
+
+测试会把账号配置临时注入 storage，执行 `pages/index/index.uvue` 的 API smoke 流程，并在 `test-results/openim-automation/` 保存 JSON、日志和截图。无论成功或失败，注入的 storage 都会清理。受控入口同时提供启动超时、总超时、心跳和进程组清理，避免残留 Jest 占用 9520/9521 端口。
 
 ## 社区 :busts_in_silhouette:
 

@@ -1,0 +1,230 @@
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import type { ContractCallable, ContractDocument, ContractEvent, Platform, SurfaceSnapshot } from './model.js'
+import { INDEX_MARKERS } from './import-contract.js'
+import { sha256 } from './source.js'
+
+export interface GeneratedOutput {
+  path: string
+  content: string
+}
+
+function readContract(root: string): ContractDocument {
+  return JSON.parse(readFileSync(join(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
+}
+
+function platformDeclaration(callable: ContractCallable, platform: Platform): string {
+  const declaration = callable.declaration[platform]
+  if (!declaration) throw new Error(`Missing ${platform} declaration for ${callable.name}`)
+  if (callable.role !== 'event-subscription') return declaration
+  if (declaration.includes('@UTSJS.keepAlive')) return declaration
+  return `@UTSJS.keepAlive\n${declaration}`
+}
+
+function generateIndex(root: string, contract: ContractDocument, platform: 'android' | 'ios'): string {
+  const template = readFileSync(join(root, `sdk-src/uts/app-${platform}/index.template.uts`), 'utf8')
+  const constants = contract.constants.map((value) => value.declaration[platform]).join('\n')
+  const eventCallables = contract.callables
+    .filter((value) => value.role !== 'operation')
+    .map((value) => platformDeclaration(value, platform))
+    .join('\n\n')
+  const operations = contract.callables
+    .filter((value) => value.role === 'operation')
+    .map((value) => platformDeclaration(value, platform))
+    .join('\n')
+  return template
+    .replace(INDEX_MARKERS.constants, constants)
+    .replace(INDEX_MARKERS.eventCallables, eventCallables)
+    .replace(INDEX_MARKERS.operations, operations)
+    .replace(/\n{4,}/g, '\n\n\n')
+}
+
+function handlerVariable(event: ContractEvent): string {
+  return `${event.name}Handlers`
+}
+
+function handlerIDVariable(event: ContractEvent): string {
+  return `${event.name}HandlerIDs`
+}
+
+function removeFunction(event: ContractEvent): string {
+  return `remove${event.name.slice(0, 1).toUpperCase()}${event.name.slice(1)}Handler`
+}
+
+function generateEventState(event: ContractEvent): string {
+  return [
+    `let ${handlerVariable(event)} : Array<${event.handlerType}> = []`,
+    `let ${handlerIDVariable(event)} : Array<string> = []`,
+  ].join('\n')
+}
+
+function generateEventRemoval(event: ContractEvent): string {
+  const handlers = handlerVariable(event)
+  const ids = handlerIDVariable(event)
+  const remove = removeFunction(event)
+  return `function ${remove}(subscriptionID : string) {
+  const nextHandlers : Array<${event.handlerType}> = []
+  const nextHandlerIDs : Array<string> = []
+  for (let index : number = 0; index < ${ids}.length; index = index + 1) {
+    const currentID = ${ids}[index]
+    const currentHandler = ${handlers}[index]
+    if (currentID != null && currentHandler != null && currentID != subscriptionID) {
+      nextHandlerIDs.push(currentID)
+      nextHandlers.push(currentHandler)
+    }
+  }
+  ${ids} = nextHandlerIDs
+  ${handlers} = nextHandlers
+}`
+}
+
+function generateEventRegistration(event: ContractEvent): string {
+  const handlers = handlerVariable(event)
+  const ids = handlerIDVariable(event)
+  const remove = removeFunction(event)
+  return `export function ${event.name}Event(handler : ${event.handlerType}) : OpenIMSDKUnsubscribe {
+  ensureNativeEventsBound()
+  const subscriptionID = nextEventHandlerID.toString()
+  nextEventHandlerID = nextEventHandlerID + 1
+  ${ids}.push(subscriptionID)
+  ${handlers}.push(handler)
+  let active : boolean = true
+  return () => {
+    if (active == false) { return }
+    active = false
+    ${remove}(subscriptionID)
+  }
+}`
+}
+
+function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios'): string {
+  const handlers = handlerVariable(event)
+  const args = event.dispatchArguments[platform]
+  if (args === undefined) throw new Error(`Missing ${platform} event projection for ${event.name}`)
+  const snapshot = `${event.name}DispatchSnapshot`
+  const copyIndex = `${event.name}CopyIndex`
+  const dispatchIndex = `${event.name}DispatchIndex`
+  const current = `${event.name}CurrentHandler`
+  const handler = `${event.name}DispatchHandler`
+  return `    case '${event.name}':
+      const ${snapshot} : Array<${event.handlerType}> = []
+      for (let ${copyIndex} : number = 0; ${copyIndex} < ${handlers}.length; ${copyIndex} = ${copyIndex} + 1) {
+        const ${current} = ${handlers}[${copyIndex}]
+        if (${current} != null) { ${snapshot}.push(${current}) }
+      }
+      for (let ${dispatchIndex} : number = 0; ${dispatchIndex} < ${snapshot}.length; ${dispatchIndex} = ${dispatchIndex} + 1) {
+        const ${handler} = ${snapshot}[${dispatchIndex}]
+        if (${handler} != null) {
+          try { ${handler}(${args}) } catch (error) { console.error('[unix-openim-sdk] ${event.name} handler failed', error) }
+        }
+      }
+      break
+`
+}
+
+function generateOffCase(event: ContractEvent): string {
+  return `    case '${event.name}':
+      ${handlerVariable(event)} = []
+      ${handlerIDVariable(event)} = []
+      break
+`
+}
+
+function generateEvents(root: string, contract: ContractDocument, platform: 'android' | 'ios'): string {
+  const prelude = readFileSync(join(root, `sdk-src/uts/app-${platform}/events.prelude.uts`), 'utf8').trim()
+  const state = contract.events.map(generateEventState).join('\n')
+  const removals = contract.events.map(generateEventRemoval).join('\n\n')
+  const registrations = contract.events.map(generateEventRegistration).join('\n\n')
+  const dispatchCases = contract.events.map((event) => generateDispatchCase(event, platform)).join('\n')
+  const offCases = contract.events.map(generateOffCase).join('\n')
+  return `${prelude}
+
+${state}
+let nextEventHandlerID : number = 1
+let nativeEventsBound : boolean = false
+
+function emitSDKEvent(eventName : string, payload : string, errCode : number, errMsg : string) {
+  switch (eventName) {
+${dispatchCases}
+    default:
+      console.error('[unix-openim-sdk] ignored unknown native event: ' + eventName)
+      break
+  }
+}
+
+function bindNativeEvents() {
+  NativeOpenIMSDK.bindNativeEvents((eventName : string, payload : string, errCode : number, errMsg : string) => {
+    emitSDKEvent(eventName, payload, errCode, errMsg)
+  })
+}
+
+export function ensureNativeEventsBound() {
+  if (nativeEventsBound == false) {
+    bindNativeEvents()
+    nativeEventsBound = true
+  }
+}
+
+export function offSDKEventName(eventName : OpenIMSDKEventName) {
+  switch (eventName) {
+${offCases}
+  }
+}
+
+${removals}
+
+${registrations}
+`
+}
+
+export function buildSurfaceSnapshot(contract: ContractDocument): SurfaceSnapshot {
+  const constants = contract.constants.map(({ id, name, type, value, signatureHash }) => ({ id, name, type, value, signatureHash }))
+  const types = contract.types.map(({ id, name, signatureHash }) => ({ id, name, signatureHash }))
+  const callables = contract.callables.map(({ id, name, signature, signatureHash }) => ({ id, name, signature, signatureHash }))
+  const events = contract.events.map(({ id, name, callable, handlerType, signatureHash }) => ({
+    id,
+    name,
+    callable,
+    handlerType,
+    signatureHash,
+  }))
+  const surface = { constants, types, callables, events }
+  return {
+    schemaVersion: 1,
+    edition: contract.edition,
+    counts: contract.expected,
+    ...surface,
+    contractHash: sha256(JSON.stringify(surface)),
+  }
+}
+
+export function buildGeneratedOutputs(root: string): GeneratedOutput[] {
+  const contract = readContract(root)
+  const interfaceSource = `${contract.types.map((value) => value.declaration).join('\n\n')}\n`
+  const snapshot = `${JSON.stringify(buildSurfaceSnapshot(contract), null, 2)}\n`
+  return [
+    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), content: interfaceSource },
+    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/index.uts'), content: generateIndex(root, contract, 'android') },
+    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts'), content: generateIndex(root, contract, 'ios') },
+    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'), content: generateEvents(root, contract, 'android') },
+    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts'), content: generateEvents(root, contract, 'ios') },
+    {
+      path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMDriverRuntime.kt'),
+      content: readFileSync(join(root, 'sdk-src/native/android/OpenIMDriverRuntime.kt'), 'utf8'),
+    },
+    {
+      path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMDriverRuntime.swift'),
+      content: readFileSync(join(root, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8'),
+    },
+    { path: join(root, 'contracts/base/surface.snapshot.json'), content: snapshot },
+  ].map((output) => ({ ...output, content: output.content.endsWith('\n') ? output.content : `${output.content}\n` }))
+}
+
+export function generate(root: string): GeneratedOutput[] {
+  const outputs = buildGeneratedOutputs(root)
+  for (const output of outputs) {
+    mkdirSync(dirname(output.path), { recursive: true })
+    writeFileSync(output.path, output.content)
+  }
+  return outputs
+}

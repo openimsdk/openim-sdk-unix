@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "3422edca94f0178d8151397620e65b26e1665bc1",
+  "android": {
+    "artifactSha256": "a0b9ab0beb9d7c4b851c678f19ea072c7ca6b629aaa14a5e1dc93fc641d3e2e0",
+    "abiSha256": "060e762c004537013a17c9b84aee383d855d2da9a3e7d48176a598dff046e50d",
+    "classes": 19,
+    "declarations": 267
+  },
+  "ios": {
+    "artifactSha256": "f3307833843fd7182bc6485e8ef3391efb9f915ac4f297e79471f48c9db3a75f",
+    "inventorySha256": "842500ed71345c5d009b5ce865eadb1fd209d09b24318005623e5f5883813f19",
+    "abiSha256": "7e4e84bb89946d7523d4c1b215f83a67adf122ae7051a350184fb344d683ce05",
+    "declarations": 337
+  }
+}

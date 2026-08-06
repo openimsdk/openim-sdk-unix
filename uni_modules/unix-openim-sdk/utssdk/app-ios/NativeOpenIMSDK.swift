@@ -10,18 +10,20 @@ typealias OpenIMConnEvent = (String, NSNumber, String) -> Void
 class OpenIMBaseCallback: NSObject, Open_im_sdk_callbackBaseProtocol {
     private let resolve: OpenIMResolveString
     private let reject: OpenIMReject
+    let ticket: OpenIMDriverTicket
 
     init(resolve: @escaping OpenIMResolveString, reject: @escaping OpenIMReject) {
         self.resolve = resolve
         self.reject = reject
+        self.ticket = OpenIMDriverRuntime.shared.register(resolve: resolve, reject: reject)
     }
 
     func onSuccess(_ data: String?) {
-        resolve(data ?? "")
+        OpenIMDriverRuntime.shared.resolve(ticket, data ?? "")
     }
 
     func onError(_ errCode: Int32, errMsg: String?) {
-        reject(NSNumber(value: errCode), errMsg ?? "")
+        OpenIMDriverRuntime.shared.reject(ticket, NSNumber(value: errCode), errMsg ?? "")
     }
 }
 
@@ -30,20 +32,22 @@ class OpenIMSendMessageCallback: NSObject, Open_im_sdk_callbackSendMsgCallBackPr
     private let resolve: OpenIMResolveString
     private let reject: OpenIMReject
     private let emit: OpenIMNativeEvent?
+    private let ticket: OpenIMDriverTicket
 
     init(operationID: String, resolve: @escaping OpenIMResolveString, reject: @escaping OpenIMReject, emit: OpenIMNativeEvent?) {
         self.operationID = operationID
         self.resolve = resolve
         self.reject = reject
         self.emit = emit
+        self.ticket = OpenIMDriverRuntime.shared.register(resolve: resolve, reject: reject)
     }
 
     func onSuccess(_ data: String?) {
-        resolve(data ?? "")
+        OpenIMDriverRuntime.shared.resolve(ticket, data ?? "")
     }
 
     func onError(_ errCode: Int32, errMsg: String?) {
-        reject(NSNumber(value: errCode), errMsg ?? "")
+        OpenIMDriverRuntime.shared.reject(ticket, NSNumber(value: errCode), errMsg ?? "")
     }
 
     func onProgress(_ progress: Int) {
@@ -53,7 +57,7 @@ class OpenIMSendMessageCallback: NSObject, Open_im_sdk_callbackSendMsgCallBackPr
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
               let json = String(data: data, encoding: .utf8) else { return }
-        DispatchQueue.main.async { [emit] in
+        OpenIMDriverRuntime.shared.progress(ticket) { [emit] in
             emit?("onSendMessageProgress", json, NSNumber(value: 0), "")
         }
     }
@@ -117,6 +121,14 @@ class OpenIMAdvancedMsgListenerNative: NSObject, Open_im_sdk_callbackOnAdvancedM
     func onRecvC2CReadReceipt(_ msgReceiptList: String?) {
         emit("onRecvC2CReadReceipt", msgReceiptList ?? "")
     }
+
+}
+
+class OpenIMBatchMsgListenerNative: NSObject, Open_im_sdk_callbackOnBatchMsgListenerProtocol {
+    private let emit: OpenIMMessageEvent
+    init(emit: @escaping OpenIMMessageEvent) { self.emit = emit }
+    func onRecvNewMessages(_ messageList: String?) { emit("onRecvNewMessages", messageList ?? "") }
+    func onRecvOfflineNewMessages(_ messageList: String?) { emit("onRecvOfflineNewMessages", messageList ?? "") }
 }
 
 class OpenIMConversationListenerNative: NSObject, Open_im_sdk_callbackOnConversationListenerProtocol {
@@ -172,6 +184,7 @@ class OpenIMUserListenerNative: NSObject, Open_im_sdk_callbackOnUserListenerProt
     private let emit: OpenIMMessageEvent
     init(emit: @escaping OpenIMMessageEvent) { self.emit = emit }
     func onSelfInfoUpdated(_ userInfo: String?) { emit("onSelfInfoUpdated", userInfo ?? "") }
+    // UTS-COMPAT-EDITION-001: Public Core exposes these callbacks, but the frozen public UTS contract does not.
     func onUserCommandAdd(_ userCommand: String?) {}
     func onUserCommandDelete(_ userCommand: String?) {}
     func onUserCommandUpdate(_ userCommand: String?) {}
@@ -179,9 +192,11 @@ class OpenIMUserListenerNative: NSObject, Open_im_sdk_callbackOnUserListenerProt
 }
 
 class OpenIMUploadFileCallback: NSObject, Open_im_sdk_callbackUploadFileCallbackProtocol {
+    private let ticket: OpenIMDriverTicket
     private let emit: OpenIMMessageEvent
 
-    init(_ emit: @escaping OpenIMMessageEvent) {
+    init(_ ticket: OpenIMDriverTicket, _ emit: @escaping OpenIMMessageEvent) {
+        self.ticket = ticket
         self.emit = emit
     }
 
@@ -189,7 +204,7 @@ class OpenIMUploadFileCallback: NSObject, Open_im_sdk_callbackUploadFileCallback
         let payload: [String: Any] = ["progress": NSNumber(value: progress)]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
               let json = String(data: data, encoding: .utf8) else { return }
-        DispatchQueue.main.async { [emit] in
+        OpenIMDriverRuntime.shared.progress(ticket) { [emit] in
             emit("onUploadFileProgress", json)
         }
     }
@@ -221,9 +236,11 @@ class OpenIMUploadFileCallback: NSObject, Open_im_sdk_callbackUploadFileCallback
 }
 
 class OpenIMUploadLogProgress: NSObject, Open_im_sdk_callbackUploadLogProgressProtocol {
+    private let ticket: OpenIMDriverTicket
     private let emit: OpenIMMessageEvent
 
-    init(_ emit: @escaping OpenIMMessageEvent) {
+    init(_ ticket: OpenIMDriverTicket, _ emit: @escaping OpenIMMessageEvent) {
+        self.ticket = ticket
         self.emit = emit
     }
 
@@ -232,15 +249,16 @@ class OpenIMUploadLogProgress: NSObject, Open_im_sdk_callbackUploadLogProgressPr
         let payload: [String: Any] = ["progress": NSNumber(value: percent)]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
               let json = String(data: data, encoding: .utf8) else { return }
-        DispatchQueue.main.async { [emit] in
+        OpenIMDriverRuntime.shared.progress(ticket) { [emit] in
             emit("onUploadLogsProgress", json)
         }
     }
 }
 
 class NativeOpenIMSDK {
-    private static let connListener = OpenIMConnListener()
+    private static var connListener: OpenIMConnListener? = nil
     private static var advancedMsgListener: OpenIMAdvancedMsgListenerNative? = nil
+    private static var batchMsgListener: OpenIMBatchMsgListenerNative? = nil
     private static var conversationListener: OpenIMConversationListenerNative? = nil
     private static var customBusinessListener: OpenIMCustomBusinessListenerNative? = nil
     private static var friendshipListener: OpenIMFriendshipListenerNative? = nil
@@ -248,20 +266,35 @@ class NativeOpenIMSDK {
     private static var userListener: OpenIMUserListenerNative? = nil
     private static var nativeEventEmit: OpenIMNativeEvent? = nil
     private static var sdkInitialized: Bool = false
+    private static var sessionEpoch: Int64 = -1
+    private static var listenersBoundEpoch: Int64 = -1
 
     static func uploadFile(_ operationID: String, _ uploadData: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        let uploadCallback = OpenIMUploadFileCallback { eventName, payload in
+        let uploadCallback = OpenIMUploadFileCallback(callback.ticket) { eventName, payload in
             NativeOpenIMSDK.nativeEventEmit?(eventName, payload, NSNumber(value: 0), "")
         }
         Open_im_sdkUploadFile(callback, operationID, uploadData, uploadCallback)
     }
 
     static func initSDK(_ operationID: String, _ config: String) -> String {
-        let initialized = Open_im_sdkInitSDK(connListener, operationID, config)
+        let epoch = OpenIMDriverRuntime.shared.startSession()
+        unbindNativeEventListeners()
+        sessionEpoch = epoch
+        let listener = OpenIMConnListener()
+        listener.emit = { eventName, errCode, errMsg in
+            OpenIMDriverRuntime.shared.emitEvent(epoch) {
+                NativeOpenIMSDK.nativeEventEmit?(eventName, "", errCode, errMsg)
+            }
+        }
+        connListener = listener
+        let initialized = Open_im_sdkInitSDK(listener, operationID, config)
         sdkInitialized = initialized
+        OpenIMDriverRuntime.shared.markInitialized(epoch, initialized)
         if initialized {
             applyNativeEventListeners()
+        } else {
+            connListener = nil
         }
         return initialized ? "true" : "false"
     }
@@ -279,8 +312,13 @@ class NativeOpenIMSDK {
     }
 
     static func unInitSDK(_ operationID: String) -> String {
-        Open_im_sdkUnInitSDK(operationID)
+        OpenIMDriverRuntime.shared.shutdown()
         sdkInitialized = false
+        connListener?.emit = nil
+        unbindNativeEventListeners()
+        Open_im_sdkUnInitSDK(operationID)
+        connListener = nil
+        sessionEpoch = -1
         return ""
     }
 
@@ -840,10 +878,10 @@ class NativeOpenIMSDK {
 
     static func uploadLogs(_ operationID: String, _ line: NSNumber, _ ex: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        let progress = OpenIMUploadLogProgress { eventName, payload in
+        let progress = OpenIMUploadLogProgress(callback.ticket) { eventName, payload in
             NativeOpenIMSDK.nativeEventEmit?(eventName, payload, NSNumber(value: 0), "")
         }
-        Open_im_sdkUploadLogs(callback, operationID, line.intValue, ex, progress)
+        Open_im_sdkUploadLogs(callback, operationID, Int(line.int64Value), ex, progress)
     }
 
     static func subscribeUsersStatus(_ operationID: String, _ userIDList: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
@@ -957,33 +995,46 @@ class NativeOpenIMSDK {
     }
 
     private static func applyNativeEventListeners() {
-        guard let emit = nativeEventEmit else { return }
-        let connEmit: OpenIMConnEvent = { eventName, errCode, errMsg in
-            emit(eventName, "", errCode, errMsg)
-        }
+        guard sdkInitialized, nativeEventEmit != nil, sessionEpoch >= 0, listenersBoundEpoch != sessionEpoch else { return }
+        let epoch = sessionEpoch
         let messageEmit: OpenIMMessageEvent = { eventName, payload in
-            emit(eventName, payload, NSNumber(value: 0), "")
+            OpenIMDriverRuntime.shared.emitEvent(epoch) {
+                NativeOpenIMSDK.nativeEventEmit?(eventName, payload, NSNumber(value: 0), "")
+            }
         }
-        connListener.emit = connEmit
         advancedMsgListener = OpenIMAdvancedMsgListenerNative(emit: messageEmit)
+        batchMsgListener = OpenIMBatchMsgListenerNative(emit: messageEmit)
         conversationListener = OpenIMConversationListenerNative(emit: messageEmit)
         customBusinessListener = OpenIMCustomBusinessListenerNative(emit: messageEmit)
         friendshipListener = OpenIMFriendshipListenerNative(emit: messageEmit)
         groupListener = OpenIMGroupListenerNative(emit: messageEmit)
         userListener = OpenIMUserListenerNative(emit: messageEmit)
         Open_im_sdkSetAdvancedMsgListener(advancedMsgListener)
+        Open_im_sdkSetBatchMsgListener(batchMsgListener)
         Open_im_sdkSetConversationListener(conversationListener)
         Open_im_sdkSetCustomBusinessListener(customBusinessListener)
         Open_im_sdkSetFriendListener(friendshipListener)
         Open_im_sdkSetGroupListener(groupListener)
         Open_im_sdkSetUserListener(userListener)
+        listenersBoundEpoch = epoch
+    }
+
+    private static func unbindNativeEventListeners() {
+        if listenersBoundEpoch < 0 { return }
+        // UTS-COMPAT-NATIVE-LISTENER-001: the locked Go Core panics when a listener setter receives nil.
+        // shutdown() invalidates the epoch first; Core unInit owns native listener release.
+        advancedMsgListener = nil
+        batchMsgListener = nil
+        conversationListener = nil
+        customBusinessListener = nil
+        friendshipListener = nil
+        groupListener = nil
+        userListener = nil
+        listenersBoundEpoch = -1
     }
 
     static func bindNativeEvents(_ emit: @escaping OpenIMNativeEvent) {
         nativeEventEmit = emit
-        connListener.emit = { eventName, errCode, errMsg in
-            emit(eventName, "", errCode, errMsg)
-        }
         if sdkInitialized {
             applyNativeEventListeners()
         }
