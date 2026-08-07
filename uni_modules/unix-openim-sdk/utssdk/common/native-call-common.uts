@@ -164,11 +164,7 @@ export function stringifyOpenIMMessageEntityList(value ?: Array<OpenIMMessageEnt
 }
 
 export function rejectNativeError(reject : (reason : any | null) => void, errCode : number, errMsg : string) {
-  const error = {
-    errCode: errCode,
-    errMsg: errMsg
-  }
-  reject(error)
+  reject(new UniError('unix-openim-sdk', errCode, errMsg))
 }
 
 export function hasNativeKey(value : UTSJSONObject, key : string) : boolean {
@@ -537,24 +533,34 @@ function isValidParsedGroupList(groups : Array<OpenIMGroupItem>, helpers : Nativ
 }
 
 export function parseNativeGroupListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupListResult | null {
-  const typedList = helpers.parseNativeGroupListData(data)
-  if (typedList != null && isValidParsedGroupList(typedList, helpers)) { return { groups: typedList } }
+  try {
+    const typedList = helpers.parseNativeGroupListData(data)
+    if (typedList != null && isValidParsedGroupList(typedList, helpers)) { return { groups: typedList } }
+  } catch (error) {}
   return parseNativeGroupListResultFallbackCommon(data, helpers)
 }
 
 export function parseNativeGroupListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupListResult | null {
-  const rawList = helpers.parseNativeJSONObjectListData(data)
-  if (rawList == null) { return null }
-  const groups : Array<OpenIMGroupItem> = []
-  rawList.forEach((item : UTSJSONObject) => { groups.push(parseNativeGroupItem(item, helpers)) })
-  return { groups: groups }
+  try {
+    const rawList = helpers.parseNativeJSONObjectListData(data)
+    if (rawList == null) { return null }
+    const groups : Array<OpenIMGroupItem> = []
+    rawList.forEach((item : UTSJSONObject) => { groups.push(parseNativeGroupItem(item, helpers)) })
+    return { groups: groups }
+  } catch (error) {
+    return null
+  }
 }
 
 export function parseNativeGroupObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupItem | null {
-  const typedItem = helpers.parseNativeGroupData(data)
-  if (typedItem != null && isValidParsedGroup(typedItem, helpers)) { return typedItem }
-  const raw = helpers.parseNativeAny(data)
-  if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'groupID')) { return parseNativeGroupItem(raw, helpers) }
+  try {
+    const typedItem = helpers.parseNativeGroupData(data)
+    if (typedItem != null && isValidParsedGroup(typedItem, helpers)) { return typedItem }
+  } catch (error) {}
+  try {
+    const raw = helpers.parseNativeAny(data)
+    if (raw instanceof UTSJSONObject && helpers.isRequiredField(raw, 'groupID')) { return parseNativeGroupItem(raw, helpers) }
+  } catch (error) {}
   return null
 }
 
@@ -573,17 +579,23 @@ function isValidParsedGroupMemberList(members : Array<OpenIMGroupMemberItem>, he
 }
 
 export function parseNativeGroupMemberListResultCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupMemberListResult | null {
-  const typedList = helpers.parseNativeGroupMemberListData(data)
-  if (typedList != null && isValidParsedGroupMemberList(typedList, helpers)) { return { members: typedList } }
+  try {
+    const typedList = helpers.parseNativeGroupMemberListData(data)
+    if (typedList != null && isValidParsedGroupMemberList(typedList, helpers)) { return { members: typedList } }
+  } catch (error) {}
   return parseNativeGroupMemberListResultFallbackCommon(data, helpers)
 }
 
 export function parseNativeGroupMemberListResultFallbackCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupMemberListResult | null {
-  const rawList = helpers.parseNativeJSONObjectListData(data)
-  if (rawList == null) { return null }
-  const members : Array<OpenIMGroupMemberItem> = []
-  rawList.forEach((item : UTSJSONObject) => { members.push(parseNativeGroupMemberItem(item, helpers)) })
-  return { members: members }
+  try {
+    const rawList = helpers.parseNativeJSONObjectListData(data)
+    if (rawList == null) { return null }
+    const members : Array<OpenIMGroupMemberItem> = []
+    rawList.forEach((item : UTSJSONObject) => { members.push(parseNativeGroupMemberItem(item, helpers)) })
+    return { members: members }
+  } catch (error) {
+    return null
+  }
 }
 
 export function parseNativeGroupMemberObjectCommon(data : string, helpers : NativeParserHelpers) : OpenIMGroupMemberItem | null {
@@ -865,7 +877,7 @@ export function parseNativeMessageCommon(data : string, helpers : NativeParserHe
 
 export function parseNativeAdvancedHistoryMessageListCommon(data : string, helpers : NativeParserHelpers) : OpenIMAdvancedHistoryMessageListResult | null {
   const raw = helpers.parseNativeAny(data)
-  if (!(raw instanceof UTSJSONObject) || !helpers.isRequiredField(raw, 'lastMinSeq') || !helpers.isRequiredField(raw, 'isEnd') || !helpers.isRequiredField(raw, 'errCode') || !helpers.isRequiredField(raw, 'errMsg')) { return null }
+  if (!(raw instanceof UTSJSONObject) || !helpers.isRequiredField(raw, 'isEnd') || !helpers.isRequiredField(raw, 'errCode') || !helpers.isRequiredField(raw, 'errMsg')) { return null }
   const typedResult = helpers.parseNativeAdvancedHistoryMessageListData(data)
   if (typedResult != null && isValidParsedMessageList(typedResult.messageList, helpers)) { return typedResult }
   return parseNativeAdvancedHistoryMessageListFallbackCommon(data, helpers)
