@@ -1,0 +1,8618 @@
+{
+  "schemaVersion": 1,
+  "edition": "public",
+  "counts": {
+    "schemas": 128,
+    "callables": 161,
+    "events": 48
+  },
+  "schemas": {
+    "OpenIMMessageStatus": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        },
+        {
+          "kind": "literal",
+          "value": 4
+        },
+        {
+          "kind": "literal",
+          "value": 5
+        }
+      ]
+    },
+    "OpenIMPlatform": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        },
+        {
+          "kind": "literal",
+          "value": 4
+        },
+        {
+          "kind": "literal",
+          "value": 5
+        },
+        {
+          "kind": "literal",
+          "value": 6
+        },
+        {
+          "kind": "literal",
+          "value": 7
+        },
+        {
+          "kind": "literal",
+          "value": 8
+        },
+        {
+          "kind": "literal",
+          "value": 9
+        },
+        {
+          "kind": "literal",
+          "value": 10
+        },
+        {
+          "kind": "literal",
+          "value": 11
+        }
+      ]
+    },
+    "OpenIMLogLevel": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        },
+        {
+          "kind": "literal",
+          "value": 4
+        },
+        {
+          "kind": "literal",
+          "value": 5
+        },
+        {
+          "kind": "literal",
+          "value": 6
+        }
+      ]
+    },
+    "OpenIMMessageType": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 101
+        },
+        {
+          "kind": "literal",
+          "value": 102
+        },
+        {
+          "kind": "literal",
+          "value": 103
+        },
+        {
+          "kind": "literal",
+          "value": 104
+        },
+        {
+          "kind": "literal",
+          "value": 105
+        },
+        {
+          "kind": "literal",
+          "value": 106
+        },
+        {
+          "kind": "literal",
+          "value": 107
+        },
+        {
+          "kind": "literal",
+          "value": 108
+        },
+        {
+          "kind": "literal",
+          "value": 109
+        },
+        {
+          "kind": "literal",
+          "value": 110
+        },
+        {
+          "kind": "literal",
+          "value": 111
+        },
+        {
+          "kind": "literal",
+          "value": 113
+        },
+        {
+          "kind": "literal",
+          "value": 114
+        },
+        {
+          "kind": "literal",
+          "value": 115
+        },
+        {
+          "kind": "literal",
+          "value": 117
+        },
+        {
+          "kind": "literal",
+          "value": 118
+        },
+        {
+          "kind": "literal",
+          "value": 119
+        },
+        {
+          "kind": "literal",
+          "value": 120
+        },
+        {
+          "kind": "literal",
+          "value": 121
+        },
+        {
+          "kind": "literal",
+          "value": 122
+        },
+        {
+          "kind": "literal",
+          "value": 143
+        },
+        {
+          "kind": "literal",
+          "value": 200
+        },
+        {
+          "kind": "literal",
+          "value": 201
+        },
+        {
+          "kind": "literal",
+          "value": 202
+        },
+        {
+          "kind": "literal",
+          "value": 203
+        },
+        {
+          "kind": "literal",
+          "value": 1201
+        },
+        {
+          "kind": "literal",
+          "value": 1202
+        },
+        {
+          "kind": "literal",
+          "value": 1203
+        },
+        {
+          "kind": "literal",
+          "value": 1204
+        },
+        {
+          "kind": "literal",
+          "value": 1205
+        },
+        {
+          "kind": "literal",
+          "value": 1206
+        },
+        {
+          "kind": "literal",
+          "value": 1207
+        },
+        {
+          "kind": "literal",
+          "value": 1208
+        },
+        {
+          "kind": "literal",
+          "value": 1209
+        },
+        {
+          "kind": "literal",
+          "value": 1210
+        },
+        {
+          "kind": "literal",
+          "value": 1300
+        },
+        {
+          "kind": "literal",
+          "value": 1303
+        },
+        {
+          "kind": "literal",
+          "value": 1304
+        },
+        {
+          "kind": "literal",
+          "value": 1305
+        },
+        {
+          "kind": "literal",
+          "value": 1306
+        },
+        {
+          "kind": "literal",
+          "value": 1307
+        },
+        {
+          "kind": "literal",
+          "value": 1308
+        },
+        {
+          "kind": "literal",
+          "value": 1400
+        },
+        {
+          "kind": "literal",
+          "value": 1501
+        },
+        {
+          "kind": "literal",
+          "value": 1502
+        },
+        {
+          "kind": "literal",
+          "value": 1503
+        },
+        {
+          "kind": "literal",
+          "value": 1504
+        },
+        {
+          "kind": "literal",
+          "value": 1505
+        },
+        {
+          "kind": "literal",
+          "value": 1506
+        },
+        {
+          "kind": "literal",
+          "value": 1507
+        },
+        {
+          "kind": "literal",
+          "value": 1508
+        },
+        {
+          "kind": "literal",
+          "value": 1509
+        },
+        {
+          "kind": "literal",
+          "value": 1510
+        },
+        {
+          "kind": "literal",
+          "value": 1511
+        },
+        {
+          "kind": "literal",
+          "value": 1512
+        },
+        {
+          "kind": "literal",
+          "value": 1513
+        },
+        {
+          "kind": "literal",
+          "value": 1514
+        },
+        {
+          "kind": "literal",
+          "value": 1515
+        },
+        {
+          "kind": "literal",
+          "value": 1516
+        },
+        {
+          "kind": "literal",
+          "value": 1517
+        },
+        {
+          "kind": "literal",
+          "value": 1518
+        },
+        {
+          "kind": "literal",
+          "value": 1519
+        },
+        {
+          "kind": "literal",
+          "value": 1520
+        },
+        {
+          "kind": "literal",
+          "value": 1651
+        },
+        {
+          "kind": "literal",
+          "value": 1652
+        },
+        {
+          "kind": "literal",
+          "value": 1701
+        },
+        {
+          "kind": "literal",
+          "value": 1702
+        },
+        {
+          "kind": "literal",
+          "value": 1703
+        },
+        {
+          "kind": "literal",
+          "value": 1704
+        },
+        {
+          "kind": "literal",
+          "value": 2001
+        },
+        {
+          "kind": "literal",
+          "value": 2101
+        },
+        {
+          "kind": "literal",
+          "value": 2102
+        },
+        {
+          "kind": "literal",
+          "value": 2103
+        },
+        {
+          "kind": "literal",
+          "value": 2150
+        },
+        {
+          "kind": "literal",
+          "value": 2200
+        },
+        {
+          "kind": "literal",
+          "value": 2210
+        },
+        {
+          "kind": "literal",
+          "value": 2300
+        },
+        {
+          "kind": "literal",
+          "value": 2400
+        },
+        {
+          "kind": "literal",
+          "value": 2401
+        },
+        {
+          "kind": "literal",
+          "value": 2500
+        }
+      ]
+    },
+    "OpenIMSessionType": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        },
+        {
+          "kind": "literal",
+          "value": 4
+        }
+      ]
+    },
+    "OpenIMLoginStatus": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        }
+      ]
+    },
+    "OpenIMSendMessageOptions": {
+      "kind": "object",
+      "fields": {
+        "operationID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "message": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          }
+        },
+        "recvID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "offlinePushInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMOfflinePush"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "isOnlineOnly": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMUploadFileParams": {
+      "kind": "object",
+      "fields": {
+        "filepath": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "name": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "contentType": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "uuid": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "cause": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMCreateSoundMessageParams": {
+      "kind": "object",
+      "fields": {
+        "soundPath": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "duration": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMCreateVideoMessageParams": {
+      "kind": "object",
+      "fields": {
+        "videoPath": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "videoType": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "duration": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "snapshotPath": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMCreateFileMessageParams": {
+      "kind": "object",
+      "fields": {
+        "filePath": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "fileName": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMUploadFileResult": {
+      "kind": "object",
+      "fields": {
+        "url": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "uri": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "uuid": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "size": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "typ": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "mediaID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMUpdateFcmTokenParams": {
+      "kind": "object",
+      "fields": {
+        "fcmToken": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "expireTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMUploadLogsParams": {
+      "kind": "object",
+      "fields": {
+        "line": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMUploadFileProgressEvent": {
+      "kind": "object",
+      "fields": {
+        "progress": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMUploadLogsProgressEvent": {
+      "kind": "object",
+      "fields": {
+        "progress": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMSendMessageProgressEvent": {
+      "kind": "object",
+      "fields": {
+        "operationID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "progress": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMMessageKeyParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "clientMsgID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMSetMessageLocalExParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "clientMsgID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "localEx": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMSetConversationBoolean": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": true
+        },
+        {
+          "kind": "literal",
+          "value": false
+        }
+      ]
+    },
+    "OpenIMSetSelfInfoRecvMsgOpt": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        }
+      ]
+    },
+    "OpenIMUpdateFriendBoolean": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": true
+        },
+        {
+          "kind": "literal",
+          "value": false
+        }
+      ]
+    },
+    "OpenIMGroupNeedVerification": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        }
+      ]
+    },
+    "OpenIMGroupOption": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        }
+      ]
+    },
+    "OpenIMGroupDisplayIsRead": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": true
+        },
+        {
+          "kind": "literal",
+          "value": false
+        }
+      ]
+    },
+    "OpenIMGroupMemberRoleLevel": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 20
+        },
+        {
+          "kind": "literal",
+          "value": 60
+        },
+        {
+          "kind": "literal",
+          "value": 100
+        }
+      ]
+    },
+    "OpenIMSetConversationParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "recvMsgOpt": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "isPinned": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMSetConversationBoolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "isPrivateChat": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMSetConversationBoolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "burnDuration": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "groupAtType": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMSetSelfInfoParams": {
+      "kind": "object",
+      "fields": {
+        "nickname": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "faceURL": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "globalRecvMsgOpt": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMSetSelfInfoRecvMsgOpt"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMUpdateFriendsParams": {
+      "kind": "object",
+      "fields": {
+        "friendUserIDs": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "isPinned": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMUpdateFriendBoolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "remark": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMCheckFriendResultItem": {
+      "kind": "object",
+      "fields": {
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "result": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMCheckFriendResult": {
+      "kind": "object",
+      "fields": {
+        "result": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMCheckFriendResultItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMInsertSingleMessageParams": {
+      "kind": "object",
+      "fields": {
+        "message": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          }
+        },
+        "recvID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "sendID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMInsertGroupMessageParams": {
+      "kind": "object",
+      "fields": {
+        "message": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          }
+        },
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "sendID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMInputStateParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "focus": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMSetConversationDraftParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "draftText": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMAddFriendParams": {
+      "kind": "object",
+      "fields": {
+        "toUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "reqMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMSearchFriendsParams": {
+      "kind": "object",
+      "fields": {
+        "keywordList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "isSearchUserID": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "isSearchNickname": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "isSearchRemark": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMGetSpecifiedFriendsInfoParams": {
+      "kind": "object",
+      "fields": {
+        "userIDList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "filterBlack": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMFriendApplicationHandleParams": {
+      "kind": "object",
+      "fields": {
+        "toUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handleMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMAddBlackParams": {
+      "kind": "object",
+      "fields": {
+        "toUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMGroupUserListParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userIDList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMGroupInviteParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "reason": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userIDList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMSearchGroupMembersParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "keywordList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "isSearchUserID": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "isSearchMemberNickname": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMCreateGroupInfo": {
+      "kind": "object",
+      "fields": {
+        "groupName": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupType": {
+          "required": true,
+          "schema": {
+            "kind": "literal",
+            "value": 2
+          }
+        },
+        "notification": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "introduction": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "faceURL": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMCreateGroupParams": {
+      "kind": "object",
+      "fields": {
+        "groupInfo": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMCreateGroupInfo"
+          }
+        },
+        "memberUserIDs": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "adminUserIDs": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "string"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMSetGroupInfoParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupName": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "notification": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "introduction": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "faceURL": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "needVerification": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMGroupNeedVerification"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "lookMemberInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMGroupOption"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "applyMemberFriend": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMGroupOption"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "displayIsRead": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMGroupDisplayIsRead"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMSetGroupMemberInfoParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "nickname": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "faceURL": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "roleLevel": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMGroupMemberRoleLevel"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMJoinGroupParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "reqMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "joinSource": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMSearchGroupsParams": {
+      "kind": "object",
+      "fields": {
+        "keywordList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "isSearchGroupID": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "isSearchGroupName": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMChangeGroupMuteParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "isMute": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMChangeGroupMemberMuteParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "mutedSeconds": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMTransferGroupOwnerParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "newOwnerUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMGroupApplicationHandleParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "fromUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handleMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMFindMessageParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "clientMsgIDList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMCreateCustomMessageParams": {
+      "kind": "object",
+      "fields": {
+        "data": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "extension": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "descriptionText": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMCreateQuoteMessageParams": {
+      "kind": "object",
+      "fields": {
+        "text": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "message": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMCreateAdvancedQuoteMessageParams": {
+      "kind": "object",
+      "fields": {
+        "text": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "message": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "messageEntityList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageEntity"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMCreateAdvancedTextMessageParams": {
+      "kind": "object",
+      "fields": {
+        "text": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "messageEntityList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageEntity"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMCreateTextAtMessageParams": {
+      "kind": "object",
+      "fields": {
+        "text": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "atUserIDList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "atUsersInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "reference",
+                  "name": "OpenIMAtUsersInfoItem"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "quoteMessage": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMMessageItem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMCreateMergerMessageParams": {
+      "kind": "object",
+      "fields": {
+        "messageList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            }
+          }
+        },
+        "title": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "abstractList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMCreateFaceMessageParams": {
+      "kind": "object",
+      "fields": {
+        "index": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "data": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMCreateLocationMessageParams": {
+      "kind": "object",
+      "fields": {
+        "descriptionText": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "longitude": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "latitude": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMMessageEntity": {
+      "kind": "object",
+      "fields": {
+        "type": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "offset": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "length": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "url": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "info": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMTextElem": {
+      "kind": "object",
+      "fields": {
+        "content": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMCardElem": {
+      "kind": "object",
+      "fields": {
+        "userID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "nickname": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "faceURL": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMAtUsersInfoItem": {
+      "kind": "object",
+      "fields": {
+        "atUserID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "groupNickname": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMAtTextElem": {
+      "kind": "object",
+      "fields": {
+        "text": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "atUserList": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "string"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "atUsersInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "reference",
+                  "name": "OpenIMAtUsersInfoItem"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "quoteMessage": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMMessageItemRef"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "isAtSelf": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMNotificationElem": {
+      "kind": "object",
+      "fields": {
+        "detail": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMAdvancedTextElem": {
+      "kind": "object",
+      "fields": {
+        "text": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "messageEntityList": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "reference",
+                  "name": "OpenIMMessageEntity"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMTypingElem": {
+      "kind": "object",
+      "fields": {
+        "msgTips": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMFileElem": {
+      "kind": "object",
+      "fields": {
+        "filePath": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "uuid": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "sourceUrl": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "fileName": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "fileSize": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMFaceElem": {
+      "kind": "object",
+      "fields": {
+        "index": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "data": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMLocationElem": {
+      "kind": "object",
+      "fields": {
+        "descriptionText": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "longitude": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "latitude": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMCustomElem": {
+      "kind": "object",
+      "fields": {
+        "data": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "descriptionText": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "extensionText": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMMergeElem": {
+      "kind": "object",
+      "fields": {
+        "title": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "abstractList": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "string"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "multiMessage": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "reference",
+                  "name": "OpenIMMessageItemRef"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "messageEntityList": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "reference",
+                  "name": "OpenIMMessageEntity"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMOfflinePush": {
+      "kind": "object",
+      "fields": {
+        "title": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "desc": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "iOSPushSound": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "iOSBadgeCount": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMPicture": {
+      "kind": "object",
+      "fields": {
+        "uuid": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "type": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "size": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "width": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "height": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "url": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMPictureElem": {
+      "kind": "object",
+      "fields": {
+        "sourcePath": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "sourcePicture": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMPicture"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "bigPicture": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMPicture"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "snapshotPicture": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMPicture"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMAttachedGroupHasReadInfo": {
+      "kind": "object",
+      "fields": {
+        "hasReadCount": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "unreadCount": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "hasReadUserIDList": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "string"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "groupMemberCount": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMUploadProgress": {
+      "kind": "object",
+      "fields": {
+        "total": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "save": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "current": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "uploadID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMAttachedInfoElem": {
+      "kind": "object",
+      "fields": {
+        "groupHasReadInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMAttachedGroupHasReadInfo"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "isPrivateChat": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "isEncryption": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "inEncryptStatus": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "burnDuration": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "hasReadTime": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "messageEntityList": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "reference",
+                  "name": "OpenIMMessageEntity"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "uploadProgress": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMUploadProgress"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMQuoteElem": {
+      "kind": "object",
+      "fields": {
+        "text": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "quoteMessage": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMMessageItemRef"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "messageEntityList": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "array",
+                "items": {
+                  "kind": "reference",
+                  "name": "OpenIMMessageEntity"
+                }
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMSoundElem": {
+      "kind": "object",
+      "fields": {
+        "uuid": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "soundPath": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "sourceUrl": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "dataSize": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "duration": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMVideoElem": {
+      "kind": "object",
+      "fields": {
+        "videoPath": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "videoUUID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "videoUrl": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "videoType": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "videoSize": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "duration": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "snapshotPath": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "snapshotUUID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "snapshotSize": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "snapshotUrl": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "snapshotWidth": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "snapshotHeight": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMMessageItemRef": {
+      "kind": "object",
+      "fields": {
+        "clientMsgID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "serverMsgID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "createTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "sendTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "sessionType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSessionType"
+          }
+        },
+        "sendID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "recvID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "msgFrom": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "contentType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageType"
+          }
+        },
+        "senderPlatformID": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMPlatform"
+          }
+        },
+        "senderNickname": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "senderFaceUrl": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "groupID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "content": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "seq": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "isRead": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "status": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageStatus"
+          }
+        },
+        "attachedInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "localEx": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "textElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMTextElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "cardElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMCardElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "pictureElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMPictureElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "soundElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMSoundElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "videoElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMVideoElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "fileElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMFileElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "faceElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMFaceElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "locationElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMLocationElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "customElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMCustomElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMMessageItem": {
+      "kind": "object",
+      "fields": {
+        "clientMsgID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "serverMsgID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "createTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "sendTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "sessionType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSessionType"
+          }
+        },
+        "sendID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "recvID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "msgFrom": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "contentType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageType"
+          }
+        },
+        "senderPlatformID": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMPlatform"
+          }
+        },
+        "senderNickname": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "senderFaceUrl": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "groupID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "content": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "seq": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "isRead": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "status": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageStatus"
+          }
+        },
+        "offlinePush": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMOfflinePush"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "attachedInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "ex": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "localEx": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "textElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMTextElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "cardElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMCardElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "pictureElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMPictureElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "soundElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMSoundElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "videoElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMVideoElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "fileElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMFileElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "mergeElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMMergeElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "atTextElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMAtTextElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "faceElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMFaceElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "locationElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMLocationElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "customElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMCustomElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "quoteElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMQuoteElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "notificationElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMNotificationElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "advancedTextElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMAdvancedTextElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "typingElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMTypingElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "attachedInfoElem": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMAttachedInfoElem"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMConversationItem": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "conversationType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSessionType"
+          }
+        },
+        "userID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "groupID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "showName": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "faceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "recvMsgOpt": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "unreadCount": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "latestMsg": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "latestMsgSendTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "draftText": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "draftTextTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "isPinned": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "isPrivateChat": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "attachedInfo": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "burnDuration": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "minSeq": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "maxSeq": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "msgDestructTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "groupAtType": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "isMsgDestruct": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "isNotInGroup": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "updateUnreadCountTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMConversationListResult": {
+      "kind": "object",
+      "fields": {
+        "conversations": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMConversationItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMUserListResult": {
+      "kind": "object",
+      "fields": {
+        "users": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMUserInfo"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMUserStatusItem": {
+      "kind": "object",
+      "fields": {
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "status": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "platformIDs": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "number"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMUserStatusListResult": {
+      "kind": "object",
+      "fields": {
+        "statuses": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMUserStatusItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMFriendListResult": {
+      "kind": "object",
+      "fields": {
+        "friends": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMFriendUserItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMBlackListResult": {
+      "kind": "object",
+      "fields": {
+        "blackUsers": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMBlackUserItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMGroupListResult": {
+      "kind": "object",
+      "fields": {
+        "groups": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMGroupItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMGroupMemberListResult": {
+      "kind": "object",
+      "fields": {
+        "members": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMGroupMemberItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMFriendApplicationListResult": {
+      "kind": "object",
+      "fields": {
+        "applications": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMFriendApplicationItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMGroupApplicationListResult": {
+      "kind": "object",
+      "fields": {
+        "applications": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMGroupApplicationItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMMessageListResult": {
+      "kind": "object",
+      "fields": {
+        "messages": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMUserInfo": {
+      "kind": "object",
+      "fields": {
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "nickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "faceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "createTime": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "attachedInfo": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "globalRecvMsgOpt": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMPublicUserItem": {
+      "kind": "reference",
+      "name": "OpenIMUserInfo"
+    },
+    "OpenIMFriendUserItem": {
+      "kind": "object",
+      "fields": {
+        "ownerUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "nickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "faceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "remark": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "createTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "addSource": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "operatorUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "attachedInfo": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "isPinned": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMBlackUserItem": {
+      "kind": "object",
+      "fields": {
+        "ownerUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "nickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "faceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "createTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "addSource": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "operatorUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "attachedInfo": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMGroupItem": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupName": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "notification": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "introduction": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "faceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ownerUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "createTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "memberCount": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "status": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "creatorUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupType": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "needVerification": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "lookMemberInfo": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "applyMemberFriend": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "notificationUpdateTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "notificationUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "attachedInfo": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMGroupMemberItem": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "nickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "faceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "roleLevel": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "joinTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "joinSource": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "operatorUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "muteEndTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "inviterUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "attachedInfo": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMFriendApplicationItem": {
+      "kind": "object",
+      "fields": {
+        "fromUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "fromNickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "fromFaceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "toUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "toNickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "toFaceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handleResult": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "reqMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "createTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "handlerUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handleMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handleTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "attachedInfo": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMGroupApplicationItem": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupName": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "notification": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "introduction": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupFaceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "ownerUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "createTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "status": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "creatorUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "groupType": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "memberCount": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "nickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userFaceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handleResult": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "reqMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handledMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "reqTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "joinSource": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "inviterUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handleUserID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "handledTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "attachedInfo": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMMessageRevokedItem": {
+      "kind": "object",
+      "fields": {
+        "revokerID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "revokerRole": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "clientMsgID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "revokerNickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "revokeTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "sourceMessageSendTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "sourceMessageSendID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "sourceMessageSenderNickname": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "sessionType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSessionType"
+          }
+        },
+        "seq": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "ex": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "isAdminRevoke": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        }
+      }
+    },
+    "OpenIMMessageReceiptItem": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "msgIDList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "readTime": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "msgFrom": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "contentType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMMessageType"
+          }
+        },
+        "sessionType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSessionType"
+          }
+        }
+      }
+    },
+    "OpenIMMessageReceiptListResult": {
+      "kind": "object",
+      "fields": {
+        "receipts": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageReceiptItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMConversationInputStatusItem": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "userID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "platformIDs": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "number"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMGetOneConversationParams": {
+      "kind": "object",
+      "fields": {
+        "sourceID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "sessionType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSessionType"
+          }
+        }
+      }
+    },
+    "OpenIMPageParams": {
+      "kind": "object",
+      "fields": {
+        "offset": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "count": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMGetGroupMemberListParams": {
+      "kind": "object",
+      "fields": {
+        "groupID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "filter": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "offset": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "count": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMGetAdvancedHistoryMessageListParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "startClientMsgID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "count": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "lastMinSeq": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMAdvancedHistoryMessageListResult": {
+      "kind": "object",
+      "fields": {
+        "messageList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            }
+          }
+        },
+        "lastMinSeq": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "isEnd": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "errCode": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "errMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMSearchLocalMessagesParams": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "keywordList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "keywordListMatchType": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "senderUserIDList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          }
+        },
+        "messageTypeList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageType"
+            }
+          }
+        },
+        "searchTimePosition": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "searchTimePeriod": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "pageIndex": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "count": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        }
+      }
+    },
+    "OpenIMApplicationListParams": {
+      "kind": "object",
+      "fields": {
+        "offset": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "count": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "OpenIMSearchMessageResultItem": {
+      "kind": "object",
+      "fields": {
+        "conversationID": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "conversationType": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSessionType"
+          }
+        },
+        "showName": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "faceURL": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "latestMsgSendTime": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "messageCount": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "messageList": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMFindMessageResultItem": {
+      "kind": "reference",
+      "name": "OpenIMSearchMessageResultItem"
+    },
+    "OpenIMSearchMessageResult": {
+      "kind": "object",
+      "fields": {
+        "totalCount": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "searchResultItems": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMSearchMessageResultItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMFindMessageResult": {
+      "kind": "object",
+      "fields": {
+        "totalCount": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "findResultItems": {
+          "required": true,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "reference",
+              "name": "OpenIMFindMessageResultItem"
+            }
+          }
+        }
+      }
+    },
+    "OpenIMError": {
+      "kind": "object",
+      "fields": {
+        "errCode": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "errMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMInitConfig": {
+      "kind": "object",
+      "fields": {
+        "platformID": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMPlatform"
+          }
+        },
+        "apiAddr": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "wsAddr": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "dataDir": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "logFilePath": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
+        "logLevel": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMLogLevel"
+          }
+        },
+        "isLogStandardOutput": {
+          "required": true,
+          "schema": {
+            "kind": "boolean"
+          }
+        },
+        "systemType": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMSDKEventName": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": "onConnecting"
+        },
+        {
+          "kind": "literal",
+          "value": "onConnectSuccess"
+        },
+        {
+          "kind": "literal",
+          "value": "onConnectFailed"
+        },
+        {
+          "kind": "literal",
+          "value": "onKickedOffline"
+        },
+        {
+          "kind": "literal",
+          "value": "onUserTokenExpired"
+        },
+        {
+          "kind": "literal",
+          "value": "onUserTokenInvalid"
+        },
+        {
+          "kind": "literal",
+          "value": "onRecvNewMessage"
+        },
+        {
+          "kind": "literal",
+          "value": "onRecvOfflineNewMessage"
+        },
+        {
+          "kind": "literal",
+          "value": "onRecvOnlineOnlyMessage"
+        },
+        {
+          "kind": "literal",
+          "value": "onMsgDeleted"
+        },
+        {
+          "kind": "literal",
+          "value": "onNewRecvMessageRevoked"
+        },
+        {
+          "kind": "literal",
+          "value": "onRecvC2CReadReceipt"
+        },
+        {
+          "kind": "literal",
+          "value": "onRecvNewMessages"
+        },
+        {
+          "kind": "literal",
+          "value": "onRecvOfflineNewMessages"
+        },
+        {
+          "kind": "literal",
+          "value": "onConversationChanged"
+        },
+        {
+          "kind": "literal",
+          "value": "onConversationUserInputStatusChanged"
+        },
+        {
+          "kind": "literal",
+          "value": "onNewConversation"
+        },
+        {
+          "kind": "literal",
+          "value": "onSyncServerFailed"
+        },
+        {
+          "kind": "literal",
+          "value": "onSyncServerFinish"
+        },
+        {
+          "kind": "literal",
+          "value": "onSyncServerProgress"
+        },
+        {
+          "kind": "literal",
+          "value": "onSyncServerStart"
+        },
+        {
+          "kind": "literal",
+          "value": "onSendMessageProgress"
+        },
+        {
+          "kind": "literal",
+          "value": "onUploadFileProgress"
+        },
+        {
+          "kind": "literal",
+          "value": "onUploadLogsProgress"
+        },
+        {
+          "kind": "literal",
+          "value": "onTotalUnreadMessageCountChanged"
+        },
+        {
+          "kind": "literal",
+          "value": "onRecvCustomBusinessMessage"
+        },
+        {
+          "kind": "literal",
+          "value": "onBlackAdded"
+        },
+        {
+          "kind": "literal",
+          "value": "onBlackDeleted"
+        },
+        {
+          "kind": "literal",
+          "value": "onFriendAdded"
+        },
+        {
+          "kind": "literal",
+          "value": "onFriendApplicationAccepted"
+        },
+        {
+          "kind": "literal",
+          "value": "onFriendApplicationAdded"
+        },
+        {
+          "kind": "literal",
+          "value": "onFriendApplicationDeleted"
+        },
+        {
+          "kind": "literal",
+          "value": "onFriendApplicationRejected"
+        },
+        {
+          "kind": "literal",
+          "value": "onFriendDeleted"
+        },
+        {
+          "kind": "literal",
+          "value": "onFriendInfoChanged"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupApplicationAccepted"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupApplicationAdded"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupApplicationDeleted"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupApplicationRejected"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupDismissed"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupInfoChanged"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupMemberAdded"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupMemberDeleted"
+        },
+        {
+          "kind": "literal",
+          "value": "onGroupMemberInfoChanged"
+        },
+        {
+          "kind": "literal",
+          "value": "onJoinedGroupAdded"
+        },
+        {
+          "kind": "literal",
+          "value": "onJoinedGroupDeleted"
+        },
+        {
+          "kind": "literal",
+          "value": "onSelfInfoUpdated"
+        },
+        {
+          "kind": "literal",
+          "value": "onUserStatusChanged"
+        }
+      ]
+    },
+    "OpenIMSDKEvent": {
+      "kind": "object",
+      "fields": {
+        "eventName": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSDKEventName"
+          }
+        },
+        "payload": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "errCode": {
+          "required": true,
+          "schema": {
+            "kind": "number"
+          }
+        },
+        "errMsg": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        }
+      }
+    },
+    "OpenIMSDKEventSubscription": {
+      "kind": "object",
+      "fields": {
+        "id": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "eventName": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSDKEventName"
+          }
+        }
+      }
+    },
+    "OpenIMSDKEventHandlerSubscription": {
+      "kind": "object",
+      "fields": {
+        "id": {
+          "required": true,
+          "schema": {
+            "kind": "string"
+          }
+        },
+        "eventName": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSDKEventName"
+          }
+        },
+        "handler": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "OpenIMSDKRawEventHandler"
+          }
+        }
+      }
+    },
+    "OpenIMSDKInstance": {
+      "kind": "object",
+      "fields": {
+        "initSDK": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "InitSDK"
+          }
+        },
+        "login": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "Login"
+          }
+        },
+        "logout": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "Logout"
+          }
+        },
+        "getLoginStatus": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "GetLoginStatus"
+          }
+        },
+        "getLoginUserID": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "GetLoginUserID"
+          }
+        },
+        "createTextMessage": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "CreateTextMessage"
+          }
+        },
+        "sendMessage": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "SendMessage"
+          }
+        },
+        "uploadFile": {
+          "required": true,
+          "schema": {
+            "kind": "reference",
+            "name": "UploadFile"
+          }
+        }
+      }
+    }
+  },
+  "callables": {
+    "off": {
+      "codec": "void",
+      "schema": {
+        "kind": "void"
+      }
+    },
+    "offEvent": {
+      "codec": "void",
+      "schema": {
+        "kind": "void"
+      }
+    },
+    "onConnecting": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onConnectSuccess": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onConnectFailed": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onKickedOffline": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onUserTokenExpired": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onUserTokenInvalid": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onRecvNewMessage": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onRecvOfflineNewMessage": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onRecvOnlineOnlyMessage": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onMsgDeleted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onNewRecvMessageRevoked": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onRecvC2CReadReceipt": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onRecvNewMessages": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onRecvOfflineNewMessages": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onConversationChanged": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onConversationUserInputStatusChanged": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onNewConversation": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onSyncServerFailed": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onSyncServerFinish": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onSyncServerProgress": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onSyncServerStart": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onSendMessageProgress": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onUploadFileProgress": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onUploadLogsProgress": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onTotalUnreadMessageCountChanged": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onRecvCustomBusinessMessage": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onBlackAdded": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onBlackDeleted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onFriendAdded": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onFriendApplicationAccepted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onFriendApplicationAdded": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onFriendApplicationDeleted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onFriendApplicationRejected": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onFriendDeleted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onFriendInfoChanged": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupApplicationAccepted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupApplicationAdded": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupApplicationDeleted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupApplicationRejected": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupDismissed": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupInfoChanged": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupMemberAdded": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupMemberDeleted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onGroupMemberInfoChanged": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onJoinedGroupAdded": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onJoinedGroupDeleted": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onSelfInfoUpdated": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "onUserStatusChanged": {
+      "codec": "event-handler",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMSDKEventSubscription"
+      }
+    },
+    "initSDK": {
+      "codec": "boolean",
+      "schema": {
+        "kind": "boolean"
+      }
+    },
+    "login": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "logout": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getLoginStatus": {
+      "codec": "typed:OpenIMLoginStatus",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMLoginStatus"
+      }
+    },
+    "getLoginUserID": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getSdkVersion": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getOpenIMDataPath": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "unInitSDK": {
+      "codec": "void",
+      "schema": {
+        "kind": "void"
+      }
+    },
+    "getAllConversationList": {
+      "codec": "typed:OpenIMConversationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMConversationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getOneConversation": {
+      "codec": "typed:OpenIMConversationItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMConversationItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getAdvancedHistoryMessageList": {
+      "codec": "typed:OpenIMAdvancedHistoryMessageListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMAdvancedHistoryMessageListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getSpecifiedGroupsInfo": {
+      "codec": "typed:OpenIMGroupListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "deleteConversationAndDeleteAllMsg": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "markConversationMessageAsRead": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getGroupMemberList": {
+      "codec": "typed:OpenIMGroupMemberListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupMemberListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "setMessageLocalEx": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "revokeMessage": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "setConversation": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "setAppBackgroundStatus": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "setAppBadge": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "networkStatusChanged": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getSelfUserInfo": {
+      "codec": "typed:OpenIMUserInfo|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMUserInfo"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getUsersInfo": {
+      "codec": "typed:OpenIMUserListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMUserListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "setSelfInfo": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "deleteMessageFromLocalStorage": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "deleteMessage": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "deleteAllMsgFromLocal": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "deleteAllMsgFromLocalAndSvr": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "insertSingleMessageToLocalStorage": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "insertGroupMessageToLocalStorage": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "changeInputStates": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "clearConversationAndDeleteAllMsg": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "hideConversation": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "hideAllConversations": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "markAllConversationMessageAsRead": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "searchConversation": {
+      "codec": "typed:OpenIMConversationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMConversationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getConversationListSplit": {
+      "codec": "typed:OpenIMConversationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMConversationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getConversationIDBySessionType": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getMultipleConversation": {
+      "codec": "typed:OpenIMConversationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMConversationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "deleteConversation": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "setConversationDraft": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getTotalUnreadMsgCount": {
+      "codec": "number",
+      "schema": {
+        "kind": "number"
+      }
+    },
+    "searchLocalMessages": {
+      "codec": "typed:OpenIMSearchMessageResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMSearchMessageResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "addFriend": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "searchFriends": {
+      "codec": "typed:OpenIMFriendListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMFriendListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getSpecifiedFriendsInfo": {
+      "codec": "typed:OpenIMFriendListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMFriendListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getFriendApplicationListAsRecipient": {
+      "codec": "typed:OpenIMFriendApplicationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMFriendApplicationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getFriendApplicationListAsApplicant": {
+      "codec": "typed:OpenIMFriendApplicationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMFriendApplicationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getFriendApplicationUnhandledCount": {
+      "codec": "number",
+      "schema": {
+        "kind": "number"
+      }
+    },
+    "getFriendList": {
+      "codec": "typed:OpenIMFriendListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMFriendListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getFriendListPage": {
+      "codec": "typed:OpenIMFriendListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMFriendListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "updateFriends": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "checkFriend": {
+      "codec": "typed:OpenIMCheckFriendResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMCheckFriendResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "acceptFriendApplication": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "refuseFriendApplication": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "deleteFriend": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "addBlack": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "removeBlack": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getBlackList": {
+      "codec": "typed:OpenIMBlackListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMBlackListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "inviteUserToGroup": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "kickGroupMember": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "isJoinGroup": {
+      "codec": "boolean",
+      "schema": {
+        "kind": "boolean"
+      }
+    },
+    "getSpecifiedGroupMembersInfo": {
+      "codec": "typed:OpenIMGroupMemberListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupMemberListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getUsersInGroup": {
+      "codec": "typed:Array<string>|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "array",
+            "items": {
+              "kind": "string"
+            }
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "searchGroupMembers": {
+      "codec": "typed:OpenIMGroupMemberListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupMemberListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getJoinedGroupList": {
+      "codec": "typed:OpenIMGroupListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getJoinedGroupListPage": {
+      "codec": "typed:OpenIMGroupListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createGroup": {
+      "codec": "typed:OpenIMGroupItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "setGroupInfo": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "setGroupMemberInfo": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "joinGroup": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "searchGroups": {
+      "codec": "typed:OpenIMGroupListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "quitGroup": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "dismissGroup": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "changeGroupMute": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "changeGroupMemberMute": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "transferGroupOwner": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getGroupApplicationListAsApplicant": {
+      "codec": "typed:OpenIMGroupApplicationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupApplicationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getGroupApplicationListAsRecipient": {
+      "codec": "typed:OpenIMGroupApplicationListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMGroupApplicationListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getGroupApplicationUnhandledCount": {
+      "codec": "number",
+      "schema": {
+        "kind": "number"
+      }
+    },
+    "acceptGroupApplication": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "refuseGroupApplication": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "findMessageList": {
+      "codec": "typed:OpenIMFindMessageResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMFindMessageResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "updateFcmToken": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "subscribeUsersStatus": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "unsubscribeUsersStatus": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    },
+    "getUserStatus": {
+      "codec": "typed:OpenIMUserStatusListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMUserStatusListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "getSubscribeUsersStatus": {
+      "codec": "typed:OpenIMUserStatusListResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMUserStatusListResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createTextMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createImageMessageFromFullPath": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createImageMessageByURL": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createCustomMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createQuoteMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createAdvancedQuoteMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createAdvancedTextMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createTextAtMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createSoundMessageFromFullPath": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createSoundMessageByURL": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createVideoMessageFromFullPath": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createVideoMessageByURL": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createFileMessageFromFullPath": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createFileMessageByURL": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createMergerMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createForwardMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createFaceMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createLocationMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "createCardMessage": {
+      "codec": "typed:OpenIMMessageItem|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMMessageItem"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "sendMessage": {
+      "codec": "typed:OpenIMMessageItem",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMMessageItem"
+      }
+    },
+    "sendMessageNotOss": {
+      "codec": "typed:OpenIMMessageItem",
+      "schema": {
+        "kind": "reference",
+        "name": "OpenIMMessageItem"
+      }
+    },
+    "uploadFile": {
+      "codec": "typed:OpenIMUploadFileResult|null",
+      "schema": {
+        "kind": "union",
+        "options": [
+          {
+            "kind": "reference",
+            "name": "OpenIMUploadFileResult"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    "uploadLogs": {
+      "codec": "raw-string",
+      "schema": {
+        "kind": "string"
+      }
+    }
+  },
+  "events": {
+    "onConnecting": {
+      "handlerType": "OpenIMVoidEventHandler",
+      "payloadProfile": "void",
+      "arguments": []
+    },
+    "onConnectSuccess": {
+      "handlerType": "OpenIMVoidEventHandler",
+      "payloadProfile": "void",
+      "arguments": []
+    },
+    "onConnectFailed": {
+      "handlerType": "OpenIMErrorEventHandler",
+      "payloadProfile": "scalar",
+      "arguments": [
+        {
+          "kind": "number"
+        },
+        {
+          "kind": "string"
+        }
+      ]
+    },
+    "onKickedOffline": {
+      "handlerType": "OpenIMVoidEventHandler",
+      "payloadProfile": "void",
+      "arguments": []
+    },
+    "onUserTokenExpired": {
+      "handlerType": "OpenIMVoidEventHandler",
+      "payloadProfile": "void",
+      "arguments": []
+    },
+    "onUserTokenInvalid": {
+      "handlerType": "OpenIMErrorEventHandler",
+      "payloadProfile": "scalar",
+      "arguments": [
+        {
+          "kind": "number"
+        },
+        {
+          "kind": "string"
+        }
+      ]
+    },
+    "onRecvNewMessage": {
+      "handlerType": "OpenIMMessageEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onRecvOfflineNewMessage": {
+      "handlerType": "OpenIMMessageEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onRecvOnlineOnlyMessage": {
+      "handlerType": "OpenIMMessageEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onMsgDeleted": {
+      "handlerType": "OpenIMMessageEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onNewRecvMessageRevoked": {
+      "handlerType": "OpenIMMessageRevokedEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageRevokedItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onRecvC2CReadReceipt": {
+      "handlerType": "OpenIMMessageReceiptListEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageReceiptListResult"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onRecvNewMessages": {
+      "handlerType": "OpenIMMessageListEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageListResult"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onRecvOfflineNewMessages": {
+      "handlerType": "OpenIMMessageListEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMMessageListResult"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onConversationChanged": {
+      "handlerType": "OpenIMConversationListEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMConversationListResult"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onConversationUserInputStatusChanged": {
+      "handlerType": "OpenIMConversationInputStatusEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMConversationInputStatusItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onNewConversation": {
+      "handlerType": "OpenIMConversationListEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMConversationListResult"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onSyncServerFailed": {
+      "handlerType": "OpenIMBooleanEventHandler",
+      "payloadProfile": "scalar",
+      "arguments": [
+        {
+          "kind": "boolean"
+        }
+      ]
+    },
+    "onSyncServerFinish": {
+      "handlerType": "OpenIMBooleanEventHandler",
+      "payloadProfile": "scalar",
+      "arguments": [
+        {
+          "kind": "boolean"
+        }
+      ]
+    },
+    "onSyncServerProgress": {
+      "handlerType": "OpenIMNumberEventHandler",
+      "payloadProfile": "scalar",
+      "arguments": [
+        {
+          "kind": "number"
+        }
+      ]
+    },
+    "onSyncServerStart": {
+      "handlerType": "OpenIMBooleanEventHandler",
+      "payloadProfile": "scalar",
+      "arguments": [
+        {
+          "kind": "boolean"
+        }
+      ]
+    },
+    "onSendMessageProgress": {
+      "handlerType": "OpenIMSendMessageProgressEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMSendMessageProgressEvent"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onUploadFileProgress": {
+      "handlerType": "OpenIMUploadFileProgressEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMUploadFileProgressEvent"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onUploadLogsProgress": {
+      "handlerType": "OpenIMUploadLogsProgressEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMUploadLogsProgressEvent"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onTotalUnreadMessageCountChanged": {
+      "handlerType": "OpenIMNumberEventHandler",
+      "payloadProfile": "scalar",
+      "arguments": [
+        {
+          "kind": "number"
+        }
+      ]
+    },
+    "onRecvCustomBusinessMessage": {
+      "handlerType": "OpenIMStringEventHandler",
+      "payloadProfile": "opaque-string",
+      "arguments": [
+        {
+          "kind": "string"
+        }
+      ]
+    },
+    "onBlackAdded": {
+      "handlerType": "OpenIMBlackUserEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMBlackUserItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onBlackDeleted": {
+      "handlerType": "OpenIMBlackUserEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMBlackUserItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onFriendAdded": {
+      "handlerType": "OpenIMFriendEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMFriendUserItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onFriendApplicationAccepted": {
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMFriendApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onFriendApplicationAdded": {
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMFriendApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onFriendApplicationDeleted": {
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMFriendApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onFriendApplicationRejected": {
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMFriendApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onFriendDeleted": {
+      "handlerType": "OpenIMFriendEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMFriendUserItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onFriendInfoChanged": {
+      "handlerType": "OpenIMFriendEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMFriendUserItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupApplicationAccepted": {
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupApplicationAdded": {
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupApplicationDeleted": {
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupApplicationRejected": {
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupApplicationItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupDismissed": {
+      "handlerType": "OpenIMGroupEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupInfoChanged": {
+      "handlerType": "OpenIMGroupEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupMemberAdded": {
+      "handlerType": "OpenIMGroupMemberEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupMemberItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupMemberDeleted": {
+      "handlerType": "OpenIMGroupMemberEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupMemberItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onGroupMemberInfoChanged": {
+      "handlerType": "OpenIMGroupMemberEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupMemberItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onJoinedGroupAdded": {
+      "handlerType": "OpenIMGroupEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onJoinedGroupDeleted": {
+      "handlerType": "OpenIMGroupEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMGroupItem"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onSelfInfoUpdated": {
+      "handlerType": "OpenIMUserEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMUserInfo"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    },
+    "onUserStatusChanged": {
+      "handlerType": "OpenIMUserStatusListEventHandler",
+      "payloadProfile": "typed",
+      "arguments": [
+        {
+          "kind": "union",
+          "options": [
+            {
+              "kind": "reference",
+              "name": "OpenIMUserStatusListResult"
+            },
+            {
+              "kind": "null"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

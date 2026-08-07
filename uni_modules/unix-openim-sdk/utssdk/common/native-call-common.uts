@@ -803,7 +803,7 @@ function parseNativeOfflinePush(value : any | null, helpers : NativeParserHelper
 }
 
 function parseNativeGroupHasReadInfo(value : any | null, helpers : NativeParserHelpers) : OpenIMAttachedGroupHasReadInfo | null {
-  if (value instanceof UTSJSONObject) { return { hasReadCount: helpers.readNumberParam(value, 'hasReadCount'), hasReadUserIDList: parseNativeStringList(readNativeValue(value, 'hasReadUserIDList'), helpers), groupMemberCount: helpers.readNumberParam(value, 'groupMemberCount') } }
+  if (value instanceof UTSJSONObject) { return { hasReadCount: helpers.readNumberParam(value, 'hasReadCount'), unreadCount: helpers.readNumberParam(value, 'unreadCount'), hasReadUserIDList: parseNativeStringList(readNativeValue(value, 'hasReadUserIDList'), helpers), groupMemberCount: helpers.readNumberParam(value, 'groupMemberCount') } }
   return null
 }
 
@@ -827,7 +827,7 @@ function parseNativeMessageItem(item : UTSJSONObject, helpers : NativeParserHelp
 }
 
 function isValidParsedMessageObject(raw : UTSJSONObject, helpers : NativeParserHelpers) : boolean {
-  return helpers.isRequiredField(raw, 'createTime') && helpers.isRequiredField(raw, 'sendTime') && helpers.isRequiredField(raw, 'sessionType') && helpers.isRequiredField(raw, 'msgFrom') && helpers.isRequiredField(raw, 'contentType') && helpers.isRequiredField(raw, 'senderPlatformID') && helpers.isRequiredField(raw, 'seq') && helpers.isRequiredField(raw, 'status')
+  return helpers.isRequiredField(raw, 'createTime') && helpers.isRequiredField(raw, 'sendTime') && helpers.isRequiredField(raw, 'sessionType') && helpers.isRequiredField(raw, 'msgFrom') && helpers.isRequiredField(raw, 'contentType') && helpers.isRequiredField(raw, 'senderPlatformID') && helpers.isRequiredField(raw, 'seq') && helpers.isRequiredField(raw, 'isRead') && helpers.isRequiredField(raw, 'status')
 }
 
 function isValidParsedMessage(message : OpenIMMessageItem, helpers : NativeParserHelpers) : boolean {
@@ -864,6 +864,8 @@ export function parseNativeMessageCommon(data : string, helpers : NativeParserHe
 }
 
 export function parseNativeAdvancedHistoryMessageListCommon(data : string, helpers : NativeParserHelpers) : OpenIMAdvancedHistoryMessageListResult | null {
+  const raw = helpers.parseNativeAny(data)
+  if (!(raw instanceof UTSJSONObject) || !helpers.isRequiredField(raw, 'lastMinSeq') || !helpers.isRequiredField(raw, 'isEnd') || !helpers.isRequiredField(raw, 'errCode') || !helpers.isRequiredField(raw, 'errMsg')) { return null }
   const typedResult = helpers.parseNativeAdvancedHistoryMessageListData(data)
   if (typedResult != null && isValidParsedMessageList(typedResult.messageList, helpers)) { return typedResult }
   return parseNativeAdvancedHistoryMessageListFallbackCommon(data, helpers)
@@ -875,7 +877,7 @@ export function parseNativeAdvancedHistoryMessageListFallbackCommon(data : strin
   const messages : Array<OpenIMMessageItem> = []
   const rawList = parseNativeJSONObjectList(readNativeValue(raw, 'messageList'), helpers)
   rawList.forEach((item : UTSJSONObject) => { if (isValidParsedMessageObject(item, helpers)) { messages.push(parseNativeMessageItem(item, helpers)) } })
-  return { messageList: messages, isEnd: helpers.readBooleanParam(raw, 'isEnd'), errCode: helpers.readNumberParam(raw, 'errCode'), errMsg: helpers.readStringParam(raw, 'errMsg') }
+  return { messageList: messages, lastMinSeq: helpers.readNumberParam(raw, 'lastMinSeq'), isEnd: helpers.readBooleanParam(raw, 'isEnd'), errCode: helpers.readNumberParam(raw, 'errCode'), errMsg: helpers.readStringParam(raw, 'errMsg') }
 }
 
 function parseNativeMessageListFromValue(value : any | null, helpers : NativeParserHelpers) : Array<OpenIMMessageItem> {

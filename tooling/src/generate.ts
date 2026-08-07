@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import type { ContractCallable, ContractDocument, ContractEvent, Platform, SurfaceSnapshot } from './model.js'
 import { INDEX_MARKERS } from './import-contract.js'
 import { sha256 } from './source.js'
+import { buildPublicResponseSchemas, buildPublicTestDisposition } from './test-contract.js'
 
 export interface GeneratedOutput {
   path: string
@@ -209,6 +210,8 @@ export function buildGeneratedOutputs(root: string): GeneratedOutput[] {
   const contract = readContract(root)
   const interfaceSource = `${contract.types.map((value) => value.declaration).join('\n\n')}\n`
   const snapshot = `${JSON.stringify(buildSurfaceSnapshot(contract), null, 2)}\n`
+  const responseSchemas = `${JSON.stringify(buildPublicResponseSchemas(contract), null, 2)}\n`
+  const testDisposition = `${JSON.stringify(buildPublicTestDisposition(contract), null, 2)}\n`
   return [
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), content: interfaceSource },
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/index.uts'), content: generateIndex(root, contract, 'android') },
@@ -224,6 +227,8 @@ export function buildGeneratedOutputs(root: string): GeneratedOutput[] {
       content: readFileSync(join(root, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8'),
     },
     { path: join(root, 'contracts/base/surface.snapshot.json'), content: snapshot },
+    { path: join(root, 'contracts/base/response-schemas.json'), content: responseSchemas },
+    { path: join(root, 'contracts/base/test-disposition.json'), content: testDisposition },
   ].map((output) => ({ ...output, content: output.content.endsWith('\n') ? output.content : `${output.content}\n` }))
 }
 

@@ -534,13 +534,19 @@ function isRequiredStringField(value : UTSJSONObject, key : string) : boolean {
   return raw != null && typeof raw == 'string'
 }
 
+function isRequiredBooleanField(value : UTSJSONObject, key : string) : boolean {
+  const raw = readNativeValue(value, key)
+  return raw != null && typeof raw == 'boolean'
+}
+
 function isOptionalNumberField(value : UTSJSONObject, key : string) : boolean {
   const raw = readNativeValue(value, key)
   return raw == null || typeof raw == 'number'
 }
 
 function isCommonRequiredField(value : UTSJSONObject, key : string) : boolean {
-  if (key == 'conversationType' || key == 'recvMsgOpt' || key == 'unreadCount' || key == 'latestMsgSendTime' || key == 'draftTextTime' || key == 'burnDuration' || key == 'minSeq' || key == 'maxSeq' || key == 'msgDestructTime' || key == 'groupAtType' || key == 'updateUnreadCountTime' || key == 'status' || key == 'type' || key == 'createTime' || key == 'sendTime' || key == 'sessionType' || key == 'msgFrom' || key == 'contentType' || key == 'senderPlatformID' || key == 'seq' || key == 'revokeTime' || key == 'readTime' || key == 'addSource' || key == 'memberCount' || key == 'groupType' || key == 'needVerification' || key == 'lookMemberInfo' || key == 'applyMemberFriend' || key == 'notificationUpdateTime' || key == 'roleLevel' || key == 'joinTime' || key == 'joinSource' || key == 'muteEndTime' || key == 'handleResult' || key == 'handleTime' || key == 'reqTime' || key == 'handledTime') {
+  if (key == 'isRead' || key == 'isEnd') { return isRequiredBooleanField(value, key) }
+  if (key == 'conversationType' || key == 'recvMsgOpt' || key == 'unreadCount' || key == 'latestMsgSendTime' || key == 'draftTextTime' || key == 'burnDuration' || key == 'minSeq' || key == 'maxSeq' || key == 'msgDestructTime' || key == 'groupAtType' || key == 'updateUnreadCountTime' || key == 'status' || key == 'type' || key == 'createTime' || key == 'sendTime' || key == 'sessionType' || key == 'msgFrom' || key == 'contentType' || key == 'senderPlatformID' || key == 'seq' || key == 'revokeTime' || key == 'readTime' || key == 'addSource' || key == 'memberCount' || key == 'groupType' || key == 'needVerification' || key == 'lookMemberInfo' || key == 'applyMemberFriend' || key == 'notificationUpdateTime' || key == 'roleLevel' || key == 'joinTime' || key == 'joinSource' || key == 'muteEndTime' || key == 'handleResult' || key == 'handleTime' || key == 'reqTime' || key == 'handledTime' || key == 'lastMinSeq' || key == 'errCode') {
     return isRequiredNumberField(value, key)
   }
   return isRequiredStringField(value, key)

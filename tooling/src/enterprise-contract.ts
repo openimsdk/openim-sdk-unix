@@ -35,6 +35,7 @@ import {
 import { verifyEnterpriseDriverInvariants } from './verify-driver.js'
 import { harmonyTypedMethods, renderHarmonyDriverBindings, renderHarmonyOperationCodes } from './harmony-bindings.js'
 import { renderHarmonyMonomorphicHelpers } from './harmony-monomorphize.js'
+import { buildEnterpriseResponseSchemas, buildEnterpriseTestDisposition } from './test-contract.js'
 
 const EXPECTED_TOTAL = { constants: 109, types: 233, callables: 245, events: 80 } as const
 const EXPECTED_DELTA = { constants: 0, types: 73, callables: 84, events: 32, typeExtensions: 3 } as const
@@ -421,6 +422,8 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     events,
   }
   writeText(join(privateRoot, 'contracts/enterprise/delta.json'), JSON.stringify(delta, null, 2))
+  writeText(join(privateRoot, 'contracts/enterprise/response-schemas.json'), JSON.stringify(buildEnterpriseResponseSchemas(base, delta), null, 2))
+  writeText(join(privateRoot, 'contracts/enterprise/test-disposition.json'), JSON.stringify(buildEnterpriseTestDisposition(base, delta), null, 2))
   importHarmonyABI(privateRoot)
   return delta
 }
@@ -440,6 +443,9 @@ export function verifyEnterpriseDelta(
   const baseSnapshot = JSON.parse(
     readFileSync(join(publicRoot, 'contracts/base/surface.snapshot.json'), 'utf8'),
   ) as { contractHash: string }
+  const base = JSON.parse(
+    readFileSync(join(publicRoot, 'contracts/base/contract.json'), 'utf8'),
+  ) as ContractDocument
   assert(delta.edition === 'enterprise-delta', 'Invalid enterprise delta edition')
   assert(delta.generatedFrom.publicBaseContractHash === baseSnapshot.contractHash, 'Enterprise public base hash is stale')
   assert(JSON.stringify(delta.expectedTotal) === JSON.stringify(EXPECTED_TOTAL), 'Enterprise total counts changed')
@@ -459,6 +465,16 @@ export function verifyEnterpriseDelta(
     .filter((event) => event.binding.harmony === 'unsupported-by-native-abi')
     .map((event) => event.name)
   assert(JSON.stringify(unsupported) === JSON.stringify(HARMONY_UNSUPPORTED_EVENTS), 'Enterprise unsupported event list changed')
+  const responseSchemas = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/response-schemas.json'), 'utf8'))
+  const expectedResponseSchemas = buildEnterpriseResponseSchemas(base, delta)
+  assert(JSON.stringify(responseSchemas) === JSON.stringify(expectedResponseSchemas), 'Enterprise response schema registry is stale')
+  assert(expectedResponseSchemas.counts.callables === EXPECTED_TOTAL.callables, 'Enterprise response schema callable coverage changed')
+  assert(expectedResponseSchemas.counts.events === EXPECTED_TOTAL.events, 'Enterprise response schema event coverage changed')
+  const testDisposition = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/test-disposition.json'), 'utf8'))
+  const expectedTestDisposition = buildEnterpriseTestDisposition(base, delta)
+  assert(JSON.stringify(testDisposition) === JSON.stringify(expectedTestDisposition), 'Enterprise test disposition registry is stale')
+  assert(expectedTestDisposition.counts.callables === EXPECTED_TOTAL.callables, 'Enterprise callable test disposition coverage changed')
+  assert(expectedTestDisposition.counts.events === EXPECTED_TOTAL.events, 'Enterprise event test disposition coverage changed')
   if (options.verifyHarmonyCertification === false) return
 
   const harmonyABI = JSON.parse(

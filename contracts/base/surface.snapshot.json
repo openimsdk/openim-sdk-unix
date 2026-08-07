@@ -1346,7 +1346,7 @@
     {
       "id": 1115,
       "name": "OpenIMAdvancedHistoryMessageListResult",
-      "signatureHash": "a366a315d523ebf3989af742916891ff8c7638e233d14a39bfbec8bce0a7e8fe"
+      "signatureHash": "3d4d96f27c3add1738e2dee599f2e29be37c2ac1f81578e616f969b538a149dc"
     },
     {
       "id": 1116,
@@ -2880,5 +2880,5 @@
       "signatureHash": "243ce48a95fdaffaf7e13cb32975f6980de5e834cf46cca33de9c8cc2d828b68"
     }
   ],
-  "contractHash": "3b0d8c695350196b13709505ebeb728445408f1a0b89d03818ab146378af6ee4"
+  "contractHash": "9292e6667afc59e145368989c649dfb8d63fd6508da18c5e51038e04045e14e1"
 }

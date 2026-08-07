@@ -1905,8 +1905,8 @@
     {
       "id": 1115,
       "name": "OpenIMAdvancedHistoryMessageListResult",
-      "declaration": "export type OpenIMAdvancedHistoryMessageListResult = {\n  messageList : Array<OpenIMMessageItem>\n  isEnd : boolean\n  errCode : number\n  errMsg : string\n}",
-      "signatureHash": "a366a315d523ebf3989af742916891ff8c7638e233d14a39bfbec8bce0a7e8fe"
+      "declaration": "export type OpenIMAdvancedHistoryMessageListResult = {\n  messageList : Array<OpenIMMessageItem>\n  lastMinSeq : number\n  isEnd : boolean\n  errCode : number\n  errMsg : string\n}",
+      "signatureHash": "3d4d96f27c3add1738e2dee599f2e29be37c2ac1f81578e616f969b538a149dc"
     },
     {
       "id": 1116,

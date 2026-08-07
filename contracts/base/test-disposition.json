@@ -1,0 +1,1636 @@
+{
+  "schemaVersion": 1,
+  "edition": "public",
+  "counts": {
+    "callables": 161,
+    "events": 48
+  },
+  "callables": [
+    {
+      "caseId": "api/off",
+      "apiName": "off",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "void"
+    },
+    {
+      "caseId": "api/offEvent",
+      "apiName": "offEvent",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "void"
+    },
+    {
+      "caseId": "api/onConnecting",
+      "apiName": "onConnecting",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onConnectSuccess",
+      "apiName": "onConnectSuccess",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onConnectFailed",
+      "apiName": "onConnectFailed",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onKickedOffline",
+      "apiName": "onKickedOffline",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onUserTokenExpired",
+      "apiName": "onUserTokenExpired",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onUserTokenInvalid",
+      "apiName": "onUserTokenInvalid",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onRecvNewMessage",
+      "apiName": "onRecvNewMessage",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onRecvOfflineNewMessage",
+      "apiName": "onRecvOfflineNewMessage",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onRecvOnlineOnlyMessage",
+      "apiName": "onRecvOnlineOnlyMessage",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onMsgDeleted",
+      "apiName": "onMsgDeleted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onNewRecvMessageRevoked",
+      "apiName": "onNewRecvMessageRevoked",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onRecvC2CReadReceipt",
+      "apiName": "onRecvC2CReadReceipt",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onRecvNewMessages",
+      "apiName": "onRecvNewMessages",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onRecvOfflineNewMessages",
+      "apiName": "onRecvOfflineNewMessages",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onConversationChanged",
+      "apiName": "onConversationChanged",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onConversationUserInputStatusChanged",
+      "apiName": "onConversationUserInputStatusChanged",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onNewConversation",
+      "apiName": "onNewConversation",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onSyncServerFailed",
+      "apiName": "onSyncServerFailed",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onSyncServerFinish",
+      "apiName": "onSyncServerFinish",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onSyncServerProgress",
+      "apiName": "onSyncServerProgress",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onSyncServerStart",
+      "apiName": "onSyncServerStart",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onSendMessageProgress",
+      "apiName": "onSendMessageProgress",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onUploadFileProgress",
+      "apiName": "onUploadFileProgress",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onUploadLogsProgress",
+      "apiName": "onUploadLogsProgress",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onTotalUnreadMessageCountChanged",
+      "apiName": "onTotalUnreadMessageCountChanged",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onRecvCustomBusinessMessage",
+      "apiName": "onRecvCustomBusinessMessage",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onBlackAdded",
+      "apiName": "onBlackAdded",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onBlackDeleted",
+      "apiName": "onBlackDeleted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onFriendAdded",
+      "apiName": "onFriendAdded",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onFriendApplicationAccepted",
+      "apiName": "onFriendApplicationAccepted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onFriendApplicationAdded",
+      "apiName": "onFriendApplicationAdded",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onFriendApplicationDeleted",
+      "apiName": "onFriendApplicationDeleted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onFriendApplicationRejected",
+      "apiName": "onFriendApplicationRejected",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onFriendDeleted",
+      "apiName": "onFriendDeleted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onFriendInfoChanged",
+      "apiName": "onFriendInfoChanged",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupApplicationAccepted",
+      "apiName": "onGroupApplicationAccepted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupApplicationAdded",
+      "apiName": "onGroupApplicationAdded",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupApplicationDeleted",
+      "apiName": "onGroupApplicationDeleted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupApplicationRejected",
+      "apiName": "onGroupApplicationRejected",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupDismissed",
+      "apiName": "onGroupDismissed",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupInfoChanged",
+      "apiName": "onGroupInfoChanged",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupMemberAdded",
+      "apiName": "onGroupMemberAdded",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupMemberDeleted",
+      "apiName": "onGroupMemberDeleted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onGroupMemberInfoChanged",
+      "apiName": "onGroupMemberInfoChanged",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onJoinedGroupAdded",
+      "apiName": "onJoinedGroupAdded",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onJoinedGroupDeleted",
+      "apiName": "onJoinedGroupDeleted",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onSelfInfoUpdated",
+      "apiName": "onSelfInfoUpdated",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/onUserStatusChanged",
+      "apiName": "onUserStatusChanged",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "event-handler"
+    },
+    {
+      "caseId": "api/initSDK",
+      "apiName": "initSDK",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "boolean"
+    },
+    {
+      "caseId": "api/login",
+      "apiName": "login",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/logout",
+      "apiName": "logout",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getLoginStatus",
+      "apiName": "getLoginStatus",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMLoginStatus"
+    },
+    {
+      "caseId": "api/getLoginUserID",
+      "apiName": "getLoginUserID",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getSdkVersion",
+      "apiName": "getSdkVersion",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getOpenIMDataPath",
+      "apiName": "getOpenIMDataPath",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/unInitSDK",
+      "apiName": "unInitSDK",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "void"
+    },
+    {
+      "caseId": "api/getAllConversationList",
+      "apiName": "getAllConversationList",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMConversationListResult|null"
+    },
+    {
+      "caseId": "api/getOneConversation",
+      "apiName": "getOneConversation",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMConversationItem|null"
+    },
+    {
+      "caseId": "api/getAdvancedHistoryMessageList",
+      "apiName": "getAdvancedHistoryMessageList",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMAdvancedHistoryMessageListResult|null"
+    },
+    {
+      "caseId": "api/getSpecifiedGroupsInfo",
+      "apiName": "getSpecifiedGroupsInfo",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupListResult|null"
+    },
+    {
+      "caseId": "api/deleteConversationAndDeleteAllMsg",
+      "apiName": "deleteConversationAndDeleteAllMsg",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/markConversationMessageAsRead",
+      "apiName": "markConversationMessageAsRead",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getGroupMemberList",
+      "apiName": "getGroupMemberList",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupMemberListResult|null"
+    },
+    {
+      "caseId": "api/setMessageLocalEx",
+      "apiName": "setMessageLocalEx",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/revokeMessage",
+      "apiName": "revokeMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/setConversation",
+      "apiName": "setConversation",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/setAppBackgroundStatus",
+      "apiName": "setAppBackgroundStatus",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/setAppBadge",
+      "apiName": "setAppBadge",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/networkStatusChanged",
+      "apiName": "networkStatusChanged",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getSelfUserInfo",
+      "apiName": "getSelfUserInfo",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMUserInfo|null"
+    },
+    {
+      "caseId": "api/getUsersInfo",
+      "apiName": "getUsersInfo",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMUserListResult|null"
+    },
+    {
+      "caseId": "api/setSelfInfo",
+      "apiName": "setSelfInfo",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/deleteMessageFromLocalStorage",
+      "apiName": "deleteMessageFromLocalStorage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/deleteMessage",
+      "apiName": "deleteMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/deleteAllMsgFromLocal",
+      "apiName": "deleteAllMsgFromLocal",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/deleteAllMsgFromLocalAndSvr",
+      "apiName": "deleteAllMsgFromLocalAndSvr",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/insertSingleMessageToLocalStorage",
+      "apiName": "insertSingleMessageToLocalStorage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/insertGroupMessageToLocalStorage",
+      "apiName": "insertGroupMessageToLocalStorage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/changeInputStates",
+      "apiName": "changeInputStates",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/clearConversationAndDeleteAllMsg",
+      "apiName": "clearConversationAndDeleteAllMsg",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/hideConversation",
+      "apiName": "hideConversation",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/hideAllConversations",
+      "apiName": "hideAllConversations",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/markAllConversationMessageAsRead",
+      "apiName": "markAllConversationMessageAsRead",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/searchConversation",
+      "apiName": "searchConversation",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMConversationListResult|null"
+    },
+    {
+      "caseId": "api/getConversationListSplit",
+      "apiName": "getConversationListSplit",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMConversationListResult|null"
+    },
+    {
+      "caseId": "api/getConversationIDBySessionType",
+      "apiName": "getConversationIDBySessionType",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getMultipleConversation",
+      "apiName": "getMultipleConversation",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMConversationListResult|null"
+    },
+    {
+      "caseId": "api/deleteConversation",
+      "apiName": "deleteConversation",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/setConversationDraft",
+      "apiName": "setConversationDraft",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getTotalUnreadMsgCount",
+      "apiName": "getTotalUnreadMsgCount",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "number"
+    },
+    {
+      "caseId": "api/searchLocalMessages",
+      "apiName": "searchLocalMessages",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMSearchMessageResult|null"
+    },
+    {
+      "caseId": "api/addFriend",
+      "apiName": "addFriend",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/searchFriends",
+      "apiName": "searchFriends",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMFriendListResult|null"
+    },
+    {
+      "caseId": "api/getSpecifiedFriendsInfo",
+      "apiName": "getSpecifiedFriendsInfo",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMFriendListResult|null"
+    },
+    {
+      "caseId": "api/getFriendApplicationListAsRecipient",
+      "apiName": "getFriendApplicationListAsRecipient",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMFriendApplicationListResult|null"
+    },
+    {
+      "caseId": "api/getFriendApplicationListAsApplicant",
+      "apiName": "getFriendApplicationListAsApplicant",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMFriendApplicationListResult|null"
+    },
+    {
+      "caseId": "api/getFriendApplicationUnhandledCount",
+      "apiName": "getFriendApplicationUnhandledCount",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "number"
+    },
+    {
+      "caseId": "api/getFriendList",
+      "apiName": "getFriendList",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMFriendListResult|null"
+    },
+    {
+      "caseId": "api/getFriendListPage",
+      "apiName": "getFriendListPage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMFriendListResult|null"
+    },
+    {
+      "caseId": "api/updateFriends",
+      "apiName": "updateFriends",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/checkFriend",
+      "apiName": "checkFriend",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMCheckFriendResult|null"
+    },
+    {
+      "caseId": "api/acceptFriendApplication",
+      "apiName": "acceptFriendApplication",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/refuseFriendApplication",
+      "apiName": "refuseFriendApplication",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/deleteFriend",
+      "apiName": "deleteFriend",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/addBlack",
+      "apiName": "addBlack",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/removeBlack",
+      "apiName": "removeBlack",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getBlackList",
+      "apiName": "getBlackList",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMBlackListResult|null"
+    },
+    {
+      "caseId": "api/inviteUserToGroup",
+      "apiName": "inviteUserToGroup",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/kickGroupMember",
+      "apiName": "kickGroupMember",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/isJoinGroup",
+      "apiName": "isJoinGroup",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "boolean"
+    },
+    {
+      "caseId": "api/getSpecifiedGroupMembersInfo",
+      "apiName": "getSpecifiedGroupMembersInfo",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupMemberListResult|null"
+    },
+    {
+      "caseId": "api/getUsersInGroup",
+      "apiName": "getUsersInGroup",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:Array<string>|null"
+    },
+    {
+      "caseId": "api/searchGroupMembers",
+      "apiName": "searchGroupMembers",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupMemberListResult|null"
+    },
+    {
+      "caseId": "api/getJoinedGroupList",
+      "apiName": "getJoinedGroupList",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupListResult|null"
+    },
+    {
+      "caseId": "api/getJoinedGroupListPage",
+      "apiName": "getJoinedGroupListPage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupListResult|null"
+    },
+    {
+      "caseId": "api/createGroup",
+      "apiName": "createGroup",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupItem|null"
+    },
+    {
+      "caseId": "api/setGroupInfo",
+      "apiName": "setGroupInfo",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/setGroupMemberInfo",
+      "apiName": "setGroupMemberInfo",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/joinGroup",
+      "apiName": "joinGroup",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/searchGroups",
+      "apiName": "searchGroups",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupListResult|null"
+    },
+    {
+      "caseId": "api/quitGroup",
+      "apiName": "quitGroup",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/dismissGroup",
+      "apiName": "dismissGroup",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/changeGroupMute",
+      "apiName": "changeGroupMute",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/changeGroupMemberMute",
+      "apiName": "changeGroupMemberMute",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/transferGroupOwner",
+      "apiName": "transferGroupOwner",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getGroupApplicationListAsApplicant",
+      "apiName": "getGroupApplicationListAsApplicant",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupApplicationListResult|null"
+    },
+    {
+      "caseId": "api/getGroupApplicationListAsRecipient",
+      "apiName": "getGroupApplicationListAsRecipient",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMGroupApplicationListResult|null"
+    },
+    {
+      "caseId": "api/getGroupApplicationUnhandledCount",
+      "apiName": "getGroupApplicationUnhandledCount",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "number"
+    },
+    {
+      "caseId": "api/acceptGroupApplication",
+      "apiName": "acceptGroupApplication",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/refuseGroupApplication",
+      "apiName": "refuseGroupApplication",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/findMessageList",
+      "apiName": "findMessageList",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMFindMessageResult|null"
+    },
+    {
+      "caseId": "api/updateFcmToken",
+      "apiName": "updateFcmToken",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/subscribeUsersStatus",
+      "apiName": "subscribeUsersStatus",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/unsubscribeUsersStatus",
+      "apiName": "unsubscribeUsersStatus",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    },
+    {
+      "caseId": "api/getUserStatus",
+      "apiName": "getUserStatus",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMUserStatusListResult|null"
+    },
+    {
+      "caseId": "api/getSubscribeUsersStatus",
+      "apiName": "getSubscribeUsersStatus",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMUserStatusListResult|null"
+    },
+    {
+      "caseId": "api/createTextMessage",
+      "apiName": "createTextMessage",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createImageMessageFromFullPath",
+      "apiName": "createImageMessageFromFullPath",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createImageMessageByURL",
+      "apiName": "createImageMessageByURL",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createCustomMessage",
+      "apiName": "createCustomMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createQuoteMessage",
+      "apiName": "createQuoteMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createAdvancedQuoteMessage",
+      "apiName": "createAdvancedQuoteMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createAdvancedTextMessage",
+      "apiName": "createAdvancedTextMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createTextAtMessage",
+      "apiName": "createTextAtMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createSoundMessageFromFullPath",
+      "apiName": "createSoundMessageFromFullPath",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createSoundMessageByURL",
+      "apiName": "createSoundMessageByURL",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createVideoMessageFromFullPath",
+      "apiName": "createVideoMessageFromFullPath",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createVideoMessageByURL",
+      "apiName": "createVideoMessageByURL",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createFileMessageFromFullPath",
+      "apiName": "createFileMessageFromFullPath",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createFileMessageByURL",
+      "apiName": "createFileMessageByURL",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createMergerMessage",
+      "apiName": "createMergerMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createForwardMessage",
+      "apiName": "createForwardMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createFaceMessage",
+      "apiName": "createFaceMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createLocationMessage",
+      "apiName": "createLocationMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/createCardMessage",
+      "apiName": "createCardMessage",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem|null"
+    },
+    {
+      "caseId": "api/sendMessage",
+      "apiName": "sendMessage",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem"
+    },
+    {
+      "caseId": "api/sendMessageNotOss",
+      "apiName": "sendMessageNotOss",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMMessageItem"
+    },
+    {
+      "caseId": "api/uploadFile",
+      "apiName": "uploadFile",
+      "priority": "P0",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "typed:OpenIMUploadFileResult|null"
+    },
+    {
+      "caseId": "api/uploadLogs",
+      "apiName": "uploadLogs",
+      "priority": "P1",
+      "disposition": "required",
+      "capability": "core",
+      "responseCodec": "raw-string"
+    }
+  ],
+  "events": [
+    {
+      "caseId": "event/onConnecting",
+      "eventName": "onConnecting",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "void"
+    },
+    {
+      "caseId": "event/onConnectSuccess",
+      "eventName": "onConnectSuccess",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "void"
+    },
+    {
+      "caseId": "event/onConnectFailed",
+      "eventName": "onConnectFailed",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "scalar"
+    },
+    {
+      "caseId": "event/onKickedOffline",
+      "eventName": "onKickedOffline",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "void"
+    },
+    {
+      "caseId": "event/onUserTokenExpired",
+      "eventName": "onUserTokenExpired",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "void"
+    },
+    {
+      "caseId": "event/onUserTokenInvalid",
+      "eventName": "onUserTokenInvalid",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "scalar"
+    },
+    {
+      "caseId": "event/onRecvNewMessage",
+      "eventName": "onRecvNewMessage",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onRecvOfflineNewMessage",
+      "eventName": "onRecvOfflineNewMessage",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onRecvOnlineOnlyMessage",
+      "eventName": "onRecvOnlineOnlyMessage",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onMsgDeleted",
+      "eventName": "onMsgDeleted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onNewRecvMessageRevoked",
+      "eventName": "onNewRecvMessageRevoked",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onRecvC2CReadReceipt",
+      "eventName": "onRecvC2CReadReceipt",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onRecvNewMessages",
+      "eventName": "onRecvNewMessages",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onRecvOfflineNewMessages",
+      "eventName": "onRecvOfflineNewMessages",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onConversationChanged",
+      "eventName": "onConversationChanged",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onConversationUserInputStatusChanged",
+      "eventName": "onConversationUserInputStatusChanged",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onNewConversation",
+      "eventName": "onNewConversation",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onSyncServerFailed",
+      "eventName": "onSyncServerFailed",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "scalar"
+    },
+    {
+      "caseId": "event/onSyncServerFinish",
+      "eventName": "onSyncServerFinish",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "scalar"
+    },
+    {
+      "caseId": "event/onSyncServerProgress",
+      "eventName": "onSyncServerProgress",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "scalar"
+    },
+    {
+      "caseId": "event/onSyncServerStart",
+      "eventName": "onSyncServerStart",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "scalar"
+    },
+    {
+      "caseId": "event/onSendMessageProgress",
+      "eventName": "onSendMessageProgress",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onUploadFileProgress",
+      "eventName": "onUploadFileProgress",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onUploadLogsProgress",
+      "eventName": "onUploadLogsProgress",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onTotalUnreadMessageCountChanged",
+      "eventName": "onTotalUnreadMessageCountChanged",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "scalar"
+    },
+    {
+      "caseId": "event/onRecvCustomBusinessMessage",
+      "eventName": "onRecvCustomBusinessMessage",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "opaque-string"
+    },
+    {
+      "caseId": "event/onBlackAdded",
+      "eventName": "onBlackAdded",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onBlackDeleted",
+      "eventName": "onBlackDeleted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onFriendAdded",
+      "eventName": "onFriendAdded",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onFriendApplicationAccepted",
+      "eventName": "onFriendApplicationAccepted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onFriendApplicationAdded",
+      "eventName": "onFriendApplicationAdded",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onFriendApplicationDeleted",
+      "eventName": "onFriendApplicationDeleted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onFriendApplicationRejected",
+      "eventName": "onFriendApplicationRejected",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onFriendDeleted",
+      "eventName": "onFriendDeleted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onFriendInfoChanged",
+      "eventName": "onFriendInfoChanged",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupApplicationAccepted",
+      "eventName": "onGroupApplicationAccepted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupApplicationAdded",
+      "eventName": "onGroupApplicationAdded",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupApplicationDeleted",
+      "eventName": "onGroupApplicationDeleted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupApplicationRejected",
+      "eventName": "onGroupApplicationRejected",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupDismissed",
+      "eventName": "onGroupDismissed",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupInfoChanged",
+      "eventName": "onGroupInfoChanged",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupMemberAdded",
+      "eventName": "onGroupMemberAdded",
+      "priority": "P0",
+      "deliveryDisposition": "required",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupMemberDeleted",
+      "eventName": "onGroupMemberDeleted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onGroupMemberInfoChanged",
+      "eventName": "onGroupMemberInfoChanged",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onJoinedGroupAdded",
+      "eventName": "onJoinedGroupAdded",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onJoinedGroupDeleted",
+      "eventName": "onJoinedGroupDeleted",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onSelfInfoUpdated",
+      "eventName": "onSelfInfoUpdated",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    },
+    {
+      "caseId": "event/onUserStatusChanged",
+      "eventName": "onUserStatusChanged",
+      "priority": "P1",
+      "deliveryDisposition": "passive-only",
+      "payloadProfile": "typed"
+    }
+  ]
+}

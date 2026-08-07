@@ -816,6 +816,7 @@ export type OpenIMGetAdvancedHistoryMessageListParams = {
 
 export type OpenIMAdvancedHistoryMessageListResult = {
   messageList : Array<OpenIMMessageItem>
+  lastMinSeq : number
   isEnd : boolean
   errCode : number
   errMsg : string
