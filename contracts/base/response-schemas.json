@@ -583,6 +583,20 @@
             "kind": "string"
           }
         },
+        "cancelID": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
+        },
         "cause": {
           "required": false,
           "schema": {

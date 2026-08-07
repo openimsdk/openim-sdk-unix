@@ -34,6 +34,7 @@ export type OpenIMUploadFileParams = {
   name : string
   contentType : string
   uuid : string
+  cancelID ?: string | null
   cause ?: string | null
 }
 

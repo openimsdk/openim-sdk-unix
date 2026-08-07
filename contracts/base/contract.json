@@ -1263,7 +1263,7 @@
     {
       "id": 1008,
       "name": "OpenIMUploadFileParams",
-      "declaration": "export type OpenIMUploadFileParams = {\n  filepath : string\n  name : string\n  contentType : string\n  uuid : string\n  cause ?: string | null\n}",
+      "declaration": "export type OpenIMUploadFileParams = {\n  filepath : string\n  name : string\n  contentType : string\n  uuid : string\n  cancelID ?: string | null\n  cause ?: string | null\n}",
       "signatureHash": "a5bacf67e157e581ff78e0a7719ba817337b001053caf4ac6648aa62f398c5e4"
     },
     {
