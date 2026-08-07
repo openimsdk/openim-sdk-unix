@@ -9,6 +9,8 @@ import { verifyGenerated, verifySurfaceSnapshot, readAndValidateContract } from 
 import { verifyDriverInvariants } from './verify-driver.js'
 import { bootstrapEnterpriseDrivers, importEnterpriseDelta, verifyEnterpriseDelta } from './enterprise-contract.js'
 import { monomorphizeHarmonyFacade } from './harmony-monomorphize.js'
+import { buildPrivatePlatform } from './local-build.js'
+import { verifyPrivateNativeArtifacts, type MobileBuildPlatform } from './private-native.js'
 
 const toolingDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
 const root = resolve(toolingDirectory, '..')
@@ -28,6 +30,14 @@ function requestedPrivatePlatforms(): CompilePlatform[] {
   if (value === 'all') return ['android', 'ios', 'harmony']
   if (value === 'android' || value === 'ios' || value === 'harmony') return [value]
   throw new Error(`Unknown private compile platform: ${value ?? 'missing'}`)
+}
+
+function requestedMobilePlatforms(): MobileBuildPlatform[] {
+  const index = process.argv.indexOf('--platform')
+  const value = index >= 0 ? process.argv[index + 1] : 'all'
+  if (value === 'all') return ['android', 'ios']
+  if (value === 'android' || value === 'ios') return [value]
+  throw new Error(`Unknown private mobile build platform: ${value ?? 'missing'}`)
 }
 
 function requiredArgument(name: string): string {
@@ -96,8 +106,23 @@ switch (command) {
   }
   case 'compile-private': {
     const privateRoot = requiredArgument('--private-root')
-    verifyEnterpriseDelta(root, privateRoot)
-    for (const platform of requestedPrivatePlatforms()) await compilePlatform(privateRoot, platform, root)
+    const platforms = requestedPrivatePlatforms()
+    verifyEnterpriseDelta(root, privateRoot, {
+      verifyHarmonyCertification: platforms.includes('harmony'),
+    })
+    for (const platform of platforms) {
+      if (platform === 'android' || platform === 'ios') {
+        verifyPrivateNativeArtifacts(privateRoot, platform)
+      }
+      await compilePlatform(privateRoot, platform, root, { verifyPublicNative: false })
+    }
+    break
+  }
+  case 'build-private': {
+    const privateRoot = requiredArgument('--private-root')
+    const platforms = requestedMobilePlatforms()
+    verifyEnterpriseDelta(root, privateRoot, { verifyHarmonyCertification: false })
+    for (const platform of platforms) await buildPrivatePlatform(privateRoot, platform, root)
     break
   }
   case 'compile': {

@@ -20,7 +20,6 @@ import {
   OpenIMSDKEventHandlerSubscription,
   OpenIMSDKEventName,
   OpenIMSDKEventSubscription,
-  OpenIMSDKUnsubscribe,
   OpenIMSDKRawEventHandler,
   OpenIMStringEventHandler,
   OpenIMUploadFileProgressEventHandler,

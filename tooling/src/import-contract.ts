@@ -26,7 +26,7 @@ import {
   type ParsedSource,
 } from './source.js'
 
-const EXPECTED_PUBLIC = { constants: 109, types: 161, callables: 160, events: 48 } as const
+const EXPECTED_PUBLIC = { constants: 109, types: 160, callables: 161, events: 48 } as const
 const INDEX_MARKERS = {
   constants: '// <openim-generated:constants>',
   eventCallables: '// <openim-generated:event-callables>',
@@ -67,7 +67,7 @@ export function codecFor(returnType: string): string {
 
 export function bindingFor(declaration: string, eventNames: Set<string>, name: string): NativeBinding {
   if (eventNames.has(name)) return { kind: 'event', symbol: name }
-  if (name === 'offEvent') return { kind: 'event', symbol: 'offEvent' }
+  if (name === 'off' || name === 'offEvent') return { kind: 'event', symbol: name }
   const native = /NativeOpenIMSDK\.([A-Za-z_$][\w$]*)/.exec(declaration)
   if (native?.[1]) return { kind: 'native', symbol: native[1] }
   const alias = /\breturn\s+([A-Za-z_$][\w$]*)\s*\(/.exec(declaration)
@@ -75,7 +75,7 @@ export function bindingFor(declaration: string, eventNames: Set<string>, name: s
   return { kind: 'none', symbol: '' }
 }
 
-export function dispatchArguments(eventFunctionText: string): string {
+export function dispatchArguments(eventFunctionText: string, generatedEventsSource?: string, eventName?: string): string {
   if (eventFunctionText.includes('onVoidEvent(')) return ''
   if (eventFunctionText.includes('onErrorEvent(')) return 'errCode, errMsg'
   if (eventFunctionText.includes('onMessageEvent(')) return 'parseNativeMessage(payload)'
@@ -85,8 +85,12 @@ export function dispatchArguments(eventFunctionText: string): string {
   if (eventFunctionText.includes('onNumberEvent(')) return 'parseFloat(payload)'
   if (eventFunctionText.includes('onStringEvent(')) return 'payload'
   const argumentsText = findMatchingCallArguments(eventFunctionText, 'handler')
-  if (argumentsText === undefined) throw new Error(`Cannot infer event projection from: ${eventFunctionText}`)
-  return argumentsText
+  const generatedArguments = generatedEventsSource != null && eventName != null
+    ? findMatchingCallArguments(generatedEventsSource, `${eventName}DispatchHandler`)
+    : undefined
+  const inferredArguments = argumentsText ?? generatedArguments
+  if (inferredArguments === undefined) throw new Error(`Cannot infer event projection from: ${eventFunctionText}`)
+  return inferredArguments
     .replaceAll('event.payload', 'payload')
     .replaceAll('event.errCode', 'errCode')
     .replaceAll('event.errMsg', 'errMsg')
@@ -207,13 +211,13 @@ export function importPublicContract(root: string): ContractDocument {
 
   const eventNames = extractStringUnion(interfaceSource, 'OpenIMSDKEventName')
   const eventNameSet = new Set(eventNames)
-  const eventCallableNames = new Set([...eventNames, 'offEvent'])
+  const eventCallableNames = new Set([...eventNames, 'off', 'offEvent'])
   const callables: ContractCallable[] = callablePairs.map(([android, ios], index) => {
     if (android.signature !== ios.signature) {
       throw new Error(`Callable ${android.name} differs by platform:\n${android.signature}\n${ios.signature}`)
     }
     const isEvent = eventNameSet.has(android.name)
-    const role = isEvent ? 'event-subscription' : android.name === 'offEvent' ? 'event-control' : 'operation'
+    const role = isEvent ? 'event-subscription' : android.name === 'off' || android.name === 'offEvent' ? 'event-control' : 'operation'
     return {
       id: 2001 + index,
       name: android.name,
@@ -251,8 +255,8 @@ export function importPublicContract(root: string): ContractDocument {
       callable: name,
       handlerType: normalizeContractText(androidHandler),
       dispatchArguments: {
-        android: dispatchArguments(androidFunction.getText(androidEvents.sourceFile)),
-        ios: dispatchArguments(iosFunction.getText(iosEvents.sourceFile)),
+        android: dispatchArguments(androidFunction.getText(androidEvents.sourceFile), androidEvents.text, name),
+        ios: dispatchArguments(iosFunction.getText(iosEvents.sourceFile), iosEvents.text, name),
       },
       rawPayload: androidHandler === 'OpenIMStringEventHandler',
       binding: {

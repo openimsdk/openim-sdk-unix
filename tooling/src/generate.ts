@@ -32,11 +32,12 @@ function generateIndex(root: string, contract: ContractDocument, platform: 'andr
     .filter((value) => value.role === 'operation')
     .map((value) => platformDeclaration(value, platform))
     .join('\n')
-  return template
+  return `${template
     .replace(INDEX_MARKERS.constants, constants)
     .replace(INDEX_MARKERS.eventCallables, eventCallables)
     .replace(INDEX_MARKERS.operations, operations)
     .replace(/\n{4,}/g, '\n\n\n')
+    .trimEnd()}\n`
 }
 
 function handlerVariable(event: ContractEvent): string {
@@ -81,20 +82,21 @@ function generateEventRemoval(event: ContractEvent): string {
 function generateEventRegistration(event: ContractEvent): string {
   const handlers = handlerVariable(event)
   const ids = handlerIDVariable(event)
-  const remove = removeFunction(event)
-  return `export function ${event.name}Event(handler : ${event.handlerType}) : OpenIMSDKUnsubscribe {
+  return `export function ${event.name}Event(handler : ${event.handlerType}) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   ${ids}.push(subscriptionID)
   ${handlers}.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    ${remove}(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: '${event.name}' }
 }`
+}
+
+function generateOffSubscriptionCase(event: ContractEvent): string {
+  return `    case '${event.name}':
+      ${removeFunction(event)}(subscription.id)
+      break
+`
 }
 
 function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios'): string {
@@ -169,6 +171,11 @@ export function offSDKEventName(eventName : OpenIMSDKEventName) {
   switch (eventName) {
 ${offCases}
   }
+}
+
+export function offSDKEvent(subscription : OpenIMSDKEventSubscription) {
+  switch (subscription.eventName) {
+${contract.events.map(generateOffSubscriptionCase).join('\n')}  }
 }
 
 ${removals}

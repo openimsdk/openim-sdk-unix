@@ -1,5 +1,5 @@
 import { NativeOpenIMSDK } from 'uts.sdk.modules.unixOpenimSdk'
-import { UTSAndroid } from 'io.dcloud.uts' // UTS-COMPAT-JSON-001
+import { UTSAndroid } from 'io.dcloud.uts'
 import {
   OpenIMBlackUserEventHandler,
   OpenIMBooleanEventHandler,
@@ -22,7 +22,6 @@ import {
   OpenIMSDKEventHandlerSubscription,
   OpenIMSDKEventName,
   OpenIMSDKEventSubscription,
-  OpenIMSDKUnsubscribe,
   OpenIMSDKRawEventHandler,
   OpenIMStringEventHandler,
   OpenIMUploadFileProgressEventHandler,

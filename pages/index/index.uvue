@@ -267,7 +267,7 @@
 		OpenIMUserInfo,
 		OpenIMUserListResult,
 		OpenIMSDKEventName,
-		OpenIMSDKUnsubscribe,
+		OpenIMSDKEventSubscription,
 		OpenIMMessageRevokedItem,
 		OpenIMMessageReceiptListResult,
 		OpenIMConversationInputStatusItem,
@@ -275,6 +275,7 @@
 		OpenIMVideoElem,
 		OpenIMFileElem,
 		OpenIMCardElem,
+		off,
 		offEvent,
 		onConnecting,
 		onConnectSuccess,
@@ -1015,7 +1016,7 @@
 		'onGroupMemberInfoChanged', 'onJoinedGroupAdded', 'onJoinedGroupDeleted', 'onSelfInfoUpdated', 'onUserStatusChanged'
 	]
 	const automationPublicAPINames : Array<string> = [
-		'offEvent',
+		'off', 'offEvent',
 		'onConnecting', 'onConnectSuccess', 'onConnectFailed', 'onKickedOffline', 'onUserTokenExpired', 'onUserTokenInvalid',
 		'onRecvNewMessage', 'onRecvOfflineNewMessage', 'onRecvOnlineOnlyMessage', 'onMsgDeleted', 'onNewRecvMessageRevoked',
 		'onRecvC2CReadReceipt', 'onRecvNewMessages', 'onRecvOfflineNewMessages', 'onConversationChanged',
@@ -1309,9 +1310,9 @@
 	}
 
 	// SDK event subscriptions
-	let sdkEventUnsubscribes : Array<OpenIMSDKUnsubscribe> = []
+	let sdkEventSubscriptions : Array<OpenIMSDKEventSubscription> = []
 	let sdkRegisteredEventNames : Array<string> = []
-	let sdkEventUnsubscribeNames : Array<string> = []
+	let sdkEventSubscriptionNames : Array<string> = []
 
 	function updateStatusForSDKEventName(eventName : string) {
 		if (eventName == 'onConnecting') {
@@ -1358,36 +1359,30 @@
 		setResult('event: ' + eventName + '\nerrCode: ' + errCode.toString() + '\nerrMsg: ' + errMsg)
 	}
 
-	function addSDKEventSubscription(eventName : string, unsubscribe : OpenIMSDKUnsubscribe | null) {
+	function addSDKEventSubscription(eventName : string, subscription : OpenIMSDKEventSubscription) {
 		if (!automationStringArrayContains(sdkRegisteredEventNames, eventName)) {
 			sdkRegisteredEventNames.push(eventName)
 		}
-		if (unsubscribe != null) {
-			sdkEventUnsubscribes.push(unsubscribe)
-			if (!automationStringArrayContains(sdkEventUnsubscribeNames, eventName)) {
-				sdkEventUnsubscribeNames.push(eventName)
+		if (subscription.id.length > 0 && subscription.eventName == eventName) {
+			sdkEventSubscriptions.push(subscription)
+			if (!automationStringArrayContains(sdkEventSubscriptionNames, eventName)) {
+				sdkEventSubscriptionNames.push(eventName)
 			}
 		} else {
-			console.log('sdk event subscription did not return unsubscribe ' + eventName)
+			console.log('sdk event subscription returned an invalid handle ' + eventName)
 		}
 	}
 
 	function unregisterSDKEvents() {
-		let unsubscribeIndex : number = 0
-		while (unsubscribeIndex < sdkEventUnsubscribes.length) {
-			const unsubscribe = sdkEventUnsubscribes[unsubscribeIndex]
-			if (unsubscribe != null) { unsubscribe() }
-			unsubscribeIndex = unsubscribeIndex + 1
+		let subscriptionIndex : number = 0
+		while (subscriptionIndex < sdkEventSubscriptions.length) {
+			const subscription = sdkEventSubscriptions[subscriptionIndex]
+			if (subscription != null) { off(subscription) }
+			subscriptionIndex = subscriptionIndex + 1
 		}
-		sdkEventUnsubscribes = []
-		let eventNameIndex : number = 0
-		while (eventNameIndex < sdkRegisteredEventNames.length) {
-			const eventName = sdkRegisteredEventNames[eventNameIndex]
-			if (eventName != null) { offEvent(eventName as OpenIMSDKEventName) }
-			eventNameIndex = eventNameIndex + 1
-		}
+		sdkEventSubscriptions = []
 		sdkRegisteredEventNames = []
-		sdkEventUnsubscribeNames = []
+		sdkEventSubscriptionNames = []
 	}
 
 	function registerSDKEvents() {
@@ -1798,8 +1793,8 @@
 		let index = 0
 		while (index < sdkRegisteredEventNames.length) {
 			const eventName = sdkRegisteredEventNames[index]
-			const hasUnsubscribe = automationStringArrayContains(sdkEventUnsubscribeNames, eventName)
-			recordAutomationStep('events', eventName, true, hasUnsubscribe ? 'event subscription registered with unsubscribe' : 'event subscription registered; offEvent fallback available')
+			const hasSubscription = automationStringArrayContains(sdkEventSubscriptionNames, eventName)
+			recordAutomationStep('events', eventName, true, hasSubscription ? 'event subscription handle returned' : 'event subscription handle missing')
 			index = index + 1
 		}
 		index = 0
@@ -2672,6 +2667,15 @@
 	}
 
 	async function runAutomationCleanupBeforeSummary() : Promise<void> {
+		try {
+			const subscription = onRecvCustomBusinessMessage((_payload : string) => {})
+			if (subscription.id.length == 0 || subscription.eventName != 'onRecvCustomBusinessMessage') { throw new Error('onRecvCustomBusinessMessage returned an invalid subscription handle') }
+			off(subscription)
+			off(subscription)
+			recordAutomationStep('cleanup', 'off', true, 'off called twice for ' + subscription.eventName + '#' + subscription.id)
+		} catch (error) {
+			recordAutomationStep('cleanup', 'off', false, stringifyAPIValue(error))
+		}
 		try {
 			offEvent('onRecvCustomBusinessMessage')
 			recordAutomationStep('cleanup', 'offEvent', true, 'offEvent called for onRecvCustomBusinessMessage')

@@ -20,7 +20,6 @@ import {
   OpenIMSDKEventHandlerSubscription,
   OpenIMSDKEventName,
   OpenIMSDKEventSubscription,
-  OpenIMSDKUnsubscribe,
   OpenIMSDKRawEventHandler,
   OpenIMStringEventHandler,
   OpenIMUploadFileProgressEventHandler,
@@ -1088,6 +1087,202 @@ export function offSDKEventName(eventName : OpenIMSDKEventName) {
   }
 }
 
+export function offSDKEvent(subscription : OpenIMSDKEventSubscription) {
+  switch (subscription.eventName) {
+    case 'onConnecting':
+      removeOnConnectingHandler(subscription.id)
+      break
+
+    case 'onConnectSuccess':
+      removeOnConnectSuccessHandler(subscription.id)
+      break
+
+    case 'onConnectFailed':
+      removeOnConnectFailedHandler(subscription.id)
+      break
+
+    case 'onKickedOffline':
+      removeOnKickedOfflineHandler(subscription.id)
+      break
+
+    case 'onUserTokenExpired':
+      removeOnUserTokenExpiredHandler(subscription.id)
+      break
+
+    case 'onUserTokenInvalid':
+      removeOnUserTokenInvalidHandler(subscription.id)
+      break
+
+    case 'onRecvNewMessage':
+      removeOnRecvNewMessageHandler(subscription.id)
+      break
+
+    case 'onRecvOfflineNewMessage':
+      removeOnRecvOfflineNewMessageHandler(subscription.id)
+      break
+
+    case 'onRecvOnlineOnlyMessage':
+      removeOnRecvOnlineOnlyMessageHandler(subscription.id)
+      break
+
+    case 'onMsgDeleted':
+      removeOnMsgDeletedHandler(subscription.id)
+      break
+
+    case 'onNewRecvMessageRevoked':
+      removeOnNewRecvMessageRevokedHandler(subscription.id)
+      break
+
+    case 'onRecvC2CReadReceipt':
+      removeOnRecvC2CReadReceiptHandler(subscription.id)
+      break
+
+    case 'onRecvNewMessages':
+      removeOnRecvNewMessagesHandler(subscription.id)
+      break
+
+    case 'onRecvOfflineNewMessages':
+      removeOnRecvOfflineNewMessagesHandler(subscription.id)
+      break
+
+    case 'onConversationChanged':
+      removeOnConversationChangedHandler(subscription.id)
+      break
+
+    case 'onConversationUserInputStatusChanged':
+      removeOnConversationUserInputStatusChangedHandler(subscription.id)
+      break
+
+    case 'onNewConversation':
+      removeOnNewConversationHandler(subscription.id)
+      break
+
+    case 'onSyncServerFailed':
+      removeOnSyncServerFailedHandler(subscription.id)
+      break
+
+    case 'onSyncServerFinish':
+      removeOnSyncServerFinishHandler(subscription.id)
+      break
+
+    case 'onSyncServerProgress':
+      removeOnSyncServerProgressHandler(subscription.id)
+      break
+
+    case 'onSyncServerStart':
+      removeOnSyncServerStartHandler(subscription.id)
+      break
+
+    case 'onSendMessageProgress':
+      removeOnSendMessageProgressHandler(subscription.id)
+      break
+
+    case 'onUploadFileProgress':
+      removeOnUploadFileProgressHandler(subscription.id)
+      break
+
+    case 'onUploadLogsProgress':
+      removeOnUploadLogsProgressHandler(subscription.id)
+      break
+
+    case 'onTotalUnreadMessageCountChanged':
+      removeOnTotalUnreadMessageCountChangedHandler(subscription.id)
+      break
+
+    case 'onRecvCustomBusinessMessage':
+      removeOnRecvCustomBusinessMessageHandler(subscription.id)
+      break
+
+    case 'onBlackAdded':
+      removeOnBlackAddedHandler(subscription.id)
+      break
+
+    case 'onBlackDeleted':
+      removeOnBlackDeletedHandler(subscription.id)
+      break
+
+    case 'onFriendAdded':
+      removeOnFriendAddedHandler(subscription.id)
+      break
+
+    case 'onFriendApplicationAccepted':
+      removeOnFriendApplicationAcceptedHandler(subscription.id)
+      break
+
+    case 'onFriendApplicationAdded':
+      removeOnFriendApplicationAddedHandler(subscription.id)
+      break
+
+    case 'onFriendApplicationDeleted':
+      removeOnFriendApplicationDeletedHandler(subscription.id)
+      break
+
+    case 'onFriendApplicationRejected':
+      removeOnFriendApplicationRejectedHandler(subscription.id)
+      break
+
+    case 'onFriendDeleted':
+      removeOnFriendDeletedHandler(subscription.id)
+      break
+
+    case 'onFriendInfoChanged':
+      removeOnFriendInfoChangedHandler(subscription.id)
+      break
+
+    case 'onGroupApplicationAccepted':
+      removeOnGroupApplicationAcceptedHandler(subscription.id)
+      break
+
+    case 'onGroupApplicationAdded':
+      removeOnGroupApplicationAddedHandler(subscription.id)
+      break
+
+    case 'onGroupApplicationDeleted':
+      removeOnGroupApplicationDeletedHandler(subscription.id)
+      break
+
+    case 'onGroupApplicationRejected':
+      removeOnGroupApplicationRejectedHandler(subscription.id)
+      break
+
+    case 'onGroupDismissed':
+      removeOnGroupDismissedHandler(subscription.id)
+      break
+
+    case 'onGroupInfoChanged':
+      removeOnGroupInfoChangedHandler(subscription.id)
+      break
+
+    case 'onGroupMemberAdded':
+      removeOnGroupMemberAddedHandler(subscription.id)
+      break
+
+    case 'onGroupMemberDeleted':
+      removeOnGroupMemberDeletedHandler(subscription.id)
+      break
+
+    case 'onGroupMemberInfoChanged':
+      removeOnGroupMemberInfoChangedHandler(subscription.id)
+      break
+
+    case 'onJoinedGroupAdded':
+      removeOnJoinedGroupAddedHandler(subscription.id)
+      break
+
+    case 'onJoinedGroupDeleted':
+      removeOnJoinedGroupDeletedHandler(subscription.id)
+      break
+
+    case 'onSelfInfoUpdated':
+      removeOnSelfInfoUpdatedHandler(subscription.id)
+      break
+
+    case 'onUserStatusChanged':
+      removeOnUserStatusChangedHandler(subscription.id)
+      break
+  }
+}
+
 function removeOnConnectingHandler(subscriptionID : string) {
   const nextHandlers : Array<OpenIMVoidEventHandler> = []
   const nextHandlerIDs : Array<string> = []
@@ -1808,674 +2003,434 @@ function removeOnUserStatusChangedHandler(subscriptionID : string) {
   onUserStatusChangedHandlers = nextHandlers
 }
 
-export function onConnectingEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe {
+export function onConnectingEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onConnectingHandlerIDs.push(subscriptionID)
   onConnectingHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnConnectingHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onConnecting' }
 }
 
-export function onConnectSuccessEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe {
+export function onConnectSuccessEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onConnectSuccessHandlerIDs.push(subscriptionID)
   onConnectSuccessHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnConnectSuccessHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onConnectSuccess' }
 }
 
-export function onConnectFailedEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe {
+export function onConnectFailedEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onConnectFailedHandlerIDs.push(subscriptionID)
   onConnectFailedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnConnectFailedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onConnectFailed' }
 }
 
-export function onKickedOfflineEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe {
+export function onKickedOfflineEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onKickedOfflineHandlerIDs.push(subscriptionID)
   onKickedOfflineHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnKickedOfflineHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onKickedOffline' }
 }
 
-export function onUserTokenExpiredEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKUnsubscribe {
+export function onUserTokenExpiredEvent(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onUserTokenExpiredHandlerIDs.push(subscriptionID)
   onUserTokenExpiredHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnUserTokenExpiredHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onUserTokenExpired' }
 }
 
-export function onUserTokenInvalidEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKUnsubscribe {
+export function onUserTokenInvalidEvent(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onUserTokenInvalidHandlerIDs.push(subscriptionID)
   onUserTokenInvalidHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnUserTokenInvalidHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onUserTokenInvalid' }
 }
 
-export function onRecvNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe {
+export function onRecvNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onRecvNewMessageHandlerIDs.push(subscriptionID)
   onRecvNewMessageHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnRecvNewMessageHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onRecvNewMessage' }
 }
 
-export function onRecvOfflineNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe {
+export function onRecvOfflineNewMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onRecvOfflineNewMessageHandlerIDs.push(subscriptionID)
   onRecvOfflineNewMessageHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnRecvOfflineNewMessageHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onRecvOfflineNewMessage' }
 }
 
-export function onRecvOnlineOnlyMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe {
+export function onRecvOnlineOnlyMessageEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onRecvOnlineOnlyMessageHandlerIDs.push(subscriptionID)
   onRecvOnlineOnlyMessageHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnRecvOnlineOnlyMessageHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onRecvOnlineOnlyMessage' }
 }
 
-export function onMsgDeletedEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKUnsubscribe {
+export function onMsgDeletedEvent(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onMsgDeletedHandlerIDs.push(subscriptionID)
   onMsgDeletedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnMsgDeletedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onMsgDeleted' }
 }
 
-export function onNewRecvMessageRevokedEvent(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKUnsubscribe {
+export function onNewRecvMessageRevokedEvent(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onNewRecvMessageRevokedHandlerIDs.push(subscriptionID)
   onNewRecvMessageRevokedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnNewRecvMessageRevokedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onNewRecvMessageRevoked' }
 }
 
-export function onRecvC2CReadReceiptEvent(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKUnsubscribe {
+export function onRecvC2CReadReceiptEvent(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onRecvC2CReadReceiptHandlerIDs.push(subscriptionID)
   onRecvC2CReadReceiptHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnRecvC2CReadReceiptHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onRecvC2CReadReceipt' }
 }
 
-export function onRecvNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe {
+export function onRecvNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onRecvNewMessagesHandlerIDs.push(subscriptionID)
   onRecvNewMessagesHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnRecvNewMessagesHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onRecvNewMessages' }
 }
 
-export function onRecvOfflineNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKUnsubscribe {
+export function onRecvOfflineNewMessagesEvent(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onRecvOfflineNewMessagesHandlerIDs.push(subscriptionID)
   onRecvOfflineNewMessagesHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnRecvOfflineNewMessagesHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onRecvOfflineNewMessages' }
 }
 
-export function onConversationChangedEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe {
+export function onConversationChangedEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onConversationChangedHandlerIDs.push(subscriptionID)
   onConversationChangedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnConversationChangedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onConversationChanged' }
 }
 
-export function onConversationUserInputStatusChangedEvent(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKUnsubscribe {
+export function onConversationUserInputStatusChangedEvent(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onConversationUserInputStatusChangedHandlerIDs.push(subscriptionID)
   onConversationUserInputStatusChangedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnConversationUserInputStatusChangedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onConversationUserInputStatusChanged' }
 }
 
-export function onNewConversationEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKUnsubscribe {
+export function onNewConversationEvent(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onNewConversationHandlerIDs.push(subscriptionID)
   onNewConversationHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnNewConversationHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onNewConversation' }
 }
 
-export function onSyncServerFailedEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe {
+export function onSyncServerFailedEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onSyncServerFailedHandlerIDs.push(subscriptionID)
   onSyncServerFailedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnSyncServerFailedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onSyncServerFailed' }
 }
 
-export function onSyncServerFinishEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe {
+export function onSyncServerFinishEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onSyncServerFinishHandlerIDs.push(subscriptionID)
   onSyncServerFinishHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnSyncServerFinishHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onSyncServerFinish' }
 }
 
-export function onSyncServerProgressEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe {
+export function onSyncServerProgressEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onSyncServerProgressHandlerIDs.push(subscriptionID)
   onSyncServerProgressHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnSyncServerProgressHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onSyncServerProgress' }
 }
 
-export function onSyncServerStartEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKUnsubscribe {
+export function onSyncServerStartEvent(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onSyncServerStartHandlerIDs.push(subscriptionID)
   onSyncServerStartHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnSyncServerStartHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onSyncServerStart' }
 }
 
-export function onSendMessageProgressEvent(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKUnsubscribe {
+export function onSendMessageProgressEvent(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onSendMessageProgressHandlerIDs.push(subscriptionID)
   onSendMessageProgressHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnSendMessageProgressHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onSendMessageProgress' }
 }
 
-export function onUploadFileProgressEvent(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKUnsubscribe {
+export function onUploadFileProgressEvent(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onUploadFileProgressHandlerIDs.push(subscriptionID)
   onUploadFileProgressHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnUploadFileProgressHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onUploadFileProgress' }
 }
 
-export function onUploadLogsProgressEvent(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKUnsubscribe {
+export function onUploadLogsProgressEvent(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onUploadLogsProgressHandlerIDs.push(subscriptionID)
   onUploadLogsProgressHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnUploadLogsProgressHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onUploadLogsProgress' }
 }
 
-export function onTotalUnreadMessageCountChangedEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKUnsubscribe {
+export function onTotalUnreadMessageCountChangedEvent(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onTotalUnreadMessageCountChangedHandlerIDs.push(subscriptionID)
   onTotalUnreadMessageCountChangedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnTotalUnreadMessageCountChangedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onTotalUnreadMessageCountChanged' }
 }
 
-export function onRecvCustomBusinessMessageEvent(handler : OpenIMStringEventHandler) : OpenIMSDKUnsubscribe {
+export function onRecvCustomBusinessMessageEvent(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onRecvCustomBusinessMessageHandlerIDs.push(subscriptionID)
   onRecvCustomBusinessMessageHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnRecvCustomBusinessMessageHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onRecvCustomBusinessMessage' }
 }
 
-export function onBlackAddedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe {
+export function onBlackAddedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onBlackAddedHandlerIDs.push(subscriptionID)
   onBlackAddedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnBlackAddedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onBlackAdded' }
 }
 
-export function onBlackDeletedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKUnsubscribe {
+export function onBlackDeletedEvent(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onBlackDeletedHandlerIDs.push(subscriptionID)
   onBlackDeletedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnBlackDeletedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onBlackDeleted' }
 }
 
-export function onFriendAddedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe {
+export function onFriendAddedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onFriendAddedHandlerIDs.push(subscriptionID)
   onFriendAddedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnFriendAddedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onFriendAdded' }
 }
 
-export function onFriendApplicationAcceptedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onFriendApplicationAcceptedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onFriendApplicationAcceptedHandlerIDs.push(subscriptionID)
   onFriendApplicationAcceptedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnFriendApplicationAcceptedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onFriendApplicationAccepted' }
 }
 
-export function onFriendApplicationAddedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onFriendApplicationAddedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onFriendApplicationAddedHandlerIDs.push(subscriptionID)
   onFriendApplicationAddedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnFriendApplicationAddedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onFriendApplicationAdded' }
 }
 
-export function onFriendApplicationDeletedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onFriendApplicationDeletedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onFriendApplicationDeletedHandlerIDs.push(subscriptionID)
   onFriendApplicationDeletedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnFriendApplicationDeletedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onFriendApplicationDeleted' }
 }
 
-export function onFriendApplicationRejectedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onFriendApplicationRejectedEvent(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onFriendApplicationRejectedHandlerIDs.push(subscriptionID)
   onFriendApplicationRejectedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnFriendApplicationRejectedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onFriendApplicationRejected' }
 }
 
-export function onFriendDeletedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe {
+export function onFriendDeletedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onFriendDeletedHandlerIDs.push(subscriptionID)
   onFriendDeletedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnFriendDeletedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onFriendDeleted' }
 }
 
-export function onFriendInfoChangedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKUnsubscribe {
+export function onFriendInfoChangedEvent(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onFriendInfoChangedHandlerIDs.push(subscriptionID)
   onFriendInfoChangedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnFriendInfoChangedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onFriendInfoChanged' }
 }
 
-export function onGroupApplicationAcceptedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupApplicationAcceptedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupApplicationAcceptedHandlerIDs.push(subscriptionID)
   onGroupApplicationAcceptedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupApplicationAcceptedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupApplicationAccepted' }
 }
 
-export function onGroupApplicationAddedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupApplicationAddedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupApplicationAddedHandlerIDs.push(subscriptionID)
   onGroupApplicationAddedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupApplicationAddedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupApplicationAdded' }
 }
 
-export function onGroupApplicationDeletedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupApplicationDeletedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupApplicationDeletedHandlerIDs.push(subscriptionID)
   onGroupApplicationDeletedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupApplicationDeletedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupApplicationDeleted' }
 }
 
-export function onGroupApplicationRejectedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupApplicationRejectedEvent(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupApplicationRejectedHandlerIDs.push(subscriptionID)
   onGroupApplicationRejectedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupApplicationRejectedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupApplicationRejected' }
 }
 
-export function onGroupDismissedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupDismissedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupDismissedHandlerIDs.push(subscriptionID)
   onGroupDismissedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupDismissedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupDismissed' }
 }
 
-export function onGroupInfoChangedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupInfoChangedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupInfoChangedHandlerIDs.push(subscriptionID)
   onGroupInfoChangedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupInfoChangedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupInfoChanged' }
 }
 
-export function onGroupMemberAddedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupMemberAddedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupMemberAddedHandlerIDs.push(subscriptionID)
   onGroupMemberAddedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupMemberAddedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupMemberAdded' }
 }
 
-export function onGroupMemberDeletedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupMemberDeletedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupMemberDeletedHandlerIDs.push(subscriptionID)
   onGroupMemberDeletedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupMemberDeletedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupMemberDeleted' }
 }
 
-export function onGroupMemberInfoChangedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKUnsubscribe {
+export function onGroupMemberInfoChangedEvent(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onGroupMemberInfoChangedHandlerIDs.push(subscriptionID)
   onGroupMemberInfoChangedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnGroupMemberInfoChangedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onGroupMemberInfoChanged' }
 }
 
-export function onJoinedGroupAddedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe {
+export function onJoinedGroupAddedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onJoinedGroupAddedHandlerIDs.push(subscriptionID)
   onJoinedGroupAddedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnJoinedGroupAddedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onJoinedGroupAdded' }
 }
 
-export function onJoinedGroupDeletedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKUnsubscribe {
+export function onJoinedGroupDeletedEvent(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onJoinedGroupDeletedHandlerIDs.push(subscriptionID)
   onJoinedGroupDeletedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnJoinedGroupDeletedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onJoinedGroupDeleted' }
 }
 
-export function onSelfInfoUpdatedEvent(handler : OpenIMUserEventHandler) : OpenIMSDKUnsubscribe {
+export function onSelfInfoUpdatedEvent(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onSelfInfoUpdatedHandlerIDs.push(subscriptionID)
   onSelfInfoUpdatedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnSelfInfoUpdatedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onSelfInfoUpdated' }
 }
 
-export function onUserStatusChangedEvent(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKUnsubscribe {
+export function onUserStatusChangedEvent(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription {
   ensureNativeEventsBound()
   const subscriptionID = nextEventHandlerID.toString()
   nextEventHandlerID = nextEventHandlerID + 1
   onUserStatusChangedHandlerIDs.push(subscriptionID)
   onUserStatusChangedHandlers.push(handler)
-  let active : boolean = true
-  return () => {
-    if (active == false) { return }
-    active = false
-    removeOnUserStatusChangedHandler(subscriptionID)
-  }
+  return { id: subscriptionID, eventName: 'onUserStatusChanged' }
 }

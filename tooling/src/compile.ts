@@ -37,6 +37,14 @@ interface ToolchainLock {
   }
 }
 
+export interface ToolchainVerificationOptions {
+  verifyPublicNative?: boolean
+}
+
+export interface CompilePlatformOptions {
+  verifyPublicNative?: boolean
+}
+
 export type CompilePlatform = 'android' | 'ios' | 'harmony'
 
 export interface StreamingCommandOptions {
@@ -180,7 +188,7 @@ function sha256Directory(path: string): string {
   return hash.digest('hex')
 }
 
-function normalizeLog(log: string): string {
+export function normalizeLog(log: string): string {
   return log
     .replace(/\u001b\[[0-9;]*m/g, '')
     .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, '')
@@ -236,12 +244,18 @@ function failureExcerpt(log: string): string {
   return [...selected].sort((left, right) => left - right).map((index) => lines[index]).join('\n').trim()
 }
 
-export function verifyToolchain(root: string): ToolchainLock {
+export function verifyToolchain(
+  root: string,
+  options: ToolchainVerificationOptions = {},
+): ToolchainLock {
   const lock = JSON.parse(readFileSync(join(root, 'toolchain.lock.json'), 'utf8')) as ToolchainLock
   const cliPath = process.env.OPENIM_HBUILDERX_CLI ?? lock.hbuilderx.cliPath
   if (sha256File(cliPath) !== lock.hbuilderx.cliSha256) throw new Error(`HBuilderX CLI hash mismatch: ${cliPath}`)
   if (sha256File(lock.hbuilderx.utsPluginManifestPath) !== lock.hbuilderx.utsPluginManifestSha256) {
     throw new Error(`HBuilderX UTS plugin hash mismatch: ${lock.hbuilderx.utsPluginManifestPath}`)
+  }
+  if (options.verifyPublicNative === false) {
+    return { ...lock, hbuilderx: { ...lock.hbuilderx, cliPath } }
   }
   const nativeRoot = process.env[lock.publicNative.source.rootEnvironmentVariable] ?? lock.publicNative.source.defaultRoot
   const androidSource = join(nativeRoot, lock.publicNative.android.sourcePath)
@@ -291,7 +305,7 @@ export function isSuccessful(platform: CompilePlatform, log: string): boolean {
   return /项目\s+.+（模块\s+unix-openim-sdk）编译成功[。.]/.test(log)
 }
 
-function hasFailure(log: string): boolean {
+export function hasFailure(log: string): boolean {
   return /(?:编译失败|构建失败|BUILD FAILED|Build failed|\berror\s*:|\bexception\s*:)/i.test(log)
 }
 
@@ -307,8 +321,9 @@ export async function compilePlatform(
   root: string,
   platform: CompilePlatform,
   toolchainRoot: string = root,
+  options: CompilePlatformOptions = {},
 ): Promise<void> {
-  const lock = verifyToolchain(toolchainRoot)
+  const lock = verifyToolchain(toolchainRoot, options)
   const invocation = commandFor(root, platform, lock.hbuilderx.cliPath)
   const defaultTimeoutMs = platform === 'harmony' ? 10 * 60_000 : 5 * 60_000
   const timeoutMs = positiveEnvironmentNumber('OPENIM_COMPILE_TIMEOUT_MS', defaultTimeoutMs)

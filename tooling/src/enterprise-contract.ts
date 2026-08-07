@@ -36,7 +36,7 @@ import { verifyEnterpriseDriverInvariants } from './verify-driver.js'
 import { harmonyTypedMethods, renderHarmonyDriverBindings, renderHarmonyOperationCodes } from './harmony-bindings.js'
 import { renderHarmonyMonomorphicHelpers } from './harmony-monomorphize.js'
 
-const EXPECTED_TOTAL = { constants: 109, types: 234, callables: 244, events: 80 } as const
+const EXPECTED_TOTAL = { constants: 109, types: 233, callables: 245, events: 80 } as const
 const EXPECTED_DELTA = { constants: 0, types: 73, callables: 84, events: 32, typeExtensions: 3 } as const
 const APPROVED_BASE_CALLABLE_OVERRIDES = [{
   name: 'getLoginUserID',
@@ -425,41 +425,21 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   return delta
 }
 
-export function verifyEnterpriseDelta(publicRoot: string, privateRoot: string): void {
+export interface VerifyEnterpriseDeltaOptions {
+  verifyHarmonyCertification?: boolean
+}
+
+export function verifyEnterpriseDelta(
+  publicRoot: string,
+  privateRoot: string,
+  options: VerifyEnterpriseDeltaOptions = {},
+): void {
   const delta = JSON.parse(
     readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'),
   ) as EnterpriseDeltaDocument
-  const harmonyABI = JSON.parse(
-    readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8'),
-  ) as {
-    artifactPath: string
-    artifactSha256: string
-    eventCount: number
-    methodCount: number
-    typedMethodCount: number
-    supportedContractEventCount: number
-    explicitlyUnsupportedContractEvents: string[]
-    explicitlyUnsupportedContractOperations: string[]
-  }
   const baseSnapshot = JSON.parse(
     readFileSync(join(publicRoot, 'contracts/base/surface.snapshot.json'), 'utf8'),
   ) as { contractHash: string }
-  const certification = JSON.parse(
-    readFileSync(join(privateRoot, 'contracts/enterprise/certification/harmony-clean-builds.json'), 'utf8'),
-  ) as {
-    toolchain: { hbuilderxVersion: string }
-    nativeABI: { harSha256: string; inventorySha256: string }
-    generatedSources: {
-      driverSha256: string
-      bindingCodesSha256: string
-      harmonyFacadeSha256: string
-      monomorphicCodecManifestSha256: string
-    }
-    cleanRuns: Array<{ explicitSuccess: boolean; failureMarker: boolean; shellExitCode: number }>
-  }
-  const toolchain = JSON.parse(readFileSync(join(publicRoot, 'toolchain.lock.json'), 'utf8')) as {
-    hbuilderx: { version: string }
-  }
   assert(delta.edition === 'enterprise-delta', 'Invalid enterprise delta edition')
   assert(delta.generatedFrom.publicBaseContractHash === baseSnapshot.contractHash, 'Enterprise public base hash is stale')
   assert(JSON.stringify(delta.expectedTotal) === JSON.stringify(EXPECTED_TOTAL), 'Enterprise total counts changed')
@@ -479,6 +459,36 @@ export function verifyEnterpriseDelta(publicRoot: string, privateRoot: string): 
     .filter((event) => event.binding.harmony === 'unsupported-by-native-abi')
     .map((event) => event.name)
   assert(JSON.stringify(unsupported) === JSON.stringify(HARMONY_UNSUPPORTED_EVENTS), 'Enterprise unsupported event list changed')
+  if (options.verifyHarmonyCertification === false) return
+
+  const harmonyABI = JSON.parse(
+    readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8'),
+  ) as {
+    artifactPath: string
+    artifactSha256: string
+    eventCount: number
+    methodCount: number
+    typedMethodCount: number
+    supportedContractEventCount: number
+    explicitlyUnsupportedContractEvents: string[]
+    explicitlyUnsupportedContractOperations: string[]
+  }
+  const certification = JSON.parse(
+    readFileSync(join(privateRoot, 'contracts/enterprise/certification/harmony-clean-builds.json'), 'utf8'),
+  ) as {
+    toolchain: { hbuilderxVersion: string }
+    nativeABI: { harSha256: string; inventorySha256: string }
+    generatedSources: {
+      driverSha256: string
+      bindingCodesSha256: string
+      harmonyFacadeSha256: string
+      monomorphicCodecManifestSha256: string
+    }
+    cleanRuns: Array<{ explicitSuccess: boolean; failureMarker: boolean; shellExitCode: number }>
+  }
+  const toolchain = JSON.parse(readFileSync(join(publicRoot, 'toolchain.lock.json'), 'utf8')) as {
+    hbuilderx: { version: string }
+  }
   assert(harmonyABI.eventCount === 69, 'Harmony HAR event enum count changed')
   assert(harmonyABI.supportedContractEventCount === 70, 'Harmony supported contract event count changed')
   assert(harmonyABI.methodCount > 100, 'Harmony HAR method inventory is unexpectedly small')

@@ -19,6 +19,7 @@
     "compile:android": "tsx tooling/src/cli.ts compile --platform android",
     "compile:ios": "tsx tooling/src/cli.ts compile --platform ios",
     "compile:private": "tsx tooling/src/cli.ts compile-private",
+    "build:private": "tsx tooling/src/cli.ts build-private",
     "test:tooling": "tsx --test tooling/tests/**/*.test.ts",
     "typecheck:tooling": "tsc -p tooling/tsconfig.json --noEmit"
   },

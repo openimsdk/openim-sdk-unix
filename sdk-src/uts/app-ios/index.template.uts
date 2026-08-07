@@ -146,7 +146,7 @@ import {
   OpenIMSendMessageProgressEventHandler,
   OpenIMUploadFileProgressEventHandler,
   OpenIMUploadLogsProgressEventHandler,
-  OpenIMSDKUnsubscribe,
+  OpenIMSDKEventSubscription,
   InitSDK,
   Login,
   Logout,
@@ -159,6 +159,7 @@ import {
 } from '../interface.uts'
 import {
   ensureNativeEventsBound,
+  offSDKEvent,
   offSDKEventName,
   onConnectingEvent,
   onConnectSuccessEvent,

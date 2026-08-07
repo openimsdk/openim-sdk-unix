@@ -984,8 +984,6 @@ export type OpenIMSDKEventSubscription = {
   eventName : OpenIMSDKEventName
 }
 
-export type OpenIMSDKUnsubscribe = () => void
-
 export type OpenIMSDKEventHandlerSubscription = {
   id : string
   eventName : OpenIMSDKEventName

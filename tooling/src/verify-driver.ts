@@ -37,6 +37,29 @@ export function verifyDriverInvariants(root: string): void {
   )
   const androidRuntime = readFileSync(join(root, 'sdk-src/native/android/OpenIMDriverRuntime.kt'), 'utf8')
   const iosRuntime = readFileSync(join(root, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8')
+  const utsInterface = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), 'utf8')
+  const androidEvents = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'), 'utf8')
+  const iosEvents = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts'), 'utf8')
+
+  assertIncludes(
+    utsInterface,
+    [
+      'export type OpenIMSDKEventSubscription = {',
+    ],
+    'UTS event subscription interface',
+  )
+  assertExcludes(utsInterface, ['OpenIMSDKUnsubscribe', 'OpenIMSDKSubscriptionID'], 'UTS event subscription interface')
+  for (const [label, source] of [['Android UTS events', androidEvents], ['iOS UTS events', iosEvents]] as const) {
+    assertIncludes(
+      source,
+      [
+        'export function offSDKEvent(subscription : OpenIMSDKEventSubscription)',
+        "return { id: subscriptionID, eventName: 'onConnecting' }",
+      ],
+      label,
+    )
+    assertExcludes(source, ['OpenIMSDKUnsubscribe', 'return () =>'], label)
+  }
 
   assert(!androidFacade.includes('dispatchOpenIMMain'), 'Android façade bypasses the Driver callback seam')
   assert(!iosFacade.includes('dispatchOpenIMMain'), 'iOS façade bypasses the Driver callback seam')
@@ -136,6 +159,32 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/OpenIMHarmonyDriver.ets'),
     'utf8',
   )
+  const enterpriseInterface = readFileSync(
+    join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'),
+    'utf8',
+  )
+  const enterpriseHarmonyIndex = readFileSync(
+    join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/index.uts'),
+    'utf8',
+  )
+  assertIncludes(
+    enterpriseInterface,
+    [
+      'export type OpenIMSDKEventSubscription = {',
+      'export declare function off(subscription : OpenIMSDKEventSubscription) : void',
+    ],
+    'Enterprise UTS event subscription interface',
+  )
+  assertExcludes(enterpriseInterface, ['OpenIMSDKUnsubscribe', 'OpenIMSDKSubscriptionID'], 'Enterprise UTS event subscription interface')
+  assertIncludes(
+    enterpriseHarmonyIndex,
+    [
+      'function registerHarmonyUTSSubscription(',
+      'export function off(subscription : OpenIMSDKEventSubscription)',
+    ],
+    'Enterprise Harmony UTS subscription registry',
+  )
+  assertExcludes(enterpriseHarmonyIndex, ['OpenIMSDKUnsubscribe'], 'Enterprise Harmony UTS subscription registry')
   assert(sharedAndroid === enterpriseAndroid, 'Enterprise Android Driver Runtime is not the public shared source')
   assert(sharedIOS === enterpriseIOS, 'Enterprise iOS Driver Runtime is not the public shared source')
   assert(harmonySource === enterpriseHarmony, 'Enterprise Harmony Driver is not generated from its authoritative source')

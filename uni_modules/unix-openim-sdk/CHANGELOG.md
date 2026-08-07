@@ -1,5 +1,9 @@
 # 更新日志
 
+## 未发布
+- 事件订阅改为返回可跨 UTS 桥传递的 `OpenIMSDKEventSubscription`（包含 `id` 与 `eventName`），使用 `off(subscription)` 精确取消单个监听。
+- 保留 `offEvent(eventName)`，用于清理某一事件类型的全部监听。
+
 ## 0.1.2（2026-07-10）
 - `checkFriend` 对外返回值统一为 `{ result: [{ userID, result }] }`，兼容不同 OpenIM Core 的原始返回格式。
 - 移除 public `getInputstates` 和 `getGroupMemberOwnerAndAdmin`。
