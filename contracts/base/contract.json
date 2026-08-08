@@ -5659,7 +5659,20 @@
         "kind": "platform-driver",
         "transport": "async",
         "operationID": "parameter",
-        "request": "text-message",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "text",
+              "parameter": "text",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
         "precondition": "logged-in-create"
       },
       "binding": {
@@ -5672,7 +5685,7 @@
           "symbol": "createTextMessage"
         }
       },
-      "signatureHash": "eb4a88dac3094256a0b82ad9539649fdf2f4b050570993c91a7c9debe9725292"
+      "signatureHash": "a54c3cd959353ff43b007ab40585a57737b5faa2ab85b4e60811bdb0b7ea48da"
     },
     {
       "id": 2140,
@@ -6137,7 +6150,47 @@
         "kind": "platform-driver",
         "transport": "async",
         "operationID": "send-options",
-        "request": "send-message-options"
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "message",
+              "parameter": "options",
+              "member": "message",
+              "codec": "message-json",
+              "wireType": "string"
+            },
+            {
+              "name": "recvID",
+              "parameter": "options",
+              "member": "recvID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "groupID",
+              "parameter": "options",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "offlinePushInfo",
+              "parameter": "options",
+              "codec": "offline-push-json",
+              "wireType": "string"
+            },
+            {
+              "name": "isOnlineOnly",
+              "parameter": "options",
+              "codec": "online-only",
+              "wireType": "boolean"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6149,7 +6202,7 @@
           "symbol": "sendMessage"
         }
       },
-      "signatureHash": "9d3f81f06ac2501a50e69685f4818f2871f8e21ee2a1b23eae1411d7607f709f"
+      "signatureHash": "68f107e51576d2f7af60af9c82ad78f87bd2c11c84885649779977c62748d257"
     },
     {
       "id": 2159,
@@ -6164,7 +6217,47 @@
         "kind": "platform-driver",
         "transport": "async",
         "operationID": "send-options",
-        "request": "send-message-options"
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "message",
+              "parameter": "options",
+              "member": "message",
+              "codec": "message-json",
+              "wireType": "string"
+            },
+            {
+              "name": "recvID",
+              "parameter": "options",
+              "member": "recvID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "groupID",
+              "parameter": "options",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "offlinePushInfo",
+              "parameter": "options",
+              "codec": "offline-push-json",
+              "wireType": "string"
+            },
+            {
+              "name": "isOnlineOnly",
+              "parameter": "options",
+              "codec": "online-only",
+              "wireType": "boolean"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6176,7 +6269,7 @@
           "symbol": "sendMessageNotOss"
         }
       },
-      "signatureHash": "9fea215fb33d60ba5eb76227f26e93c78a8be8feec45ddbd58fa82322e86dbb7"
+      "signatureHash": "b35f016543590fa3f470357c50cb8664d7841a322c48a63e39894b800bd9dfd5"
     },
     {
       "id": 2160,

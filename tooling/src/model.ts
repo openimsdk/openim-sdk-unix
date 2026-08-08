@@ -29,6 +29,30 @@ export interface ContractConstant {
   signatureHash: string
 }
 
+export type DriverRequestFieldCodec =
+  | 'identity'
+  | 'message-json'
+  | 'offline-push-json'
+  | 'online-only'
+
+export interface DriverRequestField {
+  name: string
+  parameter: string
+  member?: string
+  codec: DriverRequestFieldCodec
+  wireType: 'string' | 'number' | 'boolean'
+}
+
+export type DriverRequest =
+  | 'init-config'
+  | 'login-credentials'
+  | 'empty-object'
+  | { kind: 'fields'; fields: DriverRequestField[] }
+
+export interface DriverNativeInvocation {
+  completion: 'sync-return' | 'callback'
+}
+
 export type CallableLowering =
   | {
     kind: 'event-control'
@@ -38,7 +62,8 @@ export type CallableLowering =
     kind: 'platform-driver'
     transport: 'async' | 'sync'
     operationID: 'parameter' | 'send-options' | 'empty'
-    request: 'init-config' | 'login-credentials' | 'text-message' | 'send-message-options' | 'empty-object'
+    request: DriverRequest
+    nativeInvocation?: DriverNativeInvocation
     precondition?: 'logged-in-create'
     bindEvents?: boolean
   }

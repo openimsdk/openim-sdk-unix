@@ -83,6 +83,18 @@ test('first compiler slice stores lowering data instead of platform implementati
     || callable.name === 'offAll'
   )))
   assert.doesNotMatch(serialized, /driverCall(?:Async|Sync)|off(?:All)?SDKEvent/)
+
+  for (const name of ['createTextMessage', 'sendMessage', 'sendMessageNotOss']) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind !== 'platform-driver') continue
+    const request = callable.lowering.request
+    assert.equal(typeof request, 'object')
+    assert.ok(callable.lowering.nativeInvocation)
+    if (typeof request === 'string') continue
+    assert.ok(request.kind === 'fields')
+    assert.ok(request.fields.length > 0)
+  }
 })
 
 test('first compiler slice is rendered from lowering data for both Public platforms', () => {

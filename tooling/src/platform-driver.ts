@@ -1,4 +1,4 @@
-import type { ContractDocument } from './model.js'
+import type { ContractCallable, ContractDocument, DriverRequestField, Platform } from './model.js'
 
 export const PLATFORM_DRIVER_SLICE_NAMES = [
   'initSDK',
@@ -60,8 +60,63 @@ function bindingIDs(contract: ContractDocument): Record<PlatformDriverBinding['n
   return Object.fromEntries(platformDriverBindings(contract).map((binding) => [binding.name, binding.id])) as Record<PlatformDriverBinding['name'], number>
 }
 
+function nativeInvocationCallables(contract: ContractDocument): ContractCallable[] {
+  return contract.callables.filter((callable) => (
+    callable.lowering?.kind === 'platform-driver'
+    && callable.lowering.nativeInvocation != null
+    && typeof callable.lowering.request === 'object'
+    && callable.lowering.request.kind === 'fields'
+  ))
+}
+
+function nativeSymbol(callable: ContractCallable, platform: Platform): string {
+  const binding = callable.binding[platform]
+  assert(binding?.kind === 'native' && binding.symbol.length > 0, `${callable.name} requires a ${platform} native binding`)
+  return binding.symbol
+}
+
+function androidRequestField(field: DriverRequestField): string {
+  if (field.wireType === 'string') return `request.getString("${field.name}")`
+  if (field.wireType === 'boolean') return `request.getBoolean("${field.name}")`
+  return `request.getDouble("${field.name}")`
+}
+
+function androidInvocationCase(callable: ContractCallable): string {
+  assert(callable.lowering?.kind === 'platform-driver' && callable.lowering.nativeInvocation != null, `Missing invocation lowering: ${callable.name}`)
+  assert(typeof callable.lowering.request === 'object' && callable.lowering.request.kind === 'fields', `Missing fields request: ${callable.name}`)
+  const args = callable.lowering.request.fields.map(androidRequestField)
+  const callArgs = ['operationID', ...args]
+  if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
+  const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'android')}(${callArgs.join(', ')})`
+  const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
+  return `        ${callable.id} -> {
+          val request = JSONObject(requestJSON)
+          ${statement}
+        }`
+}
+
+function swiftRequestField(field: DriverRequestField): string {
+  if (field.wireType === 'string') return `try requiredString(request, "${field.name}")`
+  if (field.wireType === 'boolean') return `try requiredBool(request, "${field.name}")`
+  return `try requiredNumber(request, "${field.name}")`
+}
+
+function iosInvocationCase(callable: ContractCallable): string {
+  assert(callable.lowering?.kind === 'platform-driver' && callable.lowering.nativeInvocation != null, `Missing invocation lowering: ${callable.name}`)
+  assert(typeof callable.lowering.request === 'object' && callable.lowering.request.kind === 'fields', `Missing fields request: ${callable.name}`)
+  const args = callable.lowering.request.fields.map(swiftRequestField)
+  const callArgs = ['operationID', ...args]
+  if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
+  const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'ios')}(${callArgs.join(', ')})`
+  const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
+  return `            case ${callable.id}:
+                let request = try requestObject(requestJSON)
+                ${statement}`
+}
+
 function androidCoreAdapter(contract: ContractDocument): string {
   const ids = bindingIDs(contract)
+  const invocationCases = nativeInvocationCallables(contract).map(androidInvocationCase).join('\n')
   const loginUser = contract.callables.find((callable) => callable.name === 'getLoginUserID')
   assert(loginUser != null, 'Missing getLoginUserID PlatformDriver callable')
   const loginUserCall = loginUser.signature.includes('operationID?')
@@ -77,26 +132,6 @@ object OpenIMCoreAdapter {
 
   private fun localFailure(reject: OpenIMReject, error: Throwable) {
     reject(LOCAL_ERROR_CODE, error.message ?: "OpenIM platform driver failure")
-  }
-
-  private fun sendMessage(
-    requestJSON: String,
-    operationID: String,
-    withoutOss: Boolean,
-    resolve: OpenIMResolveString,
-    reject: OpenIMReject
-  ) {
-    val request = JSONObject(requestJSON)
-    val message = request.getString("message")
-    val recvID = request.getString("recvID")
-    val groupID = request.getString("groupID")
-    val offlinePushInfo = request.getString("offlinePushInfo")
-    val isOnlineOnly = request.getBoolean("isOnlineOnly")
-    if (withoutOss) {
-      NativeOpenIMSDK.sendMessageNotOss(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
-    } else {
-      NativeOpenIMSDK.sendMessage(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
-    }
   }
 
   fun callAsync(
@@ -117,9 +152,7 @@ object OpenIMCoreAdapter {
         ${ids.getLoginStatus} -> resolve(NativeOpenIMSDK.getLoginStatus(operationID))
         ${ids.getLoginUserID} -> resolve(${loginUserCall})
         ${ids.unInitSDK} -> resolve(NativeOpenIMSDK.unInitSDK(operationID))
-        ${ids.createTextMessage} -> resolve(NativeOpenIMSDK.createTextMessage(operationID, JSONObject(requestJSON).getString("text")))
-        ${ids.sendMessage} -> sendMessage(requestJSON, operationID, false, resolve, reject)
-        ${ids.sendMessageNotOss} -> sendMessage(requestJSON, operationID, true, resolve, reject)
+${invocationCases}
         else -> reject(LOCAL_ERROR_CODE, "Unsupported OpenIM callable ID: " + callableID.toString())
       }
     } catch (error: Throwable) {
@@ -143,6 +176,7 @@ object OpenIMCoreAdapter {
 
 function iosCoreAdapter(contract: ContractDocument): string {
   const ids = bindingIDs(contract)
+  const invocationCases = nativeInvocationCallables(contract).map(iosInvocationCase).join('\n')
   const loginUser = contract.callables.find((callable) => callable.name === 'getLoginUserID')
   assert(loginUser != null, 'Missing getLoginUserID PlatformDriver callable')
   const loginUserCall = loginUser.signature.includes('operationID?')
@@ -173,31 +207,23 @@ class OpenIMCoreAdapter {
         return value
     }
 
+    private static func requiredBool(_ request: [String: Any], _ name: String) throws -> Bool {
+        guard let value = request[name] as? Bool else {
+            throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing request boolean: \\(name)"])
+        }
+        return value
+    }
+
+    private static func requiredNumber(_ request: [String: Any], _ name: String) throws -> NSNumber {
+        guard let value = request[name] as? NSNumber else {
+            throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing request number: \\(name)"])
+        }
+        return value
+    }
+
     private static func loginRequest(_ requestJSON: String) throws -> (String, String) {
         let request = try requestObject(requestJSON)
         return (try requiredString(request, "userID"), try requiredString(request, "token"))
-    }
-
-    private static func sendMessage(
-        _ requestJSON: String,
-        _ operationID: String,
-        _ withoutOss: Bool,
-        _ resolve: @escaping OpenIMResolveString,
-        _ reject: @escaping OpenIMReject
-    ) throws {
-        let request = try requestObject(requestJSON)
-        let message = try requiredString(request, "message")
-        let recvID = try requiredString(request, "recvID")
-        let groupID = try requiredString(request, "groupID")
-        let offlinePushInfo = try requiredString(request, "offlinePushInfo")
-        guard let isOnlineOnly = request["isOnlineOnly"] as? Bool else {
-            throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing request boolean: isOnlineOnly"])
-        }
-        if withoutOss {
-            NativeOpenIMSDK.sendMessageNotOss(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
-        } else {
-            NativeOpenIMSDK.sendMessage(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
-        }
     }
 
     static func callAsync(
@@ -222,13 +248,7 @@ class OpenIMCoreAdapter {
                 resolve(${loginUserCall})
             case ${ids.unInitSDK}:
                 resolve(NativeOpenIMSDK.unInitSDK(operationID))
-            case ${ids.createTextMessage}:
-                let request = try requestObject(requestJSON)
-                resolve(NativeOpenIMSDK.createTextMessage(operationID, try requiredString(request, "text")))
-            case ${ids.sendMessage}:
-                try sendMessage(requestJSON, operationID, false, resolve, reject)
-            case ${ids.sendMessageNotOss}:
-                try sendMessage(requestJSON, operationID, true, resolve, reject)
+${invocationCases}
             default:
                 reject(localErrorCode, "Unsupported OpenIM callable ID: \\(callableID)")
             }

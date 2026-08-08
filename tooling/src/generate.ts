@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import type { ContractCallable, ContractDocument, ContractEvent, Platform, SurfaceSnapshot } from './model.js'
+import type { ContractCallable, ContractDocument, ContractEvent, DriverRequestField, Platform, SurfaceSnapshot } from './model.js'
 import { INDEX_MARKERS } from './template-authority.js'
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { sha256 } from './source.js'
@@ -64,6 +64,24 @@ function promiseValueType(returnType: string): string {
   return match[1] ?? ''
 }
 
+function driverRequestFieldExpression(field: DriverRequestField): string {
+  const source = field.member == null ? field.parameter : `${field.parameter}.${field.member}`
+  if (field.codec === 'identity') return source
+  if (field.codec === 'message-json') return `stringifyOpenIMMessage(${source})`
+  if (field.codec === 'offline-push-json') return `readOfflinePushInfo(${field.parameter})`
+  if (field.codec === 'online-only') return `readIsOnlineOnly(${field.parameter})`
+  throw new Error(`Unsupported Driver request field codec: ${field.codec}`)
+}
+
+function driverFieldsRequestPrelude(fields: DriverRequestField[]): string {
+  if (fields.length === 0) throw new Error('Driver fields request must contain at least one field')
+  const fragments = fields.map((field, index) => {
+    const prefix = index === 0 ? `'{"${field.name}":'` : `',"${field.name}":'`
+    return `${prefix} + stringifyJSON(${driverRequestFieldExpression(field)})`
+  })
+  return `const requestJSON = ${fragments.join(' + ')} + '}';`
+}
+
 function renderLoweredCallable(callable: ContractCallable): string {
   const lowering = callable.lowering
   if (lowering == null) throw new Error(`Missing callable lowering: ${callable.name}`)
@@ -90,12 +108,9 @@ function renderLoweredCallable(callable: ContractCallable): string {
   else if (lowering.request === 'login-credentials') {
     requestExpression = 'requestJSON'
     prelude.push(`const requestJSON = '{"userID":' + stringifyJSON(userID) + ',"token":' + stringifyJSON(token) + '}';`)
-  } else if (lowering.request === 'text-message') {
+  } else if (typeof lowering.request === 'object' && lowering.request.kind === 'fields') {
     requestExpression = 'requestJSON'
-    prelude.push(`const requestJSON = '{"text":' + stringifyJSON(text) + '}';`)
-  } else if (lowering.request === 'send-message-options') {
-    requestExpression = 'requestJSON'
-    prelude.push(`const requestJSON = '{"message":' + stringifyJSON(stringifyOpenIMMessage(options.message)) + ',"recvID":' + stringifyJSON(options.recvID) + ',"groupID":' + stringifyJSON(options.groupID) + ',"offlinePushInfo":' + stringifyJSON(readOfflinePushInfo(options)) + ',"isOnlineOnly":' + (readIsOnlineOnly(options) ? 'true' : 'false') + '}';`)
+    prelude.push(driverFieldsRequestPrelude(lowering.request.fields))
   } else requestExpression = "'{}'"
   const requestPrelude = prelude.length === 0 ? '' : `${prelude.join(' ')} `
 

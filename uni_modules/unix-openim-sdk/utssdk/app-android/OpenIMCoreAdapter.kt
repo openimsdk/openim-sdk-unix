@@ -11,26 +11,6 @@ object OpenIMCoreAdapter {
     reject(LOCAL_ERROR_CODE, error.message ?: "OpenIM platform driver failure")
   }
 
-  private fun sendMessage(
-    requestJSON: String,
-    operationID: String,
-    withoutOss: Boolean,
-    resolve: OpenIMResolveString,
-    reject: OpenIMReject
-  ) {
-    val request = JSONObject(requestJSON)
-    val message = request.getString("message")
-    val recvID = request.getString("recvID")
-    val groupID = request.getString("groupID")
-    val offlinePushInfo = request.getString("offlinePushInfo")
-    val isOnlineOnly = request.getBoolean("isOnlineOnly")
-    if (withoutOss) {
-      NativeOpenIMSDK.sendMessageNotOss(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
-    } else {
-      NativeOpenIMSDK.sendMessage(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
-    }
-  }
-
   fun callAsync(
     callableID: Number,
     operationID: String,
@@ -49,9 +29,18 @@ object OpenIMCoreAdapter {
         2054 -> resolve(NativeOpenIMSDK.getLoginStatus(operationID))
         2055 -> resolve(NativeOpenIMSDK.getLoginUserID())
         2058 -> resolve(NativeOpenIMSDK.unInitSDK(operationID))
-        2139 -> resolve(NativeOpenIMSDK.createTextMessage(operationID, JSONObject(requestJSON).getString("text")))
-        2158 -> sendMessage(requestJSON, operationID, false, resolve, reject)
-        2159 -> sendMessage(requestJSON, operationID, true, resolve, reject)
+        2139 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createTextMessage(operationID, request.getString("text")))
+        }
+        2158 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.sendMessage(operationID, request.getString("message"), request.getString("recvID"), request.getString("groupID"), request.getString("offlinePushInfo"), request.getBoolean("isOnlineOnly"), resolve, reject)
+        }
+        2159 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.sendMessageNotOss(operationID, request.getString("message"), request.getString("recvID"), request.getString("groupID"), request.getString("offlinePushInfo"), request.getBoolean("isOnlineOnly"), resolve, reject)
+        }
         else -> reject(LOCAL_ERROR_CODE, "Unsupported OpenIM callable ID: " + callableID.toString())
       }
     } catch (error: Throwable) {

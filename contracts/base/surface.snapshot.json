@@ -2407,7 +2407,7 @@
       "id": 2139,
       "name": "createTextMessage",
       "signature": "createTextMessage(text:string,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "eb4a88dac3094256a0b82ad9539649fdf2f4b050570993c91a7c9debe9725292"
+      "signatureHash": "a54c3cd959353ff43b007ab40585a57737b5faa2ab85b4e60811bdb0b7ea48da"
     },
     {
       "id": 2140,
@@ -2521,13 +2521,13 @@
       "id": 2158,
       "name": "sendMessage",
       "signature": "sendMessage(options:OpenIMSendMessageOptions):Promise<OpenIMMessageItem>",
-      "signatureHash": "9d3f81f06ac2501a50e69685f4818f2871f8e21ee2a1b23eae1411d7607f709f"
+      "signatureHash": "68f107e51576d2f7af60af9c82ad78f87bd2c11c84885649779977c62748d257"
     },
     {
       "id": 2159,
       "name": "sendMessageNotOss",
       "signature": "sendMessageNotOss(options:OpenIMSendMessageOptions):Promise<OpenIMMessageItem>",
-      "signatureHash": "9fea215fb33d60ba5eb76227f26e93c78a8be8feec45ddbd58fa82322e86dbb7"
+      "signatureHash": "b35f016543590fa3f470357c50cb8664d7841a322c48a63e39894b800bd9dfd5"
     },
     {
       "id": 2160,
@@ -2880,5 +2880,5 @@
       "signatureHash": "d1a6f9042697c344fed15b109150f2c02cb5cd9556b13f72c561bc0648bb5d32"
     }
   ],
-  "contractHash": "e5fc0bb14c17b76ba17f06f680c9469f03bd20e4bb5d7c0b7bc24be042d53701"
+  "contractHash": "33d8ea4bec84a039b92fec3518f9f0fc3fdaaa69b4e25f38990a6362607fea42"
 }
