@@ -1,0 +1,97 @@
+name: OpenIM contract gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '30 18 * * *'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Run release-only policy and runtime-evidence gates
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openim-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regenerate from authority
+        run: |
+          npm run generate
+          git diff --exit-code
+      - run: npm run typecheck:tooling
+      - run: npm run test:tooling
+      - run: npm run verify
+      - run: npm run verify:generated
+      - run: npm run verify:policy
+      - run: npm audit --omit=dev
+
+  native-nightly:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: [self-hosted, macOS, openim-sdk]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Prove locked source and artifact identity
+        run: npm run native:verify
+      - name: Compile positive and removed-export consumers
+        run: |
+          npm run verify:consumer:android
+          npm run verify:consumer:ios
+      - name: Compile release dependency profiles
+        run: npm run compile:public
+
+  release:
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    needs: native-nightly
+    runs-on: [self-hosted, macOS, openim-sdk]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Refuse unresolved compatibility debt
+        run: npm run verify:release-policy
+      - name: Prove deterministic regeneration twice
+        run: |
+          npm run generate
+          git diff --exit-code
+          npm run generate
+          git diff --exit-code
+      - name: Require three clean runtime summaries
+        env:
+          SUMMARY_1: ${{ vars.OPENIM_PUBLIC_AUTOMATION_SUMMARY_1 }}
+          SUMMARY_2: ${{ vars.OPENIM_PUBLIC_AUTOMATION_SUMMARY_2 }}
+          SUMMARY_3: ${{ vars.OPENIM_PUBLIC_AUTOMATION_SUMMARY_3 }}
+        run: |
+          test -n "$SUMMARY_1" -a -f "$SUMMARY_1"
+          test -n "$SUMMARY_2" -a -f "$SUMMARY_2"
+          test -n "$SUMMARY_3" -a -f "$SUMMARY_3"
+          npm run verify:automation-summary -- --summary "$SUMMARY_1"
+          npm run verify:automation-summary -- --summary "$SUMMARY_2"
+          npm run verify:automation-summary -- --summary "$SUMMARY_3"
