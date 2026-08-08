@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -7,6 +7,7 @@ import { buildGeneratedOutputs } from '../src/generate.js'
 import {
   GENERATED_MANIFEST_PATH,
   buildGeneratedManifest,
+  verifyPublicAuthorityRegeneration,
   verifyDeletionRegeneration,
 } from '../src/generated-manifest.js'
 import { sha256 } from '../src/source.js'
@@ -32,6 +33,12 @@ test('committed generated manifest is current and deterministic', () => {
 })
 
 test('deleting every generated output and regenerating twice reproduces repository bytes', () => {
+  if (existsSync(resolve(root, 'contracts/enterprise/delta.json'))) {
+    const result = verifyPublicAuthorityRegeneration(root)
+    assert.equal(result.outputCount, buildGeneratedOutputs(root).length)
+    assert.equal(result.deterministic, true)
+    return
+  }
   const result = verifyDeletionRegeneration(root)
   assert.equal(result.outputCount, buildGeneratedOutputs(root).length)
   assert.equal(result.repositoryIdentical, true)

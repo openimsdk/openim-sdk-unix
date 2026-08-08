@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { readFileSync, statSync } from 'node:fs'
+import { cpSync, mkdtempSync, readFileSync, statSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -17,6 +18,8 @@ import {
 } from '../src/contract-integrity.js'
 import type { ContractCallable, ContractDocument } from '../src/model.js'
 import { previewPublicContractImport } from '../src/public-contract-import.js'
+import { generate } from '../src/generate.js'
+import { writeGeneratedManifest } from '../src/generated-manifest.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -214,11 +217,16 @@ test('retired IDs can never be reactivated or reused, even with approval', () =>
 })
 
 test('public contract import defaults to a temporary read-only preview', () => {
-  const contractPath = resolve(root, 'contracts/base/contract.json')
+  const publicProjection = mkdtempSync(resolve(tmpdir(), 'openim-public-import-test-'))
+  cpSync(resolve(root, 'contracts/base'), resolve(publicProjection, 'contracts/base'), { recursive: true })
+  cpSync(resolve(root, 'sdk-src'), resolve(publicProjection, 'sdk-src'), { recursive: true })
+  generate(publicProjection)
+  writeGeneratedManifest(publicProjection)
+  const contractPath = resolve(publicProjection, 'contracts/base/contract.json')
   const before = readFileSync(contractPath)
   const beforeModified = statSync(contractPath).mtimeMs
 
-  const preview = previewPublicContractImport(root)
+  const preview = previewPublicContractImport(publicProjection)
 
   assert.equal(preview.invariantViolations.length, 0)
   assert.equal(readFileSync(contractPath).equals(before), true)

@@ -54,10 +54,12 @@ export function verifyDriverInvariants(root: string): void {
       source,
       [
         'export function offSDKEvent(subscription : OpenIMSDKEventSubscription)',
-        "return { id: subscriptionID, eventName: 'onConnecting' }",
       ],
       label,
     )
+    const perEventHandle = source.includes("return { id: subscriptionID, eventName: 'onConnecting' }")
+    const genericHandle = source.includes('return { id: subscriptionID, eventName: eventName }')
+    assert(perEventHandle || genericHandle, `${label} does not return a stable event subscription handle`)
     assertExcludes(source, ['OpenIMSDKUnsubscribe', 'return () =>'], label)
   }
 

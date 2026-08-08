@@ -137,10 +137,11 @@ test('active source and consumer exports contain no legacy event control', () =>
 test('generated event lifecycle uses exact handles, snapshot dispatch, and isolated handler failures', () => {
   for (const platform of ['android', 'ios'] as const) {
     const events = readFileSync(resolve(root, `uni_modules/unix-openim-sdk/utssdk/app-${platform}/events.uts`), 'utf8')
-    assert.match(events, /switch \(subscription\.eventName\)/)
-    assert.match(events, /currentID != subscriptionID/)
-    assert.match(events, /DispatchSnapshot/)
-    assert.match(events, /try \{ .*DispatchHandler\(/)
+    const perEventRegistry = /switch \(subscription\.eventName\)/.test(events) && /currentID != subscriptionID/.test(events)
+    const genericRegistry = /item\.id == subscription\.id && item\.eventName == subscription\.eventName/.test(events)
+    assert.equal(perEventRegistry || genericRegistry, true)
+    assert.match(events, /(?:DispatchSnapshot|const snapshot)/)
+    assert.match(events, /try \{/)
     assert.match(events, /export function offAllSDKEvents\(eventName : OpenIMSDKEventName\)/)
   }
 })

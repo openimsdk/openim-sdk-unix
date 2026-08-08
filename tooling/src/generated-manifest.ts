@@ -42,6 +42,11 @@ export interface DeletionRegenerationResult {
   repositoryIdentical: boolean
 }
 
+export interface AuthorityRegenerationResult {
+  outputCount: number
+  deterministic: boolean
+}
+
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
 }
@@ -160,6 +165,31 @@ export function verifyDeletionRegeneration(root: string): DeletionRegenerationRe
     assertSameBytes(repositoryBytes, secondBytes, 'Repository comparison')
 
     return { outputCount: paths.length, deterministic: true, repositoryIdentical: true }
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true })
+  }
+}
+
+/**
+ * Verifies the Public projection from authoritative inputs without comparing
+ * it to uni_modules. Private worktrees intentionally commit an Enterprise
+ * projection at those paths and verify that projection with its own manifest.
+ */
+export function verifyPublicAuthorityRegeneration(root: string): AuthorityRegenerationResult {
+  const expectedOutputs = buildGeneratedOutputs(root)
+  const paths = expectedOutputs.map((output) => relativeProjectPath(root, output.path))
+  const expectedBytes = new Map(expectedOutputs.map((output, index) => [paths[index]!, Buffer.from(output.content)]))
+  const temporaryRoot = mkdtempSync(join(tmpdir(), 'openim-public-authority-'))
+  try {
+    for (const input of PUBLIC_GENERATOR_AUTHORITY_INPUTS) copyProjectFile(root, temporaryRoot, input)
+    generate(temporaryRoot)
+    const firstBytes = readOutputBytes(temporaryRoot, paths)
+    assertSameBytes(expectedBytes, firstBytes, 'First Public authority regeneration')
+    for (const output of paths) rmSync(projectPath(temporaryRoot, output), { force: true })
+    generate(temporaryRoot)
+    const secondBytes = readOutputBytes(temporaryRoot, paths)
+    assertSameBytes(firstBytes, secondBytes, 'Second Public authority regeneration')
+    return { outputCount: paths.length, deterministic: true }
   } finally {
     rmSync(temporaryRoot, { recursive: true, force: true })
   }
