@@ -33,6 +33,7 @@ export type DriverRequestFieldCodec =
   | 'identity'
   | 'json'
   | 'file-json'
+  | 'local-media-path'
   | 'message-entity-list-json'
   | 'message-json'
   | 'message-list-json'

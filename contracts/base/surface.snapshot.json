@@ -2413,7 +2413,7 @@
       "id": 2140,
       "name": "createImageMessageFromFullPath",
       "signature": "createImageMessageFromFullPath(imageFullPath:string,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "8b3f74d892718b381dcdef91d29f7fdf89800b08618195c261349717aaa6200e"
+      "signatureHash": "eec0962edecf8da86e687392092b5d8f8e2267684bdcc88165dbf15a2865f1a6"
     },
     {
       "id": 2141,
@@ -2455,7 +2455,7 @@
       "id": 2147,
       "name": "createSoundMessageFromFullPath",
       "signature": "createSoundMessageFromFullPath(params:OpenIMCreateSoundMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "12f56ef2ab25eeffbf9234fded1d25d0ee4faa8f4aeede703ba9a6de1eeeaf34"
+      "signatureHash": "16ceaa24c2ee28a3a19e7f6aaa1e128cad433926dfef66174b586d611b9d5017"
     },
     {
       "id": 2148,
@@ -2467,7 +2467,7 @@
       "id": 2149,
       "name": "createVideoMessageFromFullPath",
       "signature": "createVideoMessageFromFullPath(params:OpenIMCreateVideoMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "eec453af0676b6098068cfa453a8b7699e6f828838c97d5fa1a4436f9155cb07"
+      "signatureHash": "6f98de5db2703a6f41c8eac5f61d8d01559e3b0f551a67895dd9cf38aa8a10af"
     },
     {
       "id": 2150,
@@ -2479,7 +2479,7 @@
       "id": 2151,
       "name": "createFileMessageFromFullPath",
       "signature": "createFileMessageFromFullPath(params:OpenIMCreateFileMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "cb311549ef399947350157af37d4f3e82d0441ea4e3b062cfe42281c30013705"
+      "signatureHash": "1fbfd9b7df9c1ea9969bb9fbd8bbef65c19c42523450338eb95c6a148f341aff"
     },
     {
       "id": 2152,
@@ -2880,5 +2880,5 @@
       "signatureHash": "d1a6f9042697c344fed15b109150f2c02cb5cd9556b13f72c561bc0648bb5d32"
     }
   ],
-  "contractHash": "147c75680755c153b05346a6f8f6e2de4e02aa870bfcb0b0fc37f7d770f540e1"
+  "contractHash": "5487ef3d6587e4a750ca038179510d52e29542f0873b4e46f5f15412696c7dc1"
 }

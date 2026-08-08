@@ -69,6 +69,9 @@ class OpenIMCoreAdapter {
             case 2139:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createTextMessage(operationID, try requiredString(request, "text")))
+            case 2140:
+                let request = try requestObject(requestJSON)
+                resolve(NativeOpenIMSDK.createImageMessageFromFullPath(operationID, try requiredString(request, "imageFullPath")))
             case 2141:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createImageMessageByURL(operationID, try requiredString(request, "sourcePath"), try requiredString(request, "sourcePicture"), try requiredString(request, "bigPicture"), try requiredString(request, "snapshotPicture")))
@@ -87,12 +90,21 @@ class OpenIMCoreAdapter {
             case 2146:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createTextAtMessage(operationID, try requiredString(request, "text"), try requiredString(request, "atUserIDList"), try requiredString(request, "atUsersInfo"), try requiredString(request, "quoteMessage")))
+            case 2147:
+                let request = try requestObject(requestJSON)
+                resolve(NativeOpenIMSDK.createSoundMessageFromFullPath(operationID, try requiredString(request, "soundPath"), try requiredNumber(request, "duration")))
             case 2148:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createSoundMessageByURL(operationID, try requiredString(request, "soundInfo")))
+            case 2149:
+                let request = try requestObject(requestJSON)
+                resolve(NativeOpenIMSDK.createVideoMessageFromFullPath(operationID, try requiredString(request, "videoPath"), try requiredString(request, "videoType"), try requiredNumber(request, "duration"), try requiredString(request, "snapshotPath")))
             case 2150:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createVideoMessageByURL(operationID, try requiredString(request, "videoInfo")))
+            case 2151:
+                let request = try requestObject(requestJSON)
+                resolve(NativeOpenIMSDK.createFileMessageFromFullPath(operationID, try requiredString(request, "filePath"), try requiredString(request, "fileName")))
             case 2152:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createFileMessageByURL(operationID, try requiredString(request, "fileInfo")))

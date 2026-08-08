@@ -5696,9 +5696,25 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createImageMessageFromFullPath = function (imageFullPath : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createImageMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createImageMessageFromFullPath(op, imageFullPath))) }) }",
-        "ios": "export const createImageMessageFromFullPath = function (imageFullPath : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> {\n  return new Promise<OpenIMMessageItem | null>((resolve, reject) => {\n    const op = normalizeOperationID(operationID)\n    if (requireLoggedInForCreate('createImageMessageFromFullPath', op, reject) == false) { return }\n    if (rejectUnsupportedIOSLocalMediaPath('createImageMessageFromFullPath', imageFullPath, reject)) { return }\n    resolve(parseNativeMessage(NativeOpenIMSDK.createImageMessageFromFullPath(op, normalizeIOSLocalMediaPath(imageFullPath))))\n  })\n}"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "imageFullPath",
+              "parameter": "imageFullPath",
+              "codec": "local-media-path",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5710,7 +5726,7 @@
           "symbol": "createImageMessageFromFullPath"
         }
       },
-      "signatureHash": "8b3f74d892718b381dcdef91d29f7fdf89800b08618195c261349717aaa6200e"
+      "signatureHash": "eec0962edecf8da86e687392092b5d8f8e2267684bdcc88165dbf15a2865f1a6"
     },
     {
       "id": 2141,
@@ -6057,9 +6073,33 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createSoundMessageFromFullPath = function (params : OpenIMCreateSoundMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createSoundMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createSoundMessageFromFullPath(op, params.soundPath, params.duration))) }) }",
-        "ios": "export const createSoundMessageFromFullPath = function (params : OpenIMCreateSoundMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> {\n  return new Promise<OpenIMMessageItem | null>((resolve, reject) => {\n    const op = normalizeOperationID(operationID)\n    if (requireLoggedInForCreate('createSoundMessageFromFullPath', op, reject) == false) { return }\n    if (rejectUnsupportedIOSLocalMediaPath('createSoundMessageFromFullPath', params.soundPath, reject)) { return }\n    resolve(parseNativeMessage(NativeOpenIMSDK.createSoundMessageFromFullPath(op, normalizeIOSLocalMediaPath(params.soundPath), params.duration)))\n  })\n}"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "soundPath",
+              "parameter": "params",
+              "member": "soundPath",
+              "codec": "local-media-path",
+              "wireType": "string"
+            },
+            {
+              "name": "duration",
+              "parameter": "params",
+              "member": "duration",
+              "codec": "identity",
+              "wireType": "number"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6071,7 +6111,7 @@
           "symbol": "createSoundMessageFromFullPath"
         }
       },
-      "signatureHash": "12f56ef2ab25eeffbf9234fded1d25d0ee4faa8f4aeede703ba9a6de1eeeaf34"
+      "signatureHash": "16ceaa24c2ee28a3a19e7f6aaa1e128cad433926dfef66174b586d611b9d5017"
     },
     {
       "id": 2148,
@@ -6123,9 +6163,47 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createVideoMessageFromFullPath = function (params : OpenIMCreateVideoMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createVideoMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createVideoMessageFromFullPath(op, params.videoPath, params.videoType, params.duration, params.snapshotPath))) }) }",
-        "ios": "export const createVideoMessageFromFullPath = function (params : OpenIMCreateVideoMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> {\n  return new Promise<OpenIMMessageItem | null>((resolve, reject) => {\n    const op = normalizeOperationID(operationID)\n    if (requireLoggedInForCreate('createVideoMessageFromFullPath', op, reject) == false) { return }\n    if (rejectUnsupportedIOSLocalMediaPath('createVideoMessageFromFullPath', params.videoPath, reject)) { return }\n    if (rejectUnsupportedIOSLocalMediaPath('createVideoMessageFromFullPath', params.snapshotPath, reject)) { return }\n    resolve(parseNativeMessage(NativeOpenIMSDK.createVideoMessageFromFullPath(op, normalizeIOSLocalMediaPath(params.videoPath), params.videoType, params.duration, normalizeIOSLocalMediaPath(params.snapshotPath))))\n  })\n}"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "videoPath",
+              "parameter": "params",
+              "member": "videoPath",
+              "codec": "local-media-path",
+              "wireType": "string"
+            },
+            {
+              "name": "videoType",
+              "parameter": "params",
+              "member": "videoType",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "duration",
+              "parameter": "params",
+              "member": "duration",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "snapshotPath",
+              "parameter": "params",
+              "member": "snapshotPath",
+              "codec": "local-media-path",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6137,7 +6215,7 @@
           "symbol": "createVideoMessageFromFullPath"
         }
       },
-      "signatureHash": "eec453af0676b6098068cfa453a8b7699e6f828838c97d5fa1a4436f9155cb07"
+      "signatureHash": "6f98de5db2703a6f41c8eac5f61d8d01559e3b0f551a67895dd9cf38aa8a10af"
     },
     {
       "id": 2150,
@@ -6189,9 +6267,33 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createFileMessageFromFullPath = function (params : OpenIMCreateFileMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFileMessageFromFullPath', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFileMessageFromFullPath(op, params.filePath, params.fileName))) }) }",
-        "ios": "export const createFileMessageFromFullPath = function (params : OpenIMCreateFileMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> {\n  return new Promise<OpenIMMessageItem | null>((resolve, reject) => {\n    const op = normalizeOperationID(operationID)\n    if (requireLoggedInForCreate('createFileMessageFromFullPath', op, reject) == false) { return }\n    if (rejectUnsupportedIOSLocalMediaPath('createFileMessageFromFullPath', params.filePath, reject)) { return }\n    resolve(parseNativeMessage(NativeOpenIMSDK.createFileMessageFromFullPath(op, normalizeIOSLocalMediaPath(params.filePath), params.fileName)))\n  })\n}"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "filePath",
+              "parameter": "params",
+              "member": "filePath",
+              "codec": "local-media-path",
+              "wireType": "string"
+            },
+            {
+              "name": "fileName",
+              "parameter": "params",
+              "member": "fileName",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6203,7 +6305,7 @@
           "symbol": "createFileMessageFromFullPath"
         }
       },
-      "signatureHash": "cb311549ef399947350157af37d4f3e82d0441ea4e3b062cfe42281c30013705"
+      "signatureHash": "1fbfd9b7df9c1ea9969bb9fbd8bbef65c19c42523450338eb95c6a148f341aff"
     },
     {
       "id": 2152,

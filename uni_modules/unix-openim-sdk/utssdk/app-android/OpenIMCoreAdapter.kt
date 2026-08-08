@@ -33,6 +33,10 @@ object OpenIMCoreAdapter {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createTextMessage(operationID, request.getString("text")))
         }
+        2140 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createImageMessageFromFullPath(operationID, request.getString("imageFullPath")))
+        }
         2141 -> {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createImageMessageByURL(operationID, request.getString("sourcePath"), request.getString("sourcePicture"), request.getString("bigPicture"), request.getString("snapshotPicture")))
@@ -57,13 +61,25 @@ object OpenIMCoreAdapter {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createTextAtMessage(operationID, request.getString("text"), request.getString("atUserIDList"), request.getString("atUsersInfo"), request.getString("quoteMessage")))
         }
+        2147 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createSoundMessageFromFullPath(operationID, request.getString("soundPath"), request.getDouble("duration")))
+        }
         2148 -> {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createSoundMessageByURL(operationID, request.getString("soundInfo")))
         }
+        2149 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createVideoMessageFromFullPath(operationID, request.getString("videoPath"), request.getString("videoType"), request.getDouble("duration"), request.getString("snapshotPath")))
+        }
         2150 -> {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createVideoMessageByURL(operationID, request.getString("videoInfo")))
+        }
+        2151 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createFileMessageFromFullPath(operationID, request.getString("filePath"), request.getString("fileName")))
         }
         2152 -> {
           val request = JSONObject(requestJSON)

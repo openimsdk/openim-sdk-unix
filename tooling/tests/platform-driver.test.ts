@@ -32,6 +32,13 @@ const IN_MEMORY_MESSAGE_CREATORS = [
   ['createCardMessage', 2157],
 ] as const
 
+const PATH_MESSAGE_CREATORS = [
+  ['createImageMessageFromFullPath', 2140, 1],
+  ['createSoundMessageFromFullPath', 2147, 1],
+  ['createVideoMessageFromFullPath', 2149, 2],
+  ['createFileMessageFromFullPath', 2151, 1],
+] as const
+
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
   assert.deepEqual(
     platformDriverBindings(contract).map(({ id, name }) => ({ id, name })),
@@ -44,7 +51,10 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
       { id: 2056, name: 'getSdkVersion' },
       { id: 2058, name: 'unInitSDK' },
       { id: 2139, name: 'createTextMessage' },
-      ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
+      ...[
+        ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
+        ...PATH_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
+      ].sort((left, right) => left.id - right.id),
       { id: 2158, name: 'sendMessage' },
       { id: 2159, name: 'sendMessageNotOss' },
     ],
@@ -58,7 +68,10 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
     'getSdkVersion',
     'unInitSDK',
     'createTextMessage',
-    ...IN_MEMORY_MESSAGE_CREATORS.map(([name]) => name),
+    ...[
+      ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
+      ...PATH_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
+    ].sort((left, right) => left.id - right.id).map(({ name }) => name),
     'sendMessage',
     'sendMessageNotOss',
   ])
@@ -162,16 +175,6 @@ test('in-memory message creators cross the same structured PlatformDriver seam',
       assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
       assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
     }
-    for (const pathCreator of [
-      'createImageMessageFromFullPath',
-      'createSoundMessageFromFullPath',
-      'createVideoMessageFromFullPath',
-      'createFileMessageFromFullPath',
-    ]) {
-      const callable = contract.callables.find((candidate) => candidate.name === pathCreator)
-      assert.equal(callable?.lowering, undefined)
-      assert.match(facade, new RegExp(`NativeOpenIMSDK\\.${pathCreator}`), `${pathCreator} must retain its platform path adapter`)
-    }
     if (platform === 'android') {
       assert.match(facade, /stringifyJSON\(params\.sourcePicture\)/)
       assert.match(facade, /stringifyOpenIMMessagePayload\(params\.messageList\)/)
@@ -184,6 +187,35 @@ test('in-memory message creators cross the same structured PlatformDriver seam',
       assert.match(adapter, /CFGetTypeID\(value\) != CFBooleanGetTypeID\(\)/)
     }
   }
+})
+
+test('full-path message creators keep iOS compatibility behind generated path codecs', () => {
+  for (const [name, id, pathCount] of PATH_MESSAGE_CREATORS) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.id, id)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind !== 'platform-driver') continue
+    assert.deepEqual(callable.lowering.nativeInvocation, { completion: 'sync-return' })
+    assert.equal(typeof callable.lowering.request, 'object')
+    if (typeof callable.lowering.request === 'string') continue
+    const pathFields = callable.lowering.request.fields.filter((field) => field.codec === 'local-media-path')
+    assert.equal(pathFields.length, pathCount)
+  }
+
+  const androidFacade = generateIndex(root, contract, 'android')
+  const iosFacade = generateIndex(root, contract, 'ios')
+  const androidAdapter = renderNativeCoreAdapter(contract, 'android')
+  const iosAdapter = renderNativeCoreAdapter(contract, 'ios')
+  for (const [name, id, pathCount] of PATH_MESSAGE_CREATORS) {
+    assert.match(androidAdapter, new RegExp(`(?:case )?${id}`))
+    assert.match(iosAdapter, new RegExp(`case ${id}`))
+    const iosPreflight = new RegExp(`rejectUnsupportedIOSLocalMediaPath\\('${name}'`, 'g')
+    assert.equal([...iosFacade.matchAll(iosPreflight)].length, pathCount)
+    assert.match(iosFacade, new RegExp(`driverCallAsync\\(${id},`))
+    assert.match(androidFacade, new RegExp(`driverCallAsync\\(${id},`))
+  }
+  assert.doesNotMatch(androidFacade, /normalizeIOSLocalMediaPath/)
+  assert.match(iosFacade, /normalizeIOSLocalMediaPath/)
 })
 
 test('Android wire validators use Java wrapper classes instead of unsupported typeof any', () => {
