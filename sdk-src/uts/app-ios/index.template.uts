@@ -277,15 +277,6 @@ function optionalString(value ?: string | null) : string { return value != null 
 function optionalBoolean(value ?: boolean | null) : boolean { return value != null ? value as boolean : false }
 function optionalNumber(value ?: number | null) : number { return value != null ? value as number : 0 }
 
-function requireLoggedInForCreate(apiName : string, operationID : string, reject : (reason : any | null) => void) : boolean { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-ANY UTS-COMPAT-CODEC-001
-  const loginStatus = parseNativeLoginStatus(NativeOpenIMSDK.getLoginStatus(operationID))
-  if (loginStatus != 3) {
-    rejectNativeError(reject, -1, apiName + ' requires logged in status')
-    return false
-  }
-  return true
-}
-
 function normalizeIOSLocalMediaPath(path : string) : string {
   if (path.indexOf('file://') == 0) {
     return path.substring(7)

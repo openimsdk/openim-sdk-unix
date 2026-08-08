@@ -221,7 +221,7 @@ test('first compiler slice is rendered from lowering data for both Public platfo
     assert.match(source, /driverCallAsync\(2051, normalizeOperationID\(operationID\), normalizeInitConfig\(config\)/)
     assert.match(source, /driverCallAsync\(2052, normalizeOperationID\(operationID\), requestJSON/)
     assert.match(source, /driverCallSync\(2056, '', '\{\}'\)/)
-    assert.match(source, /driverCallAsync\(2139, op, requestJSON/)
+    assert.match(source, /driverCallAsync\(2139, normalizeOperationID\(operationID\), requestJSON/)
     assert.match(source, /driverCallAsync\(2158, readOperationID\(options\), requestJSON/)
     assert.match(source, /driverCallAsync\(2159, readOperationID\(options\), requestJSON/)
     assert.match(source, /resolveSendMessageData\(data, 'sendMessage'/)
@@ -569,6 +569,18 @@ test('constants are generated from canonical type and value fields', () => {
     const declaration = `export const ${constant.name} : ${constant.type} = ${constant.value}`
     assert.ok(facades.android.split('\n').includes(declaration))
     assert.ok(facades.ios.split('\n').includes(declaration))
+  }
+})
+
+test('native login guards live inside generated CoreAdapters', () => {
+  for (const platform of ['android', 'ios'] as const) {
+    const facade = generateIndex(root, contract, platform)
+    const template = readFileSync(resolve(root, `sdk-src/uts/app-${platform}/index.template.uts`), 'utf8')
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    assert.doesNotMatch(template, /NativeOpenIMSDK\./)
+    assert.doesNotMatch(facade, /NativeOpenIMSDK\./)
+    assert.match(adapter, /requires logged in status/)
+    assert.match(adapter, /NativeOpenIMSDK\.getLoginStatus\(operationID\)/)
   }
 })
 

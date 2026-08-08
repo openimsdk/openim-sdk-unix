@@ -296,60 +296,136 @@ class OpenIMCoreAdapter {
             case 2138:
                 NativeOpenIMSDK.getSubscribeUsersStatus(operationID, resolve, reject)
             case 2139:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createTextMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createTextMessage(operationID, try requiredString(request, "text")))
             case 2140:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createImageMessageFromFullPath requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createImageMessageFromFullPath(operationID, try requiredString(request, "imageFullPath")))
             case 2141:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createImageMessageByURL requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createImageMessageByURL(operationID, try requiredString(request, "sourcePath"), try requiredString(request, "sourcePicture"), try requiredString(request, "bigPicture"), try requiredString(request, "snapshotPicture")))
             case 2142:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createCustomMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createCustomMessage(operationID, try requiredString(request, "data"), try requiredString(request, "extension"), try requiredString(request, "descriptionText")))
             case 2143:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createQuoteMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createQuoteMessage(operationID, try requiredString(request, "text"), try requiredString(request, "message")))
             case 2144:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createAdvancedQuoteMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createAdvancedQuoteMessage(operationID, try requiredString(request, "text"), try requiredString(request, "message"), try requiredString(request, "messageEntityList")))
             case 2145:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createAdvancedTextMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createAdvancedTextMessage(operationID, try requiredString(request, "text"), try requiredString(request, "messageEntityList")))
             case 2146:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createTextAtMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createTextAtMessage(operationID, try requiredString(request, "text"), try requiredString(request, "atUserIDList"), try requiredString(request, "atUsersInfo"), try requiredString(request, "quoteMessage")))
             case 2147:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createSoundMessageFromFullPath requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createSoundMessageFromFullPath(operationID, try requiredString(request, "soundPath"), try requiredNumber(request, "duration")))
             case 2148:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createSoundMessageByURL requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createSoundMessageByURL(operationID, try requiredString(request, "soundInfo")))
             case 2149:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createVideoMessageFromFullPath requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createVideoMessageFromFullPath(operationID, try requiredString(request, "videoPath"), try requiredString(request, "videoType"), try requiredNumber(request, "duration"), try requiredString(request, "snapshotPath")))
             case 2150:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createVideoMessageByURL requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createVideoMessageByURL(operationID, try requiredString(request, "videoInfo")))
             case 2151:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createFileMessageFromFullPath requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createFileMessageFromFullPath(operationID, try requiredString(request, "filePath"), try requiredString(request, "fileName")))
             case 2152:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createFileMessageByURL requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createFileMessageByURL(operationID, try requiredString(request, "fileInfo")))
             case 2153:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createMergerMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createMergerMessage(operationID, try requiredString(request, "messageList"), try requiredString(request, "title"), try requiredString(request, "abstractList")))
             case 2154:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createForwardMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createForwardMessage(operationID, try requiredString(request, "message")))
             case 2155:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createFaceMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createFaceMessage(operationID, try requiredNumber(request, "index"), try requiredString(request, "data")))
             case 2156:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createLocationMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createLocationMessage(operationID, try requiredString(request, "descriptionText"), try requiredNumber(request, "longitude"), try requiredNumber(request, "latitude")))
             case 2157:
+                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "createCardMessage requires logged in status")
+                    return
+                }
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createCardMessage(operationID, try requiredString(request, "cardInfo")))
             case 2158:

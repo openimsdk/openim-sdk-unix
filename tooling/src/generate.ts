@@ -188,10 +188,7 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
   const prelude: string[] = []
   let operationID: string
   if (lowering.operationID === 'send-options') operationID = 'readOperationID(options)'
-  else if (lowering.operationID === 'parameter' && lowering.precondition === 'logged-in-create') {
-    operationID = 'op'
-    prelude.push(`const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('${callable.name}', op, reject) == false) { return };`)
-  } else if (lowering.operationID === 'parameter') operationID = 'normalizeOperationID(operationID)'
+  else if (lowering.operationID === 'parameter') operationID = 'normalizeOperationID(operationID)'
   else operationID = "''"
   let requestExpression: string
   if (lowering.request === 'init-config') requestExpression = 'normalizeInitConfig(config)'

@@ -339,78 +339,154 @@ object OpenIMCoreAdapter {
           NativeOpenIMSDK.getSubscribeUsersStatus(operationID, resolve, reject)
         }
         2139 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createTextMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createTextMessage(operationID, request.getString("text")))
         }
         2140 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createImageMessageFromFullPath requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createImageMessageFromFullPath(operationID, request.getString("imageFullPath")))
         }
         2141 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createImageMessageByURL requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createImageMessageByURL(operationID, request.getString("sourcePath"), request.getString("sourcePicture"), request.getString("bigPicture"), request.getString("snapshotPicture")))
         }
         2142 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createCustomMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createCustomMessage(operationID, request.getString("data"), request.getString("extension"), request.getString("descriptionText")))
         }
         2143 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createQuoteMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createQuoteMessage(operationID, request.getString("text"), request.getString("message")))
         }
         2144 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createAdvancedQuoteMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createAdvancedQuoteMessage(operationID, request.getString("text"), request.getString("message"), request.getString("messageEntityList")))
         }
         2145 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createAdvancedTextMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createAdvancedTextMessage(operationID, request.getString("text"), request.getString("messageEntityList")))
         }
         2146 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createTextAtMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createTextAtMessage(operationID, request.getString("text"), request.getString("atUserIDList"), request.getString("atUsersInfo"), request.getString("quoteMessage")))
         }
         2147 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createSoundMessageFromFullPath requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createSoundMessageFromFullPath(operationID, request.getString("soundPath"), request.getDouble("duration")))
         }
         2148 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createSoundMessageByURL requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createSoundMessageByURL(operationID, request.getString("soundInfo")))
         }
         2149 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createVideoMessageFromFullPath requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createVideoMessageFromFullPath(operationID, request.getString("videoPath"), request.getString("videoType"), request.getDouble("duration"), request.getString("snapshotPath")))
         }
         2150 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createVideoMessageByURL requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createVideoMessageByURL(operationID, request.getString("videoInfo")))
         }
         2151 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createFileMessageFromFullPath requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createFileMessageFromFullPath(operationID, request.getString("filePath"), request.getString("fileName")))
         }
         2152 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createFileMessageByURL requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createFileMessageByURL(operationID, request.getString("fileInfo")))
         }
         2153 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createMergerMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createMergerMessage(operationID, request.getString("messageList"), request.getString("title"), request.getString("abstractList")))
         }
         2154 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createForwardMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createForwardMessage(operationID, request.getString("message")))
         }
         2155 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createFaceMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createFaceMessage(operationID, request.getDouble("index"), request.getString("data")))
         }
         2156 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createLocationMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createLocationMessage(operationID, request.getString("descriptionText"), request.getDouble("longitude"), request.getDouble("latitude")))
         }
         2157 -> {
+          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "createCardMessage requires logged in status")
+            return
+          }
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createCardMessage(operationID, request.getString("cardInfo")))
         }

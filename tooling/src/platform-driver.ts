@@ -85,9 +85,16 @@ function androidInvocationCase(callable: ContractCallable): string {
   if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
   const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'android')}(${callArgs.join(', ')})`
   const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
+  const precondition = callable.lowering.precondition === 'logged-in-create'
+    ? `          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
+            reject(LOCAL_ERROR_CODE, "${callable.name} requires logged in status")
+            return
+          }
+`
+    : ''
   const request = fields.length === 0 ? '' : '          val request = JSONObject(requestJSON)\n'
   return `        ${callable.id} -> {
-${request}          ${statement}
+${precondition}${request}          ${statement}
         }`
 }
 
@@ -105,9 +112,16 @@ function iosInvocationCase(callable: ContractCallable): string {
   if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
   const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'ios')}(${callArgs.join(', ')})`
   const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
+  const precondition = callable.lowering.precondition === 'logged-in-create'
+    ? `                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
+                    reject(localErrorCode, "${callable.name} requires logged in status")
+                    return
+                }
+`
+    : ''
   const request = fields.length === 0 ? '' : '                let request = try requestObject(requestJSON)\n'
   return `            case ${callable.id}:
-${request}                ${statement}`
+${precondition}${request}                ${statement}`
 }
 
 function androidCoreAdapter(contract: ContractDocument): string {
