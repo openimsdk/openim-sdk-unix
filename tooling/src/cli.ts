@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { compilePlatform, type CompilePlatform, verifyToolchain } from './compile.js'
 import { generate } from './generate.js'
 import { importNativeABI } from './native-abi.js'
-import { verifyUTSPolicy } from './policy.js'
+import { verifyCompatibilityLedger, verifyUTSPolicy } from './policy.js'
 import { verifyGenerated, verifySurfaceSnapshot, readAndValidateContract } from './verify-contract.js'
 import { verifyDriverInvariants } from './verify-driver.js'
 import { bootstrapEnterpriseDrivers, verifyEnterpriseDelta } from './enterprise-contract.js'
@@ -132,7 +132,14 @@ switch (command) {
   }
   case 'verify:policy': {
     verifyUTSPolicy(root)
-    console.log('Stable UTS policy verified.')
+    verifyCompatibilityLedger(root)
+    console.log('Stable UTS and compatibility policies verified.')
+    break
+  }
+  case 'verify:release-policy': {
+    verifyUTSPolicy(root)
+    verifyCompatibilityLedger(root, true)
+    console.log('Release compatibility policy verified.')
     break
   }
   case 'native:import': {
@@ -274,6 +281,7 @@ switch (command) {
     verifyGenerated(root)
     verifySurfaceSnapshot(root)
     verifyUTSPolicy(root)
+    verifyCompatibilityLedger(root)
     verifyToolchain(root)
     verifyDriverInvariants(root)
     console.log('Contract, generation, UTS policy, and toolchain lock verified.')

@@ -12,6 +12,7 @@
     "verify:generated": "tsx tooling/src/cli.ts verify:generated",
     "verify:automation-summary": "tsx tooling/src/cli.ts verify:automation-summary",
     "verify:policy": "tsx tooling/src/cli.ts verify:policy",
+    "verify:release-policy": "tsx tooling/src/cli.ts verify:release-policy",
     "verify:consumer:android": "tsx tooling/src/cli.ts verify:consumer --platform android",
     "verify:consumer:ios": "tsx tooling/src/cli.ts verify:consumer --platform ios",
     "native:import": "tsx tooling/src/cli.ts native:import",
