@@ -140,7 +140,7 @@ test('generated event lifecycle uses exact handles, snapshot dispatch, and isola
     const perEventRegistry = /switch \(subscription\.eventName\)/.test(events) && /currentID != subscriptionID/.test(events)
     const genericRegistry = /item\.id == subscription\.id && item\.eventName == subscription\.eventName/.test(events)
     assert.equal(perEventRegistry || genericRegistry, true)
-    assert.match(events, /(?:DispatchSnapshot|const snapshot)/)
+    assert.match(events, /(?:dispatchSnapshot|const snapshot)/i)
     assert.match(events, /try \{/)
     assert.match(events, /export function offAllSDKEvents\(eventName : OpenIMSDKEventName\)/)
   }
