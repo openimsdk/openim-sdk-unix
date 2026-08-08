@@ -153,6 +153,8 @@ export function verifyDriverInvariants(root: string): void {
       'func resolvePrepared(',
       'let data = try prepare()',
       'callback.reject(NSNumber(value: -1), error.localizedDescription)',
+      'func rejectPrepared(',
+      'prepare()\n            callback.reject(errCode, errMsg)',
       'allowWhileStarting',
     ],
     'iOS Driver exactly-once runtime',

@@ -156,6 +156,13 @@ final class OpenIMDriverRuntime {
         scheduleTerminal(ticket) { callback in callback.reject(errCode, errMsg) }
     }
 
+    func rejectPrepared(_ ticket: OpenIMDriverTicket, _ errCode: NSNumber, _ errMsg: String, _ prepare: @escaping () -> Void) {
+        scheduleTerminal(ticket) { callback in
+            prepare()
+            callback.reject(errCode, errMsg)
+        }
+    }
+
     func progress(_ ticket: OpenIMDriverTicket, _ delivery: @escaping () -> Void) {
         serial.async {
             guard let callback = self.pending[ticket.taskID],
