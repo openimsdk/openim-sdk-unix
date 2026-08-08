@@ -45,18 +45,18 @@
     },
     {
       "path": "tooling/src/generate.ts",
-      "sha256": "ece8f60a320441f19f3fff455ca6a5847b2b32548331d81114b536cf127024b7",
-      "bytes": 27727
+      "sha256": "819a88590e78769e9e8860acaa205ecb00ca0210202332a888544a14e7d41391",
+      "bytes": 29443
     },
     {
       "path": "tooling/src/model.ts",
-      "sha256": "1e68829b8f321b988340f46861c7d5125d6f54b952adf45ec350c36f5613ec73",
-      "bytes": 5223
+      "sha256": "0fc3ab067a4451aa48eb5b91f50bed7212d66a73a3a6157ce28c7570c00c40d8",
+      "bytes": 5531
     },
     {
       "path": "tooling/src/platform-driver.ts",
-      "sha256": "b348a5484e80104c2f3e92bbe936d788afc8a105e0007b571fc13a60dfbe539b",
-      "bytes": 12540
+      "sha256": "6d603aa8ecab0deb9bbddbe4dd44d39150a79e79744e64ac072d746019a9ff25",
+      "bytes": 14571
     },
     {
       "path": "tooling/src/source.ts",

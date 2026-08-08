@@ -80,10 +80,23 @@ function androidRequestField(field: DriverRequestField): string {
 function androidInvocationCase(callable: ContractCallable): string {
   assert(callable.lowering?.kind === 'platform-driver' && callable.lowering.nativeInvocation != null, `Missing invocation lowering: ${callable.name}`)
   const fields = requestFields(callable)
-  const args = fields.map(androidRequestField)
+  let args = fields.map(androidRequestField)
+  let strategyPrelude = ''
+  const strategy = callable.lowering.nativeInvocation.strategy
+  if (strategy != null) {
+    assert(strategy.kind === 'path-prefix-dispatch', `Unsupported Android invocation strategy: ${callable.name}`)
+    assert(/^[A-Za-z_$][\w$]*$/.test(strategy.alternateSymbol), `Invalid alternate native symbol: ${callable.name}`)
+    const fieldIndex = fields.findIndex((field) => field.name === strategy.field)
+    assert(fieldIndex >= 0 && fields[fieldIndex]?.wireType === 'string', `Path dispatch field is missing: ${callable.name}`)
+    strategyPrelude = `          val ${strategy.field} = ${androidRequestField(fields[fieldIndex]!)}\n`
+    args = args.map((value, index) => index === fieldIndex ? strategy.field : value)
+  }
   const callArgs = ['operationID', ...args]
   if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
-  const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'android')}(${callArgs.join(', ')})`
+  const directCall = `NativeOpenIMSDK.${nativeSymbol(callable, 'android')}(${callArgs.join(', ')})`
+  const call = strategy == null
+    ? directCall
+    : `if (${strategy.field}.startsWith("/")) ${directCall} else NativeOpenIMSDK.${strategy.alternateSymbol}(${callArgs.join(', ')})`
   const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
   const precondition = callable.lowering.precondition === 'logged-in-create'
     ? `          if (NativeOpenIMSDK.getLoginStatus(operationID) != "3") {
@@ -94,7 +107,7 @@ function androidInvocationCase(callable: ContractCallable): string {
     : ''
   const request = fields.length === 0 ? '' : '          val request = JSONObject(requestJSON)\n'
   return `        ${callable.id} -> {
-${precondition}${request}          ${statement}
+${precondition}${request}${strategyPrelude}          ${statement}
         }`
 }
 
@@ -107,11 +120,26 @@ function swiftRequestField(field: DriverRequestField): string {
 function iosInvocationCase(callable: ContractCallable): string {
   assert(callable.lowering?.kind === 'platform-driver' && callable.lowering.nativeInvocation != null, `Missing invocation lowering: ${callable.name}`)
   const fields = requestFields(callable)
-  const args = fields.map(swiftRequestField)
+  let args = fields.map(swiftRequestField)
+  let strategyPrelude = ''
+  const strategy = callable.lowering.nativeInvocation.strategy
+  if (strategy != null) {
+    assert(strategy.kind === 'path-prefix-dispatch', `Unsupported iOS invocation strategy: ${callable.name}`)
+    assert(/^[A-Za-z_$][\w$]*$/.test(strategy.alternateSymbol), `Invalid alternate native symbol: ${callable.name}`)
+    const fieldIndex = fields.findIndex((field) => field.name === strategy.field)
+    assert(fieldIndex >= 0 && fields[fieldIndex]?.wireType === 'string', `Path dispatch field is missing: ${callable.name}`)
+    strategyPrelude = `                let ${strategy.field} = ${swiftRequestField(fields[fieldIndex]!)}\n`
+    args = args.map((value, index) => index === fieldIndex ? strategy.field : value)
+  }
   const callArgs = ['operationID', ...args]
   if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
-  const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'ios')}(${callArgs.join(', ')})`
-  const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
+  const directCall = `NativeOpenIMSDK.${nativeSymbol(callable, 'ios')}(${callArgs.join(', ')})`
+  const call = strategy == null
+    ? directCall
+    : `(${strategy.field}.hasPrefix("/") ? ${directCall} : NativeOpenIMSDK.${strategy.alternateSymbol}(${callArgs.join(', ')}))`
+  const statement = callable.lowering.nativeInvocation.completion === 'sync-return'
+    ? (callable.lowering.nativeInvocation.deferIOSResolution === true ? `NativeOpenIMSDK.resolveStringAsync(${call}, resolve)` : `resolve(${call})`)
+    : call
   const precondition = callable.lowering.precondition === 'logged-in-create'
     ? `                guard NativeOpenIMSDK.getLoginStatus(operationID) == "3" else {
                     reject(localErrorCode, "${callable.name} requires logged in status")
@@ -121,7 +149,7 @@ function iosInvocationCase(callable: ContractCallable): string {
     : ''
   const request = fields.length === 0 ? '' : '                let request = try requestObject(requestJSON)\n'
   return `            case ${callable.id}:
-${precondition}${request}                ${statement}`
+${precondition}${request}${strategyPrelude}                ${statement}`
 }
 
 function androidCoreAdapter(contract: ContractDocument): string {

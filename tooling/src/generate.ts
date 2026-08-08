@@ -78,6 +78,8 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'identity') return source
   if (field.codec === 'json') return `stringifyJSON(${source})`
   if (field.codec === 'file-json') return platform === 'ios' ? `stringifyOpenIMFileElem(${source})` : `stringifyJSON(${source})`
+  if (field.codec === 'file-message-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readFileMessagePath(${field.parameter}))` : `readFileMessagePath(${field.parameter})`
+  if (field.codec === 'image-source-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(${source})` : source
   if (field.codec === 'local-media-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(${source})` : source
   if (field.codec === 'message-entity-list-json') return platform === 'ios' ? `stringifyOpenIMMessageEntityList(${source})` : `stringifyJSON(${source})`
   if (field.codec === 'message-json') return `stringifyOpenIMMessage(${source})`
@@ -95,14 +97,21 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'fetch-surrounding-messages-json') return `stringifyFetchSurroundingMessagesPayload(${source})`
   if (field.codec === 'modify-message-json') return `stringifyModifyMessagePayload(${source})`
   if (field.codec === 'video-json') return platform === 'ios' ? `stringifyOpenIMVideoElem(${source})` : `stringifyJSON(${source})`
+  if (field.codec === 'video-message-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readVideoMessagePath(${field.parameter}))` : `readVideoMessagePath(${field.parameter})`
+  if (field.codec === 'video-snapshot-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readVideoSnapshotPath(${field.parameter}))` : `readVideoSnapshotPath(${field.parameter})`
   if (field.codec === 'offline-push-json') return `readOfflinePushInfo(${field.parameter})`
   if (field.codec === 'online-only') return `readIsOnlineOnly(${field.parameter})`
   throw new Error(`Unsupported Driver request field codec: ${field.codec}`)
 }
 
 function driverRequestFieldPreconditions(callable: ContractCallable, field: DriverRequestField, platform: 'android' | 'ios'): string[] {
-  if (platform !== 'ios' || field.codec !== 'local-media-path') return []
-  const source = driverRequestFieldSource(field)
+  if (platform !== 'ios') return []
+  let source: string
+  if (field.codec === 'local-media-path' || field.codec === 'image-source-path') source = driverRequestFieldSource(field)
+  else if (field.codec === 'file-message-path') source = `readFileMessagePath(${field.parameter})`
+  else if (field.codec === 'video-message-path') source = `readVideoMessagePath(${field.parameter})`
+  else if (field.codec === 'video-snapshot-path') source = `readVideoSnapshotPath(${field.parameter})`
+  else return []
   return [`if (rejectUnsupportedIOSLocalMediaPath('${callable.name}', ${source}, reject)) { return };`]
 }
 
@@ -207,6 +216,16 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
       throw new Error(`Event subscription binding mismatch for ${callable.name} on ${platform}`)
     }
     return `@UTSJS.keepAlive\nexport function ${callable.name}(${parameters}) : ${returnType} { return ${lowering.eventName}Event(handler) }`
+  }
+  if (lowering.kind === 'callable-alias') {
+    if (/^[A-Za-z_$][\w$]*$/.test(lowering.target) === false || lowering.arguments.some((value) => /^[A-Za-z_$][\w$]*$/.test(value) === false)) {
+      throw new Error(`Invalid callable alias lowering for ${callable.name}`)
+    }
+    const binding = callable.binding[platform]
+    if (binding?.kind !== 'facade-alias' || binding.symbol !== lowering.target) {
+      throw new Error(`Callable alias binding mismatch for ${callable.name} on ${platform}`)
+    }
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${lowering.target}(${lowering.arguments.join(', ')}) }`
   }
 
   const prelude: string[] = []

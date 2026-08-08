@@ -614,6 +614,76 @@ test('shared compiler names every Enterprise typed response parser explicitly', 
   }
 })
 
+test('shared compiler models Enterprise aliases and path-dispatched creators', () => {
+  const extended = structuredClone(contract)
+  extended.callables.push(
+    {
+      id: 990001,
+      name: 'enterpriseSoundAlias',
+      signature: 'enterpriseSoundAlias(params:OpenIMCreateSoundMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>',
+      completion: 'promise',
+      responseCodec: 'typed:OpenIMMessageItem|null',
+      errorPolicy: 'frozen-native-rejection',
+      rawString: false,
+      role: 'operation',
+      lowering: {
+        kind: 'callable-alias',
+        target: 'createSoundMessageFromFullPath',
+        arguments: ['params', 'operationID'],
+      },
+      binding: {
+        android: { kind: 'facade-alias', symbol: 'createSoundMessageFromFullPath' },
+        ios: { kind: 'facade-alias', symbol: 'createSoundMessageFromFullPath' },
+        harmony: undefined,
+      },
+      signatureHash: '',
+    },
+    {
+      id: 990002,
+      name: 'enterpriseImageCreator',
+      signature: 'enterpriseImageCreator(params:OpenIMCreateImageMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>',
+      completion: 'promise',
+      responseCodec: 'typed:OpenIMMessageItem|null',
+      errorPolicy: 'frozen-native-rejection',
+      rawString: false,
+      role: 'operation',
+      lowering: {
+        kind: 'platform-driver',
+        transport: 'async',
+        operationID: 'parameter',
+        request: {
+          kind: 'fields',
+          fields: [{ name: 'sourcePath', parameter: 'params', member: 'sourcePath', codec: 'image-source-path', wireType: 'string' }],
+        },
+        nativeInvocation: {
+          completion: 'sync-return',
+          strategy: { kind: 'path-prefix-dispatch', field: 'sourcePath', alternateSymbol: 'createImageMessage' },
+          deferIOSResolution: true,
+        },
+        precondition: 'logged-in-create',
+      },
+      binding: {
+        android: { kind: 'native', symbol: 'createImageMessageFromFullPath' },
+        ios: { kind: 'native', symbol: 'createImageMessageFromFullPath' },
+        harmony: undefined,
+      },
+      signatureHash: '',
+    },
+  )
+
+  for (const platform of ['android', 'ios'] as const) {
+    const facade = generateIndex(root, extended, platform)
+    assert.match(facade, /return createSoundMessageFromFullPath\(params, operationID\)/)
+    assert.match(facade, /driverCallAsync\(990002, normalizeOperationID\(operationID\), requestJSON/)
+  }
+  const android = renderNativeCoreAdapter(extended, 'android')
+  const ios = renderNativeCoreAdapter(extended, 'ios')
+  assert.match(android, /sourcePath\.startsWith\("\/"\)/)
+  assert.match(android, /NativeOpenIMSDK\.createImageMessage\(operationID, sourcePath\)/)
+  assert.match(ios, /sourcePath\.hasPrefix\("\/"\)/)
+  assert.match(ios, /NativeOpenIMSDK\.resolveStringAsync\(/)
+})
+
 test('Android wire validators use Java wrapper classes instead of unsupported typeof any', () => {
   const source = readFileSync(
     resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts'),

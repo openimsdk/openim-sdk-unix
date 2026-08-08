@@ -32,6 +32,8 @@ export type DriverRequestFieldCodec =
   | 'identity'
   | 'json'
   | 'file-json'
+  | 'file-message-path'
+  | 'image-source-path'
   | 'local-media-path'
   | 'literal'
   | 'message-entity-list-json'
@@ -50,6 +52,8 @@ export type DriverRequestFieldCodec =
   | 'fetch-surrounding-messages-json'
   | 'modify-message-json'
   | 'video-json'
+  | 'video-message-path'
+  | 'video-snapshot-path'
   | 'offline-push-json'
   | 'online-only'
 
@@ -70,6 +74,12 @@ export type DriverRequest =
 
 export interface DriverNativeInvocation {
   completion: 'sync-return' | 'callback'
+  strategy?: {
+    kind: 'path-prefix-dispatch'
+    field: string
+    alternateSymbol: string
+  }
+  deferIOSResolution?: boolean
 }
 
 export type CallableLowering =
@@ -84,6 +94,11 @@ export type CallableLowering =
   | {
     kind: 'event-subscription'
     eventName: string
+  }
+  | {
+    kind: 'callable-alias'
+    target: string
+    arguments: string[]
   }
   | {
     kind: 'platform-driver'
