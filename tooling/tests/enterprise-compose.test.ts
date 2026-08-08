@@ -55,7 +55,7 @@ test('Enterprise composition applies explicit overrides and additive type extens
     edition: 'enterprise-delta',
     origin: {
       kind: 'imported-facade',
-      repository: 'private', revision: 'private', publicBaseRevision: 'base', publicBaseContractHash: 'hash',
+      repository: 'private', revision: 'private', publicBaseRevision: 'base', importedPublicBaseContractHash: '0'.repeat(64),
       interfacePath: 'interface.uts', facadePaths: { android: 'android', ios: 'ios', harmony: 'harmony' },
     },
     expectedTotal: { constants: 0, types: 2, callables: 1, events: 0 },

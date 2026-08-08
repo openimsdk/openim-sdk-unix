@@ -55,8 +55,8 @@
     },
     {
       "path": "tooling/src/model.ts",
-      "sha256": "6ded81bbe2a3e45a4a8f9aecde3a937c01d20d614b902645a0e1d584318aeb15",
-      "bytes": 3894
+      "sha256": "aa1eb994105c58b5c0af4241f125a81a58f7114cec34df0f136ceb8204d6c752",
+      "bytes": 3902
     },
     {
       "path": "tooling/src/platform-driver.ts",

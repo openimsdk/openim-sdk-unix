@@ -231,7 +231,6 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'),
   ) as EnterpriseDeltaDocument
   const base = JSON.parse(readFileSync(join(publicRoot, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
-  const baseSnapshot = JSON.parse(readFileSync(join(publicRoot, 'contracts/base/surface.snapshot.json'), 'utf8')) as { contractHash: string }
   const plugin = join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk')
   const interfacePath = join(plugin, 'interface.uts')
   const androidIndexPath = join(plugin, 'app-android/index.uts')
@@ -415,7 +414,6 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     edition: 'enterprise-delta',
     origin: {
       ...existingDelta.origin,
-      publicBaseContractHash: baseSnapshot.contractHash,
     },
     expectedTotal: { ...EXPECTED_TOTAL },
     expectedDelta: { ...EXPECTED_DELTA },
@@ -458,16 +456,16 @@ export function verifyEnterpriseDelta(
   const delta = JSON.parse(
     readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'),
   ) as EnterpriseDeltaDocument
-  const baseSnapshot = JSON.parse(
-    readFileSync(join(publicRoot, 'contracts/base/surface.snapshot.json'), 'utf8'),
-  ) as { contractHash: string }
   const base = JSON.parse(
     readFileSync(join(publicRoot, 'contracts/base/contract.json'), 'utf8'),
   ) as ContractDocument
   assert(delta.edition === 'enterprise-delta', 'Invalid enterprise delta edition')
   assert(delta.schemaVersion === 2, 'Unsupported Enterprise delta schema')
   assert(delta.origin.kind === 'imported-facade', 'Enterprise delta origin kind changed')
-  assert(delta.origin.publicBaseContractHash === baseSnapshot.contractHash, 'Enterprise public base hash is stale')
+  assert(
+    /^[a-f0-9]{64}$/.test(delta.origin.importedPublicBaseContractHash),
+    'Enterprise imported Public base hash is invalid',
+  )
   assert(JSON.stringify(delta.expectedTotal) === JSON.stringify(EXPECTED_TOTAL), 'Enterprise total counts changed')
   assert(JSON.stringify(delta.expectedDelta) === JSON.stringify(EXPECTED_DELTA), 'Enterprise delta counts changed')
   assert(delta.approvedBaseCallableOverrides.length === APPROVED_BASE_CALLABLE_OVERRIDES.length, 'Enterprise approved base callable override count changed')

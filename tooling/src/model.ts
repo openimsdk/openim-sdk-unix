@@ -118,7 +118,7 @@ export interface EnterpriseDeltaDocument {
     repository: string
     revision: string
     publicBaseRevision: string
-    publicBaseContractHash: string
+    importedPublicBaseContractHash: string
     interfacePath: string
     facadePaths: SourceByPlatform
   }
