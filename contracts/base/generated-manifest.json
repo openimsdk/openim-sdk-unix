@@ -30,13 +30,13 @@
     },
     {
       "path": "sdk-src/native/android/OpenIMDriverRuntime.kt",
-      "sha256": "6d914f3cdb9c103a3f02537afb90fd05018225f56ad7089cde925733a2a0aeb6",
-      "bytes": 5776
+      "sha256": "dcd78fff4c47dd74e250457e2f4c59f88cceb6b2bafcea91e1922c90a8d13023",
+      "bytes": 6863
     },
     {
       "path": "sdk-src/native/ios/OpenIMDriverRuntime.swift",
-      "sha256": "9dd40ebe1f87fdf54625345cd6f8fd8c08620d7916b729dbe3aa6a20b60045d6",
-      "bytes": 6752
+      "sha256": "e7ba3c3bc5cd8e544f7416c35b52481b42218b494d411ca0f364e67428e20d3c",
+      "bytes": 8031
     },
     {
       "path": "tooling/src/contract-integrity.ts",
@@ -102,13 +102,13 @@
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMDriverRuntime.kt",
-      "sha256": "80d67ab03453f246a8462998532ba5e04a3b07be6d2508ffe66e65de5056335a",
-      "bytes": 5832
+      "sha256": "6e58c6568431991c56c27197d74fbb9067a9a902d16aa02e4d5272e75ab2baff",
+      "bytes": 6919
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMDriverRuntime.swift",
-      "sha256": "99637a32965b469d99a71329a064efdee965a9069cc660a918b8c75db0cb4266",
-      "bytes": 6808
+      "sha256": "2467c2980c783a92f0278eabcb90c5faa7b94934fc388b32c3abe7b3fcf82642",
+      "bytes": 8087
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/platform-driver.uts",

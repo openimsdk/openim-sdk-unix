@@ -33,6 +33,7 @@ private final class OpenIMPendingCallback {
     let resolve: OpenIMResolveString
     let reject: OpenIMReject
     var terminalScheduled = false
+    var cancellationKey: String?
 
     init(ticket: OpenIMDriverTicket, resolve: @escaping OpenIMResolveString, reject: @escaping OpenIMReject) {
         self.ticket = ticket
@@ -109,6 +110,36 @@ final class OpenIMDriverRuntime {
             nextTaskID += 1
             pending[ticket.taskID] = OpenIMPendingCallback(ticket: ticket, resolve: resolve, reject: reject)
             return ticket
+        }
+    }
+
+    func registerCancellable(_ cancellationKey: String, _ ticket: OpenIMDriverTicket) {
+        if cancellationKey.isEmpty { return }
+        serial.sync {
+            guard let callback = pending[ticket.taskID],
+                  callback.ticket.epoch == ticket.epoch,
+                  epoch == ticket.epoch,
+                  !callback.terminalScheduled else { return }
+            callback.cancellationKey = cancellationKey
+        }
+    }
+
+    func cancelCancellable(_ cancellationKey: String, _ errCode: NSNumber, _ errMsg: String) {
+        if cancellationKey.isEmpty { return }
+        serial.async {
+            let matches = self.pending.values.filter { callback in
+                callback.cancellationKey == cancellationKey &&
+                    callback.ticket.epoch == self.epoch &&
+                    !callback.terminalScheduled
+            }
+            for callback in matches { callback.terminalScheduled = true }
+            if matches.isEmpty { return }
+            dispatchOpenIMMain {
+                for callback in matches {
+                    guard let winner = self.consumeTerminal(callback.ticket) else { continue }
+                    winner.reject(errCode, errMsg)
+                }
+            }
         }
     }
 

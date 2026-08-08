@@ -7,6 +7,13 @@ typealias OpenIMNativeEvent = (String, String, NSNumber, String) -> Void
 typealias OpenIMMessageEvent = (String, String) -> Void
 typealias OpenIMConnEvent = (String, NSNumber, String) -> Void
 
+private func readOpenIMUploadCancellationID(_ uploadData: String) -> String {
+    guard let data = uploadData.data(using: .utf8),
+          let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return "" }
+    let cancelID = request["cancelID"] as? String ?? ""
+    return cancelID.isEmpty ? (request["uuid"] as? String ?? "") : cancelID
+}
+
 class OpenIMBaseCallback: NSObject, Open_im_sdk_callbackBaseProtocol {
     private let resolve: OpenIMResolveString
     private let reject: OpenIMReject
@@ -271,6 +278,7 @@ class NativeOpenIMSDK {
 
     static func uploadFile(_ operationID: String, _ uploadData: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
+        OpenIMDriverRuntime.shared.registerCancellable(readOpenIMUploadCancellationID(uploadData), callback.ticket)
         let uploadCallback = OpenIMUploadFileCallback(callback.ticket) { eventName, payload in
             NativeOpenIMSDK.nativeEventEmit?(eventName, payload, NSNumber(value: 0), "")
         }

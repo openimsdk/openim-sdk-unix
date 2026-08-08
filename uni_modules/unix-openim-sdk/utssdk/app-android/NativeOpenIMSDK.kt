@@ -22,6 +22,16 @@ typealias OpenIMNativeEvent = (String, String, Number, String) -> Unit
 typealias OpenIMMessageEvent = (String, String) -> Unit
 typealias OpenIMConnEvent = (String, Number, String) -> Unit
 
+private fun readOpenIMUploadCancellationID(data: String): String {
+  return try {
+    val request = JSONObject(data)
+    val cancelID = request.optString("cancelID")
+    if (cancelID.isNotEmpty()) cancelID else request.optString("uuid")
+  } catch (_: Throwable) {
+    ""
+  }
+}
+
 class OpenIMBaseCallback(
   private val resolve: OpenIMResolveString,
   private val reject: OpenIMReject
@@ -233,6 +243,7 @@ object NativeOpenIMSDK {
     reject: OpenIMReject
   ) {
     val callback = OpenIMBaseCallback(resolve, reject)
+    OpenIMDriverRuntime.registerCancellable(readOpenIMUploadCancellationID(data), callback.ticket)
     Open_im_sdk.uploadFile(
       callback,
       operationID,

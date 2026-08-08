@@ -132,6 +132,9 @@ export function verifyDriverInvariants(root: string): void {
       'OpenIM SDK was uninitialized',
       'state = if (value) OpenIMDriverState.ACTIVE else OpenIMDriverState.IDLE',
       'fun finishShutdown(stoppingEpoch: Long)',
+      'fun registerCancellable(cancellationKey: String, ticket: OpenIMDriverTicket)',
+      'fun cancelCancellable(cancellationKey: String, errCode: Number, errMsg: String)',
+      'callback.cancellationKey == cancellationKey',
       'allowWhileStarting',
     ],
     'Android Driver exactly-once runtime',
@@ -150,6 +153,9 @@ export function verifyDriverInvariants(root: string): void {
       'OpenIM SDK was uninitialized',
       'state = value ? .active : .idle',
       'func finishShutdown(_ stoppingEpoch: Int64)',
+      'func registerCancellable(_ cancellationKey: String, _ ticket: OpenIMDriverTicket)',
+      'func cancelCancellable(_ cancellationKey: String, _ errCode: NSNumber, _ errMsg: String)',
+      'callback.cancellationKey == cancellationKey',
       'func resolvePrepared(',
       'let data = try prepare()',
       'callback.reject(NSNumber(value: -1), error.localizedDescription)',
@@ -158,6 +164,25 @@ export function verifyDriverInvariants(root: string): void {
       'allowWhileStarting',
     ],
     'iOS Driver exactly-once runtime',
+  )
+
+  assertOrdered(
+    androidFacade,
+    [
+      'val callback = OpenIMBaseCallback(resolve, reject)',
+      'OpenIMDriverRuntime.registerCancellable(readOpenIMUploadCancellationID(data), callback.ticket)',
+      'Open_im_sdk.uploadFile(',
+    ],
+    'Android upload cancellation registration',
+  )
+  assertOrdered(
+    iosFacade,
+    [
+      'let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)',
+      'OpenIMDriverRuntime.shared.registerCancellable(readOpenIMUploadCancellationID(uploadData), callback.ticket)',
+      'Open_im_sdkUploadFile(callback, operationID, uploadData, uploadCallback)',
+    ],
+    'iOS upload cancellation registration',
   )
 
   assertOrdered(

@@ -36,7 +36,8 @@ private class OpenIMPendingCallback(
   val ticket: OpenIMDriverTicket,
   val resolve: OpenIMResolveString,
   val reject: OpenIMReject,
-  var terminalScheduled: Boolean = false
+  var terminalScheduled: Boolean = false,
+  var cancellationKey: String? = null
 )
 
 /**
@@ -112,6 +113,35 @@ internal object OpenIMDriverRuntime {
       nextTaskID += 1
       pending[ticket.taskID] = OpenIMPendingCallback(ticket, resolve, reject)
       ticket
+    }
+  }
+
+  fun registerCancellable(cancellationKey: String, ticket: OpenIMDriverTicket) {
+    if (cancellationKey.isEmpty()) return
+    readSerial {
+      val callback = pending[ticket.taskID]
+      if (callback != null && callback.ticket.epoch == ticket.epoch && epoch == ticket.epoch && !callback.terminalScheduled) {
+        callback.cancellationKey = cancellationKey
+      }
+    }
+  }
+
+  fun cancelCancellable(cancellationKey: String, errCode: Number, errMsg: String) {
+    if (cancellationKey.isEmpty()) return
+    serial.execute {
+      val matches = pending.values.filter { callback ->
+        callback.cancellationKey == cancellationKey &&
+          callback.ticket.epoch == epoch &&
+          !callback.terminalScheduled
+      }
+      for (callback in matches) callback.terminalScheduled = true
+      if (matches.isEmpty()) return@execute
+      dispatchOpenIMMain {
+        for (callback in matches) {
+          val winner = consumeTerminal(callback.ticket)
+          if (winner != null) winner.reject(errCode, errMsg)
+        }
+      }
     }
   }
 

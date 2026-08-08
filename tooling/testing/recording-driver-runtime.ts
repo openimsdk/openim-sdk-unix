@@ -14,6 +14,7 @@ export type DriverRecord =
 type Pending = {
   ticket: DriverTicket
   terminalScheduled: boolean
+  cancellationKey?: string
 }
 
 export class DeterministicScheduler {
@@ -99,6 +100,39 @@ export class RecordingDriverRuntime {
     this.#nextTaskID += 1
     this.#pending.set(ticket.taskID, { ticket, terminalScheduled: false })
     return ticket
+  }
+
+  registerCancellable(cancellationKey: string, ticket: DriverTicket): void {
+    if (cancellationKey.length === 0) return
+    const callback = this.#pending.get(ticket.taskID)
+    if (this.#isCurrent(callback, ticket) && !callback.terminalScheduled) {
+      callback.cancellationKey = cancellationKey
+    }
+  }
+
+  cancelCancellable(cancellationKey: string, errCode: number, errMsg: string): void {
+    if (cancellationKey.length === 0) return
+    this.serial.schedule(() => {
+      const matches = [...this.#pending.values()].filter((callback) => (
+        callback.cancellationKey === cancellationKey
+        && this.#isCurrent(callback, callback.ticket)
+        && !callback.terminalScheduled
+      ))
+      for (const callback of matches) {
+        callback.terminalScheduled = true
+        this.main.schedule(() => {
+          const winner = this.#pending.get(callback.ticket.taskID)
+          if (!this.#isCurrent(winner, callback.ticket) || !winner.terminalScheduled) return
+          this.#pending.delete(callback.ticket.taskID)
+          this.records.push({
+            kind: 'reject',
+            taskID: callback.ticket.taskID,
+            errCode,
+            errMsg,
+          })
+        })
+      }
+    })
   }
 
   resolve(ticket: DriverTicket, data: string): void {

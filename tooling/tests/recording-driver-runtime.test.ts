@@ -60,6 +60,39 @@ test('progress scheduled before terminal is delivered first and late progress is
   ])
 })
 
+test('upload cancellation rejects only the linked live task and wins exactly once', () => {
+  const { main, runtime, serial } = activeRuntime()
+  const upload = runtime.register()
+  runtime.registerCancellable('upload-1', upload)
+
+  runtime.progress(upload, 25)
+  runtime.cancelCancellable('upload-1', -1, 'upload cancelled: upload-1')
+  runtime.resolve(upload, 'late upload success')
+  runtime.progress(upload, 90)
+  runtime.cancelCancellable('forged-id', -1, 'must be a no-op')
+  serial.runAll()
+  main.runAll()
+
+  assert.deepEqual(runtime.records, [
+    { kind: 'progress', taskID: upload.taskID, value: 25 },
+    { kind: 'reject', taskID: upload.taskID, errCode: -1, errMsg: 'upload cancelled: upload-1' },
+  ])
+  assert.equal(runtime.pendingCount, 0)
+})
+
+test('an upload terminal callback that wins before cancellation remains successful', () => {
+  const { main, runtime, serial } = activeRuntime()
+  const upload = runtime.register()
+  runtime.registerCancellable('upload-2', upload)
+
+  runtime.resolve(upload, 'uploaded')
+  runtime.cancelCancellable('upload-2', -1, 'late cancellation')
+  serial.runAll()
+  main.runAll()
+
+  assert.deepEqual(runtime.records, [{ kind: 'resolve', taskID: upload.taskID, data: 'uploaded' }])
+})
+
 test('shutdown rejects pending work and drops callbacks and events from the old epoch', () => {
   const { epoch, main, runtime, serial } = activeRuntime()
   const ticket = runtime.register()
