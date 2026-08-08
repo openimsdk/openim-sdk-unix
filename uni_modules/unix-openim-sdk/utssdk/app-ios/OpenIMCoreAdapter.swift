@@ -74,15 +74,62 @@ class OpenIMCoreAdapter {
             case 2061:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.getAdvancedHistoryMessageList(operationID, try requiredString(request, "historyOptions"), resolve, reject)
+            case 2062:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getSpecifiedGroupsInfo(operationID, try requiredString(request, "groupIDList"), resolve, reject)
             case 2063:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, try requiredString(request, "conversationID"), resolve, reject)
             case 2064:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.markConversationMessageAsRead(operationID, try requiredString(request, "conversationID"), resolve, reject)
+            case 2065:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getGroupMemberList(operationID, try requiredString(request, "groupID"), try requiredNumber(request, "filter"), try requiredNumber(request, "offset"), try requiredNumber(request, "count"), resolve, reject)
+            case 2066:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.setMessageLocalEx(operationID, try requiredString(request, "conversationID"), try requiredString(request, "clientMsgID"), try requiredString(request, "localEx"), resolve, reject)
+            case 2067:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.revokeMessage(operationID, try requiredString(request, "conversationID"), try requiredString(request, "clientMsgID"), resolve, reject)
             case 2068:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.setConversation(operationID, try requiredString(request, "conversationID"), try requiredString(request, "conversationInfo"), resolve, reject)
+            case 2069:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.setAppBackgroundStatus(operationID, try requiredBool(request, "isBackground"), resolve, reject)
+            case 2070:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.setAppBadge(operationID, try requiredNumber(request, "count"), resolve, reject)
+            case 2071:
+                NativeOpenIMSDK.networkStatusChanged(operationID, resolve, reject)
+            case 2072:
+                NativeOpenIMSDK.getSelfUserInfo(operationID, resolve, reject)
+            case 2073:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getUsersInfo(operationID, try requiredString(request, "userIDList"), resolve, reject)
+            case 2074:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.setSelfInfo(operationID, try requiredString(request, "userInfo"), resolve, reject)
+            case 2075:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.deleteMessageFromLocalStorage(operationID, try requiredString(request, "conversationID"), try requiredString(request, "clientMsgID"), resolve, reject)
+            case 2076:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.deleteMessage(operationID, try requiredString(request, "conversationID"), try requiredString(request, "clientMsgID"), resolve, reject)
+            case 2077:
+                NativeOpenIMSDK.deleteAllMsgFromLocal(operationID, resolve, reject)
+            case 2078:
+                NativeOpenIMSDK.deleteAllMsgFromLocalAndSvr(operationID, resolve, reject)
+            case 2079:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.insertSingleMessageToLocalStorage(operationID, try requiredString(request, "message"), try requiredString(request, "recvID"), try requiredString(request, "sendID"), resolve, reject)
+            case 2080:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.insertGroupMessageToLocalStorage(operationID, try requiredString(request, "message"), try requiredString(request, "groupID"), try requiredString(request, "sendID"), resolve, reject)
+            case 2081:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.changeInputStates(operationID, try requiredString(request, "conversationID"), try requiredBool(request, "focus"), resolve, reject)
             case 2082:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.clearConversationAndDeleteAllMsg(operationID, try requiredString(request, "conversationID"), resolve, reject)
@@ -111,9 +158,58 @@ class OpenIMCoreAdapter {
             case 2091:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.setConversationDraft(operationID, try requiredString(request, "conversationID"), try requiredString(request, "draftText"), resolve, reject)
+            case 2092:
+                NativeOpenIMSDK.getTotalUnreadMsgCount(operationID, resolve, reject)
             case 2093:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.searchLocalMessages(operationID, try requiredString(request, "searchParams"), resolve, reject)
+            case 2094:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.addFriend(operationID, try requiredString(request, "friendRequest"), resolve, reject)
+            case 2095:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.searchFriends(operationID, try requiredString(request, "searchParams"), resolve, reject)
+            case 2096:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getSpecifiedFriendsInfo(operationID, try requiredString(request, "userIDList"), try requiredBool(request, "filterBlack"), resolve, reject)
+            case 2097:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getFriendApplicationListAsRecipient(operationID, try requiredString(request, "request"), resolve, reject)
+            case 2098:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getFriendApplicationListAsApplicant(operationID, try requiredString(request, "request"), resolve, reject)
+            case 2099:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getFriendApplicationUnhandledCount(operationID, try requiredString(request, "page"), resolve, reject)
+            case 2100:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getFriendList(operationID, try requiredBool(request, "filterBlack"), resolve, reject)
+            case 2101:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getFriendListPage(operationID, try requiredNumber(request, "offset"), try requiredNumber(request, "count"), try requiredBool(request, "filterBlack"), resolve, reject)
+            case 2102:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.updateFriends(operationID, try requiredString(request, "friendInfo"), resolve, reject)
+            case 2103:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.checkFriend(operationID, try requiredString(request, "userIDList"), resolve, reject)
+            case 2104:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.acceptFriendApplication(operationID, try requiredString(request, "application"), resolve, reject)
+            case 2105:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.refuseFriendApplication(operationID, try requiredString(request, "application"), resolve, reject)
+            case 2106:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.deleteFriend(operationID, try requiredString(request, "userID"), resolve, reject)
+            case 2107:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.addBlack(operationID, try requiredString(request, "toUserID"), try requiredString(request, "ex"), resolve, reject)
+            case 2108:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.removeBlack(operationID, try requiredString(request, "userID"), resolve, reject)
+            case 2109:
+                NativeOpenIMSDK.getBlackList(operationID, resolve, reject)
             case 2139:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createTextMessage(operationID, try requiredString(request, "text")))

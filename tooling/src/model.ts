@@ -34,21 +34,28 @@ export type DriverRequestFieldCodec =
   | 'json'
   | 'file-json'
   | 'local-media-path'
+  | 'literal'
   | 'message-entity-list-json'
   | 'message-json'
   | 'message-list-json'
   | 'optional-message-json'
+  | 'optional-boolean'
   | 'optional-string'
   | 'picture-json'
+  | 'set-group-info-json'
+  | 'set-group-member-info-json'
   | 'sound-json'
+  | 'stored-message-json'
+  | 'update-friends-json'
   | 'video-json'
   | 'offline-push-json'
   | 'online-only'
 
 export interface DriverRequestField {
   name: string
-  parameter: string
+  parameter?: string
   member?: string
+  value?: string | number | boolean
   codec: DriverRequestFieldCodec
   wireType: 'string' | 'number' | 'boolean'
 }

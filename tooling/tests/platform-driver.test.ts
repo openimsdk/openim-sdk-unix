@@ -62,6 +62,43 @@ const CONVERSATION_TYPED_QUERIES = [
 
 const ADVANCED_HISTORY_QUERY = ['getAdvancedHistoryMessageList', 2061] as const
 
+const MESSAGE_USER_FRIEND_OPERATIONS = [
+  ['getSpecifiedGroupsInfo', 2062],
+  ['getGroupMemberList', 2065],
+  ['setMessageLocalEx', 2066],
+  ['revokeMessage', 2067],
+  ['setAppBackgroundStatus', 2069],
+  ['setAppBadge', 2070],
+  ['networkStatusChanged', 2071],
+  ['getSelfUserInfo', 2072],
+  ['getUsersInfo', 2073],
+  ['setSelfInfo', 2074],
+  ['deleteMessageFromLocalStorage', 2075],
+  ['deleteMessage', 2076],
+  ['deleteAllMsgFromLocal', 2077],
+  ['deleteAllMsgFromLocalAndSvr', 2078],
+  ['insertSingleMessageToLocalStorage', 2079],
+  ['insertGroupMessageToLocalStorage', 2080],
+  ['changeInputStates', 2081],
+  ['getTotalUnreadMsgCount', 2092],
+  ['addFriend', 2094],
+  ['searchFriends', 2095],
+  ['getSpecifiedFriendsInfo', 2096],
+  ['getFriendApplicationListAsRecipient', 2097],
+  ['getFriendApplicationListAsApplicant', 2098],
+  ['getFriendApplicationUnhandledCount', 2099],
+  ['getFriendList', 2100],
+  ['getFriendListPage', 2101],
+  ['updateFriends', 2102],
+  ['checkFriend', 2103],
+  ['acceptFriendApplication', 2104],
+  ['refuseFriendApplication', 2105],
+  ['deleteFriend', 2106],
+  ['addBlack', 2107],
+  ['removeBlack', 2108],
+  ['getBlackList', 2109],
+] as const
+
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
   const expected = [
     { id: 2051, name: 'initSDK' },
@@ -75,6 +112,7 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
       ...CONVERSATION_STRING_OPERATIONS.map(([name, id]) => ({ id, name })),
       ...CONVERSATION_TYPED_QUERIES.map(([name, id]) => ({ id, name })),
       { id: ADVANCED_HISTORY_QUERY[1], name: ADVANCED_HISTORY_QUERY[0] },
+      ...MESSAGE_USER_FRIEND_OPERATIONS.map(([name, id]) => ({ id, name })),
     ].sort((left, right) => left.id - right.id),
     { id: 2139, name: 'createTextMessage' },
     ...[
@@ -331,6 +369,42 @@ test('advanced history keeps platform compatibility behind one generated respons
     assert.match(declaration!, /resolveAdvancedHistoryNative\(\(resolve, reject\) =>/)
     assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
     assert.match(facade, /function resolveAdvancedHistoryNative\(invoke :/)
+  }
+})
+
+test('message, user, and friend operations retain structured wire semantics behind Driver', () => {
+  for (const [name, id] of MESSAGE_USER_FRIEND_OPERATIONS) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.id, id)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind === 'platform-driver') {
+      assert.deepEqual(callable.lowering.nativeInvocation, { completion: 'callback' })
+    }
+  }
+
+  const fieldCodecs = (name: string) => {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind !== 'platform-driver' || typeof callable.lowering.request !== 'object') return []
+    return callable.lowering.request.fields.map((field) => field.codec)
+  }
+  assert.deepEqual(fieldCodecs('insertSingleMessageToLocalStorage'), ['stored-message-json', 'identity', 'identity'])
+  assert.deepEqual(fieldCodecs('changeInputStates'), ['identity', 'optional-boolean'])
+  assert.deepEqual(fieldCodecs('getFriendListPage'), ['identity', 'identity', 'literal'])
+  assert.deepEqual(fieldCodecs('updateFriends'), ['update-friends-json'])
+
+  for (const platform of ['android', 'ios'] as const) {
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    const facade = generateIndex(root, contract, platform)
+    for (const [name, id] of MESSAGE_USER_FRIEND_OPERATIONS) {
+      assert.match(adapter, new RegExp(`(?:case )?${id}`), `${platform} adapter is missing ${name}`)
+      const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+      assert.notEqual(declaration, undefined)
+      assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
+      assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
+    }
+    assert.match(facade, /resolveNumberNative\(\(resolve, reject\) =>/)
+    assert.match(facade, /resolveCheckFriendNative\(\(resolve, reject\) =>/)
   }
 })
 

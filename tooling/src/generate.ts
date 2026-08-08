@@ -65,10 +65,15 @@ function promiseValueType(returnType: string): string {
 }
 
 function driverRequestFieldSource(field: DriverRequestField): string {
+  if (field.parameter == null) throw new Error(`Driver request field ${field.name} requires a parameter`)
   return field.member == null ? field.parameter : `${field.parameter}.${field.member}`
 }
 
 function driverRequestFieldExpression(field: DriverRequestField, platform: 'android' | 'ios'): string {
+  if (field.codec === 'literal') {
+    if (field.value == null) throw new Error(`Literal Driver request field ${field.name} requires a value`)
+    return JSON.stringify(field.value)
+  }
   const source = driverRequestFieldSource(field)
   if (field.codec === 'identity') return source
   if (field.codec === 'json') return `stringifyJSON(${source})`
@@ -78,9 +83,14 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'message-json') return `stringifyOpenIMMessage(${source})`
   if (field.codec === 'message-list-json') return platform === 'ios' ? `stringifyOpenIMMessageList(${source})` : `stringifyOpenIMMessagePayload(${source})`
   if (field.codec === 'optional-message-json') return `${source} != null ? stringifyOpenIMMessage(${source}) : ''`
+  if (field.codec === 'optional-boolean') return `optionalBoolean(${source})`
   if (field.codec === 'optional-string') return `optionalString(${source})`
   if (field.codec === 'picture-json') return platform === 'ios' ? `stringifyOpenIMPicture(${source})` : `stringifyJSON(${source})`
+  if (field.codec === 'set-group-info-json') return `stringifySetGroupInfoPayload(${source})`
+  if (field.codec === 'set-group-member-info-json') return `stringifySetGroupMemberInfoPayload(${source})`
   if (field.codec === 'sound-json') return platform === 'ios' ? `stringifyOpenIMSoundElem(${source})` : `stringifyJSON(${source})`
+  if (field.codec === 'stored-message-json') return platform === 'ios' ? `stringifyOpenIMMessage(${source})` : `stringifyOpenIMMessagePayload(${source})`
+  if (field.codec === 'update-friends-json') return `stringifyUpdateFriendsPayload(${source})`
   if (field.codec === 'video-json') return platform === 'ios' ? `stringifyOpenIMVideoElem(${source})` : `stringifyJSON(${source})`
   if (field.codec === 'offline-push-json') return `readOfflinePushInfo(${field.parameter})`
   if (field.codec === 'online-only') return `readIsOnlineOnly(${field.parameter})`

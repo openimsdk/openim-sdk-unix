@@ -40,6 +40,10 @@ object OpenIMCoreAdapter {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.getAdvancedHistoryMessageList(operationID, request.getString("historyOptions"), resolve, reject)
         }
+        2062 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getSpecifiedGroupsInfo(operationID, request.getString("groupIDList"), resolve, reject)
+        }
         2063 -> {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, request.getString("conversationID"), resolve, reject)
@@ -48,9 +52,69 @@ object OpenIMCoreAdapter {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.markConversationMessageAsRead(operationID, request.getString("conversationID"), resolve, reject)
         }
+        2065 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getGroupMemberList(operationID, request.getString("groupID"), request.getDouble("filter"), request.getDouble("offset"), request.getDouble("count"), resolve, reject)
+        }
+        2066 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setMessageLocalEx(operationID, request.getString("conversationID"), request.getString("clientMsgID"), request.getString("localEx"), resolve, reject)
+        }
+        2067 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.revokeMessage(operationID, request.getString("conversationID"), request.getString("clientMsgID"), resolve, reject)
+        }
         2068 -> {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.setConversation(operationID, request.getString("conversationID"), request.getString("conversationInfo"), resolve, reject)
+        }
+        2069 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setAppBackgroundStatus(operationID, request.getBoolean("isBackground"), resolve, reject)
+        }
+        2070 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setAppBadge(operationID, request.getDouble("count"), resolve, reject)
+        }
+        2071 -> {
+          NativeOpenIMSDK.networkStatusChanged(operationID, resolve, reject)
+        }
+        2072 -> {
+          NativeOpenIMSDK.getSelfUserInfo(operationID, resolve, reject)
+        }
+        2073 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getUsersInfo(operationID, request.getString("userIDList"), resolve, reject)
+        }
+        2074 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setSelfInfo(operationID, request.getString("userInfo"), resolve, reject)
+        }
+        2075 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.deleteMessageFromLocalStorage(operationID, request.getString("conversationID"), request.getString("clientMsgID"), resolve, reject)
+        }
+        2076 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.deleteMessage(operationID, request.getString("conversationID"), request.getString("clientMsgID"), resolve, reject)
+        }
+        2077 -> {
+          NativeOpenIMSDK.deleteAllMsgFromLocal(operationID, resolve, reject)
+        }
+        2078 -> {
+          NativeOpenIMSDK.deleteAllMsgFromLocalAndSvr(operationID, resolve, reject)
+        }
+        2079 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.insertSingleMessageToLocalStorage(operationID, request.getString("message"), request.getString("recvID"), request.getString("sendID"), resolve, reject)
+        }
+        2080 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.insertGroupMessageToLocalStorage(operationID, request.getString("message"), request.getString("groupID"), request.getString("sendID"), resolve, reject)
+        }
+        2081 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.changeInputStates(operationID, request.getString("conversationID"), request.getBoolean("focus"), resolve, reject)
         }
         2082 -> {
           val request = JSONObject(requestJSON)
@@ -90,9 +154,75 @@ object OpenIMCoreAdapter {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.setConversationDraft(operationID, request.getString("conversationID"), request.getString("draftText"), resolve, reject)
         }
+        2092 -> {
+          NativeOpenIMSDK.getTotalUnreadMsgCount(operationID, resolve, reject)
+        }
         2093 -> {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.searchLocalMessages(operationID, request.getString("searchParams"), resolve, reject)
+        }
+        2094 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.addFriend(operationID, request.getString("friendRequest"), resolve, reject)
+        }
+        2095 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.searchFriends(operationID, request.getString("searchParams"), resolve, reject)
+        }
+        2096 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getSpecifiedFriendsInfo(operationID, request.getString("userIDList"), request.getBoolean("filterBlack"), resolve, reject)
+        }
+        2097 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getFriendApplicationListAsRecipient(operationID, request.getString("request"), resolve, reject)
+        }
+        2098 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getFriendApplicationListAsApplicant(operationID, request.getString("request"), resolve, reject)
+        }
+        2099 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getFriendApplicationUnhandledCount(operationID, request.getString("page"), resolve, reject)
+        }
+        2100 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getFriendList(operationID, request.getBoolean("filterBlack"), resolve, reject)
+        }
+        2101 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getFriendListPage(operationID, request.getDouble("offset"), request.getDouble("count"), request.getBoolean("filterBlack"), resolve, reject)
+        }
+        2102 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.updateFriends(operationID, request.getString("friendInfo"), resolve, reject)
+        }
+        2103 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.checkFriend(operationID, request.getString("userIDList"), resolve, reject)
+        }
+        2104 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.acceptFriendApplication(operationID, request.getString("application"), resolve, reject)
+        }
+        2105 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.refuseFriendApplication(operationID, request.getString("application"), resolve, reject)
+        }
+        2106 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.deleteFriend(operationID, request.getString("userID"), resolve, reject)
+        }
+        2107 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.addBlack(operationID, request.getString("toUserID"), request.getString("ex"), resolve, reject)
+        }
+        2108 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.removeBlack(operationID, request.getString("userID"), resolve, reject)
+        }
+        2109 -> {
+          NativeOpenIMSDK.getBlackList(operationID, resolve, reject)
         }
         2139 -> {
           val request = JSONObject(requestJSON)
