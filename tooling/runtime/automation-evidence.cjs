@@ -245,6 +245,94 @@ function axisPassed(candidates, axis, kind) {
   })
 }
 
+function eventCorrelationIdentityField(eventName) {
+  if (eventName === 'onSendMessageProgress') return 'operationID'
+  if (eventName === 'onRecvNewMessage') return 'clientMsgID'
+  return ''
+}
+
+function validCallableEventCorrelation(value, apiName, eventName) {
+  if (!isRecord(value)) return false
+  if (value.operationApiName !== apiName || value.eventName !== eventName || value.payloadMatched !== true) return false
+  if (!Number.isFinite(value.operationSequence) || !Number.isFinite(value.eventSequence)) return false
+  if (!Number.isFinite(value.operationEpoch) || !Number.isFinite(value.eventEpoch)) return false
+  const commonWindow = value.operationSequence >= 0
+    && value.eventSequence > value.operationSequence
+    && value.operationEpoch > 0
+    && value.eventEpoch === value.operationEpoch
+  if (!commonWindow) return false
+  if (value.correlationKind === 'lifecycle-order') {
+    return value.exclusiveOperation === false && value.payloadIdentity === ''
+  }
+  if (value.correlationKind === 'payload-identity') {
+    if (typeof value.payloadIdentity !== 'string' || value.payloadIdentity.length === 0) return false
+    if (typeof value.eventPayloadDetail !== 'string' || !Number.isFinite(value.operationTerminalSequence)) return false
+    if (value.operationTerminalSequence <= value.operationSequence) return false
+    const recorded = normalizeRecordedValue(parseRecordedValue(value.eventPayloadDetail, 'any'), 'uts-typed-json-v1')
+    const identityField = eventCorrelationIdentityField(eventName)
+    return identityField.length > 0 && isRecord(recorded) && recorded[identityField] === value.payloadIdentity
+  }
+  if (value.correlationKind === 'exclusive-operation-window') {
+    return value.exclusiveOperation === true
+      && value.payloadIdentity === ''
+      && typeof value.eventPayloadDetail === 'string'
+      && value.eventPayloadDetail.length > 0
+      && Number.isFinite(value.operationTerminalSequence)
+      && value.operationTerminalSequence > value.eventSequence
+  }
+  return false
+}
+
+function callableEventCorrelationResult(candidates, contractCase) {
+  const expectedEvents = Array.isArray(contractCase.expectedEvents)
+    ? [...new Set(contractCase.expectedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0))]
+    : []
+  if (expectedEvents.length === 0) {
+    return { passed: false, missing: [], invalid: [], undeclared: true }
+  }
+  const correlations = candidates.flatMap((item) => {
+    if (!isSuccessfulEvidence(item) || !Array.isArray(item.eventCorrelations)) return []
+    return item.eventCorrelations
+  })
+  const missing = []
+  const invalid = []
+  for (const eventName of expectedEvents) {
+    const matching = correlations.filter((item) => isRecord(item) && item.eventName === eventName)
+    if (matching.length === 0) {
+      missing.push(eventName)
+    } else if (!matching.some((item) => validCallableEventCorrelation(item, contractCase.apiName, eventName))) {
+      invalid.push(eventName)
+    }
+  }
+  let coherentWindow = false
+  if (missing.length === 0 && invalid.length === 0) {
+    const firstEvent = expectedEvents[0]
+    const startingPoints = correlations.filter((item) => validCallableEventCorrelation(item, contractCase.apiName, firstEvent))
+    for (const startingPoint of startingPoints) {
+      let previousSequence = startingPoint.eventSequence
+      let coherent = true
+      for (let index = 1; index < expectedEvents.length; index += 1) {
+        const eventName = expectedEvents[index]
+        const match = correlations.find((item) => validCallableEventCorrelation(item, contractCase.apiName, eventName)
+          && item.operationSequence === startingPoint.operationSequence
+          && item.operationEpoch === startingPoint.operationEpoch
+          && item.eventSequence > previousSequence)
+        if (match == null) {
+          coherent = false
+          break
+        }
+        previousSequence = match.eventSequence
+      }
+      if (coherent) {
+        coherentWindow = true
+        break
+      }
+    }
+    if (!coherentWindow) invalid.push(...expectedEvents)
+  }
+  return { passed: missing.length === 0 && invalid.length === 0 && coherentWindow, missing, invalid, undeclared: false }
+}
+
 function negativeEvidencePassed(candidates, disposition, contractCase) {
   return candidates.some((item) => {
     if (!isSuccessfulEvidence(item) || item.invoked !== true || item.resolved !== false || item.negativeValidated !== true) {
@@ -329,6 +417,22 @@ function validateAutomationEvidence(input) {
               'structure',
               structure.issues.length === 0 ? (candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated') : 'response-schema-invalid',
               schemaDetail.length > 0 ? `${contractCase.apiName} response failed generated schema: ${schemaDetail}` : `${contractCase.apiName} has no explicit response evidence on ${platform}`,
+            ))
+          }
+          continue
+        }
+        if (axis === 'event') {
+          const correlation = callableEventCorrelationResult(candidates, contractCase)
+          if (!correlation.passed) {
+            const reasons = []
+            if (correlation.undeclared) reasons.push('manifest expectedEvents is empty')
+            if (correlation.missing.length > 0) reasons.push(`missing ${correlation.missing.join(', ')}`)
+            if (correlation.invalid.length > 0) reasons.push(`invalid order, epoch, or payload match for ${correlation.invalid.join(', ')}`)
+            issues.push(issue(
+              String(contractCase.caseId),
+              'event',
+              'event-correlation-invalid',
+              `${contractCase.apiName} event evidence does not satisfy generated correlations: ${reasons.join('; ')}`,
             ))
           }
           continue

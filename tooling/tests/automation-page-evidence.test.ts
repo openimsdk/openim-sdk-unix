@@ -82,3 +82,41 @@ test('event reports distinguish typed delivery from semantic, ordering, and epoc
   assert.match(functionSource('showSDKErrorEvent'), /recordSDKEventDelivery\(eventName, '\[' \+ errCode\.toString\(\)/)
   assert.doesNotMatch(page, /record\.(?:semanticValidated|orderingValidated|epochValidated) = true/)
 })
+
+test('callable event correlations retain operation order, epoch, and payload match evidence', () => {
+  for (const field of [
+    'eventCorrelations : Array<OpenIMAutomationEventCorrelation>',
+    'operationApiName : string',
+    'eventName : string',
+    'operationSequence : number',
+    'eventSequence : number',
+    'operationEpoch : number',
+    'eventEpoch : number',
+    'payloadMatched : boolean',
+    'correlationKind : string',
+    'operationTerminalSequence : number',
+    'exclusiveOperation : boolean',
+    'payloadIdentity : string',
+    'eventPayloadDetail : string',
+  ]) {
+    assert.match(page, new RegExp(field))
+  }
+  assert.match(page, /type OpenIMAutomationEventOccurrence =/)
+  assert.match(page, /automationEventOccurrences\.push\(occurrence\)/)
+  assert.match(functionSource('beginAutomationOperation'), /automationEvidenceSequenceCounter = automationEvidenceSequenceCounter \+ 1/)
+  assert.match(functionSource('beginAutomationOperation'), /operationSequence: readAutomationEventSequence\(\)/)
+  assert.match(functionSource('beginAutomationOperation'), /operationEpoch: automationCurrentLifecycleEpoch/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /findAutomationEventOccurrence/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /eventSequence: occurrence\.sequence/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /eventEpoch: occurrence\.epoch/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /correlationKind: correlationKind/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /payloadIdentity: payloadIdentity/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /eventPayloadDetail: occurrence\.payloadText/)
+  assert.match(functionSource('readAutomationEventPayloadIdentity'), /parsed\['operationID'\]/)
+  assert.match(functionSource('readAutomationEventPayloadIdentity'), /parsed\['clientMsgID'\]/)
+  assert.doesNotMatch(functionSource('buildAutomationEventCorrelations'), /payloadText\.indexOf/)
+  assert.match(functionSource('completeAutomationOperation'), /resultIdentity/)
+  assert.match(functionSource('completeAutomationOperation'), /terminalSequence/)
+  assert.match(functionSource('recordSDKEventDelivery'), /sequence: automationEvidenceSequenceCounter/)
+  assert.match(functionSource('recordAutomationCase'), /eventCorrelations: eventCorrelations == null \? \[\]/)
+})

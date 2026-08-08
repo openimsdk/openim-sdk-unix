@@ -918,6 +918,38 @@
 		secondaryAndroidToken : string
 	}
 
+	type OpenIMAutomationEventCorrelation = {
+		operationApiName : string
+		eventName : string
+		operationSequence : number
+		eventSequence : number
+		operationEpoch : number
+		eventEpoch : number
+		payloadMatched : boolean
+		correlationKind : string
+		operationTerminalSequence : number
+		exclusiveOperation : boolean
+		payloadIdentity : string
+		eventPayloadDetail : string
+	}
+
+	type OpenIMAutomationOperationWindow = {
+		operationApiName : string
+		operationSequence : number
+		operationEpoch : number
+		payloadNeedle : string
+		resultIdentity : string
+		terminalSequence : number
+		exclusiveOperation : boolean
+	}
+
+	type OpenIMAutomationEventOccurrence = {
+		eventName : string
+		payloadText : string
+		sequence : number
+		epoch : number
+	}
+
 	type OpenIMAutomationCase = {
 		group : string
 		name : string
@@ -937,6 +969,7 @@
 		negativeValidated : boolean
 		negativeProfile : string
 		errCode : number
+		eventCorrelations : Array<OpenIMAutomationEventCorrelation>
 	}
 
 	type OpenIMAutomationEvidence = {
@@ -1017,6 +1050,11 @@
 	let automationCoveredAPINames : Array<string> = []
 	let automationValidatedAPINames : Array<string> = []
 	let automationEventRecords : Array<OpenIMAutomationEventRecord> = []
+	let automationEventOccurrences : Array<OpenIMAutomationEventOccurrence> = []
+	let automationOperationWindows : Array<OpenIMAutomationOperationWindow> = []
+	let automationEvidenceSequenceCounter = 0
+	let automationLifecycleEpochCounter = 0
+	let automationCurrentLifecycleEpoch = 0
 
 	const automationDefaultStepTimeoutMilliseconds = 60000
 	const automationSendStepTimeoutMilliseconds = 30000
@@ -1264,6 +1302,11 @@
 		automationCoveredAPINames = []
 		automationValidatedAPINames = []
 		automationEventRecords = []
+		automationEventOccurrences = []
+		automationOperationWindows = []
+		automationEvidenceSequenceCounter = 0
+		automationLifecycleEpochCounter = 0
+		automationCurrentLifecycleEpoch = 0
 		updateCacheText()
 	}
 
@@ -1315,10 +1358,138 @@
 		return null
 	}
 
+	function readAutomationEventSequence() : number {
+		return automationEvidenceSequenceCounter
+	}
+
+	function findAutomationEventOccurrence(eventName : string, epoch : number, afterSequence : number) : OpenIMAutomationEventOccurrence | null {
+		let index = 0
+		while (index < automationEventOccurrences.length) {
+			const occurrence = automationEventOccurrences[index]
+			if (occurrence.eventName == eventName && occurrence.epoch == epoch && occurrence.sequence > afterSequence) {
+				return occurrence
+			}
+			index = index + 1
+		}
+		return null
+	}
+
+	function beginAutomationOperation(apiName : string, payloadNeedle ?: string | null, exclusiveOperation ?: boolean | null) {
+		automationEvidenceSequenceCounter = automationEvidenceSequenceCounter + 1
+		let exclusive = exclusiveOperation == true
+		let index = 0
+		while (index < automationOperationWindows.length) {
+			const existing = automationOperationWindows[index]
+			if (existing.operationApiName == apiName && existing.terminalSequence == 0) { exclusive = false }
+			index = index + 1
+		}
+		const window : OpenIMAutomationOperationWindow = {
+			operationApiName: apiName,
+			operationSequence: readAutomationEventSequence(),
+			operationEpoch: automationCurrentLifecycleEpoch,
+			payloadNeedle: payloadNeedle == null ? '' : payloadNeedle as string,
+			resultIdentity: '',
+			terminalSequence: 0,
+			exclusiveOperation: exclusive
+		}
+		automationOperationWindows.push(window)
+	}
+
+	function findLatestAutomationOperation(apiName : string) : OpenIMAutomationOperationWindow | null {
+		let index = automationOperationWindows.length - 1
+		while (index >= 0) {
+			const window = automationOperationWindows[index]
+			if (window.operationApiName == apiName) { return window }
+			index = index - 1
+		}
+		return null
+	}
+
+	function completeAutomationOperation(apiName : string, resultIdentity ?: string | null) {
+		const window = findLatestAutomationOperation(apiName)
+		if (window == null || window.terminalSequence > 0) { return }
+		automationEvidenceSequenceCounter = automationEvidenceSequenceCounter + 1
+		window.resultIdentity = resultIdentity == null ? '' : resultIdentity as string
+		window.terminalSequence = automationEvidenceSequenceCounter
+	}
+
+	function markAutomationEventEvidence(eventName : string, semanticValidated : boolean, orderingValidated : boolean, epochValidated : boolean) {
+		const record = findAutomationEventRecord(eventName)
+		if (record == null) { return }
+		record.semanticValidated = record.semanticValidated || semanticValidated
+		record.orderingValidated = record.orderingValidated || orderingValidated
+		record.epochValidated = record.epochValidated || epochValidated
+	}
+
+	function readAutomationEventPayloadIdentity(eventName : string, payloadText : string) : string {
+		try {
+			const parsed = JSON.parseObject<UTSJSONObject>(payloadText)
+			if (parsed == null) { return '' }
+			if (eventName == 'onSendMessageProgress') {
+				const operationID = parsed['operationID']
+				return operationID == null ? '' : operationID as string
+			}
+			if (eventName == 'onRecvNewMessage') {
+				const clientMsgID = parsed['clientMsgID']
+				return clientMsgID == null ? '' : clientMsgID as string
+			}
+		} catch (error) {
+			return ''
+		}
+		return ''
+	}
+
+	function buildAutomationEventCorrelations(apiName : string, expectedEvents : Array<string>) : Array<OpenIMAutomationEventCorrelation> {
+		const correlations : Array<OpenIMAutomationEventCorrelation> = []
+		const window = findLatestAutomationOperation(apiName)
+		if (window == null || window.operationEpoch <= 0) { return correlations }
+		let afterSequence = window.operationSequence
+		let index = 0
+		while (index < expectedEvents.length) {
+			const eventName = expectedEvents[index]
+			const occurrence = findAutomationEventOccurrence(eventName, window.operationEpoch, afterSequence)
+			if (occurrence == null) { return correlations }
+			let correlationKind = 'lifecycle-order'
+			let payloadIdentity = ''
+			let payloadMatched = true
+			if (apiName == 'sendMessage' || apiName == 'sendMessageNotOss') {
+				correlationKind = 'payload-identity'
+				payloadIdentity = eventName == 'onRecvNewMessage' ? window.resultIdentity : window.payloadNeedle
+				payloadMatched = payloadIdentity.length > 0 && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity
+			} else if (apiName == 'uploadFile' || apiName == 'uploadLogs') {
+				correlationKind = 'exclusive-operation-window'
+				payloadMatched = window.exclusiveOperation && window.terminalSequence > occurrence.sequence
+			}
+			const correlation : OpenIMAutomationEventCorrelation = {
+				operationApiName: apiName,
+				eventName: eventName,
+				operationSequence: window.operationSequence,
+				eventSequence: occurrence.sequence,
+				operationEpoch: window.operationEpoch,
+				eventEpoch: occurrence.epoch,
+				payloadMatched: payloadMatched,
+				correlationKind: correlationKind,
+				operationTerminalSequence: window.terminalSequence,
+				exclusiveOperation: window.exclusiveOperation,
+				payloadIdentity: payloadIdentity,
+				eventPayloadDetail: occurrence.payloadText
+			}
+			correlations.push(correlation)
+			const matched = correlation.payloadMatched
+			markAutomationEventEvidence(eventName, matched, true, occurrence.epoch == window.operationEpoch)
+			afterSequence = occurrence.sequence
+			index = index + 1
+		}
+		return correlations
+	}
+
 	function recordSDKEventDelivery(eventName : string, payloadText : string) {
 		if (!automationRunning) {
 			return
 		}
+		automationEvidenceSequenceCounter = automationEvidenceSequenceCounter + 1
+		const occurrence : OpenIMAutomationEventOccurrence = { eventName: eventName, payloadText: payloadText, sequence: automationEvidenceSequenceCounter, epoch: automationCurrentLifecycleEpoch }
+		automationEventOccurrences.push(occurrence)
 		let record = findAutomationEventRecord(eventName)
 		if (record == null) {
 			const item : OpenIMAutomationEventRecord = {
@@ -1692,7 +1863,7 @@
 		}
 	}
 
-	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence ?: OpenIMAutomationEvidence | null, apiName ?: string | null, invoked ?: boolean | null, resolved ?: boolean | null, responseDetail ?: string | null) {
+	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence ?: OpenIMAutomationEvidence | null, apiName ?: string | null, invoked ?: boolean | null, resolved ?: boolean | null, responseDetail ?: string | null, eventCorrelations ?: Array<OpenIMAutomationEventCorrelation> | null) {
 		markAutomationAPICovered(name)
 		const checked = evidence == null ? emptyAutomationEvidence() : evidence as OpenIMAutomationEvidence
 		if (status == 'passed' && (checked.structureValidated || checked.semanticValidated || checked.sideEffectValidated || checked.eventCorrelated)) {
@@ -1716,7 +1887,8 @@
 			eventCorrelated: checked.eventCorrelated,
 			negativeValidated: false,
 			negativeProfile: '',
-			errCode: 0
+			errCode: 0,
+			eventCorrelations: eventCorrelations == null ? [] : eventCorrelations as Array<OpenIMAutomationEventCorrelation>
 		}
 		automationStepResults.push(item)
 		flushAutomationProgressFiles()
@@ -1726,8 +1898,8 @@
 		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), null, name, true, ok)
 	}
 
-	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence, responseDetail ?: string | null) {
-		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok, responseDetail)
+	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence, responseDetail ?: string | null, eventCorrelations ?: Array<OpenIMAutomationEventCorrelation> | null) {
+		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok, responseDetail, eventCorrelations)
 	}
 
 	function recordAutomationSkip(group : string, name : string, detail : string) {
@@ -1878,6 +2050,7 @@
 				await sleepAutomation(500)
 			}
 		}
+		beginAutomationOperation('login')
 		await runAutomationStep<string>('setup', 'login', login(userID, token, 'uvue_auto_login_' + label), (_value : string) => {
 			automationLoggedIn = true
 			automationActiveUserID = userID
@@ -2122,6 +2295,8 @@
 	}
 
 	async function runAutomationSetupSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
+		automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
 		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence())
 		await runAutomationEventControlScenario(config)
 		const dataPath = getOpenIMDataPath()
@@ -2218,11 +2393,17 @@
 		await switchAutomationPrimary(config, 'A_message_send')
 		const message = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessage from unixsdk public automation', 'uvue_auto_create_send_text'), cacheRequiredAutomationMessage)
 		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text', message: message as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		beginAutomationOperation('sendMessage', sendOptions.operationID)
 		const sent = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
+		const sentClientMsgID = sent.clientMsgID != null ? sent.clientMsgID as string : ''
+		completeAutomationOperation('sendMessage', sentClientMsgID)
 		const notOssMessage = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessageNotOss from unixsdk public automation', 'uvue_auto_create_send_not_oss_text'), cacheRequiredAutomationMessage)
 		const notOssOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text_not_oss', message: notOssMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
-		await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessageNotOss', sendMessageNotOss(notOssOptions), cacheSentAutomationMessage)
-		const id = sent.clientMsgID != null ? sent.clientMsgID as string : ''
+		beginAutomationOperation('sendMessageNotOss', notOssOptions.operationID)
+		const sentNotOss = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessageNotOss', sendMessageNotOss(notOssOptions), cacheSentAutomationMessage)
+		const sentNotOssClientMsgID = sentNotOss.clientMsgID != null ? sentNotOss.clientMsgID as string : ''
+		completeAutomationOperation('sendMessageNotOss', sentNotOssClientMsgID)
+		const id = sentClientMsgID
 		if (id.length > 0) {
 			cachedClientMsgID = id
 		}
@@ -2484,14 +2665,18 @@
 		const uploadFilePath = writeAutomationUniqueUploadFile(uploadFileName, uploadRunID)
 		const previousUploadProgressCount = readAutomationEventCount('onUploadFileProgress')
 		const uploadParams : OpenIMUploadFileParams = { filepath: uploadFilePath, name: uploadFileName, contentType: 'application/octet-stream', uuid: 'uvue-auto-upload-file-' + uploadRunID, cause: 'automation upload' }
+		beginAutomationOperation('uploadFile', null, true)
 		const uploadResult = await runAutomationOptionalStep<OpenIMUploadFileResult | null>('upload', 'uploadFile', uploadFile(uploadParams, 'uvue_auto_upload_file'), noCache, 'uploadFile requires reachable object storage endpoint')
 		if (uploadResult != null) {
+			completeAutomationOperation('uploadFile')
 			automationUploadFileProgressExpected = true
 			await waitAutomationEventCountIncrease('onUploadFileProgress', previousUploadProgressCount, 5000)
 		}
 		const uploadLogsParams : OpenIMUploadLogsParams = { line: 100, ex: 'uvue-public-automation' }
+		beginAutomationOperation('uploadLogs', null, true)
 		const uploadLogsResult = await runAutomationOptionalStep<string>('upload', 'uploadLogs', uploadLogs(uploadLogsParams, 'uvue_auto_upload_logs'), noCache, 'uploadLogs requires reachable object storage endpoint')
 		if (uploadLogsResult != null) {
+			completeAutomationOperation('uploadLogs')
 			automationUploadLogsProgressExpected = true
 		}
 	}
@@ -2536,19 +2721,34 @@
 		}
 	}
 
+	function recordAutomationCallableEventCorrelations(apiName : string, expectedEvents : Array<string>) {
+		const correlations = buildAutomationEventCorrelations(apiName, expectedEvents)
+		let allMatched = correlations.length == expectedEvents.length
+		let index = 0
+		while (index < correlations.length) {
+			if (!correlations[index].payloadMatched) { allMatched = false }
+			index = index + 1
+		}
+		if (correlations.length == 0) { return }
+		const evidence = emptyAutomationEvidence()
+		evidence.eventCorrelated = allMatched
+		const detail = (allMatched ? 'complete' : 'partial') + ' operation-window event correlation ' + correlations.length.toString() + '/' + expectedEvents.length.toString()
+		recordAutomationCase('event-delivery', apiName, 'passed', detail, new Date().getTime(), evidence, apiName, true, true, null, correlations)
+	}
+
 	async function runAutomationEventDeliverySuite() : Promise<void> {
 		await sleepAutomation(1500)
-		let loginEventsComplete = true
 		let requiredIndex = 0
 		while (requiredIndex < automationRequiredDeliveredEventNames.length) {
 			const requiredEventName = automationRequiredDeliveredEventNames[requiredIndex]
 			recordRequiredAutomationEventDelivery(requiredEventName)
-			if (requiredEventName == 'onConnecting' || requiredEventName == 'onConnectSuccess' || requiredEventName == 'onSyncServerStart' || requiredEventName == 'onSyncServerFinish') {
-				if (readAutomationEventCount(requiredEventName) == 0) { loginEventsComplete = false }
-			}
 			requiredIndex = requiredIndex + 1
 		}
-		recordAutomationEvidenceStep('event-delivery', 'login', loginEventsComplete, 'login lifecycle event correlation', mutationAutomationEvidence(loginEventsComplete))
+		recordAutomationCallableEventCorrelations('login', ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish'])
+		recordAutomationCallableEventCorrelations('sendMessage', ['onSendMessageProgress', 'onRecvNewMessage'])
+		recordAutomationCallableEventCorrelations('sendMessageNotOss', ['onSendMessageProgress', 'onRecvNewMessage'])
+		recordAutomationCallableEventCorrelations('uploadFile', ['onUploadFileProgress'])
+		recordAutomationCallableEventCorrelations('uploadLogs', ['onUploadLogsProgress'])
 		let trackedIndex = 0
 		while (trackedIndex < automationTrackedDeliveredEventNames.length) {
 			recordTrackedAutomationEventDelivery(automationTrackedDeliveredEventNames[trackedIndex])
@@ -2854,10 +3054,13 @@
 		let retainedConnectingCount = 0
 		const retained = onConnecting(() => { retainedConnectingCount = retainedConnectingCount + 1 })
 		unInitSDK('uvue_auto_uninit_epoch_probe')
+		automationCurrentLifecycleEpoch = 0
 		recordAutomationStep('cleanup', 'unInitSDK', true, 'first teardown requested')
 		await sleepAutomation(750)
 		if (config != null && isAutomationConfigReady(config)) {
 			const readyConfig = config as OpenIMAutomationConfig
+			automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
+			automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
 			await runAutomationStep<boolean>('cleanup', 'initSDK', initSDK(buildAutomationInitConfig(readyConfig), 'uvue_auto_reinit_epoch_probe'), (value : boolean) => {
 				requireAutomation(value, 're-init after unInitSDK returned false')
 			}, responseAutomationEvidence())
@@ -2873,6 +3076,7 @@
 			}, responseAutomationEvidence())
 		}
 		unInitSDK('uvue_auto_uninit_final')
+		automationCurrentLifecycleEpoch = 0
 		recordAutomationStep('cleanup', 'unInitSDK', true, 'final teardown requested')
 	}
 

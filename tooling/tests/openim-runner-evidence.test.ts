@@ -109,7 +109,10 @@ test('Public runner evidence recursively redacts encoded event payloads', async 
   const evidence = createAutomationEvidenceRecord({
     projectRoot: root,
     platform: 'ios',
-    report: { events: [{ lastPayload: JSON.stringify({ userID: 'unixagent1234567890abcdef' }), payloadDetail: JSON.stringify({ userID: 'unixagent1234567890abcdef', token: 'eyJhbGciOiJIUzI1NiJ9.secret.payload' }), payloadDetails: [JSON.stringify({ userID: 'unixagent1234567890abcdef' })] }], cases: [] },
+    report: {
+      events: [{ lastPayload: JSON.stringify({ userID: 'unixagent1234567890abcdef' }), payloadDetail: JSON.stringify({ userID: 'unixagent1234567890abcdef', token: 'eyJhbGciOiJIUzI1NiJ9.secret.payload' }), payloadDetails: [JSON.stringify({ userID: 'unixagent1234567890abcdef' })] }],
+      cases: [{ eventCorrelations: [{ payloadIdentity: 'client-message-sensitive', eventPayloadDetail: JSON.stringify({ clientMsgID: 'client-message-sensitive' }) }] }],
+    },
     reportPath: resolve(root, 'test-results/openim-automation/openim-automation-1.json'),
     manifestOverride: manifest(),
   })
@@ -118,6 +121,8 @@ test('Public runner evidence recursively redacts encoded event payloads', async 
   assert.match(encoded, /<redacted:/)
   assert.doesNotMatch(evidence.redactedReport.events[0].payloadDetails[0], /unixagent1234567890abcdef/)
   assert.doesNotMatch(evidence.redactedReport.events[0].lastPayload, /unixagent1234567890abcdef/)
+  assert.match(evidence.redactedReport.cases[0].eventCorrelations[0].payloadIdentity, /^<redacted:/)
+  assert.doesNotMatch(evidence.redactedReport.cases[0].eventCorrelations[0].eventPayloadDetail, /client-message-sensitive/)
 })
 
 test('Public runner evidence rejects missing semantic proof', async () => {

@@ -23,6 +23,7 @@ function manifest() {
         apiName: 'sendMessage',
         priority: 'P0',
         platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        expectedEvents: ['onSendMessageProgress', 'onRecvNewMessage'],
         validationAxes: ['completion', 'structure', 'semantic', 'side-effect', 'event'],
       },
       {
@@ -116,6 +117,36 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
           responseEvidence: false,
           sideEffectValidated: true,
           eventCorrelated: true,
+          eventCorrelations: [
+            {
+              operationApiName: 'sendMessage',
+              eventName: 'onSendMessageProgress',
+              operationSequence: 4,
+              eventSequence: 5,
+              operationEpoch: 2,
+              eventEpoch: 2,
+              payloadMatched: true,
+              correlationKind: 'payload-identity',
+              payloadIdentity: 'operation-4',
+              eventPayloadDetail: JSON.stringify({ operationID: 'operation-4', progress: 50 }),
+              operationTerminalSequence: 7,
+              exclusiveOperation: false,
+            },
+            {
+              operationApiName: 'sendMessage',
+              eventName: 'onRecvNewMessage',
+              operationSequence: 4,
+              eventSequence: 6,
+              operationEpoch: 2,
+              eventEpoch: 2,
+              payloadMatched: true,
+              correlationKind: 'payload-identity',
+              payloadIdentity: 'message-4',
+              eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-4' }),
+              operationTerminalSequence: 7,
+              exclusiveOperation: false,
+            },
+          ],
         },
       ],
       events: [],
@@ -155,6 +186,211 @@ test('a side-effect narrative cannot satisfy callable response structure', () =>
 
   assert.equal(result.passed, false)
   assert.equal(result.issues.some((issue) => issue.axis === 'structure'), true)
+})
+
+test('a callable event boolean cannot replace generated event correlations', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      ...manifest(),
+      counts: { callables: 1, events: 0 },
+      callables: [manifest().callables[0]],
+      events: [],
+    },
+    platform: 'android',
+    report: {
+      cases: [{
+        apiName: 'sendMessage',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        structureValidated: true,
+        semanticValidated: true,
+        sideEffectValidated: true,
+        eventCorrelated: true,
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, false)
+  assert.equal(result.issues.some((issue) => issue.axis === 'event' && issue.rule === 'event-correlation-invalid'), true)
+})
+
+test('callable event evidence covers every generated event in operation order and epoch', () => {
+  const eventCase = manifest().callables[0]
+  const baseCorrelation = {
+    operationApiName: 'sendMessage',
+    operationSequence: 10,
+    operationEpoch: 3,
+    eventEpoch: 3,
+    payloadMatched: true,
+    correlationKind: 'payload-identity',
+    operationTerminalSequence: 14,
+    exclusiveOperation: false,
+  }
+  const progressCorrelation = (overrides: Record<string, unknown> = {}) => ({
+    ...baseCorrelation,
+    eventName: 'onSendMessageProgress',
+    eventSequence: 11,
+    payloadIdentity: 'operation-10',
+    eventPayloadDetail: JSON.stringify({ operationID: 'operation-10', progress: 50 }),
+    ...overrides,
+  })
+  const receiveCorrelation = (overrides: Record<string, unknown> = {}) => ({
+    ...baseCorrelation,
+    eventName: 'onRecvNewMessage',
+    eventSequence: 12,
+    payloadIdentity: 'message-10',
+    eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10' }),
+    ...overrides,
+  })
+  const validate = (eventCorrelations: Array<Record<string, unknown>>) => validateAutomationEvidence({
+    manifest: {
+      ...manifest(),
+      counts: { callables: 1, events: 0 },
+      callables: [eventCase],
+      events: [],
+    },
+    platform: 'ios',
+    report: {
+      cases: [{
+        apiName: 'sendMessage',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        structureValidated: true,
+        semanticValidated: true,
+        sideEffectValidated: true,
+        eventCorrelated: true,
+        eventCorrelations,
+      }],
+      events: [],
+    },
+  })
+
+  const missingPeerDelivery = validate([progressCorrelation()])
+  assert.equal(missingPeerDelivery.passed, false)
+
+  const wrongEpoch = validate([
+    progressCorrelation(),
+    receiveCorrelation({ eventEpoch: 4 }),
+  ])
+  assert.equal(wrongEpoch.passed, false)
+
+  const beforeOperation = validate([
+    progressCorrelation({ eventSequence: 9 }),
+    receiveCorrelation(),
+  ])
+  assert.equal(beforeOperation.passed, false)
+
+  const payloadMismatch = validate([
+    progressCorrelation(),
+    receiveCorrelation({ payloadMatched: false }),
+  ])
+  assert.equal(payloadMismatch.passed, false)
+
+  const differentOperationWindows = validate([
+    progressCorrelation(),
+    receiveCorrelation({ operationSequence: 12, eventSequence: 13 }),
+  ])
+  assert.equal(differentOperationWindows.passed, false)
+
+  const reversedEventOrder = validate([
+    progressCorrelation({ eventSequence: 13 }),
+    receiveCorrelation(),
+  ])
+  assert.equal(reversedEventOrder.passed, false)
+
+  const identityMissingFromPayload = validate([
+    progressCorrelation(),
+    receiveCorrelation({ eventPayloadDetail: JSON.stringify({ clientMsgID: 'different-message', ex: 'message-10' }) }),
+  ])
+  assert.equal(identityMissingFromPayload.passed, false)
+
+  const valid = validate([
+    progressCorrelation(),
+    receiveCorrelation(),
+  ])
+  assert.equal(valid.passed, true)
+  assert.deepEqual(valid.issues, [])
+})
+
+test('identifier-free progress requires an exclusive start-to-terminal operation window', () => {
+  const uploadManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/uploadFile',
+      apiName: 'uploadFile',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      expectedEvents: ['onUploadFileProgress'],
+      validationAxes: ['event'],
+    }],
+    events: [],
+  }
+  const validate = (correlation: Record<string, unknown>) => validateAutomationEvidence({
+    manifest: uploadManifest,
+    platform: 'android',
+    report: { cases: [{ apiName: 'uploadFile', ok: true, eventCorrelations: [correlation] }], events: [] },
+  })
+  const base = {
+    operationApiName: 'uploadFile',
+    eventName: 'onUploadFileProgress',
+    operationSequence: 20,
+    eventSequence: 21,
+    operationEpoch: 4,
+    eventEpoch: 4,
+    payloadMatched: true,
+    correlationKind: 'exclusive-operation-window',
+    payloadIdentity: '',
+    eventPayloadDetail: JSON.stringify({ progress: 25 }),
+    operationTerminalSequence: 22,
+    exclusiveOperation: true,
+  }
+
+  assert.equal(validate(base).passed, true)
+  assert.equal(validate({ ...base, exclusiveOperation: false }).passed, false)
+  assert.equal(validate({ ...base, operationTerminalSequence: 21 }).passed, false)
+  assert.equal(validate({ ...base, operationTerminalSequence: 0 }).passed, false)
+})
+
+test('lifecycle correlation is accepted only as a coherent ordered epoch window', () => {
+  const lifecycleManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/login',
+      apiName: 'login',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      expectedEvents: ['onConnecting', 'onConnectSuccess'],
+      validationAxes: ['event'],
+    }],
+    events: [],
+  }
+  const correlations = ['onConnecting', 'onConnectSuccess'].map((eventName, index) => ({
+    operationApiName: 'login',
+    eventName,
+    operationSequence: 30,
+    eventSequence: 31 + index,
+    operationEpoch: 5,
+    eventEpoch: 5,
+    payloadMatched: true,
+    correlationKind: 'lifecycle-order',
+    payloadIdentity: '',
+    eventPayloadDetail: 'null',
+    operationTerminalSequence: 0,
+    exclusiveOperation: false,
+  }))
+  const result = validateAutomationEvidence({
+    manifest: lifecycleManifest,
+    platform: 'ios',
+    report: { cases: [{ apiName: 'login', ok: true, eventCorrelations: correlations }], events: [] },
+  })
+  assert.equal(result.passed, true)
 })
 
 test('generated response schema, not a page boolean, certifies callable structure', () => {

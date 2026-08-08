@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url)
 const { formatAutomationEvidenceIssues, validateAutomationEvidence } = require('../../tooling/runtime/automation-evidence.cjs')
 
 const artifactFilePattern = /^openim-automation-.*\.json$/
-const sensitiveKeyPattern = /(token|authorization|credential|secret|password|sign|signature|policy|session|userID|sendID|recvID|ownerUserID|creatorUserID|nickname|account|faceURL|attachedInfo)/i
+const sensitiveKeyPattern = /(token|authorization|credential|secret|password|sign|signature|policy|session|identity|userID|sendID|recvID|clientMsgID|groupID|conversationID|ownerUserID|creatorUserID|nickname|account|faceURL|attachedInfo)/i
 
 function stableRedaction(value) {
   const digest = createHash('sha256').update(String(value)).digest('hex').slice(0, 10)
@@ -39,7 +39,7 @@ function redactURL(value) {
 }
 
 function redactString(key, value) {
-  if (key === 'responseDetail' || key === 'payloadDetail' || key === 'payloadDetails' || key === 'lastPayload') {
+  if (key === 'responseDetail' || key === 'payloadDetail' || key === 'payloadDetails' || key === 'eventPayloadDetail' || key === 'lastPayload') {
     try {
       return JSON.stringify(redactAutomationValue(JSON.parse(value)))
     } catch {
