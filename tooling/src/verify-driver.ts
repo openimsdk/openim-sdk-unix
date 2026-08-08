@@ -290,17 +290,23 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
       "type OpenIMHarmonyDriverState = 'idle' | 'starting' | 'active' | 'stopping'",
       "private static state: OpenIMHarmonyDriverState = 'idle'",
       'class OpenIMHarmonyNativeError',
+      'private static normalizeNativeError(',
+      'reason.errCode',
+      'reason.errMsg',
       'private static canBindNativeEvents(): boolean',
       'OpenIMHarmonyDriver.isStartingEvent(eventCode)',
       'OpenIMHarmonyDriver.canDispatchEvent(bindingEpoch, eventCode)',
-      'private static trackStringPromise(',
-      'private static trackNumberPromise(',
-      'private static trackBooleanPromise(',
+      'private static trackStringPromise(nativePromise: Promise<string>, method: string, operationID: string)',
+      'private static trackNumberPromise(nativePromise: Promise<number>, method: string, operationID: string)',
+      'private static trackBooleanPromise(nativePromise: Promise<boolean>, method: string, operationID: string)',
+      'task.method',
+      'task.operationID',
+      "trackStringPromise(nativePromise, 'sendMessage', operationID)",
       'static callAsync(',
       'case 2059:',
       'case 2060:',
       'terminalScheduled',
-      "task.reject(new OpenIMHarmonyNativeError(-1, 'OpenIM SDK was uninitialized', 'unInitSDK', ''))",
+      "task.reject(new OpenIMHarmonyNativeError(-1, 'OpenIM SDK was uninitialized', task.method, task.operationID))",
       'static offAll(',
       'static initSDK(',
       'OpenIMHarmonyDriver.teardownBarrier.then(',
@@ -321,6 +327,10 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     harmonySource,
     ['400001', 'callBindingUnInitSDK', 'Unsupported Harmony operation code'],
     'Enterprise Harmony contract-ID seam',
+  )
+  assert(
+    !/track(?:String|Number|Boolean)Promise\(nativePromise\)/.test(harmonySource),
+    'Enterprise Harmony generated binding dropped native error provenance',
   )
   assert(!androidFacade.includes('dispatchOpenIMMain'), 'Enterprise Android façade bypasses the Driver callback seam')
   assert(!iosFacade.includes('dispatchOpenIMMain'), 'Enterprise iOS façade bypasses the Driver callback seam')

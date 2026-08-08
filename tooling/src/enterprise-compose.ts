@@ -579,6 +579,11 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
 
 export function generateEnterprise(publicRoot: string, privateRoot: string): GeneratedOutput[] {
   const outputs = buildEnterpriseGeneratedOutputs(publicRoot, privateRoot)
+  const harmonyDriverOutput = outputs.find(
+    (output) => output.path === join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/OpenIMHarmonyDriver.ets'),
+  )
+  assert(harmonyDriverOutput != null, 'Enterprise generation omitted the Harmony Driver projection')
+  writeText(join(privateRoot, 'sdk-src/native/harmony/OpenIMHarmonyDriver.ets'), harmonyDriverOutput.content)
   for (const output of outputs) writeText(output.path, output.content)
   return outputs
 }
