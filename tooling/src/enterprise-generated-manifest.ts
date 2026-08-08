@@ -26,9 +26,28 @@ export const ENTERPRISE_GENERATOR_AUTHORITY_INPUTS = [
   'sdk-src/native/android/OpenIMDriverRuntime.kt',
   'sdk-src/native/ios/OpenIMDriverRuntime.swift',
   'sdk-src/native/harmony/OpenIMHarmonyDriver.ets',
+  'tooling/src/contract-integrity.ts',
+  'tooling/src/enterprise-compose.ts',
+  'tooling/src/enterprise-generated-manifest.ts',
+  'tooling/src/generate.ts',
+  'tooling/src/harmony-bindings.ts',
+  'tooling/src/harmony-monomorphize.ts',
   'tooling/src/harmony-platform-driver.ts',
+  'tooling/src/model.ts',
+  'tooling/src/platform-driver.ts',
+  'tooling/src/source.ts',
+  'tooling/src/test-contract.ts',
   'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har',
 ] as const
+
+export type EnterpriseAuthority = 'public' | 'private'
+
+export interface EnterpriseGeneratedManifestInput {
+  authority: EnterpriseAuthority
+  path: string
+  sha256: string
+  bytes: number
+}
 
 export interface EnterpriseGeneratedManifestOutput {
   path: string
@@ -37,9 +56,10 @@ export interface EnterpriseGeneratedManifestOutput {
 }
 
 export interface EnterpriseGeneratedManifest {
-  schemaVersion: 1
+  schemaVersion: 2
   edition: 'enterprise'
   generator: 'tooling/src/enterprise-compose.ts#buildEnterpriseGeneratedOutputs'
+  inputs: EnterpriseGeneratedManifestInput[]
   outputs: EnterpriseGeneratedManifestOutput[]
 }
 
@@ -73,6 +93,16 @@ function copyProjectFile(sourceRoot: string, destinationRoot: string, path: stri
   copyFileSync(projectPath(sourceRoot, path), destination)
 }
 
+function authorityForInput(path: string): EnterpriseAuthority {
+  return path.startsWith('contracts/base/') || path.includes('OpenIMDriverRuntime') || path.startsWith('tooling/')
+    ? 'public'
+    : 'private'
+}
+
+function authorityRoot(publicRoot: string, privateRoot: string, authority: EnterpriseAuthority): string {
+  return authority === 'public' ? publicRoot : privateRoot
+}
+
 function readOutputBytes(root: string, paths: readonly string[]): Map<string, Buffer> {
   return new Map(paths.map((path) => [path, readFileSync(projectPath(root, path))]))
 }
@@ -90,6 +120,11 @@ export function buildEnterpriseGeneratedManifest(
   publicRoot: string,
   privateRoot: string,
 ): EnterpriseGeneratedManifest {
+  const inputs = ENTERPRISE_GENERATOR_AUTHORITY_INPUTS.map((path): EnterpriseGeneratedManifestInput => {
+    const authority = authorityForInput(path)
+    const bytes = readFileSync(projectPath(authorityRoot(publicRoot, privateRoot, authority), path))
+    return { authority, path, sha256: sha256(bytes), bytes: bytes.byteLength }
+  })
   const paths = new Set<string>()
   const outputs = buildEnterpriseGeneratedOutputs(publicRoot, privateRoot).map((output) => {
     const path = relativeProjectPath(privateRoot, output.path)
@@ -99,9 +134,10 @@ export function buildEnterpriseGeneratedManifest(
     return { path, sha256: sha256(bytes), bytes: bytes.byteLength }
   })
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'enterprise',
     generator: 'tooling/src/enterprise-compose.ts#buildEnterpriseGeneratedOutputs',
+    inputs,
     outputs,
   }
 }
@@ -121,13 +157,28 @@ export function readEnterpriseGeneratedManifest(privateRoot: string): Enterprise
   const manifest = JSON.parse(
     readFileSync(projectPath(privateRoot, ENTERPRISE_GENERATED_MANIFEST_PATH), 'utf8'),
   ) as EnterpriseGeneratedManifest
-  assert(manifest.schemaVersion === 1, 'Unsupported Enterprise generated manifest schema')
+  assert(manifest.schemaVersion === 2, 'Unsupported Enterprise generated manifest schema')
   assert(manifest.edition === 'enterprise', 'Enterprise generated manifest edition changed')
   assert(
     manifest.generator === 'tooling/src/enterprise-compose.ts#buildEnterpriseGeneratedOutputs',
     'Unknown Enterprise generated manifest producer',
   )
+  assert(Array.isArray(manifest.inputs), 'Enterprise generated manifest inputs must be an array')
+  assert(
+    JSON.stringify(manifest.inputs.map(({ authority, path }) => ({ authority, path }))) === JSON.stringify(
+      ENTERPRISE_GENERATOR_AUTHORITY_INPUTS.map((path) => ({ authority: authorityForInput(path), path })),
+    ),
+    'Enterprise generated manifest authority input inventory changed',
+  )
   const paths = new Set<string>()
+  for (const input of manifest.inputs) {
+    projectPath(authorityRoot(privateRoot, privateRoot, input.authority), input.path)
+    const key = `${input.authority}:${input.path}`
+    assert(!paths.has(key), `Duplicate Enterprise manifest input path: ${key}`)
+    paths.add(key)
+    assert(/^[0-9a-f]{64}$/.test(input.sha256), `Invalid Enterprise input hash: ${key}`)
+    assert(Number.isSafeInteger(input.bytes) && input.bytes >= 0, `Invalid Enterprise input byte count: ${key}`)
+  }
   for (const output of manifest.outputs) {
     projectPath(privateRoot, output.path)
     assert(!paths.has(output.path), `Duplicate Enterprise manifest path: ${output.path}`)
@@ -145,6 +196,11 @@ export function assertEnterpriseGeneratedManifestCurrent(
   const actual = readEnterpriseGeneratedManifest(privateRoot)
   const expected = buildEnterpriseGeneratedManifest(publicRoot, privateRoot)
   assert(JSON.stringify(actual) === JSON.stringify(expected), 'Enterprise generated manifest is stale or incomplete')
+  for (const input of actual.inputs) {
+    const bytes = readFileSync(projectPath(authorityRoot(publicRoot, privateRoot, input.authority), input.path))
+    assert(bytes.byteLength === input.bytes, `Enterprise authority input byte count is stale: ${input.path}`)
+    assert(sha256(bytes) === input.sha256, `Enterprise authority input hash is stale: ${input.path}`)
+  }
   for (const output of actual.outputs) {
     const bytes = readFileSync(projectPath(privateRoot, output.path))
     assert(bytes.byteLength === output.bytes, `Enterprise generated byte count is stale: ${output.path}`)
@@ -163,9 +219,7 @@ export function verifyEnterpriseDeletionRegeneration(
   const temporaryRoot = mkdtempSync(join(tmpdir(), 'openim-enterprise-generated-deletion-'))
   try {
     for (const input of ENTERPRISE_GENERATOR_AUTHORITY_INPUTS) {
-      const sourceRoot = input.startsWith('contracts/base/') || input.includes('OpenIMDriverRuntime')
-        ? publicRoot
-        : privateRoot
+      const sourceRoot = authorityRoot(publicRoot, privateRoot, authorityForInput(input))
       copyProjectFile(sourceRoot, temporaryRoot, input)
     }
     generateEnterprise(temporaryRoot, temporaryRoot)
