@@ -9,7 +9,7 @@ import {
   renderNativeCoreAdapter,
   renderPlatformDriverUTS,
 } from '../src/platform-driver.js'
-import { generateIndex } from '../src/generate.js'
+import { DRIVER_TYPED_RESPONSE_PARSERS, generateIndex } from '../src/generate.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
@@ -131,6 +131,30 @@ const GROUP_STATUS_UPLOAD_OPERATIONS = [
   ['getSubscribeUsersStatus', 2138],
   ['uploadFile', 2160],
   ['uploadLogs', 2161],
+] as const
+
+const ENTERPRISE_TYPED_RESPONSE_PARSERS = [
+  ['typed:OpenIMAtAllTagResult|null', 'parseAtAllTagResult'],
+  ['typed:OpenIMCreateConversationGroupResult|null', 'parseCreateConversationGroupResult'],
+  ['typed:OpenIMFetchSurroundingMessagesResult|null', 'parseFetchSurroundingMessagesResult'],
+  ['typed:OpenIMFullSyncResult|null', 'parseFullSyncResult'],
+  ['typed:OpenIMGetBlacksResult|null', 'parseGetBlacksResult'],
+  ['typed:OpenIMGetConversationGroupByConversationIDResult|null', 'parseConversationGroupByConversationIDResult'],
+  ['typed:OpenIMGetConversationGroupInfoWithConversationsResult|null', 'parseConversationGroupInfoWithConversationsResult'],
+  ['typed:OpenIMGetConversationGroupsResult|null', 'parseConversationGroupsResult'],
+  ['typed:OpenIMGetGroupMessageReaderListResult|null', 'parseGroupMessageReaderListResult'],
+  ['typed:OpenIMGetInputStatesResult|null', 'parseInputStatesResult'],
+  ['typed:OpenIMGetConversationPinnedMsgResult|null', 'parseConversationPinnedMsgResult'],
+  ['typed:OpenIMModifyMessageResult|null', 'parseModifyMessageResult'],
+  ['typed:OpenIMSignalingAcceptResult|null', 'parseSignalingAcceptResult'],
+  ['typed:OpenIMSignalingGetInvitationInfoStartAppResult|null', 'parseSignalingInvitationInfoStartAppResult'],
+  ['typed:OpenIMSignalingGetRoomByGroupIDResult|null', 'parseSignalingRoomResult'],
+  ['typed:OpenIMSignalingGetTokenByRoomIDResult|null', 'parseSignalingTokenResult'],
+  ['typed:OpenIMSignalingInviteResult|null', 'parseSignalingInviteResult'],
+  ['typed:OpenIMSpeechToTextCapabilitiesResult|null', 'parseSpeechToTextCapabilitiesResult'],
+  ['typed:OpenIMSpeechToTextResult|null', 'parseSpeechToTextResult'],
+  ['typed:OpenIMTranslateTextResult|null', 'parseTranslateTextResult'],
+  ['typed:OpenIMUpdateConversationGroupResult|null', 'parseUpdateConversationGroupResult'],
 ] as const
 
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
@@ -581,6 +605,12 @@ test('native login guards live inside generated CoreAdapters', () => {
     assert.doesNotMatch(facade, /NativeOpenIMSDK\./)
     assert.match(adapter, /requires logged in status/)
     assert.match(adapter, /NativeOpenIMSDK\.getLoginStatus\(operationID\)/)
+  }
+})
+
+test('shared compiler names every Enterprise typed response parser explicitly', () => {
+  for (const [codec, parser] of ENTERPRISE_TYPED_RESPONSE_PARSERS) {
+    assert.equal(DRIVER_TYPED_RESPONSE_PARSERS[codec], parser)
   }
 })
 

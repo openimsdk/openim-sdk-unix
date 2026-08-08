@@ -90,7 +90,10 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'set-group-member-info-json') return `stringifySetGroupMemberInfoPayload(${source})`
   if (field.codec === 'sound-json') return platform === 'ios' ? `stringifyOpenIMSoundElem(${source})` : `stringifyJSON(${source})`
   if (field.codec === 'stored-message-json') return platform === 'ios' ? `stringifyOpenIMMessage(${source})` : `stringifyOpenIMMessagePayload(${source})`
+  if (field.codec === 'update-friend-json') return `stringifyUpdateFriendPayload(${source})`
   if (field.codec === 'update-friends-json') return `stringifyUpdateFriendsPayload(${source})`
+  if (field.codec === 'fetch-surrounding-messages-json') return `stringifyFetchSurroundingMessagesPayload(${source})`
+  if (field.codec === 'modify-message-json') return `stringifyModifyMessagePayload(${source})`
   if (field.codec === 'video-json') return platform === 'ios' ? `stringifyOpenIMVideoElem(${source})` : `stringifyJSON(${source})`
   if (field.codec === 'offline-push-json') return `readOfflinePushInfo(${field.parameter})`
   if (field.codec === 'online-only') return `readIsOnlineOnly(${field.parameter})`
@@ -112,7 +115,28 @@ function driverFieldsRequestPrelude(fields: DriverRequestField[], platform: 'and
   return `const requestJSON = ${fragments.join(' + ')} + '}';`
 }
 
-const DRIVER_TYPED_RESPONSE_PARSERS: Readonly<Record<string, string>> = {
+export const DRIVER_TYPED_RESPONSE_PARSERS: Readonly<Record<string, string>> = {
+  'typed:OpenIMAtAllTagResult|null': 'parseAtAllTagResult',
+  'typed:OpenIMCreateConversationGroupResult|null': 'parseCreateConversationGroupResult',
+  'typed:OpenIMFetchSurroundingMessagesResult|null': 'parseFetchSurroundingMessagesResult',
+  'typed:OpenIMFullSyncResult|null': 'parseFullSyncResult',
+  'typed:OpenIMGetBlacksResult|null': 'parseGetBlacksResult',
+  'typed:OpenIMGetConversationGroupByConversationIDResult|null': 'parseConversationGroupByConversationIDResult',
+  'typed:OpenIMGetConversationGroupInfoWithConversationsResult|null': 'parseConversationGroupInfoWithConversationsResult',
+  'typed:OpenIMGetConversationGroupsResult|null': 'parseConversationGroupsResult',
+  'typed:OpenIMGetGroupMessageReaderListResult|null': 'parseGroupMessageReaderListResult',
+  'typed:OpenIMGetInputStatesResult|null': 'parseInputStatesResult',
+  'typed:OpenIMGetConversationPinnedMsgResult|null': 'parseConversationPinnedMsgResult',
+  'typed:OpenIMModifyMessageResult|null': 'parseModifyMessageResult',
+  'typed:OpenIMSignalingAcceptResult|null': 'parseSignalingAcceptResult',
+  'typed:OpenIMSignalingGetInvitationInfoStartAppResult|null': 'parseSignalingInvitationInfoStartAppResult',
+  'typed:OpenIMSignalingGetRoomByGroupIDResult|null': 'parseSignalingRoomResult',
+  'typed:OpenIMSignalingGetTokenByRoomIDResult|null': 'parseSignalingTokenResult',
+  'typed:OpenIMSignalingInviteResult|null': 'parseSignalingInviteResult',
+  'typed:OpenIMSpeechToTextCapabilitiesResult|null': 'parseSpeechToTextCapabilitiesResult',
+  'typed:OpenIMSpeechToTextResult|null': 'parseSpeechToTextResult',
+  'typed:OpenIMTranslateTextResult|null': 'parseTranslateTextResult',
+  'typed:OpenIMUpdateConversationGroupResult|null': 'parseUpdateConversationGroupResult',
   'typed:OpenIMLoginStatus': 'parseNativeLoginStatus',
   'typed:OpenIMMessageItem|null': 'parseNativeMessage',
   'typed:OpenIMSearchMessageResult|null': 'parseNativeSearchMessageResult',
