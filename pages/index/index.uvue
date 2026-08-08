@@ -959,6 +959,10 @@
 		eventName : string
 		count : number
 		lastPayload : string
+		payloadEvidence : boolean
+		payloadEncoding : string
+		payloadDetail : string
+		payloadDetails : Array<string>
 		deliveryValidated : boolean
 		structureValidated : boolean
 		semanticValidated : boolean
@@ -1322,6 +1326,10 @@
 				eventName: eventName,
 				count: 0,
 				lastPayload: '',
+				payloadEvidence: false,
+				payloadEncoding: '',
+				payloadDetail: '',
+				payloadDetails: [],
 				deliveryValidated: false,
 				structureValidated: false,
 				semanticValidated: false,
@@ -1334,6 +1342,10 @@
 		if (record != null) {
 			record.count = record.count + 1
 			record.lastPayload = truncateAutomationEventPayload(payloadText)
+			record.payloadEvidence = true
+			record.payloadEncoding = 'uts-typed-json-v1'
+			record.payloadDetail = payloadText
+			record.payloadDetails.push(payloadText)
 			record.deliveryValidated = true
 			// Reaching the typed callback proves the façade/event decoder accepted the wire shape.
 			record.structureValidated = true
@@ -1390,7 +1402,8 @@
 
 	function showSDKErrorEvent(eventName : string, errCode : number, errMsg : string) {
 		updateStatusForSDKEventName(eventName)
-		recordSDKEventDelivery(eventName, 'errCode=' + errCode.toString() + ' errMsg=' + errMsg)
+		const encodedErrMsg = JSON.stringify(errMsg)
+		recordSDKEventDelivery(eventName, '[' + errCode.toString() + ',' + (encodedErrMsg == null ? '""' : encodedErrMsg as string) + ']')
 		console.log('sdk event error', eventName, errCode, errMsg)
 		if (automationEventSuppressed) {
 			return

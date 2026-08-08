@@ -180,6 +180,52 @@ function callableStructureResult(candidates, apiName, responseSchemas) {
   return { passed: issues.length === 0, issues }
 }
 
+function validateEventArguments(document, eventSchema, value) {
+  const argumentsSchema = Array.isArray(eventSchema.arguments) ? eventSchema.arguments : null
+  if (argumentsSchema == null) {
+    return [schemaIssue('$', 'event-schema', 'arguments array', 'missing arguments')]
+  }
+  if (argumentsSchema.length === 0) {
+    return value === null || value === undefined
+      ? []
+      : [schemaIssue('$', 'type', 'void event payload', actualKind(value))]
+  }
+  if (argumentsSchema.length === 1) {
+    return validateSchemaValue(document, argumentsSchema[0], value)
+  }
+  if (!Array.isArray(value)) {
+    return [schemaIssue('$', 'type', `event argument tuple(${argumentsSchema.length})`, actualKind(value))]
+  }
+  if (value.length !== argumentsSchema.length) {
+    return [schemaIssue('$', 'tuple-length', String(argumentsSchema.length), String(value.length))]
+  }
+  return argumentsSchema.flatMap((schema, index) => validateSchemaValue(document, schema, value[index], `$[${index}]`))
+}
+
+function eventStructureResult(candidates, eventName, responseSchemas) {
+  const eventSchemas = isRecord(responseSchemas.events) ? responseSchemas.events : {}
+  const eventSchema = eventSchemas[eventName]
+  if (!isRecord(eventSchema)) {
+    return { passed: false, issues: [schemaIssue('$', 'event-schema', eventName, 'missing schema')] }
+  }
+  const recorded = candidates.filter((item) => item.deliveryValidated === true && item.payloadEvidence === true)
+  if (recorded.length === 0) return { passed: false, issues: [] }
+  const issues = recorded.flatMap((item) => {
+    if (!Array.isArray(item.payloadDetails)) {
+      return [schemaIssue('$', 'payload-evidence', 'one recorded payload per delivery', 'missing payloadDetails')]
+    }
+    if (item.payloadDetails.length !== item.count) {
+      return [schemaIssue('$', 'payload-count', String(item.count), String(item.payloadDetails.length))]
+    }
+    return item.payloadDetails.flatMap((detail) => validateEventArguments(
+      responseSchemas,
+      eventSchema,
+      normalizeRecordedValue(parseRecordedValue(detail, 'any'), item.payloadEncoding),
+    ))
+  })
+  return { passed: issues.length === 0, issues }
+}
+
 function axisPassed(candidates, axis, kind) {
   if (kind === 'callable' && axis === 'completion') {
     return candidates.some((item) => isSuccessfulEvidence(item) && item.invoked === true && item.resolved === true)
@@ -333,6 +379,19 @@ function validateAutomationEvidence(input) {
     } else if (disposition === 'required') {
       const axes = Array.isArray(contractEvent.validationAxes) ? contractEvent.validationAxes : []
       for (const axis of axes) {
+        if (axis === 'structure' && isRecord(input.responseSchemas)) {
+          const structure = eventStructureResult(candidates, contractEvent.eventName, input.responseSchemas)
+          if (!structure.passed) {
+            const schemaDetail = structure.issues.slice(0, 3).map((item) => `${item.path} ${item.rule}: expected ${item.expected}, got ${item.actual}`).join('; ')
+            issues.push(issue(
+              String(contractEvent.caseId),
+              'structure',
+              structure.issues.length === 0 ? (candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated') : 'event-schema-invalid',
+              schemaDetail.length > 0 ? `${contractEvent.eventName} payload failed generated schema: ${schemaDetail}` : `${contractEvent.eventName} has no explicit payload evidence on ${platform}`,
+            ))
+          }
+          continue
+        }
         if (!axisPassed(candidates, axis, 'event')) {
           issues.push(issue(
             String(contractEvent.caseId),

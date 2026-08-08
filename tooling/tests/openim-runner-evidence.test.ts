@@ -103,6 +103,23 @@ test('Public runner evidence recursively redacts encoded response payloads', asy
   assert.match(encoded, /<redacted:/)
 })
 
+test('Public runner evidence recursively redacts encoded event payloads', async () => {
+  const { createAutomationEvidenceRecord } = await import(modulePath.href)
+  const root = projectRoot()
+  const evidence = createAutomationEvidenceRecord({
+    projectRoot: root,
+    platform: 'ios',
+    report: { events: [{ lastPayload: JSON.stringify({ userID: 'unixagent1234567890abcdef' }), payloadDetail: JSON.stringify({ userID: 'unixagent1234567890abcdef', token: 'eyJhbGciOiJIUzI1NiJ9.secret.payload' }), payloadDetails: [JSON.stringify({ userID: 'unixagent1234567890abcdef' })] }], cases: [] },
+    reportPath: resolve(root, 'test-results/openim-automation/openim-automation-1.json'),
+    manifestOverride: manifest(),
+  })
+  const encoded = evidence.redactedReport.events[0].payloadDetail
+  assert.doesNotMatch(encoded, /unixagent1234567890abcdef|eyJhbGci|secret/)
+  assert.match(encoded, /<redacted:/)
+  assert.doesNotMatch(evidence.redactedReport.events[0].payloadDetails[0], /unixagent1234567890abcdef/)
+  assert.doesNotMatch(evidence.redactedReport.events[0].lastPayload, /unixagent1234567890abcdef/)
+})
+
 test('Public runner evidence rejects missing semantic proof', async () => {
   const { createAutomationEvidenceRecord, evidenceFailureMessage } = await import(modulePath.href)
   const root = projectRoot()

@@ -39,7 +39,7 @@ function redactURL(value) {
 }
 
 function redactString(key, value) {
-  if (key === 'responseDetail') {
+  if (key === 'responseDetail' || key === 'payloadDetail' || key === 'payloadDetails' || key === 'lastPayload') {
     try {
       return JSON.stringify(redactAutomationValue(JSON.parse(value)))
     } catch {

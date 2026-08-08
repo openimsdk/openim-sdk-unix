@@ -238,6 +238,78 @@ test('generated response schema blocks unreviewed additive response drift', () =
   assert.equal(result.issues.some((issue) => issue.rule === 'response-schema-invalid'), true)
 })
 
+test('generated event schema, not typed callback arrival, certifies payload structure', () => {
+  const eventManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 0, events: 1 },
+    callables: [],
+    events: [{
+      caseId: 'event/onRecvNewMessage',
+      eventName: 'onRecvNewMessage',
+      deliveryDisposition: 'required',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      validationAxes: ['delivery', 'structure'],
+    }],
+  }
+  const responseSchemas = {
+    schemaVersion: 1,
+    callables: {},
+    events: {
+      onRecvNewMessage: {
+        arguments: [{
+          kind: 'object',
+          fields: { clientMsgID: { required: true, schema: { kind: 'string' } } },
+        }],
+      },
+    },
+    schemas: {},
+  }
+  const valid = validateAutomationEvidence({
+    manifest: eventManifest,
+    responseSchemas,
+    platform: 'android',
+    report: { cases: [], events: [{ eventName: 'onRecvNewMessage', count: 1, deliveryValidated: true, structureValidated: false, payloadEvidence: true, payloadEncoding: 'uts-typed-json-v1', payloadDetail: JSON.stringify({ clientMsgID: 'message-1' }), payloadDetails: [JSON.stringify({ clientMsgID: 'message-1' })] }] },
+  })
+  assert.equal(valid.passed, true)
+
+  const invalid = validateAutomationEvidence({
+    manifest: eventManifest,
+    responseSchemas,
+    platform: 'android',
+    report: { cases: [], events: [{ eventName: 'onRecvNewMessage', count: 2, deliveryValidated: true, structureValidated: true, payloadEvidence: true, payloadEncoding: 'uts-typed-json-v1', payloadDetail: JSON.stringify({ clientMsgID: 'message-2' }), payloadDetails: [JSON.stringify({}), JSON.stringify({ clientMsgID: 'message-2' })] }] },
+  })
+  assert.equal(invalid.passed, false)
+  assert.equal(invalid.issues.some((issue) => issue.rule === 'event-schema-invalid'), true)
+})
+
+test('generated event schema validates every argument in multi-argument callbacks', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'public',
+      counts: { callables: 0, events: 1 },
+      callables: [],
+      events: [{
+        caseId: 'event/onConnectFailed',
+        eventName: 'onConnectFailed',
+        deliveryDisposition: 'required',
+        platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+        validationAxes: ['delivery', 'structure'],
+      }],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: {},
+      events: { onConnectFailed: { arguments: [{ kind: 'number' }, { kind: 'string' }] } },
+      schemas: {},
+    },
+    platform: 'ios',
+    report: { cases: [], events: [{ eventName: 'onConnectFailed', count: 1, deliveryValidated: true, payloadEvidence: true, payloadDetail: JSON.stringify([-1, 'bridge failed']), payloadDetails: [JSON.stringify([-1, 'bridge failed'])] }] },
+  })
+  assert.equal(result.passed, true)
+})
+
 test('UTS typed-json metadata is normalized only when the evidence declares its encoding', () => {
   const schemaManifest = {
     schemaVersion: 2,

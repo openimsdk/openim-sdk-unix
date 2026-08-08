@@ -70,7 +70,15 @@ test('lifecycle and event-control scenarios run cleanup and registry probes with
 })
 
 test('event reports distinguish typed delivery from semantic, ordering, and epoch proof', () => {
+  for (const field of ['payloadEvidence : boolean', 'payloadEncoding : string', 'payloadDetail : string', 'payloadDetails : Array<string>']) {
+    assert.match(page, new RegExp(field))
+  }
   assert.match(page, /record\.deliveryValidated = true/)
   assert.match(page, /record\.structureValidated = true/)
+  assert.match(page, /record\.payloadEvidence = true/)
+  assert.match(page, /record\.payloadEncoding = 'uts-typed-json-v1'/)
+  assert.match(page, /record\.payloadDetail = payloadText/)
+  assert.match(page, /record\.payloadDetails\.push\(payloadText\)/)
+  assert.match(functionSource('showSDKErrorEvent'), /recordSDKEventDelivery\(eventName, '\[' \+ errCode\.toString\(\)/)
   assert.doesNotMatch(page, /record\.(?:semanticValidated|orderingValidated|epochValidated) = true/)
 })
