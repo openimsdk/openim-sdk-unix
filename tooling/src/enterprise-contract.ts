@@ -409,12 +409,19 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     },
     expectedTotal: { ...EXPECTED_TOTAL },
     expectedDelta: { ...EXPECTED_DELTA },
-    approvedBaseCallableOverrides: APPROVED_BASE_CALLABLE_OVERRIDES.map((value) => ({
-      name: value.name,
-      baseSignature: baseCallableByName.get(value.name)?.signature ?? '',
-      enterpriseSignature: value.enterpriseSignature,
-      reason: value.reason,
-    })),
+    approvedBaseCallableOverrides: APPROVED_BASE_CALLABLE_OVERRIDES.map((value) => {
+      const existing = existingDelta.approvedBaseCallableOverrides.find((override) => override.name === value.name)
+      return {
+        ...existing,
+        name: value.name,
+        baseSignature: baseCallableByName.get(value.name)?.signature ?? '',
+        enterpriseSignature: value.enterpriseSignature,
+        reason: value.reason,
+      }
+    }),
+    ...(existingDelta.approvedBaseTypeOverrides == null
+      ? {}
+      : { approvedBaseTypeOverrides: existingDelta.approvedBaseTypeOverrides }),
     constants: [],
     types,
     typeExtensions,
@@ -451,12 +458,25 @@ export function verifyEnterpriseDelta(
   assert(delta.generatedFrom.publicBaseContractHash === baseSnapshot.contractHash, 'Enterprise public base hash is stale')
   assert(JSON.stringify(delta.expectedTotal) === JSON.stringify(EXPECTED_TOTAL), 'Enterprise total counts changed')
   assert(JSON.stringify(delta.expectedDelta) === JSON.stringify(EXPECTED_DELTA), 'Enterprise delta counts changed')
-  assert(JSON.stringify(delta.approvedBaseCallableOverrides) === JSON.stringify(APPROVED_BASE_CALLABLE_OVERRIDES.map((value) => ({
-    name: value.name,
-    baseSignature: 'getLoginUserID():Promise<string>',
-    enterpriseSignature: value.enterpriseSignature,
-    reason: value.reason,
-  }))), 'Enterprise approved base callable overrides changed')
+  assert(delta.approvedBaseCallableOverrides.length === APPROVED_BASE_CALLABLE_OVERRIDES.length, 'Enterprise approved base callable override count changed')
+  for (const approved of APPROVED_BASE_CALLABLE_OVERRIDES) {
+    const override = delta.approvedBaseCallableOverrides.find((value) => value.name === approved.name)
+    assert(override != null, `Enterprise approved base callable override is missing: ${approved.name}`)
+    assert(override.baseSignature === 'getLoginUserID():Promise<string>', `Enterprise base override signature changed: ${approved.name}`)
+    assert(override.enterpriseSignature === approved.enterpriseSignature, `Enterprise override signature changed: ${approved.name}`)
+    assert(override.reason === approved.reason, `Enterprise override reason changed: ${approved.name}`)
+    assert(override.baseHash === sha256(normalizeContractText(override.baseSignature)), `Enterprise base override hash is stale: ${approved.name}`)
+    assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseSignature)), `Enterprise override hash is stale: ${approved.name}`)
+    assert(override.declaration?.android != null && override.declaration.ios != null && override.declaration.harmony != null, `Enterprise override declarations are incomplete: ${approved.name}`)
+  }
+  assert(delta.approvedBaseTypeOverrides?.length === APPROVED_BASE_TYPE_OVERRIDES.length, 'Enterprise approved base type override count changed')
+  for (const approved of APPROVED_BASE_TYPE_OVERRIDES) {
+    const override = delta.approvedBaseTypeOverrides?.find((value) => value.name === approved.name)
+    assert(override != null, `Enterprise approved base type override is missing: ${approved.name}`)
+    assert(normalizeContractText(override.enterpriseDeclaration) === normalizeContractText(approved.enterpriseDeclaration), `Enterprise base type override changed: ${approved.name}`)
+    assert(override.baseHash === sha256(normalizeContractText(override.baseDeclaration)), `Enterprise base type hash is stale: ${approved.name}`)
+    assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseDeclaration)), `Enterprise type override hash is stale: ${approved.name}`)
+  }
   assert(delta.constants.length === 0, 'Enterprise delta must not add constants')
   assert(delta.types.length === EXPECTED_DELTA.types, 'Enterprise type delta count changed')
   assert(delta.typeExtensions.length === EXPECTED_DELTA.typeExtensions, 'Enterprise type extension count changed')
