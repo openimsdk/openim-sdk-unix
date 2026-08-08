@@ -184,7 +184,7 @@ function renderMethod(method: HarmonyTypedMethod): string {
     `  private static ${methodName(method.name)}(requestJSON: string, operationID: string): Promise<string> {`,
     request.trimEnd(),
     response,
-    '    return OpenIMHarmonyDriver.trackStringPromise(nativePromise)',
+    `    return OpenIMHarmonyDriver.trackStringPromise(nativePromise, '${method.name}', operationID)`,
     '  }',
   ].filter((line) => line !== '').join('\n')
 }
