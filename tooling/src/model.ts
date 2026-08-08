@@ -29,6 +29,19 @@ export interface ContractConstant {
   signatureHash: string
 }
 
+export type CallableLowering =
+  | {
+    kind: 'event-control'
+    action: 'remove-subscription' | 'remove-all'
+  }
+  | {
+    kind: 'platform-driver'
+    transport: 'async' | 'sync'
+    operationID: 'parameter' | 'empty'
+    request: 'init-config' | 'login-credentials' | 'empty-object'
+    bindEvents?: boolean
+  }
+
 export interface ContractCallable {
   id: number
   name: string
@@ -38,7 +51,8 @@ export interface ContractCallable {
   errorPolicy: string
   rawString: boolean
   role: 'operation' | 'event-subscription' | 'event-control'
-  declaration: SourceByPlatform
+  declaration?: Partial<SourceByPlatform>
+  lowering?: CallableLowering
   binding: Record<Platform, NativeBinding | undefined>
   signatureHash: string
 }
@@ -118,6 +132,7 @@ export interface EnterpriseDeltaDocument {
     enterpriseHash?: string
     reason: string
     declaration?: SourceByPlatform
+    lowering?: CallableLowering
     binding?: Record<Platform, NativeBinding | undefined>
   }>
   approvedBaseTypeOverrides?: Array<{

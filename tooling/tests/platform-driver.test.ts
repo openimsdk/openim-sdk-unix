@@ -10,6 +10,7 @@ import {
   renderNativeCoreAdapter,
   renderPlatformDriverUTS,
 } from '../src/platform-driver.js'
+import { generateIndex } from '../src/generate.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
@@ -59,14 +60,34 @@ test('native CoreAdapters dispatch the first slice by canonical callable ID', ()
   }
 })
 
-test('migrated Public declarations call only the PlatformDriver seam', () => {
-  for (const name of PLATFORM_DRIVER_SLICE_NAMES) {
+test('first compiler slice stores lowering data instead of platform implementation bodies', () => {
+  for (const name of [...PLATFORM_DRIVER_SLICE_NAMES, 'off', 'offAll']) {
     const callable = contract.callables.find((candidate) => candidate.name === name)
     assert.notEqual(callable, undefined)
-    for (const platform of ['android', 'ios'] as const) {
-      const declaration = callable!.declaration[platform]
-      assert.match(declaration, name === 'getSdkVersion' ? /driverCallSync\(2056,/ : /driverCallAsync\(/)
-      assert.doesNotMatch(declaration, /NativeOpenIMSDK/)
+    assert.equal('declaration' in callable!, false)
+    assert.notEqual(callable!.lowering, undefined)
+  }
+
+  const serialized = JSON.stringify(contract.callables.filter((callable) => (
+    PLATFORM_DRIVER_SLICE_NAMES.includes(callable.name as typeof PLATFORM_DRIVER_SLICE_NAMES[number])
+    || callable.name === 'off'
+    || callable.name === 'offAll'
+  )))
+  assert.doesNotMatch(serialized, /driverCall(?:Async|Sync)|off(?:All)?SDKEvent/)
+})
+
+test('first compiler slice is rendered from lowering data for both Public platforms', () => {
+  for (const platform of ['android', 'ios'] as const) {
+    const source = generateIndex(root, contract, platform)
+    assert.match(source, /export function off\(subscription : OpenIMSDKEventSubscription\)/)
+    assert.match(source, /export function offAll\(eventName : OpenIMSDKEventName\)/)
+    assert.match(source, /driverCallAsync\(2051, normalizeOperationID\(operationID\), normalizeInitConfig\(config\)/)
+    assert.match(source, /driverCallAsync\(2052, normalizeOperationID\(operationID\), requestJSON/)
+    assert.match(source, /driverCallSync\(2056, '', '\{\}'\)/)
+    for (const name of PLATFORM_DRIVER_SLICE_NAMES) {
+      const declaration = source.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+      assert.notEqual(declaration, undefined)
+      assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
     }
   }
 })

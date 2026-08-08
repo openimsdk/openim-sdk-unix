@@ -2190,9 +2190,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-control",
-      "declaration": {
-        "android": "export function off(subscription : OpenIMSDKEventSubscription) { offSDKEvent(subscription) }",
-        "ios": "export function off(subscription : OpenIMSDKEventSubscription) { offSDKEvent(subscription) }"
+      "lowering": {
+        "kind": "event-control",
+        "action": "remove-subscription"
       },
       "binding": {
         "android": {
@@ -2204,7 +2204,7 @@
           "symbol": "off"
         }
       },
-      "signatureHash": "e9c2b2d6e9f55f41fb714fbfbfbfb86545481481d0f1371e7a847675c1905427"
+      "signatureHash": "2d4a28cdaf8d07e68af610b371879c3a11d9586268d2c76f95dc07fbd111e039"
     },
     {
       "id": 2002,
@@ -2215,9 +2215,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-control",
-      "declaration": {
-        "android": "export function offAll(eventName : OpenIMSDKEventName) { offAllSDKEvents(eventName) }",
-        "ios": "export function offAll(eventName : OpenIMSDKEventName) { offAllSDKEvents(eventName) }"
+      "lowering": {
+        "kind": "event-control",
+        "action": "remove-all"
       },
       "binding": {
         "android": {
@@ -2229,7 +2229,7 @@
           "symbol": "offAll"
         }
       },
-      "signatureHash": "e2e68112d218b7f1a33226c66defc2b8abe29826978fdf645ad0f833d2dceb0b"
+      "signatureHash": "c41fddf03445e10ab6ced383671d96d3fe1fe81427d760a381a8a3c7371c7acc"
     },
     {
       "id": 2003,
@@ -3440,9 +3440,12 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); driverCallAsync(2051, normalizeOperationID(operationID), normalizeInitConfig(config), (data : string) => { resolve(data == 'true') }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); driverCallAsync(2051, normalizeOperationID(operationID), normalizeInitConfig(config), (data : string) => { resolve(data == 'true') }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "init-config",
+        "bindEvents": true
       },
       "binding": {
         "android": {
@@ -3454,7 +3457,7 @@
           "symbol": "initSDK"
         }
       },
-      "signatureHash": "08d3e75b2159b057c526443d9d078b0d4dd9b162142a18b8d1dddf115bf3c653"
+      "signatureHash": "49efc0199b43f8dc32c78b4c971158d8172606791461ee7603dbbc626d3330f9"
     },
     {
       "id": 2052,
@@ -3465,9 +3468,11 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { const requestJSON = '{\"userID\":' + stringifyJSON(userID) + ',\"token\":' + stringifyJSON(token) + '}'; driverCallAsync(2052, normalizeOperationID(operationID), requestJSON, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { const requestJSON = '{\"userID\":' + stringifyJSON(userID) + ',\"token\":' + stringifyJSON(token) + '}'; driverCallAsync(2052, normalizeOperationID(operationID), requestJSON, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "login-credentials"
       },
       "binding": {
         "android": {
@@ -3479,7 +3484,7 @@
           "symbol": "login"
         }
       },
-      "signatureHash": "4ac4992f10e5c881dc0d5e37e6595f223848745faa302ce47194326735f8fd1a"
+      "signatureHash": "2decc814f34a0b0eb0ba1009f605b9b13e5f546cde1e5d77efad574e31ef9418"
     },
     {
       "id": 2053,
@@ -3490,9 +3495,11 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const logout = function (operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2053, normalizeOperationID(operationID), '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const logout = function (operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2053, normalizeOperationID(operationID), '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object"
       },
       "binding": {
         "android": {
@@ -3504,7 +3511,7 @@
           "symbol": "logout"
         }
       },
-      "signatureHash": "b96c9a2da683ef55e93e46ea84ce69718836d5c9aece8468f7966797602eff22"
+      "signatureHash": "224b14cc1b124e0761834974205710c06add3bcf08e2ccb04fe572e54c753875"
     },
     {
       "id": 2054,
@@ -3515,9 +3522,11 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getLoginStatus = function (operationID ?: string | null) : Promise<OpenIMLoginStatus> { return new Promise<OpenIMLoginStatus>((resolve, reject) => { driverCallAsync(2054, normalizeOperationID(operationID), '{}', (data : string) => { resolve(parseNativeLoginStatus(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const getLoginStatus = function (operationID ?: string | null) : Promise<OpenIMLoginStatus> { return new Promise<OpenIMLoginStatus>((resolve, reject) => { driverCallAsync(2054, normalizeOperationID(operationID), '{}', (data : string) => { resolve(parseNativeLoginStatus(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object"
       },
       "binding": {
         "android": {
@@ -3529,7 +3538,7 @@
           "symbol": "getLoginStatus"
         }
       },
-      "signatureHash": "82f0fb3af171c5fb4ed13f0d001913fcb997af3ce310d1a715e0d1964dc956ce"
+      "signatureHash": "6d9b5490cfb386121899549abe54d66ec398efe290b0fe1058b5acfa078251ee"
     },
     {
       "id": 2055,
@@ -3540,9 +3549,11 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const getLoginUserID = function () : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2055, '', '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const getLoginUserID = function () : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2055, '', '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "empty",
+        "request": "empty-object"
       },
       "binding": {
         "android": {
@@ -3554,7 +3565,7 @@
           "symbol": "getLoginUserID"
         }
       },
-      "signatureHash": "23e37bd5ad60b392f5b9819fbc76be08094b10cf1595cef432332d1e5ada793a"
+      "signatureHash": "5b66545e7ca2ac1a840c7d74c27a6ad83c905c8c37e6ce526ce9ca83cb09b0e5"
     },
     {
       "id": 2056,
@@ -3565,9 +3576,11 @@
       "errorPolicy": "none",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const getSdkVersion = function () : string { return driverCallSync(2056, '', '{}') }",
-        "ios": "export const getSdkVersion = function () : string { return driverCallSync(2056, '', '{}') }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "sync",
+        "operationID": "empty",
+        "request": "empty-object"
       },
       "binding": {
         "android": {
@@ -3579,7 +3592,7 @@
           "symbol": "getSdkVersion"
         }
       },
-      "signatureHash": "9208f486239eef8968647db08e2c852750f4fee8d6ff53082201560602e89f8b"
+      "signatureHash": "4f86def6fec188202b11a11ae7e700018f6ab82e834bd349c774ca921fa33c5f"
     },
     {
       "id": 2057,
@@ -3615,9 +3628,11 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const unInitSDK = function (operationID ?: string | null) { driverCallAsync(2058, normalizeOperationID(operationID), '{}', (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }",
-        "ios": "export const unInitSDK = function (operationID ?: string | null) { driverCallAsync(2058, normalizeOperationID(operationID), '{}', (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object"
       },
       "binding": {
         "android": {
@@ -3629,7 +3644,7 @@
           "symbol": "unInitSDK"
         }
       },
-      "signatureHash": "47c3d9eb5bfd1d066e9c716aec119e556116ec7bec52d051812a4a8b6c6ffd82"
+      "signatureHash": "830fa50e6b406404621617279c3867a04e9a3d49ccd3379a98959f338e02921f"
     },
     {
       "id": 2059,

@@ -102,7 +102,7 @@ test('Enterprise composition applies explicit overrides and additive type extens
   assert.equal(result.types.find((value) => value.name === 'GetLoginUserID')?.declaration, enterpriseType)
   assert.equal(result.types.find((value) => value.name === 'Params')?.declaration, extendedParams)
   assert.equal(result.callables[0]?.signature, 'getLoginUserID(operationID?:string|null):Promise<string>')
-  assert.equal(result.callables[0]?.declaration.harmony, harmony.callables[0]?.declaration)
+  assert.equal(result.callables[0]?.declaration?.harmony, harmony.callables[0]?.declaration)
 })
 
 test('Harmony monomorphization is a pure reproducible projection', () => {

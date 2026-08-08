@@ -57,6 +57,11 @@ export function semanticHashForType(value: ContractType): string {
 }
 
 export function semanticHashForCallable(value: ContractCallable): string {
+  const declaration = value.declaration == null ? null : {
+    android: value.declaration.android == null ? null : normalizeContractText(value.declaration.android),
+    ios: value.declaration.ios == null ? null : normalizeContractText(value.declaration.ios),
+    harmony: value.declaration.harmony == null ? null : normalizeContractText(value.declaration.harmony),
+  }
   return sha256(JSON.stringify({
     name: value.name,
     signature: normalizeContractText(value.signature),
@@ -65,11 +70,8 @@ export function semanticHashForCallable(value: ContractCallable): string {
     errorPolicy: value.errorPolicy,
     rawString: value.rawString,
     role: value.role,
-    declaration: {
-      android: normalizeContractText(value.declaration.android),
-      ios: normalizeContractText(value.declaration.ios),
-      harmony: value.declaration.harmony == null ? null : normalizeContractText(value.declaration.harmony),
-    },
+    declaration,
+    ...(value.lowering == null ? {} : { lowering: value.lowering }),
     binding: stableBinding(value.binding),
   }))
 }

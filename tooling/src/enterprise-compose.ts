@@ -127,19 +127,19 @@ function composeCallable(
   const source = override == null ? callable : {
     ...callable,
     signature: override.enterpriseSignature,
-    declaration: override.declaration ?? callable.declaration,
+    ...(override.declaration == null ? {} : { declaration: override.declaration }),
+    ...(override.lowering == null ? {} : { lowering: override.lowering }),
     binding: override.binding ?? callable.binding,
     signatureHash: '',
   }
   if (override != null) {
     assert(callable.signature === override.baseSignature, `Base callable override origin drifted: ${callable.name}`)
-    assert(override.declaration != null, `Enterprise callable override lacks generated declarations: ${callable.name}`)
     assert(override.baseHash === sha256(normalizeContractText(override.baseSignature)), `Base callable override hash is stale: ${callable.name}`)
     assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseSignature)), `Enterprise callable override hash is stale: ${callable.name}`)
   }
   return {
     ...source,
-    declaration: { ...source.declaration, harmony: harmonyDeclaration },
+    declaration: { ...(source.declaration ?? {}), harmony: harmonyDeclaration },
     binding: {
       ...source.binding,
       harmony: source.binding.harmony ?? ({ kind: 'dynamic-invoke', symbol: source.name } satisfies NativeBinding),

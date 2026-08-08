@@ -23,8 +23,90 @@ function readContract(root: string): ContractDocument {
   return JSON.parse(readFileSync(join(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
 }
 
+function splitSignatureParameters(value: string): string[] {
+  const result: string[] = []
+  let start = 0
+  let depth = 0
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index]
+    if (character === '<' || character === '(' || character === '[' || character === '{') depth += 1
+    else if (character === '>' || character === ')' || character === ']' || character === '}') depth -= 1
+    else if (character === ',' && depth === 0) {
+      result.push(value.slice(start, index))
+      start = index + 1
+    }
+  }
+  if (value.slice(start).trim() !== '') result.push(value.slice(start))
+  return result
+}
+
+function formatType(value: string): string {
+  return value.trim().replace(/\s*\|\s*/g, ' | ')
+}
+
+function callableSignatureParts(callable: ContractCallable): { parameters: string; returnType: string } {
+  const prefix = `${callable.name}(`
+  const separator = callable.signature.lastIndexOf('):')
+  if (!callable.signature.startsWith(prefix) || separator < prefix.length) {
+    throw new Error(`Invalid callable signature: ${callable.signature}`)
+  }
+  const parameters = splitSignatureParameters(callable.signature.slice(prefix.length, separator)).map((parameter) => {
+    const match = /^([A-Za-z_$][\w$]*)(\?)?:(.+)$/.exec(parameter.trim())
+    if (match == null) throw new Error(`Invalid callable parameter in ${callable.signature}: ${parameter}`)
+    return `${match[1]}${match[2] == null ? ' :' : ' ?:'} ${formatType(match[3] ?? '')}`
+  }).join(', ')
+  return { parameters, returnType: formatType(callable.signature.slice(separator + 2)) }
+}
+
+function promiseValueType(returnType: string): string {
+  const match = /^Promise<(.+)>$/.exec(returnType)
+  if (match == null) throw new Error(`PlatformDriver async lowering requires Promise return type: ${returnType}`)
+  return match[1] ?? ''
+}
+
+function renderLoweredCallable(callable: ContractCallable): string {
+  const lowering = callable.lowering
+  if (lowering == null) throw new Error(`Missing callable lowering: ${callable.name}`)
+  const { parameters, returnType } = callableSignatureParts(callable)
+  if (lowering.kind === 'event-control') {
+    const expectedName = lowering.action === 'remove-subscription' ? 'off' : 'offAll'
+    if (callable.name !== expectedName) throw new Error(`Invalid event-control lowering for ${callable.name}`)
+    const call = lowering.action === 'remove-subscription'
+      ? 'offSDKEvent(subscription)'
+      : 'offAllSDKEvents(eventName)'
+    return `export function ${callable.name}(${parameters}) { ${call} }`
+  }
+
+  const operationID = lowering.operationID === 'parameter' ? 'normalizeOperationID(operationID)' : "''"
+  let requestExpression: string
+  let requestPrelude = ''
+  if (lowering.request === 'init-config') requestExpression = 'normalizeInitConfig(config)'
+  else if (lowering.request === 'login-credentials') {
+    requestExpression = 'requestJSON'
+    requestPrelude = `const requestJSON = '{"userID":' + stringifyJSON(userID) + ',"token":' + stringifyJSON(token) + '}'; `
+  } else requestExpression = "'{}'"
+
+  if (lowering.transport === 'sync') {
+    if (callable.completion !== 'sync') throw new Error(`Sync lowering has non-sync completion: ${callable.name}`)
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return driverCallSync(${callable.id}, ${operationID}, ${requestExpression}) }`
+  }
+  if (callable.completion === 'sync') throw new Error(`Async lowering has sync completion: ${callable.name}`)
+  const bindEvents = lowering.bindEvents === true ? 'ensureNativeEventsBound(); ' : ''
+  if (callable.completion === 'void') {
+    return `export const ${callable.name} = function (${parameters}) { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }`
+  }
+  const valueType = promiseValueType(returnType)
+  let resolveExpression: string
+  if (callable.responseCodec === 'raw-string') resolveExpression = 'resolve'
+  else if (callable.responseCodec === 'boolean') resolveExpression = `(data : string) => { resolve(data == 'true') }`
+  else if (callable.responseCodec === 'typed:OpenIMLoginStatus') resolveExpression = '(data : string) => { resolve(parseNativeLoginStatus(data)) }'
+  else throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
+  return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
+}
+
 function platformDeclaration(callable: ContractCallable, platform: Platform): string {
-  const declaration = callable.declaration[platform]
+  if (platform !== 'harmony' && callable.lowering != null) return renderLoweredCallable(callable)
+  const declaration = callable.declaration?.[platform]
   if (!declaration) throw new Error(`Missing ${platform} declaration for ${callable.name}`)
   if (callable.role !== 'event-subscription') return declaration
   if (declaration.includes('@UTSJS.keepAlive')) return declaration

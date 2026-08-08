@@ -1579,13 +1579,13 @@
       "id": 2001,
       "name": "off",
       "signature": "off(subscription:OpenIMSDKEventSubscription):void",
-      "signatureHash": "e9c2b2d6e9f55f41fb714fbfbfbfb86545481481d0f1371e7a847675c1905427"
+      "signatureHash": "2d4a28cdaf8d07e68af610b371879c3a11d9586268d2c76f95dc07fbd111e039"
     },
     {
       "id": 2002,
       "name": "offAll",
       "signature": "offAll(eventName:OpenIMSDKEventName):void",
-      "signatureHash": "e2e68112d218b7f1a33226c66defc2b8abe29826978fdf645ad0f833d2dceb0b"
+      "signatureHash": "c41fddf03445e10ab6ced383671d96d3fe1fe81427d760a381a8a3c7371c7acc"
     },
     {
       "id": 2003,
@@ -1879,37 +1879,37 @@
       "id": 2051,
       "name": "initSDK",
       "signature": "initSDK(config:OpenIMInitConfig,operationID?:string|null):Promise<boolean>",
-      "signatureHash": "08d3e75b2159b057c526443d9d078b0d4dd9b162142a18b8d1dddf115bf3c653"
+      "signatureHash": "49efc0199b43f8dc32c78b4c971158d8172606791461ee7603dbbc626d3330f9"
     },
     {
       "id": 2052,
       "name": "login",
       "signature": "login(userID:string,token:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "4ac4992f10e5c881dc0d5e37e6595f223848745faa302ce47194326735f8fd1a"
+      "signatureHash": "2decc814f34a0b0eb0ba1009f605b9b13e5f546cde1e5d77efad574e31ef9418"
     },
     {
       "id": 2053,
       "name": "logout",
       "signature": "logout(operationID?:string|null):Promise<string>",
-      "signatureHash": "b96c9a2da683ef55e93e46ea84ce69718836d5c9aece8468f7966797602eff22"
+      "signatureHash": "224b14cc1b124e0761834974205710c06add3bcf08e2ccb04fe572e54c753875"
     },
     {
       "id": 2054,
       "name": "getLoginStatus",
       "signature": "getLoginStatus(operationID?:string|null):Promise<OpenIMLoginStatus>",
-      "signatureHash": "82f0fb3af171c5fb4ed13f0d001913fcb997af3ce310d1a715e0d1964dc956ce"
+      "signatureHash": "6d9b5490cfb386121899549abe54d66ec398efe290b0fe1058b5acfa078251ee"
     },
     {
       "id": 2055,
       "name": "getLoginUserID",
       "signature": "getLoginUserID():Promise<string>",
-      "signatureHash": "23e37bd5ad60b392f5b9819fbc76be08094b10cf1595cef432332d1e5ada793a"
+      "signatureHash": "5b66545e7ca2ac1a840c7d74c27a6ad83c905c8c37e6ce526ce9ca83cb09b0e5"
     },
     {
       "id": 2056,
       "name": "getSdkVersion",
       "signature": "getSdkVersion():string",
-      "signatureHash": "9208f486239eef8968647db08e2c852750f4fee8d6ff53082201560602e89f8b"
+      "signatureHash": "4f86def6fec188202b11a11ae7e700018f6ab82e834bd349c774ca921fa33c5f"
     },
     {
       "id": 2057,
@@ -1921,7 +1921,7 @@
       "id": 2058,
       "name": "unInitSDK",
       "signature": "unInitSDK(operationID?:string|null):void",
-      "signatureHash": "47c3d9eb5bfd1d066e9c716aec119e556116ec7bec52d051812a4a8b6c6ffd82"
+      "signatureHash": "830fa50e6b406404621617279c3867a04e9a3d49ccd3379a98959f338e02921f"
     },
     {
       "id": 2059,
@@ -2880,5 +2880,5 @@
       "signatureHash": "d1a6f9042697c344fed15b109150f2c02cb5cd9556b13f72c561bc0648bb5d32"
     }
   ],
-  "contractHash": "b5f1bb15c9618911cc5ce0c63d8bee2e99e4930f18f1d74996967d865de6dd08"
+  "contractHash": "f5d832315c83e33106acaff7927c21bb408b7ce1ea9aa7fadde72577b113693c"
 }
