@@ -112,7 +112,7 @@ Public surface 已冻结并由 `contracts/base/surface.snapshot.json` 校验：
 
 - Base IR、稳定 ID、surface hash、schema/数量/signature 校验已落地。
 - interface/constants/operations/events/Driver runtime 可重复生成。
-- 具体 event handler 数组、snapshot dispatch、幂等 unsubscribe、`offEvent` switch 和 `@UTSJS.keepAlive` 由生成器输出。
+- 具体 event handler 数组、snapshot dispatch、幂等 unsubscribe、`offAll` switch 和 `@UTSJS.keepAlive` 由生成器输出。
 - 生成 determinism 已进入 `npm run verify`。
 
 还没有完成的 P2 项：完整 consumer compile probe、每个 operation 的独立 codec metadata/codegen、全部 native binding stub、package inventory 和 public/private base artifact hash 流程。

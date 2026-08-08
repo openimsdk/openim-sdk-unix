@@ -162,7 +162,7 @@ import {
 import {
   ensureNativeEventsBound,
   offSDKEvent,
-  offSDKEventName,
+  offAllSDKEvents,
   onConnectingEvent,
   onConnectSuccessEvent,
   onConnectFailedEvent,
@@ -361,6 +361,5 @@ function resolveSendMessageData(data : string, apiName : string, resolve : (valu
 }
 
 // <openim-generated:event-callables>
-
 
 // <openim-generated:operations>

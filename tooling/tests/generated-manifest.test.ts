@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import test from 'node:test'
+import { fileURLToPath } from 'node:url'
+import { buildGeneratedOutputs } from '../src/generate.js'
+import {
+  GENERATED_MANIFEST_PATH,
+  buildGeneratedManifest,
+  verifyDeletionRegeneration,
+} from '../src/generated-manifest.js'
+import { sha256 } from '../src/source.js'
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+
+test('generated manifest covers every generated output with its content hash', () => {
+  const manifest = buildGeneratedManifest(root)
+  const outputs = buildGeneratedOutputs(root)
+
+  assert.deepEqual(
+    manifest.outputs.map(({ path, sha256: hash }) => ({ path, hash })),
+    outputs.map((output) => ({
+      path: output.path.slice(root.length + 1),
+      hash: sha256(output.content),
+    })),
+  )
+})
+
+test('committed generated manifest is current and deterministic', () => {
+  const expected = `${JSON.stringify(buildGeneratedManifest(root), null, 2)}\n`
+  assert.equal(readFileSync(resolve(root, GENERATED_MANIFEST_PATH), 'utf8'), expected)
+})
+
+test('deleting every generated output and regenerating twice reproduces repository bytes', () => {
+  const result = verifyDeletionRegeneration(root)
+  assert.equal(result.outputCount, buildGeneratedOutputs(root).length)
+  assert.equal(result.repositoryIdentical, true)
+  assert.equal(result.deterministic, true)
+})

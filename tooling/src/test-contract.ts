@@ -72,7 +72,7 @@ const p0CallableNames = new Set([
   'createGroup', 'getSpecifiedGroupsInfo', 'getGroupMemberList', 'sendGroupMessageReceipt',
   'uploadFile', 'cancelUpload', 'signalingInvite', 'signalingAccept', 'signalingReject',
   'signalingCancel', 'signalingInviteInGroup', 'signalingSendCustomSignaling',
-  'off', 'offEvent', 'offAll',
+  'off', 'offAll',
 ])
 
 const p0EventNames = new Set([

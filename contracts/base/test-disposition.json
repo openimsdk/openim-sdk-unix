@@ -15,8 +15,8 @@
       "responseCodec": "void"
     },
     {
-      "caseId": "api/offEvent",
-      "apiName": "offEvent",
+      "caseId": "api/offAll",
+      "apiName": "offAll",
       "priority": "P0",
       "disposition": "required",
       "capability": "core",

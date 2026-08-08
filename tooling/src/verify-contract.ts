@@ -2,6 +2,13 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { ContractDocument } from './model.js'
 import { buildGeneratedOutputs, buildSurfaceSnapshot } from './generate.js'
+import {
+  assertContractSemanticHashes,
+  assertStableIDRegistryMatchesContract,
+  readPublicStableIDRegistry,
+} from './contract-integrity.js'
+import { verifyEventControlConsumerSurface, verifyNoLegacyEventControl } from './public-surface-policy.js'
+import { assertGeneratedManifestCurrent, verifyDeletionRegeneration } from './generated-manifest.js'
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -20,6 +27,7 @@ export function readAndValidateContract(root: string): ContractDocument {
   assert(contract.types.length === contract.expected.types, 'Type count changed')
   assert(contract.callables.length === contract.expected.callables, 'Callable count changed')
   assert(contract.events.length === contract.expected.events, 'Event count changed')
+  assertContractSemanticHashes(contract)
   unique(contract.constants.map((value) => value.id), 'constant IDs')
   unique(contract.constants.map((value) => value.name), 'constant names')
   unique(contract.types.map((value) => value.id), 'type IDs')
@@ -31,6 +39,7 @@ export function readAndValidateContract(root: string): ContractDocument {
   for (const event of contract.events) {
     assert(contract.callables.some((callable) => callable.name === event.callable), `Orphan event ${event.name}`)
   }
+  assertStableIDRegistryMatchesContract(readPublicStableIDRegistry(root), contract)
   return contract
 }
 
@@ -43,6 +52,10 @@ export function verifyGenerated(root: string): void {
     const actual = readFileSync(output.path, 'utf8')
     assert(actual === output.content, `Generated output is stale: ${output.path}`)
   }
+  verifyNoLegacyEventControl(root)
+  verifyEventControlConsumerSurface(root)
+  assertGeneratedManifestCurrent(root)
+  verifyDeletionRegeneration(root)
 }
 
 export function verifySurfaceSnapshot(root: string): void {

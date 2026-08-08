@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "edition": "public",
+  "generator": "tooling/src/generate.ts#buildGeneratedOutputs",
+  "outputs": [
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/interface.uts",
+      "sha256": "08cdd423df179aeb5dbc0d8f9b0940422d5744f0e7731b222b9f261785714194",
+      "bytes": 25188
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/index.uts",
+      "sha256": "a1c08e01906c17f397f670ee493cca1010832f65447e34880e077abc90b71032",
+      "bytes": 75011
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts",
+      "sha256": "2c1073c3f6c927abdbea15cbaf85f6023924de77516a9ea22e1838f6d0186d2f",
+      "bytes": 76481
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/events.uts",
+      "sha256": "6103465d8484b5110f1159485b0c6e7891598c3563d4ab5242156b640dc512f2",
+      "bytes": 130035
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts",
+      "sha256": "3151f1d57159742c02cb282716d432a959ac299b2b2c0572f9ef29c978f73f8d",
+      "bytes": 129864
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMDriverRuntime.kt",
+      "sha256": "52ee6172bcda4c7598c9391c82667033c11a27219dd239fdd0a71c27d79c07b7",
+      "bytes": 4930
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMDriverRuntime.swift",
+      "sha256": "b5857788330a86c4c6348ea7e865a3257e57108c62b845ee555cce45219f1ec4",
+      "bytes": 5407
+    },
+    {
+      "path": "contracts/base/surface.snapshot.json",
+      "sha256": "9917f8af7df7fcbc5f5e8b12e48a63688040ecee426bfa54b290b0a1d7e481c5",
+      "bytes": 106843
+    },
+    {
+      "path": "contracts/base/response-schemas.json",
+      "sha256": "b6c572e013023beb75f75fffba40ab24658d8c1a273a4f39d0d7ca8dd56fa2ec",
+      "bytes": 183235
+    },
+    {
+      "path": "contracts/base/test-disposition.json",
+      "sha256": "514af05640acf3e2f7918312a3cb4a31798d0f4c3e11d90b80e4a96ca07004f9",
+      "bytes": 46199
+    }
+  ]
+}

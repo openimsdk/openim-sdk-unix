@@ -87,7 +87,7 @@ import {
   onConnectSuccess,
   onUploadFileProgress,
   off,
-  offEvent,
+  offAll,
   createTextMessage,
   createImageMessageFromFullPath,
   createSoundMessageFromFullPath,
@@ -181,7 +181,7 @@ onUploadLogsProgress((progress) => {})
 如需清理某一类事件的所有订阅，可调用：
 
 ```uts
-offEvent('onRecvNewMessage')
+offAll('onRecvNewMessage')
 ```
 
 ## 发送文本消息

@@ -6408,7 +6408,7 @@
         "kind": "void"
       }
     },
-    "offEvent": {
+    "offAll": {
       "codec": "void",
       "schema": {
         "kind": "void"

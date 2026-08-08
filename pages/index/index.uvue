@@ -276,7 +276,7 @@
 		OpenIMFileElem,
 		OpenIMCardElem,
 		off,
-		offEvent,
+		offAll,
 		onConnecting,
 		onConnectSuccess,
 		onConnectFailed,
@@ -1016,7 +1016,7 @@
 		'onGroupMemberInfoChanged', 'onJoinedGroupAdded', 'onJoinedGroupDeleted', 'onSelfInfoUpdated', 'onUserStatusChanged'
 	]
 	const automationPublicAPINames : Array<string> = [
-		'off', 'offEvent',
+		'off', 'offAll',
 		'onConnecting', 'onConnectSuccess', 'onConnectFailed', 'onKickedOffline', 'onUserTokenExpired', 'onUserTokenInvalid',
 		'onRecvNewMessage', 'onRecvOfflineNewMessage', 'onRecvOnlineOnlyMessage', 'onMsgDeleted', 'onNewRecvMessageRevoked',
 		'onRecvC2CReadReceipt', 'onRecvNewMessages', 'onRecvOfflineNewMessages', 'onConversationChanged',
@@ -2677,11 +2677,11 @@
 			recordAutomationStep('cleanup', 'off', false, stringifyAPIValue(error))
 		}
 		try {
-			offEvent('onRecvCustomBusinessMessage')
-			recordAutomationStep('cleanup', 'offEvent', true, 'offEvent called for onRecvCustomBusinessMessage')
+			offAll('onRecvCustomBusinessMessage')
+			recordAutomationStep('cleanup', 'offAll', true, 'offAll called for onRecvCustomBusinessMessage')
 			registerSDKEvents()
 		} catch (error) {
-			recordAutomationStep('cleanup', 'offEvent', false, stringifyAPIValue(error))
+			recordAutomationStep('cleanup', 'offAll', false, stringifyAPIValue(error))
 		}
 		recordAutomationSkip('cleanup', 'unInitSDK', 'scheduled after the final result files are written')
 	}

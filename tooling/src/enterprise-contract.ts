@@ -324,7 +324,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       responseCodec: isEvent ? 'event-handler' : codecFor(android.returnType),
       errorPolicy: android.returnType.startsWith('Promise<') ? 'frozen-native-rejection' : 'none',
       rawString: android.returnType === 'string' || android.returnType === 'Promise<string>',
-      role: isEvent ? 'event-subscription' : android.name === 'offEvent' || android.name === 'offAll' ? 'event-control' : 'operation',
+      role: isEvent ? 'event-subscription' : android.name === 'offAll' ? 'event-control' : 'operation',
       declaration: { android: android.declaration, ios: ios.declaration, harmony: harmony.declaration },
       binding: {
         android: bindingFor(android.declaration, eventNameSet, android.name),

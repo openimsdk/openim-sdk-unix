@@ -2,7 +2,6 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { compilePlatform, type CompilePlatform, verifyToolchain } from './compile.js'
 import { generate } from './generate.js'
-import { importPublicContract } from './import-contract.js'
 import { importNativeABI } from './native-abi.js'
 import { verifyUTSPolicy } from './policy.js'
 import { verifyGenerated, verifySurfaceSnapshot, readAndValidateContract } from './verify-contract.js'
@@ -11,6 +10,16 @@ import { bootstrapEnterpriseDrivers, importEnterpriseDelta, verifyEnterpriseDelt
 import { monomorphizeHarmonyFacade } from './harmony-monomorphize.js'
 import { buildPrivatePlatform } from './local-build.js'
 import { verifyPrivateNativeArtifacts, type MobileBuildPlatform } from './private-native.js'
+import { buildStableIDRegistry, writePublicStableIDRegistry } from './contract-integrity.js'
+import { writeGeneratedManifest } from './generated-manifest.js'
+import {
+  applyPublicContractImport,
+  migrationPreviewSummary,
+  previewPublicContractImport,
+  readMigrationApproval,
+} from './public-contract-import.js'
+import { withLocalNativeProfile } from './native-profile.js'
+import { verifyEventControlConsumerCompile } from './consumer-compile.js'
 
 const toolingDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
 const root = resolve(toolingDirectory, '..')
@@ -40,6 +49,13 @@ function requestedMobilePlatforms(): MobileBuildPlatform[] {
   throw new Error(`Unknown private mobile build platform: ${value ?? 'missing'}`)
 }
 
+function requestedNativeProfile(): 'release' | 'local' {
+  const index = process.argv.indexOf('--native-profile')
+  const value = index >= 0 ? process.argv[index + 1] : 'release'
+  if (value === 'release' || value === 'local') return value
+  throw new Error(`Unknown native dependency profile: ${value ?? 'missing'}`)
+}
+
 function requiredArgument(name: string): string {
   const index = process.argv.indexOf(name)
   const value = index >= 0 ? process.argv[index + 1] : undefined
@@ -48,20 +64,40 @@ function requiredArgument(name: string): string {
 }
 
 switch (command) {
+  case 'contract:ids:init': {
+    const contract = JSON.parse(await import('node:fs').then(({ readFileSync }) => readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8'))) as ReturnType<typeof readAndValidateContract>
+    writePublicStableIDRegistry(root, buildStableIDRegistry(contract))
+    console.log('Initialized the public stable ID registry.')
+    break
+  }
   case 'contract:import': {
-    importPublicContract(root)
-    generate(root)
-    console.log('Imported and generated the frozen public contract.')
+    const preview = previewPublicContractImport(root)
+    console.log(JSON.stringify(migrationPreviewSummary(preview), null, 2))
+    const approvalIndex = process.argv.indexOf('--approve-migration')
+    if (approvalIndex >= 0) {
+      const approvalPath = process.argv[approvalIndex + 1]
+      if (approvalPath == null || approvalPath === '') throw new Error('Missing approval file after --approve-migration')
+      applyPublicContractImport(root, preview, readMigrationApproval(resolve(approvalPath)))
+      console.log('Applied the approved public contract migration.')
+    } else {
+      console.log('Preview only; no files were written. Use --approve-migration <approval.json> to apply this exact fingerprint.')
+    }
     break
   }
   case 'generate': {
     const outputs = generate(root)
+    writeGeneratedManifest(root)
     console.log(`Generated ${outputs.length} public artifact files.`)
     break
   }
   case 'verify:surface': {
     verifySurfaceSnapshot(root)
     console.log('Public surface snapshot verified.')
+    break
+  }
+  case 'verify:generated': {
+    verifyGenerated(root)
+    console.log('Public generated sources, manifest, deletion, and consumer probes verified.')
     break
   }
   case 'verify:policy': {
@@ -126,7 +162,23 @@ switch (command) {
     break
   }
   case 'compile': {
-    for (const platform of requestedPlatforms()) await compilePlatform(root, platform)
+    const profile = requestedNativeProfile()
+    for (const platform of requestedPlatforms()) {
+      if (profile === 'local') {
+        await withLocalNativeProfile(root, platform, () => compilePlatform(root, platform, root, { verifyPublicNative: false }))
+      } else {
+        await compilePlatform(root, platform)
+      }
+    }
+    break
+  }
+  case 'verify:consumer': {
+    const platforms = requestedPlatforms()
+    for (const platform of platforms) {
+      if (platform === 'harmony') throw new Error('Public consumer compile supports Android and iOS only')
+      await verifyEventControlConsumerCompile(root, platform)
+      console.log(`${platform} positive consumer compiled and removed export failed compilation as expected.`)
+    }
     break
   }
   case 'verify': {
