@@ -49,7 +49,7 @@ function candidatePaths(root: string): string[] {
 export function previewPublicContractImport(root: string): ContractMigrationPreview {
   const temporaryRoot = mkdtempSync(join(tmpdir(), 'openim-contract-import-'))
   try {
-    for (const path of ['contracts/base', 'sdk-src', 'uni_modules/unix-openim-sdk/utssdk']) {
+    for (const path of ['contracts/base', 'sdk-src', 'tooling/src', 'uni_modules/unix-openim-sdk/utssdk']) {
       cpSync(join(root, path), join(temporaryRoot, path), { recursive: true })
     }
 

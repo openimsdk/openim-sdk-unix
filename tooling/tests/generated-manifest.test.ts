@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { buildGeneratedOutputs } from '../src/generate.js'
 import {
   GENERATED_MANIFEST_PATH,
+  PUBLIC_GENERATOR_AUTHORITY_INPUTS,
   buildGeneratedManifest,
   verifyPublicAuthorityRegeneration,
   verifyDeletionRegeneration,
@@ -17,6 +18,15 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 test('generated manifest covers every generated output with its content hash', () => {
   const manifest = buildGeneratedManifest(root)
   const outputs = buildGeneratedOutputs(root)
+
+  assert.equal(manifest.schemaVersion, 2)
+  assert.deepEqual(
+    manifest.inputs.map(({ path, sha256: hash, bytes }) => ({ path, hash, bytes })),
+    PUBLIC_GENERATOR_AUTHORITY_INPUTS.map((path) => {
+      const content = readFileSync(resolve(root, path))
+      return { path, hash: sha256(content), bytes: content.byteLength }
+    }),
+  )
 
   assert.deepEqual(
     manifest.outputs.map(({ path, sha256: hash }) => ({ path, hash })),

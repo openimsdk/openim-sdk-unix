@@ -21,19 +21,27 @@ export const PUBLIC_GENERATOR_AUTHORITY_INPUTS = [
   'sdk-src/uts/app-ios/events.prelude.uts',
   'sdk-src/native/android/OpenIMDriverRuntime.kt',
   'sdk-src/native/ios/OpenIMDriverRuntime.swift',
+  'tooling/src/contract-integrity.ts',
+  'tooling/src/generate.ts',
+  'tooling/src/import-contract.ts',
+  'tooling/src/model.ts',
+  'tooling/src/platform-driver.ts',
+  'tooling/src/source.ts',
+  'tooling/src/test-contract.ts',
 ] as const
 
-export interface GeneratedManifestOutput {
+export interface GeneratedManifestArtifact {
   path: string
   sha256: string
   bytes: number
 }
 
 export interface GeneratedManifest {
-  schemaVersion: 1
+  schemaVersion: 2
   edition: 'public'
   generator: 'tooling/src/generate.ts#buildGeneratedOutputs'
-  outputs: GeneratedManifestOutput[]
+  inputs: GeneratedManifestArtifact[]
+  outputs: GeneratedManifestArtifact[]
 }
 
 export interface DeletionRegenerationResult {
@@ -88,9 +96,13 @@ function assertSameBytes(expected: Map<string, Buffer>, actual: Map<string, Buff
 }
 
 export function buildGeneratedManifest(root: string): GeneratedManifest {
+  const inputs = PUBLIC_GENERATOR_AUTHORITY_INPUTS.map((path): GeneratedManifestArtifact => {
+    const bytes = readFileSync(projectPath(root, path))
+    return { path, sha256: sha256(bytes), bytes: bytes.byteLength }
+  })
   const outputs = buildGeneratedOutputs(root)
   const paths = new Set<string>()
-  const entries = outputs.map((output): GeneratedManifestOutput => {
+  const entries = outputs.map((output): GeneratedManifestArtifact => {
     const path = relativeProjectPath(root, output.path)
     assert(!paths.has(path), `Duplicate generated output: ${path}`)
     paths.add(path)
@@ -98,9 +110,10 @@ export function buildGeneratedManifest(root: string): GeneratedManifest {
     return { path, sha256: sha256(bytes), bytes: bytes.byteLength }
   })
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'public',
     generator: 'tooling/src/generate.ts#buildGeneratedOutputs',
+    inputs,
     outputs: entries,
   }
 }
@@ -115,17 +128,25 @@ export function writeGeneratedManifest(root: string): GeneratedManifest {
 
 export function readGeneratedManifest(root: string): GeneratedManifest {
   const manifest = JSON.parse(readFileSync(projectPath(root, GENERATED_MANIFEST_PATH), 'utf8')) as GeneratedManifest
-  assert(manifest.schemaVersion === 1, 'Unsupported generated manifest schema')
+  assert(manifest.schemaVersion === 2, 'Unsupported generated manifest schema')
   assert(manifest.edition === 'public', 'Generated manifest must describe the public edition')
   assert(manifest.generator === 'tooling/src/generate.ts#buildGeneratedOutputs', 'Unknown generated manifest producer')
+  assert(Array.isArray(manifest.inputs), 'Generated manifest inputs must be an array')
   assert(Array.isArray(manifest.outputs), 'Generated manifest outputs must be an array')
+  assert(
+    JSON.stringify(manifest.inputs.map((input) => input.path)) === JSON.stringify(PUBLIC_GENERATOR_AUTHORITY_INPUTS),
+    'Generated manifest authority input inventory changed',
+  )
   const paths = new Set<string>()
-  for (const output of manifest.outputs) {
-    projectPath(root, output.path)
-    assert(!paths.has(output.path), `Duplicate generated manifest path: ${output.path}`)
-    paths.add(output.path)
-    assert(/^[0-9a-f]{64}$/.test(output.sha256), `Invalid generated output hash: ${output.path}`)
-    assert(Number.isSafeInteger(output.bytes) && output.bytes >= 0, `Invalid generated output byte count: ${output.path}`)
+  for (const [kind, artifacts] of [['input', manifest.inputs], ['output', manifest.outputs]] as const) {
+    for (const artifact of artifacts) {
+      projectPath(root, artifact.path)
+      const key = `${kind}:${artifact.path}`
+      assert(!paths.has(key), `Duplicate generated manifest ${kind} path: ${artifact.path}`)
+      paths.add(key)
+      assert(/^[0-9a-f]{64}$/.test(artifact.sha256), `Invalid generated ${kind} hash: ${artifact.path}`)
+      assert(Number.isSafeInteger(artifact.bytes) && artifact.bytes >= 0, `Invalid generated ${kind} byte count: ${artifact.path}`)
+    }
   }
   return manifest
 }
@@ -134,6 +155,11 @@ export function assertGeneratedManifestCurrent(root: string): GeneratedManifest 
   const actual = readGeneratedManifest(root)
   const expected = buildGeneratedManifest(root)
   assert(JSON.stringify(actual) === JSON.stringify(expected), 'Generated manifest is stale or incomplete')
+  for (const input of actual.inputs) {
+    const bytes = readFileSync(projectPath(root, input.path))
+    assert(bytes.byteLength === input.bytes, `Generator authority input byte count is stale: ${input.path}`)
+    assert(sha256(bytes) === input.sha256, `Generator authority input hash is stale: ${input.path}`)
+  }
   for (const output of actual.outputs) {
     const bytes = readFileSync(projectPath(root, output.path))
     assert(bytes.byteLength === output.bytes, `Generated output byte count is stale: ${output.path}`)

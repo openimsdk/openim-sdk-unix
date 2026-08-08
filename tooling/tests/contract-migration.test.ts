@@ -220,6 +220,7 @@ test('public contract import defaults to a temporary read-only preview', () => {
   const publicProjection = mkdtempSync(resolve(tmpdir(), 'openim-public-import-test-'))
   cpSync(resolve(root, 'contracts/base'), resolve(publicProjection, 'contracts/base'), { recursive: true })
   cpSync(resolve(root, 'sdk-src'), resolve(publicProjection, 'sdk-src'), { recursive: true })
+  cpSync(resolve(root, 'tooling/src'), resolve(publicProjection, 'tooling/src'), { recursive: true })
   generate(publicProjection)
   writeGeneratedManifest(publicProjection)
   const contractPath = resolve(publicProjection, 'contracts/base/contract.json')
