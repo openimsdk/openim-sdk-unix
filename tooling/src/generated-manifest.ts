@@ -23,10 +23,10 @@ export const PUBLIC_GENERATOR_AUTHORITY_INPUTS = [
   'sdk-src/native/ios/OpenIMDriverRuntime.swift',
   'tooling/src/contract-integrity.ts',
   'tooling/src/generate.ts',
-  'tooling/src/import-contract.ts',
   'tooling/src/model.ts',
   'tooling/src/platform-driver.ts',
   'tooling/src/source.ts',
+  'tooling/src/template-authority.ts',
   'tooling/src/test-contract.ts',
 ] as const
 

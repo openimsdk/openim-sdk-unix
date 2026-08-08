@@ -45,13 +45,8 @@
     },
     {
       "path": "tooling/src/generate.ts",
-      "sha256": "229e6dd0e8d34e537fdbcd166f7c264960af9a61921678e161a22a845a5b3144",
-      "bytes": 18875
-    },
-    {
-      "path": "tooling/src/import-contract.ts",
-      "sha256": "fd91570e0185a51f1a1754439ae6e01803d0692f229c5303de7f74ae5d6007c3",
-      "bytes": 14824
+      "sha256": "e7014cbb418d833306217630c47bd7b44aa7caef39a2efab19781e42ea2556f8",
+      "bytes": 18878
     },
     {
       "path": "tooling/src/model.ts",
@@ -67,6 +62,11 @@
       "path": "tooling/src/source.ts",
       "sha256": "948ed05ee804f4736189b35c2cb1c2f94859e38aee6f0e04b56fe82f73cb7649",
       "bytes": 6065
+    },
+    {
+      "path": "tooling/src/template-authority.ts",
+      "sha256": "e124a0c44b68af3e119080f54bae836c63ec84341357272fcd9c4918815b988a",
+      "bytes": 2177
     },
     {
       "path": "tooling/src/test-contract.ts",

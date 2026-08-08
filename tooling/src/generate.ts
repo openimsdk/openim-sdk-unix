@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { ContractCallable, ContractDocument, ContractEvent, Platform, SurfaceSnapshot } from './model.js'
-import { INDEX_MARKERS } from './import-contract.js'
+import { INDEX_MARKERS } from './template-authority.js'
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { sha256 } from './source.js'
 import { buildPublicResponseSchemas, buildPublicTestDisposition } from './test-contract.js'

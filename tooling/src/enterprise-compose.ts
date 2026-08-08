@@ -14,7 +14,7 @@ import type {
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { normalizeContractText, sha256 } from './source.js'
 import { extractExportedTypes, extractExportedValues, parseSource } from './source.js'
-import { INDEX_MARKERS, makeIndexTemplate } from './import-contract.js'
+import { INDEX_MARKERS, makeIndexTemplate } from './template-authority.js'
 import {
   generateEvents,
   generateInterface,

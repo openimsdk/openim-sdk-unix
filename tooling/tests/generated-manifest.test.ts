@@ -37,6 +37,11 @@ test('generated manifest covers every generated output with its content hash', (
   )
 })
 
+test('forward generation authority excludes the facade migration importer', () => {
+  assert.ok(PUBLIC_GENERATOR_AUTHORITY_INPUTS.includes('tooling/src/template-authority.ts'))
+  assert.equal(PUBLIC_GENERATOR_AUTHORITY_INPUTS.includes('tooling/src/import-contract.ts' as never), false)
+})
+
 test('committed generated manifest is current and deterministic', () => {
   const expected = `${JSON.stringify(buildGeneratedManifest(root), null, 2)}\n`
   assert.equal(readFileSync(resolve(root, GENERATED_MANIFEST_PATH), 'utf8'), expected)
