@@ -238,6 +238,56 @@ test('generated response schema blocks unreviewed additive response drift', () =
   assert.equal(result.issues.some((issue) => issue.rule === 'response-schema-invalid'), true)
 })
 
+test('UTS typed-json metadata is normalized only when the evidence declares its encoding', () => {
+  const schemaManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/getSelfUserInfo',
+      apiName: 'getSelfUserInfo',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      validationAxes: ['completion', 'structure'],
+    }],
+    events: [],
+  }
+  const responseSchemas = {
+    schemaVersion: 1,
+    callables: {
+      getSelfUserInfo: {
+        codec: 'typed:User',
+        schema: { kind: 'object', fields: { userID: { required: true, schema: { kind: 'string' } } } },
+      },
+    },
+    schemas: {},
+  }
+  const responseDetail = JSON.stringify({ userID: 'user-1', propertyFields: [{}, {}] })
+  const encoded = validateAutomationEvidence({
+    manifest: schemaManifest,
+    responseSchemas,
+    platform: 'android',
+    report: { cases: [{ apiName: 'getSelfUserInfo', ok: true, invoked: true, resolved: true, responseEvidence: true, responseEncoding: 'uts-typed-json-v1', responseDetail }], events: [] },
+  })
+  assert.equal(encoded.passed, true)
+
+  const encodedUnknown = validateAutomationEvidence({
+    manifest: schemaManifest,
+    responseSchemas,
+    platform: 'android',
+    report: { cases: [{ apiName: 'getSelfUserInfo', ok: true, invoked: true, resolved: true, responseEvidence: true, responseEncoding: 'uts-typed-json-v1', responseDetail: JSON.stringify({ userID: 'user-1', propertyFields: [{}, {}], unreviewedField: true }) }], events: [] },
+  })
+  assert.equal(encodedUnknown.passed, false)
+
+  const undeclared = validateAutomationEvidence({
+    manifest: schemaManifest,
+    responseSchemas,
+    platform: 'android',
+    report: { cases: [{ apiName: 'getSelfUserInfo', ok: true, invoked: true, resolved: true, responseEvidence: true, responseDetail }], events: [] },
+  })
+  assert.equal(undeclared.passed, false)
+  assert.equal(undeclared.issues.some((issue) => issue.rule === 'response-schema-invalid'), true)
+})
+
 test('capability and unsupported dispositions require executable negative evidence', () => {
   const skipped = validateAutomationEvidence({
     manifest: {

@@ -19,6 +19,7 @@ export interface AutomationSummaryCaseRecord {
   ok?: boolean
   detail?: string
   responseEvidence?: boolean
+  responseEncoding?: string
   responseDetail?: string
   skipped?: boolean
   resolved?: boolean
@@ -73,6 +74,23 @@ function parseRecordedValue(detail: string, codec: string): unknown {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isUTSTypedJSONPropertyMetadata(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 0 && value.every((item) => isRecord(item) && Object.keys(item).length === 0)
+}
+
+function normalizeRecordedValue(value: unknown, encoding: string | undefined): unknown {
+  if (encoding !== 'uts-typed-json-v1') return value
+  if (Array.isArray(value)) return value.map((item) => normalizeRecordedValue(item, encoding))
+  if (!isRecord(value)) return value
+  return Object.fromEntries(Object.entries(value)
+    .filter(([name, fieldValue]) => name !== 'propertyFields' || !isUTSTypedJSONPropertyMetadata(fieldValue))
+    .map(([name, fieldValue]) => [name, normalizeRecordedValue(fieldValue, encoding)]))
+}
+
 function verifySummaryStructureWithDocuments(
   edition: 'public' | 'enterprise',
   summary: AutomationSummaryDocument,
@@ -102,7 +120,10 @@ function verifySummaryStructureWithDocuments(
       skippedCases += 1
       continue
     }
-    const value = parseRecordedValue(item.responseDetail ?? '', schemas.callables[apiName]?.codec ?? 'any')
+    const value = normalizeRecordedValue(
+      parseRecordedValue(item.responseDetail ?? '', schemas.callables[apiName]?.codec ?? 'any'),
+      item.responseEncoding,
+    )
     const issues = validateContractValue(schemas, schema, value)
     const errors = issues.filter((issue) => issue.severity === 'error')
     const drift = issues.filter((issue) => issue.severity === 'contract-drift')

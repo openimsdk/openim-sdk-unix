@@ -66,6 +66,22 @@ function actualKind(value) {
   return typeof value
 }
 
+function isUTSTypedJSONPropertyMetadata(value) {
+  return Array.isArray(value) && value.length > 0 && value.every((item) => isRecord(item) && Object.keys(item).length === 0)
+}
+
+function normalizeRecordedValue(value, encoding) {
+  if (encoding !== 'uts-typed-json-v1') return value
+  if (Array.isArray(value)) return value.map((item) => normalizeRecordedValue(item, encoding))
+  if (!isRecord(value)) return value
+  const result = {}
+  for (const [name, fieldValue] of Object.entries(value)) {
+    if (name === 'propertyFields' && isUTSTypedJSONPropertyMetadata(fieldValue)) continue
+    result[name] = normalizeRecordedValue(fieldValue, encoding)
+  }
+  return result
+}
+
 function schemaLabel(schema) {
   if (!isRecord(schema)) return 'invalid schema'
   if (schema.kind === 'reference') return String(schema.name)
@@ -156,7 +172,10 @@ function callableStructureResult(candidates, apiName, responseSchemas) {
   const issues = recorded.flatMap((item) => validateSchemaValue(
     responseSchemas,
     response.schema,
-    parseRecordedValue(item.responseDetail, typeof response.codec === 'string' ? response.codec : 'any'),
+    normalizeRecordedValue(
+      parseRecordedValue(item.responseDetail, typeof response.codec === 'string' ? response.codec : 'any'),
+      item.responseEncoding,
+    ),
   ))
   return { passed: issues.length === 0, issues }
 }

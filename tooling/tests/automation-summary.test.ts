@@ -95,6 +95,30 @@ test('automation summary verifier itself certifies an explicit structurally vali
   })
 })
 
+test('automation summary verifier strips only explicitly encoded UTS typed-json metadata', () => {
+  withSummary({
+    cases: [{
+      caseId: 'user/getSelfUserInfo',
+      apiName: 'getSelfUserInfo',
+      ok: true,
+      resolved: true,
+      responseEvidence: true,
+      responseEncoding: 'uts-typed-json-v1',
+      responseDetail: JSON.stringify({
+        userID: 'user-1',
+        nickname: 'User',
+        faceURL: '',
+        ex: '',
+        propertyFields: [{}, {}],
+      }),
+    }],
+  }, (path) => {
+    const result = verifyPublicAutomationSummaryStructure(contract, path)
+    assert.deepEqual(result.failures, [])
+    assert.deepEqual(result.driftFailures, [])
+  })
+})
+
 test('automation summary verifier never parses a side-effect narrative as an API response', () => {
   withSummary({
     cases: [
