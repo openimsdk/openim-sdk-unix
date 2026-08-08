@@ -36,6 +36,22 @@ function readOutputs(root: string): Record<string, string> {
   return Object.fromEntries(ENTERPRISE_IMPORT_OUTPUTS.map((path) => [path, readFileSync(join(root, path), 'utf8')]))
 }
 
+function canonicalJSON(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalJSON)
+  if (value != null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, item]) => [key, canonicalJSON(item)]),
+    )
+  }
+  return value
+}
+
+export function canonicalEnterpriseMigrationContent(content: string): string {
+  return JSON.stringify(canonicalJSON(JSON.parse(content)))
+}
+
 export function previewEnterpriseImport(publicRoot: string, privateRoot: string): EnterpriseMigrationPreview {
   const temporaryRoot = mkdtempSync(join(tmpdir(), 'openim-enterprise-import-'))
   try {
@@ -46,7 +62,7 @@ export function previewEnterpriseImport(publicRoot: string, privateRoot: string)
     const current = readOutputs(privateRoot)
     const candidate = readOutputs(temporaryRoot)
     const outputChanges = ENTERPRISE_IMPORT_OUTPUTS
-      .filter((path) => current[path] !== candidate[path])
+      .filter((path) => canonicalEnterpriseMigrationContent(current[path]!) !== canonicalEnterpriseMigrationContent(candidate[path]!))
       .map((path) => ({ path, beforeHash: sha256(current[path]!), afterHash: sha256(candidate[path]!) }))
     const fingerprint = sha256(JSON.stringify({ schemaVersion: 1, outputChanges }))
     return {
