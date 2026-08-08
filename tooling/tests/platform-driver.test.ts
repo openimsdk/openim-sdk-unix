@@ -60,6 +60,8 @@ const CONVERSATION_TYPED_QUERIES = [
   ['searchLocalMessages', 2093, 'typed:OpenIMSearchMessageResult|null', 'parseNativeSearchMessageResult'],
 ] as const
 
+const ADVANCED_HISTORY_QUERY = ['getAdvancedHistoryMessageList', 2061] as const
+
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
   const expected = [
     { id: 2051, name: 'initSDK' },
@@ -72,6 +74,7 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
     ...[
       ...CONVERSATION_STRING_OPERATIONS.map(([name, id]) => ({ id, name })),
       ...CONVERSATION_TYPED_QUERIES.map(([name, id]) => ({ id, name })),
+      { id: ADVANCED_HISTORY_QUERY[1], name: ADVANCED_HISTORY_QUERY[0] },
     ].sort((left, right) => left.id - right.id),
     { id: 2139, name: 'createTextMessage' },
     ...[
@@ -300,6 +303,30 @@ test('typed conversation queries select strict response parsers by contract code
       ? /2059 -> \{\n\s+NativeOpenIMSDK\.getAllConversationList/
       : /case 2059:\n\s+NativeOpenIMSDK\.getAllConversationList/
     assert.match(adapter, emptyCase)
+  }
+})
+
+test('advanced history keeps platform compatibility behind one generated response adapter', () => {
+  const [name, id] = ADVANCED_HISTORY_QUERY
+  const callable = contract.callables.find((candidate) => candidate.name === name)
+  assert.equal(callable?.id, id)
+  assert.equal(callable?.responseCodec, 'typed:OpenIMAdvancedHistoryMessageListResult|null')
+  assert.equal(callable?.lowering?.kind, 'platform-driver')
+  if (callable?.lowering?.kind === 'platform-driver') {
+    assert.deepEqual(callable.lowering.nativeInvocation, { completion: 'callback' })
+    assert.equal(typeof callable.lowering.request, 'object')
+  }
+
+  for (const platform of ['android', 'ios'] as const) {
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    const facade = generateIndex(root, contract, platform)
+    assert.match(adapter, new RegExp(`(?:case )?${id}`))
+    const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+    assert.notEqual(declaration, undefined)
+    assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
+    assert.match(declaration!, /resolve\(parseAdvancedHistoryDriverResponse\(data\)\)/)
+    assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
+    assert.match(facade, /function parseAdvancedHistoryDriverResponse\(data : string\)/)
   }
 })
 

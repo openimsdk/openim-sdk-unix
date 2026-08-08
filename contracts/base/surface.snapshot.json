@@ -1939,7 +1939,7 @@
       "id": 2061,
       "name": "getAdvancedHistoryMessageList",
       "signature": "getAdvancedHistoryMessageList(params:OpenIMGetAdvancedHistoryMessageListParams,operationID?:string|null):Promise<OpenIMAdvancedHistoryMessageListResult|null>",
-      "signatureHash": "cba35cd19b8b63b75ac8f87d2d7317ef375e86268682af41589fe9a1c5ac008c"
+      "signatureHash": "5b4d516741d549a0d5592d48b8ed639bc982fd83235216f0cded5818c40e6ce0"
     },
     {
       "id": 2062,
@@ -2880,5 +2880,5 @@
       "signatureHash": "d1a6f9042697c344fed15b109150f2c02cb5cd9556b13f72c561bc0648bb5d32"
     }
   ],
-  "contractHash": "2dc16bca28defae6f700d99df754bd81579c8cb67b397cb2e82711055a98dc9b"
+  "contractHash": "dc0255f25fc596969002fe0ebc9da921890f869719532b6fd7c8a44941b631a9"
 }

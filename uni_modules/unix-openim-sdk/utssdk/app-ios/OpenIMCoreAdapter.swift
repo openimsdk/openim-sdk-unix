@@ -71,6 +71,9 @@ class OpenIMCoreAdapter {
             case 2060:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.getOneConversation(operationID, try requiredNumber(request, "sessionType"), try requiredString(request, "sourceID"), resolve, reject)
+            case 2061:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getAdvancedHistoryMessageList(operationID, try requiredString(request, "historyOptions"), resolve, reject)
             case 2063:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, try requiredString(request, "conversationID"), resolve, reject)

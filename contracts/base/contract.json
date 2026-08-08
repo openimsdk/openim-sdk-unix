@@ -3733,9 +3733,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getAdvancedHistoryMessageList = function (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return resolveAdvancedHistoryNative((resolve, reject) => { NativeOpenIMSDK.getAdvancedHistoryMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const getAdvancedHistoryMessageList = function (params : OpenIMGetAdvancedHistoryMessageListParams, operationID ?: string | null) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return resolveAdvancedHistoryNative((resolve, reject) => { NativeOpenIMSDK.getAdvancedHistoryMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "historyOptions",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -3747,7 +3762,7 @@
           "symbol": "getAdvancedHistoryMessageList"
         }
       },
-      "signatureHash": "cba35cd19b8b63b75ac8f87d2d7317ef375e86268682af41589fe9a1c5ac008c"
+      "signatureHash": "5b4d516741d549a0d5592d48b8ed639bc982fd83235216f0cded5818c40e6ce0"
     },
     {
       "id": 2062,

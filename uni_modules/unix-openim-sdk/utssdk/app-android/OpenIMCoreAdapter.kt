@@ -36,6 +36,10 @@ object OpenIMCoreAdapter {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.getOneConversation(operationID, request.getDouble("sessionType"), request.getString("sourceID"), resolve, reject)
         }
+        2061 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getAdvancedHistoryMessageList(operationID, request.getString("historyOptions"), resolve, reject)
+        }
         2063 -> {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, request.getString("conversationID"), resolve, reject)

@@ -105,6 +105,7 @@ function driverFieldsRequestPrelude(fields: DriverRequestField[], platform: 'and
 const DRIVER_TYPED_RESPONSE_PARSERS: Readonly<Record<string, string>> = {
   'typed:OpenIMLoginStatus': 'parseNativeLoginStatus',
   'typed:OpenIMMessageItem|null': 'parseNativeMessage',
+  'typed:OpenIMAdvancedHistoryMessageListResult|null': 'parseAdvancedHistoryDriverResponse',
   'typed:OpenIMConversationItem|null': 'parseNativeConversationObject',
   'typed:OpenIMConversationListResult|null': 'parseNativeConversationListResult',
   'typed:OpenIMSearchMessageResult|null': 'parseNativeSearchMessageResult',
