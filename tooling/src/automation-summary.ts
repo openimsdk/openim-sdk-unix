@@ -115,9 +115,6 @@ function verifySummaryStructureWithDocuments(
     }
     if (errors.length > 0) failures.push({ ...failure, issues: errors })
     if (drift.length > 0) driftFailures.push({ ...failure, issues: drift })
-    if (errors.length === 0 && drift.length === 0 && item.structureValidated !== true) {
-      missingRecordedStructureValidation.push(apiName)
-    }
     verifiedCases += 1
   }
   return {

@@ -135,3 +135,17 @@ test('reports additive response fields as contract drift instead of structural f
   assert.equal(issues.some((issue) => issue.severity === 'error'), false)
   assert.ok(issues.some((issue) => issue.path === '$.futureField' && issue.severity === 'contract-drift'))
 })
+
+test('preserves additive response drift from the selected union branch', () => {
+  const document = buildPublicResponseSchemas(contract)
+  const schema: ContractValueSchema = {
+    kind: 'union',
+    options: [
+      { kind: 'null' },
+      { kind: 'object', fields: { value: { required: true, schema: { kind: 'string' } } } },
+    ],
+  }
+  const issues = validateContractValue(document, schema, { value: 'ok', futureField: true })
+  assert.equal(issues.some((issue) => issue.severity === 'error'), false)
+  assert.ok(issues.some((issue) => issue.path === '$.futureField' && issue.severity === 'contract-drift'))
+})

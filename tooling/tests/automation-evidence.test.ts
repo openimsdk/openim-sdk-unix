@@ -157,6 +157,87 @@ test('a side-effect narrative cannot satisfy callable response structure', () =>
   assert.equal(result.issues.some((issue) => issue.axis === 'structure'), true)
 })
 
+test('generated response schema, not a page boolean, certifies callable structure', () => {
+  const schemaManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/getLoginStatus',
+      apiName: 'getLoginStatus',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      responseCodec: 'number',
+      responseSchema: { root: 'callables.getLoginStatus.schema' },
+      validationAxes: ['completion', 'structure'],
+    }],
+    events: [],
+  }
+  const responseSchemas = {
+    schemaVersion: 1,
+    callables: { getLoginStatus: { codec: 'number', schema: { kind: 'number' } } },
+    schemas: {},
+  }
+  const valid = validateAutomationEvidence({
+    manifest: schemaManifest,
+    responseSchemas,
+    platform: 'android',
+    report: { cases: [{ apiName: 'getLoginStatus', ok: true, invoked: true, resolved: true, responseEvidence: true, responseDetail: '3', structureValidated: false }], events: [] },
+  })
+  assert.equal(valid.passed, true)
+
+  const invalid = validateAutomationEvidence({
+    manifest: schemaManifest,
+    responseSchemas,
+    platform: 'android',
+    report: { cases: [{ apiName: 'getLoginStatus', ok: true, invoked: true, resolved: true, responseEvidence: true, responseDetail: JSON.stringify('3'), structureValidated: true }], events: [] },
+  })
+  assert.equal(invalid.passed, false)
+  assert.equal(invalid.issues.some((issue) => issue.rule === 'response-schema-invalid'), true)
+})
+
+test('generated response schema blocks unreviewed additive response drift', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'public',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/getSelfUserInfo',
+        apiName: 'getSelfUserInfo',
+        platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+        validationAxes: ['completion', 'structure'],
+      }],
+      events: [],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: {
+        getSelfUserInfo: {
+          codec: 'typed:User',
+          schema: { kind: 'object', fields: { userID: { required: true, schema: { kind: 'string' } } } },
+        },
+      },
+      schemas: {},
+    },
+    platform: 'android',
+    report: {
+      cases: [{
+        apiName: 'getSelfUserInfo',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        responseDetail: JSON.stringify({ userID: 'user-1', unreviewedField: true }),
+        structureValidated: true,
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, false)
+  assert.equal(result.issues.some((issue) => issue.rule === 'response-schema-invalid'), true)
+})
+
 test('capability and unsupported dispositions require executable negative evidence', () => {
   const skipped = validateAutomationEvidence({
     manifest: {

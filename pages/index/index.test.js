@@ -8,6 +8,7 @@ const projectRoot = path.resolve(__dirname, '../..')
 const configPath = path.join(projectRoot, '.openim-test-accounts.json')
 const fixtureScriptPath = path.join(projectRoot, 'scripts/register-openim-test-accounts.mjs')
 const testDispositionPath = path.join(projectRoot, 'contracts/base/test-disposition.json')
+const responseSchemasPath = path.join(projectRoot, 'contracts/base/response-schemas.json')
 const runTimeoutMs = Number(process.env.OPENIM_AUTOMATION_TIMEOUT_MS || 20 * 60 * 1000)
 
 jest.setTimeout(runTimeoutMs + 60 * 1000)
@@ -142,7 +143,8 @@ function validateReportAgainstContract(summary) {
   const uniOSName = String(process.env.UNI_OS_NAME || '').toLowerCase()
   const platform = uniOSName === 'ios' ? 'ios' : 'android'
   const manifest = JSON.parse(fs.readFileSync(testDispositionPath, 'utf8'))
-  return validateAutomationEvidence({ manifest, report: summary, platform, fullRun: true })
+  const responseSchemas = JSON.parse(fs.readFileSync(responseSchemasPath, 'utf8'))
+  return validateAutomationEvidence({ manifest, responseSchemas, report: summary, platform, fullRun: true })
 }
 
 async function writeAutomationScreenshot(baseName) {

@@ -468,10 +468,14 @@ export function validateContractValue(
   }
   if (schema.kind === 'union') {
     const attempts = schema.options.map((option) => validateContractValue(document, option, value, path, referenceStack))
-    if (attempts.some((issues) => issues.every((issue) => issue.severity !== 'error'))) return []
     const ranked = attempts
-      .map((issues, index) => ({ issues, index, errors: issues.filter((issue) => issue.severity === 'error').length }))
-      .sort((left, right) => left.errors - right.errors || left.index - right.index)
+      .map((issues, index) => ({
+        issues,
+        index,
+        errors: issues.filter((issue) => issue.severity === 'error').length,
+        drift: issues.filter((issue) => issue.severity === 'contract-drift').length,
+      }))
+      .sort((left, right) => left.errors - right.errors || left.drift - right.drift || left.index - right.index)
     return ranked[0]?.issues ?? [{ path, rule: 'union', expected: schema.options.map(schemaLabel).join(' | '), actual: actualKind(value), severity: 'error' }]
   }
   if (schema.kind === 'array') {

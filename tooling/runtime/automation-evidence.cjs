@@ -41,6 +41,126 @@ function eventEvidenceName(item) {
   return typeof item.name === 'string' ? item.name : ''
 }
 
+function parseRecordedValue(detail, codec) {
+  if (typeof detail !== 'string') {
+    return detail
+  }
+  const trimmed = detail.trim()
+  if (codec === 'void') {
+    if (trimmed === '' || trimmed === 'null' || trimmed === 'undefined') {
+      return null
+    }
+  } else if (trimmed === '') {
+    return ''
+  }
+  try {
+    return JSON.parse(trimmed)
+  } catch {
+    return trimmed
+  }
+}
+
+function actualKind(value) {
+  if (value === null) return 'null'
+  if (Array.isArray(value)) return 'array'
+  return typeof value
+}
+
+function schemaLabel(schema) {
+  if (!isRecord(schema)) return 'invalid schema'
+  if (schema.kind === 'reference') return String(schema.name)
+  if (schema.kind === 'literal') return JSON.stringify(schema.value)
+  return String(schema.kind)
+}
+
+function schemaIssue(path, rule, expected, actual, severity = 'error') {
+  return { path, rule, expected, actual, severity }
+}
+
+function validateSchemaValue(document, schema, value, path = '$', referenceStack = []) {
+  if (!isRecord(schema) || typeof schema.kind !== 'string') {
+    return [schemaIssue(path, 'schema', 'declared schema', 'malformed schema')]
+  }
+  if (schema.kind === 'any') return []
+  if (schema.kind === 'void') return value === undefined || value === null ? [] : [schemaIssue(path, 'type', 'void', actualKind(value))]
+  if (schema.kind === 'string' || schema.kind === 'boolean') {
+    return typeof value === schema.kind ? [] : [schemaIssue(path, 'type', schema.kind, actualKind(value))]
+  }
+  if (schema.kind === 'number') {
+    return typeof value === 'number' && Number.isFinite(value) ? [] : [schemaIssue(path, 'finite-number', 'finite number', actualKind(value))]
+  }
+  if (schema.kind === 'null') return value === null ? [] : [schemaIssue(path, 'type', 'null', actualKind(value))]
+  if (schema.kind === 'literal') {
+    return value === schema.value ? [] : [schemaIssue(path, 'literal', JSON.stringify(schema.value), JSON.stringify(value))]
+  }
+  if (schema.kind === 'reference') {
+    const schemas = isRecord(document.schemas) ? document.schemas : {}
+    const target = schemas[schema.name]
+    if (!isRecord(target)) return [schemaIssue(path, 'reference', String(schema.name), 'missing schema')]
+    if (referenceStack.includes(schema.name)) return []
+    return validateSchemaValue(document, target, value, path, [...referenceStack, schema.name])
+  }
+  if (schema.kind === 'union') {
+    if (!Array.isArray(schema.options) || schema.options.length === 0) {
+      return [schemaIssue(path, 'union', 'at least one option', 'empty union')]
+    }
+    const attempts = schema.options.map((option) => validateSchemaValue(document, option, value, path, referenceStack))
+    const ranked = attempts
+      .map((issues, index) => ({
+        issues,
+        index,
+        errors: issues.filter((item) => item.severity === 'error').length,
+        drift: issues.filter((item) => item.severity === 'contract-drift').length,
+      }))
+      .sort((left, right) => left.errors - right.errors || left.drift - right.drift || left.index - right.index)
+    const best = ranked[0]
+    return best == null
+      ? [schemaIssue(path, 'union', schema.options.map(schemaLabel).join(' | '), actualKind(value))]
+      : best.issues
+  }
+  if (schema.kind === 'array') {
+    if (!Array.isArray(value)) return [schemaIssue(path, 'type', 'array', actualKind(value))]
+    return value.flatMap((item, index) => validateSchemaValue(document, schema.items, item, `${path}[${index}]`, referenceStack))
+  }
+  if (schema.kind !== 'object') {
+    return [schemaIssue(path, 'schema', 'known schema kind', schema.kind)]
+  }
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return [schemaIssue(path, 'type', 'object', actualKind(value))]
+  }
+  const fields = isRecord(schema.fields) ? schema.fields : {}
+  const issues = []
+  for (const [name, field] of Object.entries(fields)) {
+    if (!isRecord(field) || !isRecord(field.schema)) {
+      issues.push(schemaIssue(`${path}.${name}`, 'schema', 'field schema', 'malformed schema'))
+    } else if (!Object.prototype.hasOwnProperty.call(value, name)) {
+      if (field.required === true) issues.push(schemaIssue(`${path}.${name}`, 'required', 'present', 'missing'))
+    } else {
+      issues.push(...validateSchemaValue(document, field.schema, value[name], `${path}.${name}`, referenceStack))
+    }
+  }
+  for (const name of Object.keys(value)) {
+    if (fields[name] == null) issues.push(schemaIssue(`${path}.${name}`, 'unknown-field', 'declared field', 'unknown field', 'contract-drift'))
+  }
+  return issues
+}
+
+function callableStructureResult(candidates, apiName, responseSchemas) {
+  const callableSchemas = isRecord(responseSchemas.callables) ? responseSchemas.callables : {}
+  const response = callableSchemas[apiName]
+  if (!isRecord(response) || !isRecord(response.schema)) {
+    return { passed: false, issues: [schemaIssue('$', 'response-schema', apiName, 'missing schema')] }
+  }
+  const recorded = candidates.filter((item) => isSuccessfulEvidence(item) && item.responseEvidence === true)
+  if (recorded.length === 0) return { passed: false, issues: [] }
+  const issues = recorded.flatMap((item) => validateSchemaValue(
+    responseSchemas,
+    response.schema,
+    parseRecordedValue(item.responseDetail, typeof response.codec === 'string' ? response.codec : 'any'),
+  ))
+  return { passed: issues.length === 0, issues }
+}
+
 function axisPassed(candidates, axis, kind) {
   if (kind === 'callable' && axis === 'completion') {
     return candidates.some((item) => isSuccessfulEvidence(item) && item.invoked === true && item.resolved === true)
@@ -135,6 +255,19 @@ function validateAutomationEvidence(input) {
     } else if (disposition === 'required') {
       const axes = Array.isArray(contractCase.validationAxes) ? contractCase.validationAxes : []
       for (const axis of axes) {
+        if (axis === 'structure' && isRecord(input.responseSchemas)) {
+          const structure = callableStructureResult(candidates, contractCase.apiName, input.responseSchemas)
+          if (!structure.passed) {
+            const schemaDetail = structure.issues.slice(0, 3).map((item) => `${item.path} ${item.rule}: expected ${item.expected}, got ${item.actual}`).join('; ')
+            issues.push(issue(
+              String(contractCase.caseId),
+              'structure',
+              structure.issues.length === 0 ? (candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated') : 'response-schema-invalid',
+              schemaDetail.length > 0 ? `${contractCase.apiName} response failed generated schema: ${schemaDetail}` : `${contractCase.apiName} has no explicit response evidence on ${platform}`,
+            ))
+          }
+          continue
+        }
         if (!axisPassed(candidates, axis, 'callable')) {
           issues.push(issue(
             String(contractCase.caseId),

@@ -70,7 +70,7 @@ test('automation summary verifier rejects a typed response missing required fiel
   })
 })
 
-test('automation summary verifier flags structurally valid responses that were not recorded as validated', () => {
+test('automation summary verifier itself certifies an explicit structurally valid response', () => {
   withSummary({
     cases: [
       {
@@ -91,7 +91,7 @@ test('automation summary verifier flags structurally valid responses that were n
     const result = verifyPublicAutomationSummaryStructure(contract, path)
     assert.deepEqual(result.failures, [])
     assert.deepEqual(result.driftFailures, [])
-    assert.deepEqual(result.missingRecordedStructureValidation, ['getLoginUserID'])
+    assert.deepEqual(result.missingRecordedStructureValidation, [])
   })
 })
 

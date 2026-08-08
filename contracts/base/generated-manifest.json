@@ -70,8 +70,8 @@
     },
     {
       "path": "tooling/src/test-contract.ts",
-      "sha256": "d8f2079a9b0bc4f48c64bd9ba63cc4e0e0229778d9265ee02487716fde7131bd",
-      "bytes": 26153
+      "sha256": "26f55cd4f2a06997378f50247cff3fdb0a2a37a2c201b93a15bfc8151b61cabf",
+      "bytes": 26199
     }
   ],
   "outputs": [
