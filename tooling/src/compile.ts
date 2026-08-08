@@ -1,22 +1,23 @@
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative, resolve } from 'node:path'
 
 interface ToolchainLock {
   hbuilderx: {
     version: string
-    cliPath: string
+    cliEnvironmentVariable: string
+    applicationCandidates: string[]
     cliSha256: string
-    utsPluginManifestPath: string
+    utsPluginManifestRelativeToCLI: string
     utsPluginManifestSha256: string
   }
   publicNative: {
     source: {
       repository: string
       revision: string
-      defaultRoot: string
       rootEnvironmentVariable: string
+      siblingDirectories: string[]
     }
     android: {
       sourcePath: string
@@ -30,6 +31,7 @@ interface ToolchainLock {
       zipSha256: string
       extractedInventorySha256: string
       localOverridePath: string
+      localOverrideInventorySha256: string
       externalPod: string
       externalVersion: string
       externalAbiStatus: string
@@ -39,7 +41,10 @@ interface ToolchainLock {
 
 export interface ToolchainVerificationOptions {
   verifyPublicNative?: boolean
+  requirePublicNativeSourceArtifacts?: boolean
 }
+
+type VerifiedToolchainLock = ToolchainLock & { hbuilderx: ToolchainLock['hbuilderx'] & { cliPath: string } }
 
 export interface CompilePlatformOptions {
   verifyPublicNative?: boolean
@@ -247,34 +252,76 @@ function failureExcerpt(log: string): string {
 export function verifyToolchain(
   root: string,
   options: ToolchainVerificationOptions = {},
-): ToolchainLock {
+): VerifiedToolchainLock {
   const lock = JSON.parse(readFileSync(join(root, 'toolchain.lock.json'), 'utf8')) as ToolchainLock
-  const cliPath = process.env.OPENIM_HBUILDERX_CLI ?? lock.hbuilderx.cliPath
+  const cliPath = resolveHBuilderXCLI(lock)
   if (sha256File(cliPath) !== lock.hbuilderx.cliSha256) throw new Error(`HBuilderX CLI hash mismatch: ${cliPath}`)
-  if (sha256File(lock.hbuilderx.utsPluginManifestPath) !== lock.hbuilderx.utsPluginManifestSha256) {
-    throw new Error(`HBuilderX UTS plugin hash mismatch: ${lock.hbuilderx.utsPluginManifestPath}`)
+  const utsPluginManifestPath = resolve(dirname(cliPath), lock.hbuilderx.utsPluginManifestRelativeToCLI)
+  if (sha256File(utsPluginManifestPath) !== lock.hbuilderx.utsPluginManifestSha256) {
+    throw new Error(`HBuilderX UTS plugin hash mismatch: ${utsPluginManifestPath}`)
   }
   if (options.verifyPublicNative === false) {
     return { ...lock, hbuilderx: { ...lock.hbuilderx, cliPath } }
   }
-  const nativeRoot = process.env[lock.publicNative.source.rootEnvironmentVariable] ?? lock.publicNative.source.defaultRoot
+  const nativeRoot = resolvePublicNativeRoot(root, lock.publicNative.source)
+  const revision = execFileSync('git', ['-C', nativeRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  if (revision !== lock.publicNative.source.revision) {
+    throw new Error(`Public Core revision mismatch: ${nativeRoot} is ${revision}, expected ${lock.publicNative.source.revision}`)
+  }
+  const status = execFileSync('git', ['-C', nativeRoot, 'status', '--porcelain'], { encoding: 'utf8' }).trim()
+  if (status !== '') throw new Error(`Public Core worktree must be clean: ${nativeRoot}`)
   const androidSource = join(nativeRoot, lock.publicNative.android.sourcePath)
   const iosSource = join(nativeRoot, lock.publicNative.ios.sourcePath)
-  if (sha256File(androidSource) !== lock.publicNative.android.sha256) {
+  if (existsSync(androidSource) && sha256File(androidSource) !== lock.publicNative.android.sha256) {
     throw new Error(`Public Android native artifact hash mismatch: ${androidSource}`)
   }
-  if (sha256File(iosSource) !== lock.publicNative.ios.zipSha256) {
+  if (existsSync(iosSource) && sha256File(iosSource) !== lock.publicNative.ios.zipSha256) {
     throw new Error(`Public iOS native artifact hash mismatch: ${iosSource}`)
+  }
+  if (options.requirePublicNativeSourceArtifacts === true && (!existsSync(androidSource) || !existsSync(iosSource))) {
+    throw new Error(`Locked Public Core source artifacts are required under ${nativeRoot}`)
   }
   const localAndroid = join(root, lock.publicNative.android.localOverridePath)
   const localIOS = join(root, lock.publicNative.ios.localOverridePath)
   if (sha256File(localAndroid) !== lock.publicNative.android.sha256) {
     throw new Error(`Public Android local override is stale: ${localAndroid}`)
   }
-  if (sha256Directory(localIOS) !== lock.publicNative.ios.extractedInventorySha256) {
+  if (sha256Directory(localIOS) !== lock.publicNative.ios.localOverrideInventorySha256) {
     throw new Error(`Public iOS local override is stale: ${localIOS}`)
   }
   return { ...lock, hbuilderx: { ...lock.hbuilderx, cliPath } }
+}
+
+export function resolveHBuilderXCLI(lock: ToolchainLock, environment: NodeJS.ProcessEnv = process.env): string {
+  const explicit = environment[lock.hbuilderx.cliEnvironmentVariable]
+  if (explicit != null && explicit !== '') return resolve(explicit)
+  for (const candidate of lock.hbuilderx.applicationCandidates) {
+    const path = resolve('/Applications', candidate)
+    if (existsSync(path)) return path
+  }
+  throw new Error(`HBuilderX CLI is unavailable; set ${lock.hbuilderx.cliEnvironmentVariable}`)
+}
+
+export function resolvePublicNativeRoot(
+  projectRoot: string,
+  source: ToolchainLock['publicNative']['source'],
+  environment: NodeJS.ProcessEnv = process.env,
+): string {
+  const explicit = environment[source.rootEnvironmentVariable]
+  if (explicit != null && explicit !== '') return resolve(explicit)
+  const candidates = source.siblingDirectories.map((directory) => resolve(projectRoot, '..', directory))
+  for (const candidate of candidates) {
+    if (!existsSync(join(candidate, '.git'))) continue
+    try {
+      const revision = execFileSync('git', ['-C', candidate, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+      if (revision === source.revision) return candidate
+    } catch {
+      // Continue to the next sibling candidate.
+    }
+  }
+  const existing = candidates.find((candidate) => existsSync(candidate))
+  if (existing != null) return existing
+  throw new Error(`Public Core worktree is unavailable; set ${source.rootEnvironmentVariable}`)
 }
 
 export { sha256Directory }

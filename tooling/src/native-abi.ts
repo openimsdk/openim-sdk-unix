@@ -3,12 +3,12 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import type { CompilePlatform } from './compile.js'
-import { verifyToolchain } from './compile.js'
+import { resolvePublicNativeRoot, verifyToolchain } from './compile.js'
 import { sha256 } from './source.js'
 
 interface NativeLock {
   publicNative: {
-    source: { revision: string; defaultRoot: string; rootEnvironmentVariable: string }
+    source: { repository: string; revision: string; rootEnvironmentVariable: string; siblingDirectories: string[] }
     android: { sourcePath: string; sha256: string }
     ios: { sourcePath: string; zipSha256: string; extractedInventorySha256: string }
   }
@@ -70,9 +70,9 @@ function iosABI(zipPath: string): { text: string; declarationCount: number } {
 }
 
 export function importNativeABI(root: string): void {
-  verifyToolchain(root)
+  verifyToolchain(root, { requirePublicNativeSourceArtifacts: true })
   const lock = JSON.parse(readFileSync(join(root, 'toolchain.lock.json'), 'utf8')) as NativeLock
-  const nativeRoot = process.env[lock.publicNative.source.rootEnvironmentVariable] ?? lock.publicNative.source.defaultRoot
+  const nativeRoot = resolvePublicNativeRoot(root, lock.publicNative.source)
   const aarPath = join(nativeRoot, lock.publicNative.android.sourcePath)
   const zipPath = join(nativeRoot, lock.publicNative.ios.sourcePath)
   const android = androidABI(aarPath)

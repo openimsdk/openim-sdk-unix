@@ -1,11 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "hbuilderx": {
     "version": "5.23.2026080313-alpha",
-    "cliPath": "/Applications/HBuilderX-Alpha.app/Contents/MacOS/cli",
+    "cliEnvironmentVariable": "OPENIM_HBUILDERX_CLI",
+    "applicationCandidates": [
+      "HBuilderX-Alpha.app/Contents/MacOS/cli",
+      "HBuilderX.app/Contents/MacOS/cli"
+    ],
     "cliSha256": "2e0621390eb18bbaa40878dc06a363968326352357ed30af4728b01ffcc61302",
     "utsPluginVersion": "5.23.2026072314.2329",
-    "utsPluginManifestPath": "/Applications/HBuilderX-Alpha.app/Contents/HBuilderX/plugins/uniapp-uts-v1/package.json",
+    "utsPluginManifestRelativeToCLI": "../HBuilderX/plugins/uniapp-uts-v1/package.json",
     "utsPluginManifestSha256": "b3241db7c84445e9d12322663a087dc60aa37dda5af407c5d9253ce3d31b9985",
     "uniUtsVersion": "3.0.0-alpha-4060720250515001",
     "uniUtsManifestSha256": "b90d5838e87463b11dc7d700b5ac6a5cbb8bcc69428e49a430f6d3a5716596a9"
@@ -15,8 +19,11 @@
       "repository": "https://github.com/openimsdk/openim-sdk-core",
       "revision": "3422edca94f0178d8151397620e65b26e1665bc1",
       "branch": "v3.8.3-patch",
-      "defaultRoot": "/Volumes/workspace/work/openim-sdk-core",
-      "rootEnvironmentVariable": "OPENIM_PUBLIC_CORE_DIR"
+      "rootEnvironmentVariable": "OPENIM_PUBLIC_CORE_DIR",
+      "siblingDirectories": [
+        "openim-sdk-core-v3.8.3-locked",
+        "openim-sdk-core"
+      ]
     },
     "android": {
       "sourcePath": "open_im_sdk.aar",
@@ -30,6 +37,7 @@
       "zipSha256": "f3307833843fd7182bc6485e8ef3391efb9f915ac4f297e79471f48c9db3a75f",
       "extractedInventorySha256": "842500ed71345c5d009b5ce865eadb1fd209d09b24318005623e5f5883813f19",
       "localOverridePath": "uni_modules/unix-openim-sdk/utssdk/app-ios/Frameworks/OpenIMCore.xcframework",
+      "localOverrideInventorySha256": "bedc19e3ffb142502cfdaad5ddfa641539248b2c906cd3932622e7e8245d9602",
       "externalPod": "OpenIMSDKCore",
       "externalVersion": "3.8.3-hotfix.14-dynamic",
       "externalAbiStatus": "release-blocked-until-proven-identical"
