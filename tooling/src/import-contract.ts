@@ -186,7 +186,6 @@ export function importPublicContract(root: string): ContractDocument {
         name: pair[0].name,
         type: androidParts.type,
         value: androidParts.initializer,
-        declaration: { android: pair[0].declaration, ios: pair[1].declaration },
         signatureHash: sha256(`${pair[0].name}:${androidParts.type}=${androidParts.initializer}`),
       })
     }

@@ -23,10 +23,6 @@
       "name": "OpenIMMessageStatusNotExist",
       "type": "OpenIMMessageStatus",
       "value": "0",
-      "declaration": {
-        "android": "export const OpenIMMessageStatusNotExist : OpenIMMessageStatus = 0",
-        "ios": "export const OpenIMMessageStatusNotExist : OpenIMMessageStatus = 0"
-      },
       "signatureHash": "2a4b381a80b67e1204ce1408e1c9716d76bd127abb51b6e38bb412eb4ac2b281"
     },
     {
@@ -34,10 +30,6 @@
       "name": "OpenIMMessageStatusSending",
       "type": "OpenIMMessageStatus",
       "value": "1",
-      "declaration": {
-        "android": "export const OpenIMMessageStatusSending : OpenIMMessageStatus = 1",
-        "ios": "export const OpenIMMessageStatusSending : OpenIMMessageStatus = 1"
-      },
       "signatureHash": "070e728a9a77022fe21a407bbe20cd4b5563db65d7eba0c96d4013d6a21c7c15"
     },
     {
@@ -45,10 +37,6 @@
       "name": "OpenIMMessageStatusSucceed",
       "type": "OpenIMMessageStatus",
       "value": "2",
-      "declaration": {
-        "android": "export const OpenIMMessageStatusSucceed : OpenIMMessageStatus = 2",
-        "ios": "export const OpenIMMessageStatusSucceed : OpenIMMessageStatus = 2"
-      },
       "signatureHash": "4d57b2f3a1229cc4076674e4f6efe40266f6f4914d36828b56f3a6327af95dbd"
     },
     {
@@ -56,10 +44,6 @@
       "name": "OpenIMMessageStatusFailed",
       "type": "OpenIMMessageStatus",
       "value": "3",
-      "declaration": {
-        "android": "export const OpenIMMessageStatusFailed : OpenIMMessageStatus = 3",
-        "ios": "export const OpenIMMessageStatusFailed : OpenIMMessageStatus = 3"
-      },
       "signatureHash": "32072ad37fba2c7eb5d8e8aea0db4c9c64c0b531c12f9e6cddf8cdf555b27f99"
     },
     {
@@ -67,10 +51,6 @@
       "name": "OpenIMMessageStatusDeleted",
       "type": "OpenIMMessageStatus",
       "value": "4",
-      "declaration": {
-        "android": "export const OpenIMMessageStatusDeleted : OpenIMMessageStatus = 4",
-        "ios": "export const OpenIMMessageStatusDeleted : OpenIMMessageStatus = 4"
-      },
       "signatureHash": "194d15beeaefb3cda73b2259ac4e00757cc25bb5a63ae50c5052affdc38dd1de"
     },
     {
@@ -78,10 +58,6 @@
       "name": "OpenIMMessageStatusFiltered",
       "type": "OpenIMMessageStatus",
       "value": "5",
-      "declaration": {
-        "android": "export const OpenIMMessageStatusFiltered : OpenIMMessageStatus = 5",
-        "ios": "export const OpenIMMessageStatusFiltered : OpenIMMessageStatus = 5"
-      },
       "signatureHash": "7012a2915edc26d1988dd663a3d30c4b2ed5b8e22a1dd0f077e74c7937508098"
     },
     {
@@ -89,10 +65,6 @@
       "name": "OpenIMPlatformIOS",
       "type": "OpenIMPlatform",
       "value": "1",
-      "declaration": {
-        "android": "export const OpenIMPlatformIOS : OpenIMPlatform = 1",
-        "ios": "export const OpenIMPlatformIOS : OpenIMPlatform = 1"
-      },
       "signatureHash": "e6e38b8de87db7b61c243148707ecdfdeb061ae861c5f648d17c0aa8c7106539"
     },
     {
@@ -100,10 +72,6 @@
       "name": "OpenIMPlatformAndroid",
       "type": "OpenIMPlatform",
       "value": "2",
-      "declaration": {
-        "android": "export const OpenIMPlatformAndroid : OpenIMPlatform = 2",
-        "ios": "export const OpenIMPlatformAndroid : OpenIMPlatform = 2"
-      },
       "signatureHash": "d4a78094e10c034f911c5673351e432e483c31b78816ab2fecc62512ef0ac57b"
     },
     {
@@ -111,10 +79,6 @@
       "name": "OpenIMPlatformWindows",
       "type": "OpenIMPlatform",
       "value": "3",
-      "declaration": {
-        "android": "export const OpenIMPlatformWindows : OpenIMPlatform = 3",
-        "ios": "export const OpenIMPlatformWindows : OpenIMPlatform = 3"
-      },
       "signatureHash": "b41afae1e8edeeafde20ae166a139e47053e7eb4c0def7c984ceac67ddbdf206"
     },
     {
@@ -122,10 +86,6 @@
       "name": "OpenIMPlatformMacOSX",
       "type": "OpenIMPlatform",
       "value": "4",
-      "declaration": {
-        "android": "export const OpenIMPlatformMacOSX : OpenIMPlatform = 4",
-        "ios": "export const OpenIMPlatformMacOSX : OpenIMPlatform = 4"
-      },
       "signatureHash": "90816949b6b443ef2496b58eebb6091afa35050a3400d4fb94da32d431b55ae7"
     },
     {
@@ -133,10 +93,6 @@
       "name": "OpenIMPlatformWeb",
       "type": "OpenIMPlatform",
       "value": "5",
-      "declaration": {
-        "android": "export const OpenIMPlatformWeb : OpenIMPlatform = 5",
-        "ios": "export const OpenIMPlatformWeb : OpenIMPlatform = 5"
-      },
       "signatureHash": "f5376e51c3784fbbbf99e841924ec8888b018772799dde5c8162035adce7093f"
     },
     {
@@ -144,10 +100,6 @@
       "name": "OpenIMPlatformMiniWeb",
       "type": "OpenIMPlatform",
       "value": "6",
-      "declaration": {
-        "android": "export const OpenIMPlatformMiniWeb : OpenIMPlatform = 6",
-        "ios": "export const OpenIMPlatformMiniWeb : OpenIMPlatform = 6"
-      },
       "signatureHash": "cb850fe970c49f30459c3106e1c94fd91d21d089c14dd5a72f7550b0738fbb0f"
     },
     {
@@ -155,10 +107,6 @@
       "name": "OpenIMPlatformLinux",
       "type": "OpenIMPlatform",
       "value": "7",
-      "declaration": {
-        "android": "export const OpenIMPlatformLinux : OpenIMPlatform = 7",
-        "ios": "export const OpenIMPlatformLinux : OpenIMPlatform = 7"
-      },
       "signatureHash": "4e0bbbb9c862eaaff848bdeae582242b0c42091058a2f442da707d137f02079d"
     },
     {
@@ -166,10 +114,6 @@
       "name": "OpenIMPlatformAndroidPad",
       "type": "OpenIMPlatform",
       "value": "8",
-      "declaration": {
-        "android": "export const OpenIMPlatformAndroidPad : OpenIMPlatform = 8",
-        "ios": "export const OpenIMPlatformAndroidPad : OpenIMPlatform = 8"
-      },
       "signatureHash": "060296c24e70b3c35c56c8a541e712c5be1818538c0fb3870d733d2a00cd2e4d"
     },
     {
@@ -177,10 +121,6 @@
       "name": "OpenIMPlatformIPad",
       "type": "OpenIMPlatform",
       "value": "9",
-      "declaration": {
-        "android": "export const OpenIMPlatformIPad : OpenIMPlatform = 9",
-        "ios": "export const OpenIMPlatformIPad : OpenIMPlatform = 9"
-      },
       "signatureHash": "a65f7f7127fc25fee8d1a30d4ba3c27245bea17b5c162492f0ea9e06e06cfd49"
     },
     {
@@ -188,10 +128,6 @@
       "name": "OpenIMPlatformAdmin",
       "type": "OpenIMPlatform",
       "value": "10",
-      "declaration": {
-        "android": "export const OpenIMPlatformAdmin : OpenIMPlatform = 10",
-        "ios": "export const OpenIMPlatformAdmin : OpenIMPlatform = 10"
-      },
       "signatureHash": "88769580d90807f6b33a082b6280a63c75513610306473852679d469492bd8d7"
     },
     {
@@ -199,10 +135,6 @@
       "name": "OpenIMPlatformHarmony",
       "type": "OpenIMPlatform",
       "value": "11",
-      "declaration": {
-        "android": "export const OpenIMPlatformHarmony : OpenIMPlatform = 11",
-        "ios": "export const OpenIMPlatformHarmony : OpenIMPlatform = 11"
-      },
       "signatureHash": "d4d286cb1276a7e9ebe85b55dd6e6b0f4a8c49009e780f37e557338c10acedc4"
     },
     {
@@ -210,10 +142,6 @@
       "name": "OpenIMLogLevelPanic",
       "type": "OpenIMLogLevel",
       "value": "0",
-      "declaration": {
-        "android": "export const OpenIMLogLevelPanic : OpenIMLogLevel = 0",
-        "ios": "export const OpenIMLogLevelPanic : OpenIMLogLevel = 0"
-      },
       "signatureHash": "c0a8c5932fe32bcf89c963a2159e7d1c7795204b16b550de80d39253f8b2d7ed"
     },
     {
@@ -221,10 +149,6 @@
       "name": "OpenIMLogLevelFatal",
       "type": "OpenIMLogLevel",
       "value": "1",
-      "declaration": {
-        "android": "export const OpenIMLogLevelFatal : OpenIMLogLevel = 1",
-        "ios": "export const OpenIMLogLevelFatal : OpenIMLogLevel = 1"
-      },
       "signatureHash": "8e0068bb3abe2ba62268a777aa5cb304d06bb2f2655c22c43e8b044ddf5405e3"
     },
     {
@@ -232,10 +156,6 @@
       "name": "OpenIMLogLevelError",
       "type": "OpenIMLogLevel",
       "value": "2",
-      "declaration": {
-        "android": "export const OpenIMLogLevelError : OpenIMLogLevel = 2",
-        "ios": "export const OpenIMLogLevelError : OpenIMLogLevel = 2"
-      },
       "signatureHash": "b90392e54565f0a3b45ca83979173727804d8b4dc84fb3152af1b0b186ff2d8b"
     },
     {
@@ -243,10 +163,6 @@
       "name": "OpenIMLogLevelWarn",
       "type": "OpenIMLogLevel",
       "value": "3",
-      "declaration": {
-        "android": "export const OpenIMLogLevelWarn : OpenIMLogLevel = 3",
-        "ios": "export const OpenIMLogLevelWarn : OpenIMLogLevel = 3"
-      },
       "signatureHash": "4e98ffd53d102275b511c53fd32dc3ec14000d0b5c96c2fb7954da5cd1cefa99"
     },
     {
@@ -254,10 +170,6 @@
       "name": "OpenIMLogLevelInfo",
       "type": "OpenIMLogLevel",
       "value": "4",
-      "declaration": {
-        "android": "export const OpenIMLogLevelInfo : OpenIMLogLevel = 4",
-        "ios": "export const OpenIMLogLevelInfo : OpenIMLogLevel = 4"
-      },
       "signatureHash": "feac04d582af5d99464224e52e576c9780f22538363164c3208dc1a59a317122"
     },
     {
@@ -265,10 +177,6 @@
       "name": "OpenIMLogLevelDebug",
       "type": "OpenIMLogLevel",
       "value": "5",
-      "declaration": {
-        "android": "export const OpenIMLogLevelDebug : OpenIMLogLevel = 5",
-        "ios": "export const OpenIMLogLevelDebug : OpenIMLogLevel = 5"
-      },
       "signatureHash": "ec21ea478d6357ef935f4070688e3d1075965325c75d9725d94539c517697229"
     },
     {
@@ -276,10 +184,6 @@
       "name": "OpenIMLogLevelVerbose",
       "type": "OpenIMLogLevel",
       "value": "6",
-      "declaration": {
-        "android": "export const OpenIMLogLevelVerbose : OpenIMLogLevel = 6",
-        "ios": "export const OpenIMLogLevelVerbose : OpenIMLogLevel = 6"
-      },
       "signatureHash": "7b8aac06c6557b7dfc445ef97babc4fc5ff240c7d3db31a4af5a2474601f9fbf"
     },
     {
@@ -287,10 +191,6 @@
       "name": "OpenIMMessageTypeText",
       "type": "OpenIMMessageType",
       "value": "101",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeText : OpenIMMessageType = 101",
-        "ios": "export const OpenIMMessageTypeText : OpenIMMessageType = 101"
-      },
       "signatureHash": "e59ced7cb303c70e55a67099cbdd00fe688ea0c0648bba8b319be58e14ed71f9"
     },
     {
@@ -298,10 +198,6 @@
       "name": "OpenIMMessageTypePicture",
       "type": "OpenIMMessageType",
       "value": "102",
-      "declaration": {
-        "android": "export const OpenIMMessageTypePicture : OpenIMMessageType = 102",
-        "ios": "export const OpenIMMessageTypePicture : OpenIMMessageType = 102"
-      },
       "signatureHash": "e5c2fe4cba1366314eb30b4b4cfd2acba61284a2d4958bc52e5ea07a86cf3a32"
     },
     {
@@ -309,10 +205,6 @@
       "name": "OpenIMMessageTypeVoice",
       "type": "OpenIMMessageType",
       "value": "103",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeVoice : OpenIMMessageType = 103",
-        "ios": "export const OpenIMMessageTypeVoice : OpenIMMessageType = 103"
-      },
       "signatureHash": "e0adce21bb0e9b8bc66f1770d774aa64517c3cae10531ddb6568f65b6edbe83f"
     },
     {
@@ -320,10 +212,6 @@
       "name": "OpenIMMessageTypeVideo",
       "type": "OpenIMMessageType",
       "value": "104",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeVideo : OpenIMMessageType = 104",
-        "ios": "export const OpenIMMessageTypeVideo : OpenIMMessageType = 104"
-      },
       "signatureHash": "96a8ec045bec323a2af3a707aba03f95c68332fc5cd106aaa0cc1b3cf98c67b5"
     },
     {
@@ -331,10 +219,6 @@
       "name": "OpenIMMessageTypeFile",
       "type": "OpenIMMessageType",
       "value": "105",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFile : OpenIMMessageType = 105",
-        "ios": "export const OpenIMMessageTypeFile : OpenIMMessageType = 105"
-      },
       "signatureHash": "d46a65a1d61a164d70d68bb4df0c986feb89385251dac68e1003e57612045242"
     },
     {
@@ -342,10 +226,6 @@
       "name": "OpenIMMessageTypeAtText",
       "type": "OpenIMMessageType",
       "value": "106",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeAtText : OpenIMMessageType = 106",
-        "ios": "export const OpenIMMessageTypeAtText : OpenIMMessageType = 106"
-      },
       "signatureHash": "7b76708a3e80ae11759af633b060abc2cad41b9736fc7f72bdbeee876e55f775"
     },
     {
@@ -353,10 +233,6 @@
       "name": "OpenIMMessageTypeMerge",
       "type": "OpenIMMessageType",
       "value": "107",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeMerge : OpenIMMessageType = 107",
-        "ios": "export const OpenIMMessageTypeMerge : OpenIMMessageType = 107"
-      },
       "signatureHash": "7ef0baf1e0b66a32ba28842ea3b474f5c045648de6d11cbde85cde4746540473"
     },
     {
@@ -364,10 +240,6 @@
       "name": "OpenIMMessageTypeCard",
       "type": "OpenIMMessageType",
       "value": "108",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeCard : OpenIMMessageType = 108",
-        "ios": "export const OpenIMMessageTypeCard : OpenIMMessageType = 108"
-      },
       "signatureHash": "87446dbf6c07eee050f3677be1bf8f8af8c48431d64059574ce94bd131ab2dff"
     },
     {
@@ -375,10 +247,6 @@
       "name": "OpenIMMessageTypeLocation",
       "type": "OpenIMMessageType",
       "value": "109",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeLocation : OpenIMMessageType = 109",
-        "ios": "export const OpenIMMessageTypeLocation : OpenIMMessageType = 109"
-      },
       "signatureHash": "180aa305e0e9a3541fcb46f1756c0789b8cea3fbee27d10ca369d59feccf2e4e"
     },
     {
@@ -386,10 +254,6 @@
       "name": "OpenIMMessageTypeCustom",
       "type": "OpenIMMessageType",
       "value": "110",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeCustom : OpenIMMessageType = 110",
-        "ios": "export const OpenIMMessageTypeCustom : OpenIMMessageType = 110"
-      },
       "signatureHash": "184c7c18e9d595c7b3bebca29d519869407fd459603a0453df6d9bbb6d3965d6"
     },
     {
@@ -397,10 +261,6 @@
       "name": "OpenIMMessageTypeRevoke",
       "type": "OpenIMMessageType",
       "value": "111",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeRevoke : OpenIMMessageType = 111",
-        "ios": "export const OpenIMMessageTypeRevoke : OpenIMMessageType = 111"
-      },
       "signatureHash": "73e358e0e75eec7fd893ff532d13ccef60effa8c621f751e8706f04816fa575f"
     },
     {
@@ -408,10 +268,6 @@
       "name": "OpenIMMessageTypeTyping",
       "type": "OpenIMMessageType",
       "value": "113",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeTyping : OpenIMMessageType = 113",
-        "ios": "export const OpenIMMessageTypeTyping : OpenIMMessageType = 113"
-      },
       "signatureHash": "a699dd4ac56aab9a14dbdde4dc26f9033fefe3c9c92c6efc5a835c269bd299f4"
     },
     {
@@ -419,10 +275,6 @@
       "name": "OpenIMMessageTypeQuote",
       "type": "OpenIMMessageType",
       "value": "114",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeQuote : OpenIMMessageType = 114",
-        "ios": "export const OpenIMMessageTypeQuote : OpenIMMessageType = 114"
-      },
       "signatureHash": "f034d2eb36576016b460885877e0c6a8caeeaa4bb0e9a4c416947eefc20ad8e2"
     },
     {
@@ -430,10 +282,6 @@
       "name": "OpenIMMessageTypeFace",
       "type": "OpenIMMessageType",
       "value": "115",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFace : OpenIMMessageType = 115",
-        "ios": "export const OpenIMMessageTypeFace : OpenIMMessageType = 115"
-      },
       "signatureHash": "6fac65dc2a469f74ef365769a110e5384543defd0a4abbc8187e7c5720671ae4"
     },
     {
@@ -441,10 +289,6 @@
       "name": "OpenIMMessageTypeAdvancedText",
       "type": "OpenIMMessageType",
       "value": "117",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeAdvancedText : OpenIMMessageType = 117",
-        "ios": "export const OpenIMMessageTypeAdvancedText : OpenIMMessageType = 117"
-      },
       "signatureHash": "3a35eb1fe16a5888890844e6e747270e9df67a7b8238ffc267ec1d1b8d203b0f"
     },
     {
@@ -452,10 +296,6 @@
       "name": "OpenIMMessageTypeMarkdownText",
       "type": "OpenIMMessageType",
       "value": "118",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeMarkdownText : OpenIMMessageType = 118",
-        "ios": "export const OpenIMMessageTypeMarkdownText : OpenIMMessageType = 118"
-      },
       "signatureHash": "df5d043f97af2aa804122585527dab19c7e23da0b92291174c9f5cedfd5cc93f"
     },
     {
@@ -463,10 +303,6 @@
       "name": "OpenIMMessageTypeCustomNotTriggerConversation",
       "type": "OpenIMMessageType",
       "value": "119",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeCustomNotTriggerConversation : OpenIMMessageType = 119",
-        "ios": "export const OpenIMMessageTypeCustomNotTriggerConversation : OpenIMMessageType = 119"
-      },
       "signatureHash": "4cec7fa964ead6b7dd79ea8ca27ab13dcb288672776f1715b704a8c45b6d276c"
     },
     {
@@ -474,10 +310,6 @@
       "name": "OpenIMMessageTypeCustomOnlineOnly",
       "type": "OpenIMMessageType",
       "value": "120",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeCustomOnlineOnly : OpenIMMessageType = 120",
-        "ios": "export const OpenIMMessageTypeCustomOnlineOnly : OpenIMMessageType = 120"
-      },
       "signatureHash": "f073abc70384000b818510f4ff94e72283ae053fdfce4a3a642edd35a9b68525"
     },
     {
@@ -485,10 +317,6 @@
       "name": "OpenIMMessageTypeReactionModifier",
       "type": "OpenIMMessageType",
       "value": "121",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeReactionModifier : OpenIMMessageType = 121",
-        "ios": "export const OpenIMMessageTypeReactionModifier : OpenIMMessageType = 121"
-      },
       "signatureHash": "1409dcead0595e33e1f2d89d6bb0022052effee02fd702a2aa5db60700e5ffe4"
     },
     {
@@ -496,10 +324,6 @@
       "name": "OpenIMMessageTypeReactionDeleter",
       "type": "OpenIMMessageType",
       "value": "122",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeReactionDeleter : OpenIMMessageType = 122",
-        "ios": "export const OpenIMMessageTypeReactionDeleter : OpenIMMessageType = 122"
-      },
       "signatureHash": "4ac105d88abe582979595f9e4f88549b8a27670b586d39e75a96d7988086f1a5"
     },
     {
@@ -507,10 +331,6 @@
       "name": "OpenIMMessageTypeStream",
       "type": "OpenIMMessageType",
       "value": "143",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeStream : OpenIMMessageType = 143",
-        "ios": "export const OpenIMMessageTypeStream : OpenIMMessageType = 143"
-      },
       "signatureHash": "08831b08629d84dfed0f81b8d824321b1738f4808af02766e585f05b9aab678d"
     },
     {
@@ -518,10 +338,6 @@
       "name": "OpenIMMessageTypeCommon",
       "type": "OpenIMMessageType",
       "value": "200",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeCommon : OpenIMMessageType = 200",
-        "ios": "export const OpenIMMessageTypeCommon : OpenIMMessageType = 200"
-      },
       "signatureHash": "72fd4e17dc1564f0462b2c673fac4346f40e090e198751f8c167ebfab01107db"
     },
     {
@@ -529,10 +345,6 @@
       "name": "OpenIMMessageTypeGroupMsg",
       "type": "OpenIMMessageType",
       "value": "201",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupMsg : OpenIMMessageType = 201",
-        "ios": "export const OpenIMMessageTypeGroupMsg : OpenIMMessageType = 201"
-      },
       "signatureHash": "479d65c81f9487fadd882dc9b7207a20581b026b3cf809adae7b11dbea367b66"
     },
     {
@@ -540,10 +352,6 @@
       "name": "OpenIMMessageTypeSignalMsg",
       "type": "OpenIMMessageType",
       "value": "202",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeSignalMsg : OpenIMMessageType = 202",
-        "ios": "export const OpenIMMessageTypeSignalMsg : OpenIMMessageType = 202"
-      },
       "signatureHash": "0633498bf4aa0cebabc10c5a02c11d78b9b774e087813e663c75e49a33fc03c8"
     },
     {
@@ -551,10 +359,6 @@
       "name": "OpenIMMessageTypeCustomNotification",
       "type": "OpenIMMessageType",
       "value": "203",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeCustomNotification : OpenIMMessageType = 203",
-        "ios": "export const OpenIMMessageTypeCustomNotification : OpenIMMessageType = 203"
-      },
       "signatureHash": "294ae910cc0dae841faff0c22dfda6c16b212f224a5faa6fb67c17b6882b349b"
     },
     {
@@ -562,10 +366,6 @@
       "name": "OpenIMMessageTypeFriendApplicationApproved",
       "type": "OpenIMMessageType",
       "value": "1201",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendApplicationApproved : OpenIMMessageType = 1201",
-        "ios": "export const OpenIMMessageTypeFriendApplicationApproved : OpenIMMessageType = 1201"
-      },
       "signatureHash": "e917437a1bf81159bd18139502aa54fd1723dc57f6517c1a901d9982ba0ddb85"
     },
     {
@@ -573,10 +373,6 @@
       "name": "OpenIMMessageTypeFriendApplicationRejected",
       "type": "OpenIMMessageType",
       "value": "1202",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendApplicationRejected : OpenIMMessageType = 1202",
-        "ios": "export const OpenIMMessageTypeFriendApplicationRejected : OpenIMMessageType = 1202"
-      },
       "signatureHash": "d9c885eab0e64b8d8ba4664111b5995833a373f285027865d897b4bfe62398c0"
     },
     {
@@ -584,10 +380,6 @@
       "name": "OpenIMMessageTypeFriendApplication",
       "type": "OpenIMMessageType",
       "value": "1203",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendApplication : OpenIMMessageType = 1203",
-        "ios": "export const OpenIMMessageTypeFriendApplication : OpenIMMessageType = 1203"
-      },
       "signatureHash": "6bb4694b38d8d7154b74f5cdcd1005737951fc2566e482a1214b0af0252390ad"
     },
     {
@@ -595,10 +387,6 @@
       "name": "OpenIMMessageTypeFriendAdded",
       "type": "OpenIMMessageType",
       "value": "1204",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendAdded : OpenIMMessageType = 1204",
-        "ios": "export const OpenIMMessageTypeFriendAdded : OpenIMMessageType = 1204"
-      },
       "signatureHash": "f81e08c5fe98bebebe6191b221066e06951e27c459a03a11f285fa01e99e741a"
     },
     {
@@ -606,10 +394,6 @@
       "name": "OpenIMMessageTypeFriendDeleted",
       "type": "OpenIMMessageType",
       "value": "1205",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendDeleted : OpenIMMessageType = 1205",
-        "ios": "export const OpenIMMessageTypeFriendDeleted : OpenIMMessageType = 1205"
-      },
       "signatureHash": "9bbb020ec836e0261231ba2e667fa8c71512cb61467c370c5e0e077acd98097a"
     },
     {
@@ -617,10 +401,6 @@
       "name": "OpenIMMessageTypeFriendRemarkSet",
       "type": "OpenIMMessageType",
       "value": "1206",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendRemarkSet : OpenIMMessageType = 1206",
-        "ios": "export const OpenIMMessageTypeFriendRemarkSet : OpenIMMessageType = 1206"
-      },
       "signatureHash": "b2ab8dee0430fced5f0ab29cd18e8918a2a55103fc9cf4c7d6e7731de7af7271"
     },
     {
@@ -628,10 +408,6 @@
       "name": "OpenIMMessageTypeBlackAdded",
       "type": "OpenIMMessageType",
       "value": "1207",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeBlackAdded : OpenIMMessageType = 1207",
-        "ios": "export const OpenIMMessageTypeBlackAdded : OpenIMMessageType = 1207"
-      },
       "signatureHash": "e7d92f8ca77eb51d6cc1f02ba38b07f586b5990afaa0c2d4038c08f4ee49297e"
     },
     {
@@ -639,10 +415,6 @@
       "name": "OpenIMMessageTypeBlackDeleted",
       "type": "OpenIMMessageType",
       "value": "1208",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeBlackDeleted : OpenIMMessageType = 1208",
-        "ios": "export const OpenIMMessageTypeBlackDeleted : OpenIMMessageType = 1208"
-      },
       "signatureHash": "29edb1aed1677b93f3927b6d6d717ee9b5e4cd6fd81dab632e0c44e92cfb866e"
     },
     {
@@ -650,10 +422,6 @@
       "name": "OpenIMMessageTypeFriendInfoUpdated",
       "type": "OpenIMMessageType",
       "value": "1209",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendInfoUpdated : OpenIMMessageType = 1209",
-        "ios": "export const OpenIMMessageTypeFriendInfoUpdated : OpenIMMessageType = 1209"
-      },
       "signatureHash": "4a50fd797c30391e94840ed101f5be09f3ff2884e8f362e7c77ec82c969470e2"
     },
     {
@@ -661,10 +429,6 @@
       "name": "OpenIMMessageTypeFriendsInfoUpdated",
       "type": "OpenIMMessageType",
       "value": "1210",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeFriendsInfoUpdated : OpenIMMessageType = 1210",
-        "ios": "export const OpenIMMessageTypeFriendsInfoUpdated : OpenIMMessageType = 1210"
-      },
       "signatureHash": "7b871aead5bb83feae308459e09b5f1c38f41126cb19c138fe2c67d1c6ef5578"
     },
     {
@@ -672,10 +436,6 @@
       "name": "OpenIMMessageTypeConversationChanged",
       "type": "OpenIMMessageType",
       "value": "1300",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeConversationChanged : OpenIMMessageType = 1300",
-        "ios": "export const OpenIMMessageTypeConversationChanged : OpenIMMessageType = 1300"
-      },
       "signatureHash": "3efa94bfecd5a9fc8904e5c7b66f2f994b6855a442e446b8503b77bb7d02a159"
     },
     {
@@ -683,10 +443,6 @@
       "name": "OpenIMMessageTypeUserInfoUpdated",
       "type": "OpenIMMessageType",
       "value": "1303",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeUserInfoUpdated : OpenIMMessageType = 1303",
-        "ios": "export const OpenIMMessageTypeUserInfoUpdated : OpenIMMessageType = 1303"
-      },
       "signatureHash": "7dd1b75a310cfdd8b01b6306af9756ba21a7dc03463a518ba063b94348ed1897"
     },
     {
@@ -694,10 +450,6 @@
       "name": "OpenIMMessageTypeUserStatusChanged",
       "type": "OpenIMMessageType",
       "value": "1304",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeUserStatusChanged : OpenIMMessageType = 1304",
-        "ios": "export const OpenIMMessageTypeUserStatusChanged : OpenIMMessageType = 1304"
-      },
       "signatureHash": "158f2115e8c1b8ff6da7ca4e023408e525a12d7d3d165214001cd12940b20322"
     },
     {
@@ -705,10 +457,6 @@
       "name": "OpenIMMessageTypeUserSubscribeOnlineStatus",
       "type": "OpenIMMessageType",
       "value": "1308",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeUserSubscribeOnlineStatus : OpenIMMessageType = 1308",
-        "ios": "export const OpenIMMessageTypeUserSubscribeOnlineStatus : OpenIMMessageType = 1308"
-      },
       "signatureHash": "8ae42b719541a04b42bcafa017f1f3fe318df82ab8a230b993966f01e2d445ca"
     },
     {
@@ -716,10 +464,6 @@
       "name": "OpenIMMessageTypeOANotification",
       "type": "OpenIMMessageType",
       "value": "1400",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeOANotification : OpenIMMessageType = 1400",
-        "ios": "export const OpenIMMessageTypeOANotification : OpenIMMessageType = 1400"
-      },
       "signatureHash": "56c83fb8f874a6f18ebddebb8583a1e61d3872c3f159705a6d063e4c2ba56ecd"
     },
     {
@@ -727,10 +471,6 @@
       "name": "OpenIMMessageTypeGroupCreated",
       "type": "OpenIMMessageType",
       "value": "1501",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupCreated : OpenIMMessageType = 1501",
-        "ios": "export const OpenIMMessageTypeGroupCreated : OpenIMMessageType = 1501"
-      },
       "signatureHash": "bd1b1a645a92dbe313e457b961c01d012e55b2cc20e126cdd06cbf5622e7c9eb"
     },
     {
@@ -738,10 +478,6 @@
       "name": "OpenIMMessageTypeGroupInfoUpdated",
       "type": "OpenIMMessageType",
       "value": "1502",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupInfoUpdated : OpenIMMessageType = 1502",
-        "ios": "export const OpenIMMessageTypeGroupInfoUpdated : OpenIMMessageType = 1502"
-      },
       "signatureHash": "80c9fb644fba0c4cbdf9dd3d2195c696ba41aa7b64cda45ee14e5a0450732f2c"
     },
     {
@@ -749,10 +485,6 @@
       "name": "OpenIMMessageTypeJoinGroupApplication",
       "type": "OpenIMMessageType",
       "value": "1503",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeJoinGroupApplication : OpenIMMessageType = 1503",
-        "ios": "export const OpenIMMessageTypeJoinGroupApplication : OpenIMMessageType = 1503"
-      },
       "signatureHash": "484a7c4eecb280e27333f4b80f7831ebb4b7f1d1f25764abec56633afe66060f"
     },
     {
@@ -760,10 +492,6 @@
       "name": "OpenIMMessageTypeMemberQuit",
       "type": "OpenIMMessageType",
       "value": "1504",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeMemberQuit : OpenIMMessageType = 1504",
-        "ios": "export const OpenIMMessageTypeMemberQuit : OpenIMMessageType = 1504"
-      },
       "signatureHash": "ba0ffeefdf7ff09645fbcec9a4c0ec06c4507c90768e2410e3e4d236e8ebe0d2"
     },
     {
@@ -771,10 +499,6 @@
       "name": "OpenIMMessageTypeGroupApplicationAccepted",
       "type": "OpenIMMessageType",
       "value": "1505",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupApplicationAccepted : OpenIMMessageType = 1505",
-        "ios": "export const OpenIMMessageTypeGroupApplicationAccepted : OpenIMMessageType = 1505"
-      },
       "signatureHash": "a281ff8f075f64313f182378715eabbd502bf6e187b43170c0594f383f55e8a4"
     },
     {
@@ -782,10 +506,6 @@
       "name": "OpenIMMessageTypeGroupApplicationRejected",
       "type": "OpenIMMessageType",
       "value": "1506",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupApplicationRejected : OpenIMMessageType = 1506",
-        "ios": "export const OpenIMMessageTypeGroupApplicationRejected : OpenIMMessageType = 1506"
-      },
       "signatureHash": "465ff14d67e0cd9ef9376f36e1584e7de775aa5211fca1097158254926dc18c0"
     },
     {
@@ -793,10 +513,6 @@
       "name": "OpenIMMessageTypeGroupOwnerTransferred",
       "type": "OpenIMMessageType",
       "value": "1507",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupOwnerTransferred : OpenIMMessageType = 1507",
-        "ios": "export const OpenIMMessageTypeGroupOwnerTransferred : OpenIMMessageType = 1507"
-      },
       "signatureHash": "2e3568f962310719898e8c49fe4c6f24825b6e71e00dd10cd80e56052bdcb5b9"
     },
     {
@@ -804,10 +520,6 @@
       "name": "OpenIMMessageTypeMemberKicked",
       "type": "OpenIMMessageType",
       "value": "1508",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeMemberKicked : OpenIMMessageType = 1508",
-        "ios": "export const OpenIMMessageTypeMemberKicked : OpenIMMessageType = 1508"
-      },
       "signatureHash": "eb7f8288a4921d76622f749e49927baefe1127511d025f7319216058434b6149"
     },
     {
@@ -815,10 +527,6 @@
       "name": "OpenIMMessageTypeMemberInvited",
       "type": "OpenIMMessageType",
       "value": "1509",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeMemberInvited : OpenIMMessageType = 1509",
-        "ios": "export const OpenIMMessageTypeMemberInvited : OpenIMMessageType = 1509"
-      },
       "signatureHash": "cd9e309b187ff3166aa66aff02d39798bb4da9a0728ac2e71e83b784bbf12c88"
     },
     {
@@ -826,10 +534,6 @@
       "name": "OpenIMMessageTypeMemberEnter",
       "type": "OpenIMMessageType",
       "value": "1510",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeMemberEnter : OpenIMMessageType = 1510",
-        "ios": "export const OpenIMMessageTypeMemberEnter : OpenIMMessageType = 1510"
-      },
       "signatureHash": "5ccccee453e561c6a1c7c22236049d85b7c7cac4f1f878e56ebc77626da334d6"
     },
     {
@@ -837,10 +541,6 @@
       "name": "OpenIMMessageTypeGroupDismissed",
       "type": "OpenIMMessageType",
       "value": "1511",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupDismissed : OpenIMMessageType = 1511",
-        "ios": "export const OpenIMMessageTypeGroupDismissed : OpenIMMessageType = 1511"
-      },
       "signatureHash": "9b99cb57cce0e84205459f5cb4db94eda23e7563a8f5d51b6386c9dc76671bb8"
     },
     {
@@ -848,10 +548,6 @@
       "name": "OpenIMMessageTypeGroupMemberMuted",
       "type": "OpenIMMessageType",
       "value": "1512",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupMemberMuted : OpenIMMessageType = 1512",
-        "ios": "export const OpenIMMessageTypeGroupMemberMuted : OpenIMMessageType = 1512"
-      },
       "signatureHash": "c0d5d8de0202e47af2b8ac939362a225e7de4af12ae2b9669f15a0c6d01d63a7"
     },
     {
@@ -859,10 +555,6 @@
       "name": "OpenIMMessageTypeGroupMemberCancelMuted",
       "type": "OpenIMMessageType",
       "value": "1513",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupMemberCancelMuted : OpenIMMessageType = 1513",
-        "ios": "export const OpenIMMessageTypeGroupMemberCancelMuted : OpenIMMessageType = 1513"
-      },
       "signatureHash": "ae0fab64c6dcdebd2a70c961ccb57b4776278bbc3abf221a5870cba7621a42e6"
     },
     {
@@ -870,10 +562,6 @@
       "name": "OpenIMMessageTypeGroupMuted",
       "type": "OpenIMMessageType",
       "value": "1514",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupMuted : OpenIMMessageType = 1514",
-        "ios": "export const OpenIMMessageTypeGroupMuted : OpenIMMessageType = 1514"
-      },
       "signatureHash": "ed1982e496801073ae7d26867cabee6fccd4a3c3ba4a0fc143417f808b801640"
     },
     {
@@ -881,10 +569,6 @@
       "name": "OpenIMMessageTypeGroupCancelMuted",
       "type": "OpenIMMessageType",
       "value": "1515",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupCancelMuted : OpenIMMessageType = 1515",
-        "ios": "export const OpenIMMessageTypeGroupCancelMuted : OpenIMMessageType = 1515"
-      },
       "signatureHash": "f6bac2a5eb233123fbd5e8802edeb8894fb70e4922860de34253ad1c216a8ef2"
     },
     {
@@ -892,10 +576,6 @@
       "name": "OpenIMMessageTypeGroupMemberInfoUpdated",
       "type": "OpenIMMessageType",
       "value": "1516",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupMemberInfoUpdated : OpenIMMessageType = 1516",
-        "ios": "export const OpenIMMessageTypeGroupMemberInfoUpdated : OpenIMMessageType = 1516"
-      },
       "signatureHash": "5c045cbc1cc24ef75bd867265860cf05f160df31d539a1a184e2c72e7a805215"
     },
     {
@@ -903,10 +583,6 @@
       "name": "OpenIMMessageTypeGroupMemberSetToAdmin",
       "type": "OpenIMMessageType",
       "value": "1517",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupMemberSetToAdmin : OpenIMMessageType = 1517",
-        "ios": "export const OpenIMMessageTypeGroupMemberSetToAdmin : OpenIMMessageType = 1517"
-      },
       "signatureHash": "e5b2c2407efa9abb7b8ba646f81ea075595e854d91eec0a9d84516b514c291f7"
     },
     {
@@ -914,10 +590,6 @@
       "name": "OpenIMMessageTypeGroupMemberSetToOrdinaryUser",
       "type": "OpenIMMessageType",
       "value": "1518",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupMemberSetToOrdinaryUser : OpenIMMessageType = 1518",
-        "ios": "export const OpenIMMessageTypeGroupMemberSetToOrdinaryUser : OpenIMMessageType = 1518"
-      },
       "signatureHash": "b743e9afb175eb6c2d7e2a28ddc883144eb4be3da70b34b7bdc82d618f35ac08"
     },
     {
@@ -925,10 +597,6 @@
       "name": "OpenIMMessageTypeGroupAnnouncementUpdated",
       "type": "OpenIMMessageType",
       "value": "1519",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupAnnouncementUpdated : OpenIMMessageType = 1519",
-        "ios": "export const OpenIMMessageTypeGroupAnnouncementUpdated : OpenIMMessageType = 1519"
-      },
       "signatureHash": "c0a5857216c66ed71859cfa5cfae3892717db278596ae6fd56f038f93452aeb9"
     },
     {
@@ -936,10 +604,6 @@
       "name": "OpenIMMessageTypeGroupNameUpdated",
       "type": "OpenIMMessageType",
       "value": "1520",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeGroupNameUpdated : OpenIMMessageType = 1520",
-        "ios": "export const OpenIMMessageTypeGroupNameUpdated : OpenIMMessageType = 1520"
-      },
       "signatureHash": "c1b6e4c0a8a99c8d24e125fd9def524a4d4bb5de6f25ba640286f95cbc3f83e0"
     },
     {
@@ -947,10 +611,6 @@
       "name": "OpenIMMessageTypeSuperGroupUpdated",
       "type": "OpenIMMessageType",
       "value": "1651",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeSuperGroupUpdated : OpenIMMessageType = 1651",
-        "ios": "export const OpenIMMessageTypeSuperGroupUpdated : OpenIMMessageType = 1651"
-      },
       "signatureHash": "42a3e7a5324c3eea35a9b960988ecfeda75906e698ed4bea846c275945eec3f3"
     },
     {
@@ -958,10 +618,6 @@
       "name": "OpenIMMessageTypeMsgDeleted",
       "type": "OpenIMMessageType",
       "value": "1652",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeMsgDeleted : OpenIMMessageType = 1652",
-        "ios": "export const OpenIMMessageTypeMsgDeleted : OpenIMMessageType = 1652"
-      },
       "signatureHash": "496eae88bdd81bf7040a4eaedb13340dc690b2f8179328b8a51d731440ffe071"
     },
     {
@@ -969,10 +625,6 @@
       "name": "OpenIMMessageTypeBurnMessageChange",
       "type": "OpenIMMessageType",
       "value": "1701",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeBurnMessageChange : OpenIMMessageType = 1701",
-        "ios": "export const OpenIMMessageTypeBurnMessageChange : OpenIMMessageType = 1701"
-      },
       "signatureHash": "07f3b0fd30bab3a763ea9c2bbc7582c8a7168e5a3bdd5d5a680f82de2d724b00"
     },
     {
@@ -980,10 +632,6 @@
       "name": "OpenIMMessageTypeConversationPrivateChat",
       "type": "OpenIMMessageType",
       "value": "1701",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeConversationPrivateChat : OpenIMMessageType = 1701",
-        "ios": "export const OpenIMMessageTypeConversationPrivateChat : OpenIMMessageType = 1701"
-      },
       "signatureHash": "41302b1649327e5b43328bbbc928e0229f2f27878b4b3cf37cc173924f6db317"
     },
     {
@@ -991,10 +639,6 @@
       "name": "OpenIMMessageTypeConversationUnread",
       "type": "OpenIMMessageType",
       "value": "1702",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeConversationUnread : OpenIMMessageType = 1702",
-        "ios": "export const OpenIMMessageTypeConversationUnread : OpenIMMessageType = 1702"
-      },
       "signatureHash": "2554e6b9a8e42a9713008b325d8161e24f6397202150aec964153ad60d305203"
     },
     {
@@ -1002,10 +646,6 @@
       "name": "OpenIMMessageTypeClearConversation",
       "type": "OpenIMMessageType",
       "value": "1703",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeClearConversation : OpenIMMessageType = 1703",
-        "ios": "export const OpenIMMessageTypeClearConversation : OpenIMMessageType = 1703"
-      },
       "signatureHash": "9b03e7b7d33ea062af3be9ab6b11295fdda136e8b1e9e6933613267971c5d028"
     },
     {
@@ -1013,10 +653,6 @@
       "name": "OpenIMMessageTypeConversationGroupChanged",
       "type": "OpenIMMessageType",
       "value": "1704",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeConversationGroupChanged : OpenIMMessageType = 1704",
-        "ios": "export const OpenIMMessageTypeConversationGroupChanged : OpenIMMessageType = 1704"
-      },
       "signatureHash": "11fd2db040c40c59f28425dbaabb7effd1c535c056862c8cbe710a5856741450"
     },
     {
@@ -1024,10 +660,6 @@
       "name": "OpenIMMessageTypeBusinessNotification",
       "type": "OpenIMMessageType",
       "value": "2001",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeBusinessNotification : OpenIMMessageType = 2001",
-        "ios": "export const OpenIMMessageTypeBusinessNotification : OpenIMMessageType = 2001"
-      },
       "signatureHash": "2e090397c74a4a655ac236f1fb8bff5560205adb8a8ebfb8b3262217461a5ca7"
     },
     {
@@ -1035,10 +667,6 @@
       "name": "OpenIMMessageTypeRevokeMessage",
       "type": "OpenIMMessageType",
       "value": "2101",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeRevokeMessage : OpenIMMessageType = 2101",
-        "ios": "export const OpenIMMessageTypeRevokeMessage : OpenIMMessageType = 2101"
-      },
       "signatureHash": "dfb60feb5232a1303a4a5aa3391e94e53678974a214cbd65980dbe9e06469418"
     },
     {
@@ -1046,10 +674,6 @@
       "name": "OpenIMMessageTypeDeleteMessages",
       "type": "OpenIMMessageType",
       "value": "2102",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeDeleteMessages : OpenIMMessageType = 2102",
-        "ios": "export const OpenIMMessageTypeDeleteMessages : OpenIMMessageType = 2102"
-      },
       "signatureHash": "1a021e3a15c68b570ac2c2bb28f3338b5003f925e0638e609716301d9604a8e1"
     },
     {
@@ -1057,10 +681,6 @@
       "name": "OpenIMMessageTypeModifyMessage",
       "type": "OpenIMMessageType",
       "value": "2103",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeModifyMessage : OpenIMMessageType = 2103",
-        "ios": "export const OpenIMMessageTypeModifyMessage : OpenIMMessageType = 2103"
-      },
       "signatureHash": "e9f254a20508cd856176a287a18261996c7ffbd0d86b5adcefea1b676bdde0d2"
     },
     {
@@ -1068,10 +688,6 @@
       "name": "OpenIMMessageTypeDeleteUserAllMessagesInConversation",
       "type": "OpenIMMessageType",
       "value": "2150",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeDeleteUserAllMessagesInConversation : OpenIMMessageType = 2150",
-        "ios": "export const OpenIMMessageTypeDeleteUserAllMessagesInConversation : OpenIMMessageType = 2150"
-      },
       "signatureHash": "212c96d6b66c26acf56219978140a8e9923df51902da9111234969e14103df21"
     },
     {
@@ -1079,10 +695,6 @@
       "name": "OpenIMMessageTypeHasReadReceipt",
       "type": "OpenIMMessageType",
       "value": "2200",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeHasReadReceipt : OpenIMMessageType = 2200",
-        "ios": "export const OpenIMMessageTypeHasReadReceipt : OpenIMMessageType = 2200"
-      },
       "signatureHash": "16dc95633a698fc1af48f1d1208418f2cf26a09595260fd73aa5ca2f15de79fc"
     },
     {
@@ -1090,10 +702,6 @@
       "name": "OpenIMMessageTypeHasResetUnreadReceipt",
       "type": "OpenIMMessageType",
       "value": "2210",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeHasResetUnreadReceipt : OpenIMMessageType = 2210",
-        "ios": "export const OpenIMMessageTypeHasResetUnreadReceipt : OpenIMMessageType = 2210"
-      },
       "signatureHash": "eba37f5670dd25c39aca09240f9e2e0829419b2b0fb8bcea18047da65ab2760f"
     },
     {
@@ -1101,10 +709,6 @@
       "name": "OpenIMMessageTypeHasGroupReadReceipt",
       "type": "OpenIMMessageType",
       "value": "2300",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeHasGroupReadReceipt : OpenIMMessageType = 2300",
-        "ios": "export const OpenIMMessageTypeHasGroupReadReceipt : OpenIMMessageType = 2300"
-      },
       "signatureHash": "bf64c05ff943cf993073771fc7325410f51077b919b8fc2142f28197005767a2"
     },
     {
@@ -1112,10 +716,6 @@
       "name": "OpenIMMessageTypePinned",
       "type": "OpenIMMessageType",
       "value": "2400",
-      "declaration": {
-        "android": "export const OpenIMMessageTypePinned : OpenIMMessageType = 2400",
-        "ios": "export const OpenIMMessageTypePinned : OpenIMMessageType = 2400"
-      },
       "signatureHash": "c10057828a57a53d32efeefa64280f84c49fe9f584031a9b19f24e42d7d8aea5"
     },
     {
@@ -1123,10 +723,6 @@
       "name": "OpenIMMessageTypePinnedRead",
       "type": "OpenIMMessageType",
       "value": "2401",
-      "declaration": {
-        "android": "export const OpenIMMessageTypePinnedRead : OpenIMMessageType = 2401",
-        "ios": "export const OpenIMMessageTypePinnedRead : OpenIMMessageType = 2401"
-      },
       "signatureHash": "df316b0c18a9cc4abb85fdc9c0ecc9b19f11a7022fdcbd5f6481099cc4c6e11c"
     },
     {
@@ -1134,10 +730,6 @@
       "name": "OpenIMMessageTypeStreamNotification",
       "type": "OpenIMMessageType",
       "value": "2500",
-      "declaration": {
-        "android": "export const OpenIMMessageTypeStreamNotification : OpenIMMessageType = 2500",
-        "ios": "export const OpenIMMessageTypeStreamNotification : OpenIMMessageType = 2500"
-      },
       "signatureHash": "777e3161b61a07a8f97bd4468b47fb9150b36ce50a22416929fc9b00bd6b4fef"
     },
     {
@@ -1145,10 +737,6 @@
       "name": "OpenIMSessionTypeSingle",
       "type": "OpenIMSessionType",
       "value": "1",
-      "declaration": {
-        "android": "export const OpenIMSessionTypeSingle : OpenIMSessionType = 1",
-        "ios": "export const OpenIMSessionTypeSingle : OpenIMSessionType = 1"
-      },
       "signatureHash": "68748002bd1f8251ec2268aaacf2518bc5cc40b14490fe02fc46fc39cec9e707"
     },
     {
@@ -1156,10 +744,6 @@
       "name": "OpenIMSessionTypeWriteGroup",
       "type": "OpenIMSessionType",
       "value": "2",
-      "declaration": {
-        "android": "export const OpenIMSessionTypeWriteGroup : OpenIMSessionType = 2",
-        "ios": "export const OpenIMSessionTypeWriteGroup : OpenIMSessionType = 2"
-      },
       "signatureHash": "61496eeda0e9535aae6221dabcf64dde69037008568b24a07bbf941cd79105e2"
     },
     {
@@ -1167,10 +751,6 @@
       "name": "OpenIMSessionTypeGroup",
       "type": "OpenIMSessionType",
       "value": "3",
-      "declaration": {
-        "android": "export const OpenIMSessionTypeGroup : OpenIMSessionType = 3",
-        "ios": "export const OpenIMSessionTypeGroup : OpenIMSessionType = 3"
-      },
       "signatureHash": "7f21ec4de72cc512a81855fdd6641d93f62303df49ff39f5cda2c6f63ca86ee7"
     },
     {
@@ -1178,10 +758,6 @@
       "name": "OpenIMSessionTypeNotification",
       "type": "OpenIMSessionType",
       "value": "4",
-      "declaration": {
-        "android": "export const OpenIMSessionTypeNotification : OpenIMSessionType = 4",
-        "ios": "export const OpenIMSessionTypeNotification : OpenIMSessionType = 4"
-      },
       "signatureHash": "ba39713f1abecc80e5a23cb582148bf460a41cd00c3ae0947772d212274b0b73"
     },
     {
@@ -1189,10 +765,6 @@
       "name": "OpenIMLoginStatusLogout",
       "type": "OpenIMLoginStatus",
       "value": "1",
-      "declaration": {
-        "android": "export const OpenIMLoginStatusLogout : OpenIMLoginStatus = 1",
-        "ios": "export const OpenIMLoginStatusLogout : OpenIMLoginStatus = 1"
-      },
       "signatureHash": "7c91f0aad42da1f3066a53034ce7e660fb6149904d880c73050c465301a326ec"
     },
     {
@@ -1200,10 +772,6 @@
       "name": "OpenIMLoginStatusLogging",
       "type": "OpenIMLoginStatus",
       "value": "2",
-      "declaration": {
-        "android": "export const OpenIMLoginStatusLogging : OpenIMLoginStatus = 2",
-        "ios": "export const OpenIMLoginStatusLogging : OpenIMLoginStatus = 2"
-      },
       "signatureHash": "a6df080b6db816fd30b632a66132e6dff4e7b3085ff3f276bb1408d406647e76"
     },
     {
@@ -1211,10 +779,6 @@
       "name": "OpenIMLoginStatusLogged",
       "type": "OpenIMLoginStatus",
       "value": "3",
-      "declaration": {
-        "android": "export const OpenIMLoginStatusLogged : OpenIMLoginStatus = 3",
-        "ios": "export const OpenIMLoginStatusLogged : OpenIMLoginStatus = 3"
-      },
       "signatureHash": "83d5ad7e02193fd11100ab63e2e9f5382d7c244807aa01156f24f11d129c00f5"
     }
   ],

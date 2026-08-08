@@ -191,15 +191,10 @@ export function composeEnterpriseContract(
   assert(base.edition === 'public', 'Enterprise composition requires the Public base contract')
   assert(delta.edition === 'enterprise-delta', 'Enterprise composition requires an Enterprise delta')
   assert(harmony.edition === 'enterprise-harmony-facade', 'Enterprise composition requires a Harmony façade projection')
-  const harmonyConstants = projectionMap(harmony.constants, 'constant')
   const harmonyCallables = projectionMap(harmony.callables, 'callable')
   const harmonyEvents = new Map(harmony.events.map((value) => [value.name, value]))
   const overrides = new Map(delta.approvedBaseCallableOverrides.map((value) => [value.name, value]))
-  const constants = [...base.constants, ...delta.constants].map((value) => {
-    const declaration = harmonyConstants.get(value.name)
-    assert(declaration != null, `Missing Harmony constant projection: ${value.name}`)
-    return { ...value, declaration: { ...value.declaration, harmony: declaration }, signatureHash: '' }
-  })
+  const constants = [...base.constants, ...delta.constants].map((value) => ({ ...value, signatureHash: '' }))
   const callables = [...base.callables, ...delta.callables].map((value) => {
     const declaration = harmonyCallables.get(value.name)
     assert(declaration != null, `Missing Harmony callable projection: ${value.name}`)

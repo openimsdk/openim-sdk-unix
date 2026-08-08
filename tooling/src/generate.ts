@@ -237,7 +237,9 @@ export function generateIndexFromTemplate(
   contract: ContractDocument,
   platform: Platform,
 ): string {
-  const constants = contract.constants.map((value) => value.declaration[platform]).join('\n')
+  const constants = contract.constants
+    .map((value) => `export const ${value.name} : ${value.type} = ${value.value}`)
+    .join('\n')
   const eventCallables = contract.callables
     .filter((value) => value.role !== 'operation')
     .map((value) => platformDeclaration(value, platform))

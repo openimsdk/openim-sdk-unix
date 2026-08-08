@@ -25,7 +25,6 @@ export interface ContractConstant {
   name: string
   type: string
   value: string
-  declaration: SourceByPlatform
   signatureHash: string
 }
 

@@ -558,6 +558,20 @@ test('event payload decoding is platform-neutral contract data', () => {
   }
 })
 
+test('constants are generated from canonical type and value fields', () => {
+  assert.equal(contract.constants.length, 109)
+  assert.equal(contract.constants.some((constant) => 'declaration' in constant), false)
+  const facades = {
+    android: generateIndex(root, contract, 'android'),
+    ios: generateIndex(root, contract, 'ios'),
+  }
+  for (const constant of contract.constants) {
+    const declaration = `export const ${constant.name} : ${constant.type} = ${constant.value}`
+    assert.ok(facades.android.split('\n').includes(declaration))
+    assert.ok(facades.ios.split('\n').includes(declaration))
+  }
+})
+
 test('Android wire validators use Java wrapper classes instead of unsupported typeof any', () => {
   const source = readFileSync(
     resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts'),
