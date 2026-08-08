@@ -142,6 +142,17 @@ final class OpenIMDriverRuntime {
         scheduleTerminal(ticket) { callback in callback.resolve(data) }
     }
 
+    func resolvePrepared(_ ticket: OpenIMDriverTicket, _ prepare: @escaping () throws -> String) {
+        scheduleTerminal(ticket) { callback in
+            do {
+                let data = try prepare()
+                callback.resolve(data)
+            } catch {
+                callback.reject(NSNumber(value: -1), error.localizedDescription)
+            }
+        }
+    }
+
     func reject(_ ticket: OpenIMDriverTicket, _ errCode: NSNumber, _ errMsg: String) {
         scheduleTerminal(ticket) { callback in callback.reject(errCode, errMsg) }
     }

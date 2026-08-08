@@ -35,8 +35,8 @@
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMDriverRuntime.swift",
-      "sha256": "f7001048d688c550b66ac4ff4861b59ab897dbed3fb11d6273c50949a91e0ebe",
-      "bytes": 6172
+      "sha256": "6191b5a678b95b55f27dc043108b75879d48bf6a15737eb793c01b54cebff918",
+      "bytes": 6549
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/platform-driver.uts",
