@@ -466,9 +466,12 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
   const harmony = monomorphizeHarmonySource(harmonyRaw)
   const harmonyDriver = renderHarmonyDriverBindings(privateRoot)
   const harmonyOperationCodes = renderHarmonyOperationCodes(privateRoot)
+  const harmonyEventInventory = JSON.parse(
+    readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8'),
+  ) as { events: Array<{ name: string; value: number }>; nativeEventAliases: Record<string, string> }
   const harmonyPlatformDriver = renderHarmonyPlatformDriver(
     contract,
-    new Map(harmonyProjection.callables.map((callable) => [callable.name, callable.declaration])),
+    harmonyEventInventory,
   )
   return normalizeOutputs([
     {

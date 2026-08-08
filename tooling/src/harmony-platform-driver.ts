@@ -4,24 +4,26 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
 }
 
-function harmonyNativeEventName(declaration: string): string | null {
-  return /harmonyEventCode\('([^']+)'\)/.exec(declaration)?.[1] ?? null
+export interface HarmonyEventBindingInventory {
+  events: Array<{ name: string; value: number }>
+  nativeEventAliases: Record<string, string>
 }
 
 export function renderHarmonyPlatformDriver(
   contract: ContractDocument,
-  projectedDeclarations: ReadonlyMap<string, string>,
+  inventory: HarmonyEventBindingInventory,
 ): string {
   const callables = new Map(contract.callables.map((callable) => [callable.name, callable]))
+  const nativeEvents = new Set(inventory.events.map((event) => event.name))
   const events = contract.events.flatMap((event) => {
     const callable = callables.get(event.callable)
     assert(callable != null, `Harmony event callable is missing: ${event.callable}`)
-    const declaration = projectedDeclarations.get(callable.name) ?? callable.declaration.harmony ?? ''
-    const nativeEventName = harmonyNativeEventName(declaration)
-    if (nativeEventName == null) {
-      assert(event.binding.harmony === 'unsupported-by-native-abi', `Harmony event lacks native binding: ${event.name}`)
+    if (event.binding.harmony === 'unsupported-by-native-abi') {
       return []
     }
+    assert(event.name.startsWith('on'), `Harmony public event does not follow the on* naming convention: ${event.name}`)
+    const nativeEventName = inventory.nativeEventAliases[event.name] ?? `EventOn${event.name.slice(2)}`
+    assert(nativeEvents.has(nativeEventName), `Harmony ABI lacks native event ${nativeEventName} for ${event.name}`)
     return [{ publicEventName: event.name, nativeEventName }]
   })
   const nativeEventNames = [...new Set(events.map((event) => event.nativeEventName))]

@@ -83,6 +83,13 @@ const HARMONY_UNSUPPORTED_OPERATIONS = [
   'getArchivedConversationList',
   'translateMessage',
 ] as const
+const HARMONY_NATIVE_EVENT_ALIASES = {
+  onMsgDeleted: 'EventOnMessageDeleted',
+  onSendMessageProgress: 'EventOnSendMsgProgress',
+  onUploadLogsProgress: 'EventOnUploadSDKDataProgress',
+  onUserStatusChanged: 'EventOnUserOnlineStatusChanged',
+  onReceiveCustomSignal: 'EventOnReceiveCustomSignaling',
+} as const
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -212,9 +219,7 @@ function importHarmonyABI(privateRoot: string): void {
       typedMethodCount: typedMethodBindings.length,
       typedMethodBindings,
       supportedContractEventCount: 70,
-      nativeEventAliases: {
-        onReceiveCustomSignal: 'EventOnReceiveCustomSignaling',
-      },
+      nativeEventAliases: HARMONY_NATIVE_EVENT_ALIASES,
       explicitlyUnsupportedContractEvents: [...HARMONY_UNSUPPORTED_EVENTS],
       explicitlyUnsupportedContractOperations: [...HARMONY_UNSUPPORTED_OPERATIONS],
     }, null, 2),
