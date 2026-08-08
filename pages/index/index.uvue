@@ -927,6 +927,9 @@
 		durationMs : number
 		invoked : boolean
 		resolved : boolean
+		responseEvidence : boolean
+		responseEncoding : string
+		responseDetail : string
 		structureValidated : boolean
 		semanticValidated : boolean
 		sideEffectValidated : boolean
@@ -1667,7 +1670,16 @@
 		}
 	}
 
-	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence ?: OpenIMAutomationEvidence | null, apiName ?: string | null, invoked ?: boolean | null, resolved ?: boolean | null) {
+	function subscriptionAutomationEvidence(handleMatched : boolean, registryObserved : boolean) : OpenIMAutomationEvidence {
+		return {
+			structureValidated: true,
+			semanticValidated: handleMatched,
+			sideEffectValidated: registryObserved,
+			eventCorrelated: false
+		}
+	}
+
+	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence ?: OpenIMAutomationEvidence | null, apiName ?: string | null, invoked ?: boolean | null, resolved ?: boolean | null, responseDetail ?: string | null) {
 		markAutomationAPICovered(name)
 		const checked = evidence == null ? emptyAutomationEvidence() : evidence as OpenIMAutomationEvidence
 		if (status == 'passed' && (checked.structureValidated || checked.semanticValidated || checked.sideEffectValidated || checked.eventCorrelated)) {
@@ -1682,6 +1694,9 @@
 			durationMs: new Date().getTime() - startedAt,
 			invoked: invoked == true,
 			resolved: resolved == true,
+			responseEvidence: responseDetail != null,
+			responseEncoding: responseDetail != null ? 'uts-typed-json-v1' : '',
+			responseDetail: responseDetail != null ? responseDetail as string : '',
 			structureValidated: checked.structureValidated,
 			semanticValidated: checked.semanticValidated,
 			sideEffectValidated: checked.sideEffectValidated,
@@ -1698,8 +1713,8 @@
 		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), null, name, true, ok)
 	}
 
-	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence) {
-		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok)
+	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence, responseDetail ?: string | null) {
+		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok, responseDetail)
 	}
 
 	function recordAutomationSkip(group : string, name : string, detail : string) {
@@ -1789,7 +1804,7 @@
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, timeoutMilliseconds)
 			resolvedValueText = stringifyAPIValue(value)
 			onSuccess(value)
-			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt, evidence, name, true, true)
+			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt, evidence, name, true, true, resolvedValueText)
 			return value
 		} catch (error) {
 			const errorText = stringifyAPIValue(error)
@@ -1816,7 +1831,8 @@
 		try {
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, automationDefaultStepTimeoutMilliseconds)
 			onSuccess(value)
-			recordAutomationCase(group, name, 'passed', stringifyAPIValue(value), startedAt, null, name, true, true)
+			const responseDetail = stringifyAPIValue(value)
+			recordAutomationCase(group, name, 'passed', responseDetail, startedAt, null, name, true, true, responseDetail)
 			return value
 		} catch (error) {
 			recordAutomationCase(group, name, 'skipped', reason + ': ' + stringifyAPIValue(error), startedAt, null, name, true, false)
@@ -1872,10 +1888,13 @@
 
 	function recordAutomationEventSubscriptionCoverage() {
 		let index = 0
-		while (index < sdkRegisteredEventNames.length) {
-			const eventName = sdkRegisteredEventNames[index]
-			const hasSubscription = automationStringArrayContains(sdkEventSubscriptionNames, eventName)
-			recordAutomationStep('events', eventName, true, hasSubscription ? 'event subscription handle returned' : 'event subscription handle missing')
+		while (index < sdkEventSubscriptions.length) {
+			const subscription = sdkEventSubscriptions[index]
+			const eventName = subscription.eventName
+			const handleMatched = subscription.id.length > 0 && automationStringArrayContains(sdkRegisteredEventNames, eventName)
+			const registryObserved = automationStringArrayContains(sdkEventSubscriptionNames, eventName)
+			const valid = handleMatched && registryObserved
+			recordAutomationCase('events', eventName, valid ? 'passed' : 'failed', valid ? 'exact subscription handle and registry entry observed' : 'event subscription handle or registry entry missing', new Date().getTime(), subscriptionAutomationEvidence(handleMatched, registryObserved), eventName, true, valid, valid ? stringifyAPIValue(subscription) : null)
 			index = index + 1
 		}
 		index = 0
@@ -1908,15 +1927,15 @@
 		requireAutomation(removedCount == 0, 'off delivered a removed subscription')
 		requireAutomation(selfRemovingCount == 1, 'snapshot dispatch/self removal count changed')
 		requireAutomation(survivorCount > 0, 'off blocked a sibling subscription')
-		recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence(false))
-		recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence(true))
+		recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence(false), 'null')
+		recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence(true), stringifyAPIValue(survivor))
 
 		const survivorBeforeOffAll = survivorCount
 		offAll('onConnecting')
 		await switchAutomationSecondary(config, 'B_event_control_off_all')
 		requireAutomation(survivorCount == survivorBeforeOffAll, 'offAll retained an onConnecting subscription')
 		requireAutomation(selfRemovingCount == 1, 'offAll reactivated a removed subscription')
-		recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence(false))
+		recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence(false), 'null')
 		registerSDKEvents()
 		await switchAutomationPrimary(config, 'A_event_control_restore')
 	}
@@ -2094,7 +2113,7 @@
 		await runAutomationEventControlScenario(config)
 		const dataPath = getOpenIMDataPath()
 		requireAutomationString(dataPath, 'getOpenIMDataPath returned empty path')
-		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence())
+		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence(), stringifyAPIValue(dataPath))
 		initializeAutomationLogFiles()
 		prepareAutomationLocalFiles()
 		recordAutomationEventSubscriptionCoverage()
@@ -2102,7 +2121,7 @@
 		recordAutomationEvidenceStep('setup', 'initSDK', true, 'successful login observed after init', mutationAutomationEvidence(false))
 		const sdkVersion = getSdkVersion()
 		requireAutomationString(sdkVersion, 'getSdkVersion returned empty version')
-		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence())
+		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence(), stringifyAPIValue(sdkVersion))
 	}
 
 	async function runAutomationUserStatusSuite(config : OpenIMAutomationConfig) : Promise<void> {
@@ -2832,7 +2851,7 @@
 			await switchAutomationPrimary(readyConfig, 'A_epoch_probe')
 			await sleepAutomation(250)
 			requireAutomation(retainedConnectingCount == 1, 'registry/native epoch rebind delivered ' + retainedConnectingCount.toString() + ' connecting callbacks')
-			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence(false))
+			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence(false), 'null')
 			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence(true))
 			off(retained)
 			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {

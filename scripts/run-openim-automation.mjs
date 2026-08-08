@@ -3,6 +3,10 @@
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
+import {
+  evidenceFailureMessage,
+  writeLatestAutomationEvidence,
+} from './lib/openim-runner-evidence.mjs';
 
 const projectRoot = resolve(new URL('..', import.meta.url).pathname);
 const platform = process.argv[2] || '';
@@ -10,6 +14,7 @@ const cliPath = process.env.HBUILDERX_CLI_PATH || '/Applications/HBuilderX-Alpha
 const startupTimeoutMs = Number(process.env.OPENIM_TEST_STARTUP_TIMEOUT_MS || 5 * 60 * 1000);
 const hardTimeoutMs = Number(process.env.OPENIM_TEST_PROCESS_TIMEOUT_MS || 30 * 60 * 1000);
 const requestedVapor = process.env.OPENIM_TEST_VAPOR !== 'false' && process.env.OPENIM_TEST_VAPOR !== '0';
+const runStartedAtMs = Date.now();
 
 function readArgument(name) {
   const index = process.argv.indexOf(name);
@@ -257,10 +262,26 @@ child.on('close', (code, signal) => {
   clearInterval(heartbeat);
   terminateProjectJestProcesses('runner exit cleanup');
   const passed = /Test Suites:\s+\d+ passed/i.test(outputTail) && /Tests:\s+\d+ passed/i.test(outputTail);
-  if (code === 0 && failureMarker.length === 0 && passed) {
+  let evidenceFailure = '';
+  try {
+    const fullRun = String(process.env.OPENIM_AUTOMATION_SUITE || '').length === 0;
+    const { evidence, evidencePath } = writeLatestAutomationEvidence({
+      projectRoot,
+      platform,
+      startedAtMs: runStartedAtMs,
+      fullRun,
+    });
+    console.log(`[openim-runner] automation evidence: ${evidencePath}`);
+    if (!evidence.contractEvidence.passed) {
+      evidenceFailure = evidenceFailureMessage(evidence);
+    }
+  } catch (error) {
+    evidenceFailure = `automation evidence unavailable: ${error.message}`;
+  }
+  if (code === 0 && failureMarker.length === 0 && passed && evidenceFailure.length === 0) {
     console.log('[openim-runner] automation passed');
     process.exit(0);
   }
-  console.error(`[openim-runner] automation failed (code=${String(code)}, signal=${String(signal)}, marker=${failureMarker || 'missing explicit Jest success marker'})`);
+  console.error(`[openim-runner] automation failed (code=${String(code)}, signal=${String(signal)}, marker=${failureMarker || evidenceFailure || 'missing explicit Jest success marker'})`);
   process.exit(1);
 });
