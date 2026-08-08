@@ -167,6 +167,18 @@ export function composeHarmonyDeclaration(callable: ContractCallable, declaratio
   if (callable.name === 'updateFriends') {
     result = `export const updateFriends = function (params : OpenIMUpdateFriendsParams, operationID ?: string | null) : Promise<string> { return updateFriendsSequential(${callable.id}, params, operationID) }`
   }
+  if (callable.name === 'setAppBackgroundStatus') {
+    result = `export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'setAppBackgroundStatus', { isBackground: data } as ESObject, operationID) }`
+  }
+  if (callable.name === 'setAppBadge') {
+    result = `export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'setAppBadge', { appUnreadCount: appUnreadCount } as ESObject, operationID) }`
+  }
+  if (callable.name === 'networkStatusChanged') {
+    result = `export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'networkStatusChanged', {} as ESObject, operationID) }`
+  }
+  if (callable.name === 'cancelUpload') {
+    result = `export const cancelUpload = function (params : OpenIMCancelUploadParams, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'cancelUpload', { cancelID: params.cancelID } as ESObject, operationID) }`
+  }
   assert(!/400\d{3}/.test(result), `Harmony callable retained a legacy operation ID: ${callable.name}`)
   return result
 }

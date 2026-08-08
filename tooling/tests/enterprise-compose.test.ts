@@ -150,3 +150,38 @@ test('Harmony event subscriptions and offAll are projected through the public-na
     'export function offAll(eventName : OpenIMSDKEventName) : void { offAllHarmonyUTSSubscriptions(eventName) }',
   )
 })
+
+test('Harmony local operation wrappers lower to the PlatformDriver seam', () => {
+  const cases = [
+    {
+      id: 2069,
+      name: 'setAppBackgroundStatus',
+      declaration: "export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.setAppBackgroundStatus(data, normalizeOperationID(operationID)), 'setAppBackgroundStatus') }",
+      expected: "invokeHarmonyEmpty(2069, 'setAppBackgroundStatus', { isBackground: data } as ESObject, operationID)",
+    },
+    {
+      id: 2070,
+      name: 'setAppBadge',
+      declaration: "export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.setAppBadge(appUnreadCount, normalizeOperationID(operationID)), 'setAppBadge') }",
+      expected: "invokeHarmonyEmpty(2070, 'setAppBadge', { appUnreadCount: appUnreadCount } as ESObject, operationID)",
+    },
+    {
+      id: 2071,
+      name: 'networkStatusChanged',
+      declaration: "export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.networkStatusChanged(normalizeOperationID(operationID)), 'networkStatusChanged') }",
+      expected: "invokeHarmonyEmpty(2071, 'networkStatusChanged', {} as ESObject, operationID)",
+    },
+    {
+      id: 200034,
+      name: 'cancelUpload',
+      declaration: "export const cancelUpload = function (params : OpenIMCancelUploadParams, operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.cancelUpload(params.cancelID, normalizeOperationID(operationID)), 'cancelUpload') }",
+      expected: "invokeHarmonyEmpty(200034, 'cancelUpload', { cancelID: params.cancelID } as ESObject, operationID)",
+    },
+  ]
+  for (const value of cases) {
+    const callable = { id: value.id, name: value.name, role: 'operation' } as ContractDocument['callables'][number]
+    const declaration = composeHarmonyDeclaration(callable, value.declaration)
+    assert.match(declaration, new RegExp(value.expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+    assert.doesNotMatch(declaration, /OpenIMHarmonyDriver/)
+  }
+})
