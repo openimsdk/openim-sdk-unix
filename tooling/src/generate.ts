@@ -105,15 +105,32 @@ function driverFieldsRequestPrelude(fields: DriverRequestField[], platform: 'and
 const DRIVER_TYPED_RESPONSE_PARSERS: Readonly<Record<string, string>> = {
   'typed:OpenIMLoginStatus': 'parseNativeLoginStatus',
   'typed:OpenIMMessageItem|null': 'parseNativeMessage',
-  'typed:OpenIMAdvancedHistoryMessageListResult|null': 'parseAdvancedHistoryDriverResponse',
-  'typed:OpenIMConversationItem|null': 'parseNativeConversationObject',
-  'typed:OpenIMConversationListResult|null': 'parseNativeConversationListResult',
   'typed:OpenIMSearchMessageResult|null': 'parseNativeSearchMessageResult',
 }
 
+const DRIVER_PROMISE_RESPONSE_RESOLVERS: Readonly<Record<string, string>> = {
+  'raw-string': 'resolveStringNative',
+  'number': 'resolveNumberNative',
+  'boolean': 'resolveBooleanNative',
+  'typed:Array<string>|null': 'resolveStringListNative',
+  'typed:OpenIMAdvancedHistoryMessageListResult|null': 'resolveAdvancedHistoryNative',
+  'typed:OpenIMBlackListResult|null': 'resolveBlackListNative',
+  'typed:OpenIMCheckFriendResult|null': 'resolveCheckFriendNative',
+  'typed:OpenIMConversationItem|null': 'resolveConversationObjectNative',
+  'typed:OpenIMConversationListResult|null': 'resolveConversationListNative',
+  'typed:OpenIMFindMessageResult|null': 'resolveMessageListNative',
+  'typed:OpenIMFriendApplicationListResult|null': 'resolveFriendApplicationListNative',
+  'typed:OpenIMFriendListResult|null': 'resolveFriendListNative',
+  'typed:OpenIMGroupApplicationListResult|null': 'resolveGroupApplicationListNative',
+  'typed:OpenIMGroupItem|null': 'resolveGroupObjectNative',
+  'typed:OpenIMGroupListResult|null': 'resolveGroupListNative',
+  'typed:OpenIMGroupMemberListResult|null': 'resolveGroupMemberListNative',
+  'typed:OpenIMUserInfo|null': 'resolveUserObjectNative',
+  'typed:OpenIMUserListResult|null': 'resolveUserListNative',
+  'typed:OpenIMUserStatusListResult|null': 'resolveUserStatusListNative',
+}
+
 function driverResolveExpression(callable: ContractCallable): string {
-  if (callable.responseCodec === 'raw-string') return 'resolve'
-  if (callable.responseCodec === 'boolean') return `(data : string) => { resolve(data == 'true') }`
   if (callable.responseCodec === 'typed:OpenIMMessageItem') {
     return `(data : string) => { resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
   }
@@ -165,6 +182,10 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
     return `export const ${callable.name} = function (${parameters}) { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }`
   }
   const valueType = promiseValueType(returnType)
+  const promiseResolver = DRIVER_PROMISE_RESPONSE_RESOLVERS[callable.responseCodec]
+  if (promiseResolver != null) {
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, resolve, reject) }) }`
+  }
   const resolveExpression = driverResolveExpression(callable)
   return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
 }

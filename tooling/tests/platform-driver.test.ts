@@ -52,11 +52,11 @@ const CONVERSATION_STRING_OPERATIONS = [
 ] as const
 
 const CONVERSATION_TYPED_QUERIES = [
-  ['getAllConversationList', 2059, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
-  ['getOneConversation', 2060, 'typed:OpenIMConversationItem|null', 'parseNativeConversationObject'],
-  ['searchConversation', 2086, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
-  ['getConversationListSplit', 2087, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
-  ['getMultipleConversation', 2089, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
+  ['getAllConversationList', 2059, 'typed:OpenIMConversationListResult|null', 'resolveConversationListNative'],
+  ['getOneConversation', 2060, 'typed:OpenIMConversationItem|null', 'resolveConversationObjectNative'],
+  ['searchConversation', 2086, 'typed:OpenIMConversationListResult|null', 'resolveConversationListNative'],
+  ['getConversationListSplit', 2087, 'typed:OpenIMConversationListResult|null', 'resolveConversationListNative'],
+  ['getMultipleConversation', 2089, 'typed:OpenIMConversationListResult|null', 'resolveConversationListNative'],
   ['searchLocalMessages', 2093, 'typed:OpenIMSearchMessageResult|null', 'parseNativeSearchMessageResult'],
 ] as const
 
@@ -291,12 +291,16 @@ test('typed conversation queries select strict response parsers by contract code
   for (const platform of ['android', 'ios'] as const) {
     const adapter = renderNativeCoreAdapter(contract, platform)
     const facade = generateIndex(root, contract, platform)
-    for (const [name, id, , parser] of CONVERSATION_TYPED_QUERIES) {
+    for (const [name, id, , responseAdapter] of CONVERSATION_TYPED_QUERIES) {
       assert.match(adapter, new RegExp(`(?:case )?${id}`), `${platform} adapter is missing ${name}`)
       const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
       assert.notEqual(declaration, undefined)
       assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
-      assert.match(declaration!, new RegExp(`resolve\\(${parser}\\(data\\)\\)`))
+      if (responseAdapter.startsWith('resolve')) {
+        assert.match(declaration!, new RegExp(`${responseAdapter}\\(\\(resolve, reject\\) =>`))
+      } else {
+        assert.match(declaration!, new RegExp(`resolve\\(${responseAdapter}\\(data\\)\\)`))
+      }
       assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
     }
     const emptyCase = platform === 'android'
@@ -324,9 +328,9 @@ test('advanced history keeps platform compatibility behind one generated respons
     const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
     assert.notEqual(declaration, undefined)
     assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
-    assert.match(declaration!, /resolve\(parseAdvancedHistoryDriverResponse\(data\)\)/)
+    assert.match(declaration!, /resolveAdvancedHistoryNative\(\(resolve, reject\) =>/)
     assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
-    assert.match(facade, /function parseAdvancedHistoryDriverResponse\(data : string\)/)
+    assert.match(facade, /function resolveAdvancedHistoryNative\(invoke :/)
   }
 })
 
