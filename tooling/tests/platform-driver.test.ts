@@ -51,6 +51,15 @@ const CONVERSATION_STRING_OPERATIONS = [
   ['setConversationDraft', 2091, 'callback'],
 ] as const
 
+const CONVERSATION_TYPED_QUERIES = [
+  ['getAllConversationList', 2059, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
+  ['getOneConversation', 2060, 'typed:OpenIMConversationItem|null', 'parseNativeConversationObject'],
+  ['searchConversation', 2086, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
+  ['getConversationListSplit', 2087, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
+  ['getMultipleConversation', 2089, 'typed:OpenIMConversationListResult|null', 'parseNativeConversationListResult'],
+  ['searchLocalMessages', 2093, 'typed:OpenIMSearchMessageResult|null', 'parseNativeSearchMessageResult'],
+] as const
+
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
   const expected = [
     { id: 2051, name: 'initSDK' },
@@ -60,7 +69,10 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
     { id: 2055, name: 'getLoginUserID' },
     { id: 2056, name: 'getSdkVersion' },
     { id: 2058, name: 'unInitSDK' },
-    ...CONVERSATION_STRING_OPERATIONS.map(([name, id]) => ({ id, name })),
+    ...[
+      ...CONVERSATION_STRING_OPERATIONS.map(([name, id]) => ({ id, name })),
+      ...CONVERSATION_TYPED_QUERIES.map(([name, id]) => ({ id, name })),
+    ].sort((left, right) => left.id - right.id),
     { id: 2139, name: 'createTextMessage' },
     ...[
       ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
@@ -254,6 +266,39 @@ test('conversation string operations are generated from structured invocation da
     const emptyCase = platform === 'android'
       ? /2084 -> \{\n\s+NativeOpenIMSDK\.hideAllConversations/
       : /case 2084:\n\s+NativeOpenIMSDK\.hideAllConversations/
+    assert.match(adapter, emptyCase)
+  }
+})
+
+test('typed conversation queries select strict response parsers by contract codec', () => {
+  for (const [name, id, responseCodec] of CONVERSATION_TYPED_QUERIES) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.id, id)
+    assert.equal(callable?.responseCodec, responseCodec)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind === 'platform-driver') {
+      assert.deepEqual(callable.lowering.nativeInvocation, { completion: 'callback' })
+    }
+  }
+
+  const getAll = contract.callables.find((candidate) => candidate.name === 'getAllConversationList')
+  assert.equal(getAll?.lowering?.kind, 'platform-driver')
+  if (getAll?.lowering?.kind === 'platform-driver') assert.equal(getAll.lowering.request, 'empty-object')
+
+  for (const platform of ['android', 'ios'] as const) {
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    const facade = generateIndex(root, contract, platform)
+    for (const [name, id, , parser] of CONVERSATION_TYPED_QUERIES) {
+      assert.match(adapter, new RegExp(`(?:case )?${id}`), `${platform} adapter is missing ${name}`)
+      const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+      assert.notEqual(declaration, undefined)
+      assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
+      assert.match(declaration!, new RegExp(`resolve\\(${parser}\\(data\\)\\)`))
+      assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
+    }
+    const emptyCase = platform === 'android'
+      ? /2059 -> \{\n\s+NativeOpenIMSDK\.getAllConversationList/
+      : /case 2059:\n\s+NativeOpenIMSDK\.getAllConversationList/
     assert.match(adapter, emptyCase)
   }
 })

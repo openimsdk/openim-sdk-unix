@@ -102,6 +102,25 @@ function driverFieldsRequestPrelude(fields: DriverRequestField[], platform: 'and
   return `const requestJSON = ${fragments.join(' + ')} + '}';`
 }
 
+const DRIVER_TYPED_RESPONSE_PARSERS: Readonly<Record<string, string>> = {
+  'typed:OpenIMLoginStatus': 'parseNativeLoginStatus',
+  'typed:OpenIMMessageItem|null': 'parseNativeMessage',
+  'typed:OpenIMConversationItem|null': 'parseNativeConversationObject',
+  'typed:OpenIMConversationListResult|null': 'parseNativeConversationListResult',
+  'typed:OpenIMSearchMessageResult|null': 'parseNativeSearchMessageResult',
+}
+
+function driverResolveExpression(callable: ContractCallable): string {
+  if (callable.responseCodec === 'raw-string') return 'resolve'
+  if (callable.responseCodec === 'boolean') return `(data : string) => { resolve(data == 'true') }`
+  if (callable.responseCodec === 'typed:OpenIMMessageItem') {
+    return `(data : string) => { resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
+  }
+  const parser = DRIVER_TYPED_RESPONSE_PARSERS[callable.responseCodec]
+  if (parser != null) return `(data : string) => { resolve(${parser}(data)) }`
+  throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
+}
+
 function renderLoweredCallable(callable: ContractCallable, platform: 'android' | 'ios'): string {
   const lowering = callable.lowering
   if (lowering == null) throw new Error(`Missing callable lowering: ${callable.name}`)
@@ -145,13 +164,7 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
     return `export const ${callable.name} = function (${parameters}) { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }`
   }
   const valueType = promiseValueType(returnType)
-  let resolveExpression: string
-  if (callable.responseCodec === 'raw-string') resolveExpression = 'resolve'
-  else if (callable.responseCodec === 'boolean') resolveExpression = `(data : string) => { resolve(data == 'true') }`
-  else if (callable.responseCodec === 'typed:OpenIMLoginStatus') resolveExpression = '(data : string) => { resolve(parseNativeLoginStatus(data)) }'
-  else if (callable.responseCodec === 'typed:OpenIMMessageItem|null') resolveExpression = '(data : string) => { resolve(parseNativeMessage(data)) }'
-  else if (callable.responseCodec === 'typed:OpenIMMessageItem') resolveExpression = `(data : string) => { resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
-  else throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
+  const resolveExpression = driverResolveExpression(callable)
   return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
 }
 

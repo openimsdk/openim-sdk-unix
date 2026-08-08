@@ -66,6 +66,11 @@ class OpenIMCoreAdapter {
                 resolve(NativeOpenIMSDK.getLoginUserID())
             case 2058:
                 resolve(NativeOpenIMSDK.unInitSDK(operationID))
+            case 2059:
+                NativeOpenIMSDK.getAllConversationList(operationID, resolve, reject)
+            case 2060:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getOneConversation(operationID, try requiredNumber(request, "sessionType"), try requiredString(request, "sourceID"), resolve, reject)
             case 2063:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, try requiredString(request, "conversationID"), resolve, reject)
@@ -85,15 +90,27 @@ class OpenIMCoreAdapter {
                 NativeOpenIMSDK.hideAllConversations(operationID, resolve, reject)
             case 2085:
                 NativeOpenIMSDK.markAllConversationMessageAsRead(operationID, resolve, reject)
+            case 2086:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.searchConversation(operationID, try requiredString(request, "searchParam"), resolve, reject)
+            case 2087:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getConversationListSplit(operationID, try requiredNumber(request, "offset"), try requiredNumber(request, "count"), resolve, reject)
             case 2088:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.getConversationIDBySessionType(operationID, try requiredString(request, "sourceID"), try requiredNumber(request, "sessionType")))
+            case 2089:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getMultipleConversation(operationID, try requiredString(request, "conversationIDList"), resolve, reject)
             case 2090:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, try requiredString(request, "conversationID"), resolve, reject)
             case 2091:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.setConversationDraft(operationID, try requiredString(request, "conversationID"), try requiredString(request, "draftText"), resolve, reject)
+            case 2093:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.searchLocalMessages(operationID, try requiredString(request, "searchParams"), resolve, reject)
             case 2139:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createTextMessage(operationID, try requiredString(request, "text")))

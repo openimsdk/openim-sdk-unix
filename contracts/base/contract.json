@@ -3655,9 +3655,14 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getAllConversationList = function (operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getAllConversationList(normalizeOperationID(operationID), resolve, reject) }) }",
-        "ios": "export const getAllConversationList = function (operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getAllConversationList(normalizeOperationID(operationID), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object",
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -3669,7 +3674,7 @@
           "symbol": "getAllConversationList"
         }
       },
-      "signatureHash": "cc087e1aade957802646e22ab3af8d5f56349dfeb46ce596dff6523f1d73f141"
+      "signatureHash": "c53f1085a26eade2abc9efbeb14a86050e1e7c267091f55c310d5004530020c0"
     },
     {
       "id": 2060,
@@ -3680,9 +3685,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getOneConversation = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<OpenIMConversationItem | null> { return resolveConversationObjectNative((resolve, reject) => { NativeOpenIMSDK.getOneConversation(normalizeOperationID(operationID), params.sessionType, params.sourceID, resolve, reject) }) }",
-        "ios": "export const getOneConversation = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<OpenIMConversationItem | null> { return resolveConversationObjectNative((resolve, reject) => { NativeOpenIMSDK.getOneConversation(normalizeOperationID(operationID), params.sessionType, params.sourceID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "sessionType",
+              "parameter": "params",
+              "member": "sessionType",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "sourceID",
+              "parameter": "params",
+              "member": "sourceID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -3694,7 +3722,7 @@
           "symbol": "getOneConversation"
         }
       },
-      "signatureHash": "80c4e13219f559263d0e3ca919a57bda3782c3ad652903b7817dfa6b2a4a8ec3"
+      "signatureHash": "e9691b276a445739dbde79d308e2100f2fc0d35e2ef119984f8cc409d4d4db3e"
     },
     {
       "id": 2061,
@@ -4422,9 +4450,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const searchConversation = function (searchParam : string, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.searchConversation(normalizeOperationID(operationID), searchParam, resolve, reject) }) }",
-        "ios": "export const searchConversation = function (searchParam : string, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.searchConversation(normalizeOperationID(operationID), searchParam, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "searchParam",
+              "parameter": "searchParam",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4436,7 +4479,7 @@
           "symbol": "searchConversation"
         }
       },
-      "signatureHash": "de2a92434a15253a273c9e679487bfd6b6d14cddfee56f0e3de4db1be16c293f"
+      "signatureHash": "d8ee233be8e2742d877dfcc65f038f410f16c5643a8e4480a06fbc2b4461cdec"
     },
     {
       "id": 2087,
@@ -4447,9 +4490,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getConversationListSplit = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getConversationListSplit(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }",
-        "ios": "export const getConversationListSplit = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getConversationListSplit(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "offset",
+              "parameter": "params",
+              "member": "offset",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "count",
+              "parameter": "params",
+              "member": "count",
+              "codec": "identity",
+              "wireType": "number"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4461,7 +4527,7 @@
           "symbol": "getConversationListSplit"
         }
       },
-      "signatureHash": "9f1a4de07fc4e2b6533675ee5c3c5578ce3c5d44c8cde10259a5563cf2e898af"
+      "signatureHash": "7635bb4c619fed59d443e49e1c2ada29c83b1c9ac863a96ea02df60dc1dbb1a7"
     },
     {
       "id": 2088,
@@ -4520,9 +4586,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getMultipleConversation = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getMultipleConversation(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }",
-        "ios": "export const getMultipleConversation = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMConversationListResult | null> { return resolveConversationListNative((resolve, reject) => { NativeOpenIMSDK.getMultipleConversation(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationIDList",
+              "parameter": "data",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4534,7 +4615,7 @@
           "symbol": "getMultipleConversation"
         }
       },
-      "signatureHash": "7d334f44e085c4e995ff8f244c77f99f63c61343d601dc4e34715c27d7cbf583"
+      "signatureHash": "0face4b13172cc0551c9be730a2996ebb36a5685f8876bd69cd7d6f3aba1d770"
     },
     {
       "id": 2090,
@@ -4658,9 +4739,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const searchLocalMessages = function (params : OpenIMSearchLocalMessagesParams, operationID ?: string | null) : Promise<OpenIMSearchMessageResult | null> { return new Promise<OpenIMSearchMessageResult | null>((resolve, reject) => { NativeOpenIMSDK.searchLocalMessages(normalizeOperationID(operationID), stringifyJSON(params), (data : string) => { resolve(parseNativeSearchMessageResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const searchLocalMessages = function (params : OpenIMSearchLocalMessagesParams, operationID ?: string | null) : Promise<OpenIMSearchMessageResult | null> { return new Promise<OpenIMSearchMessageResult | null>((resolve, reject) => { NativeOpenIMSDK.searchLocalMessages(normalizeOperationID(operationID), stringifyJSON(params), (data : string) => { resolve(parseNativeSearchMessageResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "searchParams",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4672,7 +4768,7 @@
           "symbol": "searchLocalMessages"
         }
       },
-      "signatureHash": "fddcc3f0692f143a18ebb91a19fb64ffaeb8f3bea35c8884a56af7e39054b9b0"
+      "signatureHash": "6fc0123a349095db69b61f0fa4a49541ceec520a422848fd7894b5c4122d1021"
     },
     {
       "id": 2094,

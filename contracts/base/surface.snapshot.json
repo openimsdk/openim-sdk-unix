@@ -1927,13 +1927,13 @@
       "id": 2059,
       "name": "getAllConversationList",
       "signature": "getAllConversationList(operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "cc087e1aade957802646e22ab3af8d5f56349dfeb46ce596dff6523f1d73f141"
+      "signatureHash": "c53f1085a26eade2abc9efbeb14a86050e1e7c267091f55c310d5004530020c0"
     },
     {
       "id": 2060,
       "name": "getOneConversation",
       "signature": "getOneConversation(params:OpenIMGetOneConversationParams,operationID?:string|null):Promise<OpenIMConversationItem|null>",
-      "signatureHash": "80c4e13219f559263d0e3ca919a57bda3782c3ad652903b7817dfa6b2a4a8ec3"
+      "signatureHash": "e9691b276a445739dbde79d308e2100f2fc0d35e2ef119984f8cc409d4d4db3e"
     },
     {
       "id": 2061,
@@ -2089,13 +2089,13 @@
       "id": 2086,
       "name": "searchConversation",
       "signature": "searchConversation(searchParam:string,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "de2a92434a15253a273c9e679487bfd6b6d14cddfee56f0e3de4db1be16c293f"
+      "signatureHash": "d8ee233be8e2742d877dfcc65f038f410f16c5643a8e4480a06fbc2b4461cdec"
     },
     {
       "id": 2087,
       "name": "getConversationListSplit",
       "signature": "getConversationListSplit(params:OpenIMPageParams,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "9f1a4de07fc4e2b6533675ee5c3c5578ce3c5d44c8cde10259a5563cf2e898af"
+      "signatureHash": "7635bb4c619fed59d443e49e1c2ada29c83b1c9ac863a96ea02df60dc1dbb1a7"
     },
     {
       "id": 2088,
@@ -2107,7 +2107,7 @@
       "id": 2089,
       "name": "getMultipleConversation",
       "signature": "getMultipleConversation(data:Array<string>,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "7d334f44e085c4e995ff8f244c77f99f63c61343d601dc4e34715c27d7cbf583"
+      "signatureHash": "0face4b13172cc0551c9be730a2996ebb36a5685f8876bd69cd7d6f3aba1d770"
     },
     {
       "id": 2090,
@@ -2131,7 +2131,7 @@
       "id": 2093,
       "name": "searchLocalMessages",
       "signature": "searchLocalMessages(params:OpenIMSearchLocalMessagesParams,operationID?:string|null):Promise<OpenIMSearchMessageResult|null>",
-      "signatureHash": "fddcc3f0692f143a18ebb91a19fb64ffaeb8f3bea35c8884a56af7e39054b9b0"
+      "signatureHash": "6fc0123a349095db69b61f0fa4a49541ceec520a422848fd7894b5c4122d1021"
     },
     {
       "id": 2094,
@@ -2880,5 +2880,5 @@
       "signatureHash": "d1a6f9042697c344fed15b109150f2c02cb5cd9556b13f72c561bc0648bb5d32"
     }
   ],
-  "contractHash": "dd531d99b218c7ef0441b9ef76599f984983a8c332a58b09be4c345653b344d9"
+  "contractHash": "2dc16bca28defae6f700d99df754bd81579c8cb67b397cb2e82711055a98dc9b"
 }
