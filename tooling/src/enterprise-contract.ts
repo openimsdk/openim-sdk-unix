@@ -36,9 +36,20 @@ import { verifyEnterpriseDriverInvariants } from './verify-driver.js'
 import { harmonyTypedMethods, renderHarmonyDriverBindings, renderHarmonyOperationCodes } from './harmony-bindings.js'
 import { renderHarmonyMonomorphicHelpers } from './harmony-monomorphize.js'
 import { buildEnterpriseResponseSchemas, buildEnterpriseTestDisposition } from './test-contract.js'
+import {
+  semanticHashForCallable,
+  semanticHashForEvent,
+  semanticHashForType,
+} from './contract-integrity.js'
+import {
+  assertEnterpriseStableIDs,
+  readEnterpriseStableIDRegistry,
+  reconcileEnterpriseIDs,
+  writeEnterpriseStableIDRegistry,
+} from './enterprise-integrity.js'
 
-const EXPECTED_TOTAL = { constants: 109, types: 233, callables: 245, events: 80 } as const
-const EXPECTED_DELTA = { constants: 0, types: 73, callables: 84, events: 32, typeExtensions: 3 } as const
+const EXPECTED_TOTAL = { constants: 109, types: 233, callables: 244, events: 80 } as const
+const EXPECTED_DELTA = { constants: 0, types: 73, callables: 83, events: 32, typeExtensions: 3 } as const
 const APPROVED_BASE_CALLABLE_OVERRIDES = [{
   name: 'getLoginUserID',
   enterpriseSignature: 'getLoginUserID(operationID?:string|null):Promise<string>',
@@ -48,18 +59,6 @@ const APPROVED_BASE_TYPE_OVERRIDES = [{
   name: 'GetLoginUserID',
   enterpriseDeclaration: 'export type GetLoginUserID = (operationID ?: string | null) => Promise<string>',
 }] as const
-const NEW_ENTERPRISE_TYPE_NAMES = [
-  'OpenIMUpdateTokenParams',
-  'OpenIMTranslateTextParams',
-  'OpenIMTranslateTextResult',
-  'OpenIMTranslateMessageParams',
-] as const
-const NEW_ENTERPRISE_CALLABLE_NAMES = [
-  'updateToken',
-  'translateText',
-  'getArchivedConversationList',
-  'translateMessage',
-] as const
 const HARMONY_UNSUPPORTED_EVENTS = [
   'onRecvMessageExtensionsAdded',
   'onRecvMessageExtensionsChanged',
@@ -218,6 +217,9 @@ function importHarmonyABI(privateRoot: string): void {
 }
 
 export function importEnterpriseDelta(publicRoot: string, privateRoot: string): EnterpriseDeltaDocument {
+  const existingDelta = JSON.parse(
+    readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'),
+  ) as EnterpriseDeltaDocument
   const base = JSON.parse(readFileSync(join(publicRoot, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
   const baseSnapshot = JSON.parse(readFileSync(join(publicRoot, 'contracts/base/surface.snapshot.json'), 'utf8')) as { contractHash: string }
   const plugin = join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk')
@@ -233,6 +235,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   const harmonyIndex = parseSource(harmonyIndexPath)
   const androidEvents = parseSource(androidEventsPath)
   const iosEvents = parseSource(iosEventsPath)
+  let stableIDs = readEnterpriseStableIDRegistry(privateRoot)
 
   const enterpriseTypes = extractExportedTypes(interfaceSource)
   const enterpriseTypeByName = new Map(enterpriseTypes.map((value) => [value.name, value]))
@@ -253,22 +256,24 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       }
     }
   }
-  let legacyTypeIndex = 0
-  let newTypeIndex = 0
+  const extensionIDs = reconcileEnterpriseIDs(stableIDs, 'typeExtensions', typeExtensions.map((value) => value.target))
+  stableIDs = extensionIDs.registry
+  for (let index = 0; index < typeExtensions.length; index += 1) typeExtensions[index]!.id = extensionIDs.ids[index]!
   const types: ContractType[] = enterpriseTypes
     .filter((value) => !baseTypeNames.has(value.name))
     .map((value) => {
-      const isNewType = NEW_ENTERPRISE_TYPE_NAMES.includes(value.name as typeof NEW_ENTERPRISE_TYPE_NAMES[number])
-      const id = isNewType ? 100070 + newTypeIndex : 100001 + legacyTypeIndex
-      if (isNewType) newTypeIndex += 1
-      else legacyTypeIndex += 1
-      return {
-        id,
+      const type: ContractType = {
+        id: 0,
         name: value.name,
         declaration: value.declaration,
-        signatureHash: sha256(normalizeContractText(value.declaration)),
+        signatureHash: '',
       }
+      type.signatureHash = semanticHashForType(type)
+      return type
     })
+  const typeIDs = reconcileEnterpriseIDs(stableIDs, 'types', types.map((value) => value.name))
+  stableIDs = typeIDs.registry
+  for (let index = 0; index < types.length; index += 1) types[index]!.id = typeIDs.ids[index]!
 
   const androidValues = extractExportedValues(androidIndex)
   const iosValues = extractExportedValues(iosIndex)
@@ -281,8 +286,6 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   const eventNames = extractStringUnion(interfaceSource, 'OpenIMSDKEventName')
   const eventNameSet = new Set(eventNames)
   const callables: ContractCallable[] = []
-  let legacyCallableIndex = 0
-  let newCallableIndex = 0
   let privateConstantCount = 0
 
   for (const [android, ios] of pairs) {
@@ -312,34 +315,35 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       continue
     }
     const isEvent = eventNameSet.has(android.name)
-    const isNewCallable = NEW_ENTERPRISE_CALLABLE_NAMES.includes(android.name as typeof NEW_ENTERPRISE_CALLABLE_NAMES[number])
-    const callableID = isNewCallable ? 200081 + newCallableIndex : 200001 + legacyCallableIndex
-    if (isNewCallable) newCallableIndex += 1
-    else legacyCallableIndex += 1
-    callables.push({
-      id: callableID,
+    const callable: ContractCallable = {
+      id: 0,
       name: android.name,
       signature: android.signature,
       completion: completionMode(android.returnType),
       responseCodec: isEvent ? 'event-handler' : codecFor(android.returnType),
       errorPolicy: android.returnType.startsWith('Promise<') ? 'frozen-native-rejection' : 'none',
       rawString: android.returnType === 'string' || android.returnType === 'Promise<string>',
-      role: isEvent ? 'event-subscription' : android.name === 'offAll' ? 'event-control' : 'operation',
+      role: isEvent ? 'event-subscription' : 'operation',
       declaration: { android: android.declaration, ios: ios.declaration, harmony: harmony.declaration },
       binding: {
         android: bindingFor(android.declaration, eventNameSet, android.name),
         ios: bindingFor(ios.declaration, eventNameSet, ios.name),
         harmony: harmonyBinding(harmony.declaration, harmony.name, eventNameSet),
       },
-      signatureHash: sha256(android.signature),
-    })
+      signatureHash: '',
+    }
+    callable.signatureHash = semanticHashForCallable(callable)
+    callables.push(callable)
   }
+  const callableIDs = reconcileEnterpriseIDs(stableIDs, 'callables', callables.map((value) => value.name))
+  stableIDs = callableIDs.registry
+  for (let index = 0; index < callables.length; index += 1) callables[index]!.id = callableIDs.ids[index]!
 
   const baseEventNames = new Set(base.events.map((value) => value.name))
   const unsupported = new Set<string>(HARMONY_UNSUPPORTED_EVENTS)
   const events: ContractEvent[] = eventNames
     .filter((name) => !baseEventNames.has(name))
-    .map((name, index) => {
+    .map((name) => {
       const callable = callables.find((value) => value.name === name)
       assert(callable != null, `Missing enterprise event callable ${name}`)
       const androidFunction = findExportedFunction(androidEvents, `${name}Event`)
@@ -352,8 +356,8 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       assert(androidHandler === iosHandler && androidHandler === harmonyHandler, `Enterprise event handler differs by platform: ${name}`)
       const isUnsupported = unsupported.has(name)
       assert(isUnsupported === harmonyFunction.declaration.includes('unsupportedHarmonyEvent('), `Harmony unsupported classification drifted: ${name}`)
-      return {
-        id: 300001 + index,
+      const event: ContractEvent = {
+        id: 0,
         name,
         callable: name,
         handlerType: androidHandler,
@@ -369,9 +373,14 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
           harmony: isUnsupported ? 'unsupported-by-native-abi' : 'bound',
         },
         ...(isUnsupported ? { compatibilityRule: 'UTS-COMPAT-HARMONY-UNSUPPORTED-001' } : {}),
-        signatureHash: sha256(`${name}:${androidHandler}`),
+        signatureHash: '',
       }
+      event.signatureHash = semanticHashForEvent(event)
+      return event
     })
+  const eventIDs = reconcileEnterpriseIDs(stableIDs, 'events', events.map((value) => value.name))
+  stableIDs = eventIDs.registry
+  for (let index = 0; index < events.length; index += 1) events[index]!.id = eventIDs.ids[index]!
 
   const explicitUnsupported = harmonyValues
     .filter((value) => value.declaration.includes('unsupportedHarmonyEvent('))
@@ -391,21 +400,12 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   const actualDelta = { constants: 0, types: types.length, callables: callables.length, events: events.length, typeExtensions: typeExtensions.length }
   assert(JSON.stringify(actualDelta) === JSON.stringify(EXPECTED_DELTA), `Enterprise delta count mismatch: ${JSON.stringify(actualDelta)}`)
 
-  const revision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: privateRoot, encoding: 'utf8' }).trim()
   const delta: EnterpriseDeltaDocument = {
     schemaVersion: 1,
     edition: 'enterprise-delta',
     generatedFrom: {
-      repository: 'https://github.com/openimsdk/openim-sdk-unix-harmony',
-      revision,
-      publicBaseRevision: base.generatedFrom.revision,
+      ...existingDelta.generatedFrom,
       publicBaseContractHash: baseSnapshot.contractHash,
-      interfacePath: relative(privateRoot, interfacePath),
-      facadePaths: {
-        android: relative(privateRoot, androidIndexPath),
-        ios: relative(privateRoot, iosIndexPath),
-        harmony: relative(privateRoot, harmonyIndexPath),
-      },
     },
     expectedTotal: { ...EXPECTED_TOTAL },
     expectedDelta: { ...EXPECTED_DELTA },
@@ -422,6 +422,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     events,
   }
   writeText(join(privateRoot, 'contracts/enterprise/delta.json'), JSON.stringify(delta, null, 2))
+  writeEnterpriseStableIDRegistry(privateRoot, stableIDs)
   writeText(join(privateRoot, 'contracts/enterprise/response-schemas.json'), JSON.stringify(buildEnterpriseResponseSchemas(base, delta), null, 2))
   writeText(join(privateRoot, 'contracts/enterprise/test-disposition.json'), JSON.stringify(buildEnterpriseTestDisposition(base, delta), null, 2))
   importHarmonyABI(privateRoot)
@@ -461,6 +462,10 @@ export function verifyEnterpriseDelta(
   assert(delta.typeExtensions.length === EXPECTED_DELTA.typeExtensions, 'Enterprise type extension count changed')
   assert(delta.callables.length === EXPECTED_DELTA.callables, 'Enterprise callable delta count changed')
   assert(delta.events.length === EXPECTED_DELTA.events, 'Enterprise event delta count changed')
+  assertEnterpriseStableIDs(readEnterpriseStableIDRegistry(privateRoot), delta)
+  for (const value of delta.types) assert(value.signatureHash === semanticHashForType(value), `Enterprise type semantic hash is stale: ${value.name}`)
+  for (const value of delta.callables) assert(value.signatureHash === semanticHashForCallable(value), `Enterprise callable semantic hash is stale: ${value.name}`)
+  for (const value of delta.events) assert(value.signatureHash === semanticHashForEvent(value), `Enterprise event semantic hash is stale: ${value.name}`)
   const unsupported = delta.events
     .filter((event) => event.binding.harmony === 'unsupported-by-native-abi')
     .map((event) => event.name)

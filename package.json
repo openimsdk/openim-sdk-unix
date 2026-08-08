@@ -16,6 +16,7 @@
     "native:import": "tsx tooling/src/cli.ts native:import",
     "native:verify": "tsx tooling/src/cli.ts native:verify",
     "enterprise:import": "tsx tooling/src/cli.ts enterprise:import",
+    "enterprise:ids:init": "tsx tooling/src/cli.ts enterprise:ids:init",
     "enterprise:verify": "tsx tooling/src/cli.ts enterprise:verify",
     "enterprise:bootstrap": "tsx tooling/src/cli.ts enterprise:bootstrap",
     "enterprise:monomorphize-harmony": "tsx tooling/src/cli.ts enterprise:monomorphize-harmony",

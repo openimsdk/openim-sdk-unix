@@ -6,7 +6,7 @@ import { importNativeABI } from './native-abi.js'
 import { verifyUTSPolicy } from './policy.js'
 import { verifyGenerated, verifySurfaceSnapshot, readAndValidateContract } from './verify-contract.js'
 import { verifyDriverInvariants } from './verify-driver.js'
-import { bootstrapEnterpriseDrivers, importEnterpriseDelta, verifyEnterpriseDelta } from './enterprise-contract.js'
+import { bootstrapEnterpriseDrivers, verifyEnterpriseDelta } from './enterprise-contract.js'
 import { monomorphizeHarmonyFacade } from './harmony-monomorphize.js'
 import { buildPrivatePlatform } from './local-build.js'
 import { verifyPrivateNativeArtifacts, type MobileBuildPlatform } from './private-native.js'
@@ -20,6 +20,13 @@ import {
 } from './public-contract-import.js'
 import { withLocalNativeProfile } from './native-profile.js'
 import { verifyEventControlConsumerCompile } from './consumer-compile.js'
+import { buildEnterpriseStableIDRegistry, writeEnterpriseStableIDRegistry } from './enterprise-integrity.js'
+import {
+  applyEnterpriseMigration,
+  assertEnterpriseExtractionCurrent,
+  previewEnterpriseImport,
+  readEnterpriseMigrationApproval,
+} from './enterprise-migration.js'
 
 const toolingDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
 const root = resolve(toolingDirectory, '..')
@@ -117,12 +124,29 @@ switch (command) {
   }
   case 'enterprise:import': {
     const privateRoot = requiredArgument('--private-root')
-    const delta = importEnterpriseDelta(root, privateRoot)
-    console.log(`Imported enterprise delta: ${delta.types.length} types, ${delta.callables.length} callables, ${delta.events.length} events.`)
+    const preview = previewEnterpriseImport(root, privateRoot)
+    console.log(JSON.stringify({ ...preview, candidateOutputs: undefined, writeApproved: false }, null, 2))
+    const approvalIndex = process.argv.indexOf('--approve-migration')
+    if (approvalIndex >= 0) {
+      const approvalPath = process.argv[approvalIndex + 1]
+      if (approvalPath == null || approvalPath === '') throw new Error('Missing approval file after --approve-migration')
+      applyEnterpriseMigration(privateRoot, preview, readEnterpriseMigrationApproval(approvalPath))
+      console.log('Applied the approved Enterprise contract migration.')
+    } else {
+      console.log('Preview only; no Enterprise files were written.')
+    }
+    break
+  }
+  case 'enterprise:ids:init': {
+    const privateRoot = requiredArgument('--private-root')
+    const delta = JSON.parse((await import('node:fs')).readFileSync(resolve(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'))
+    writeEnterpriseStableIDRegistry(privateRoot, buildEnterpriseStableIDRegistry(delta))
+    console.log('Initialized the Enterprise stable ID registry with retired callable 200001.')
     break
   }
   case 'enterprise:verify': {
     const privateRoot = requiredArgument('--private-root')
+    assertEnterpriseExtractionCurrent(root, privateRoot)
     verifyEnterpriseDelta(root, privateRoot)
     console.log('Enterprise add-only delta and Harmony ABI verified.')
     break
