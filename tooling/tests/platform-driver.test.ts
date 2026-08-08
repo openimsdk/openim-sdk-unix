@@ -38,6 +38,19 @@ const PATH_MESSAGE_CREATORS = [
   ['createFileMessageFromFullPath', 2151, 1],
 ] as const
 
+const CONVERSATION_STRING_OPERATIONS = [
+  ['deleteConversationAndDeleteAllMsg', 2063, 'callback'],
+  ['markConversationMessageAsRead', 2064, 'callback'],
+  ['setConversation', 2068, 'callback'],
+  ['clearConversationAndDeleteAllMsg', 2082, 'callback'],
+  ['hideConversation', 2083, 'callback'],
+  ['hideAllConversations', 2084, 'callback'],
+  ['markAllConversationMessageAsRead', 2085, 'callback'],
+  ['getConversationIDBySessionType', 2088, 'sync-return'],
+  ['deleteConversation', 2090, 'callback'],
+  ['setConversationDraft', 2091, 'callback'],
+] as const
+
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
   const expected = [
     { id: 2051, name: 'initSDK' },
@@ -47,6 +60,7 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
     { id: 2055, name: 'getLoginUserID' },
     { id: 2056, name: 'getSdkVersion' },
     { id: 2058, name: 'unInitSDK' },
+    ...CONVERSATION_STRING_OPERATIONS.map(([name, id]) => ({ id, name })),
     { id: 2139, name: 'createTextMessage' },
     ...[
       ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
@@ -198,6 +212,50 @@ test('full-path message creators keep iOS compatibility behind generated path co
   }
   assert.doesNotMatch(androidFacade, /normalizeIOSLocalMediaPath/)
   assert.match(iosFacade, /normalizeIOSLocalMediaPath/)
+})
+
+test('conversation string operations are generated from structured invocation data', () => {
+  for (const [name, id, completion] of CONVERSATION_STRING_OPERATIONS) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.id, id)
+    assert.equal(callable?.responseCodec, 'raw-string')
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind !== 'platform-driver') continue
+    assert.deepEqual(callable.lowering.nativeInvocation, { completion })
+  }
+
+  const setConversation = contract.callables.find((candidate) => candidate.name === 'setConversation')
+  assert.equal(setConversation?.lowering?.kind, 'platform-driver')
+  if (setConversation?.lowering?.kind === 'platform-driver' && typeof setConversation.lowering.request === 'object') {
+    assert.deepEqual(setConversation.lowering.request.fields.map(({ name, parameter, member, codec }) => ({ name, parameter, member, codec })), [
+      { name: 'conversationID', parameter: 'params', member: 'conversationID', codec: 'identity' },
+      { name: 'conversationInfo', parameter: 'params', member: undefined, codec: 'json' },
+    ])
+  }
+
+  for (const name of ['hideAllConversations', 'markAllConversationMessageAsRead']) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind === 'platform-driver') assert.equal(callable.lowering.request, 'empty-object')
+  }
+
+  for (const platform of ['android', 'ios'] as const) {
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    const facade = generateIndex(root, contract, platform)
+    for (const [name, id] of CONVERSATION_STRING_OPERATIONS) {
+      assert.match(adapter, new RegExp(`(?:case )?${id}`), `${platform} adapter is missing ${name}`)
+      const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+      assert.notEqual(declaration, undefined)
+      assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
+      assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
+    }
+    assert.match(adapter, /NativeOpenIMSDK\.deleteConversationAndDeleteAllMsg/)
+    assert.match(adapter, /NativeOpenIMSDK\.getConversationIDBySessionType/)
+    const emptyCase = platform === 'android'
+      ? /2084 -> \{\n\s+NativeOpenIMSDK\.hideAllConversations/
+      : /case 2084:\n\s+NativeOpenIMSDK\.hideAllConversations/
+    assert.match(adapter, emptyCase)
+  }
 })
 
 test('Android wire validators use Java wrapper classes instead of unsupported typeof any', () => {

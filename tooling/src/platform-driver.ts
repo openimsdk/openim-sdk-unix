@@ -50,15 +50,25 @@ function nativeInvocationCallables(contract: ContractDocument): ContractCallable
   return contract.callables.filter((callable) => (
     callable.lowering?.kind === 'platform-driver'
     && callable.lowering.nativeInvocation != null
-    && typeof callable.lowering.request === 'object'
-    && callable.lowering.request.kind === 'fields'
+    && (callable.lowering.request === 'empty-object'
+      || (typeof callable.lowering.request === 'object' && callable.lowering.request.kind === 'fields'))
   ))
 }
 
 function nativeSymbol(callable: ContractCallable, platform: Platform): string {
   const binding = callable.binding[platform]
-  assert(binding?.kind === 'native' && binding.symbol.length > 0, `${callable.name} requires a ${platform} native binding`)
+  assert(
+    (binding?.kind === 'native' || binding?.kind === 'facade-alias') && binding.symbol.length > 0,
+    `${callable.name} requires a ${platform} native binding or approved façade alias`,
+  )
   return binding.symbol
+}
+
+function requestFields(callable: ContractCallable): DriverRequestField[] {
+  assert(callable.lowering?.kind === 'platform-driver', `Missing Driver lowering: ${callable.name}`)
+  if (callable.lowering.request === 'empty-object') return []
+  assert(typeof callable.lowering.request === 'object' && callable.lowering.request.kind === 'fields', `Missing fields request: ${callable.name}`)
+  return callable.lowering.request.fields
 }
 
 function androidRequestField(field: DriverRequestField): string {
@@ -69,15 +79,15 @@ function androidRequestField(field: DriverRequestField): string {
 
 function androidInvocationCase(callable: ContractCallable): string {
   assert(callable.lowering?.kind === 'platform-driver' && callable.lowering.nativeInvocation != null, `Missing invocation lowering: ${callable.name}`)
-  assert(typeof callable.lowering.request === 'object' && callable.lowering.request.kind === 'fields', `Missing fields request: ${callable.name}`)
-  const args = callable.lowering.request.fields.map(androidRequestField)
+  const fields = requestFields(callable)
+  const args = fields.map(androidRequestField)
   const callArgs = ['operationID', ...args]
   if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
   const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'android')}(${callArgs.join(', ')})`
   const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
+  const request = fields.length === 0 ? '' : '          val request = JSONObject(requestJSON)\n'
   return `        ${callable.id} -> {
-          val request = JSONObject(requestJSON)
-          ${statement}
+${request}          ${statement}
         }`
 }
 
@@ -89,15 +99,15 @@ function swiftRequestField(field: DriverRequestField): string {
 
 function iosInvocationCase(callable: ContractCallable): string {
   assert(callable.lowering?.kind === 'platform-driver' && callable.lowering.nativeInvocation != null, `Missing invocation lowering: ${callable.name}`)
-  assert(typeof callable.lowering.request === 'object' && callable.lowering.request.kind === 'fields', `Missing fields request: ${callable.name}`)
-  const args = callable.lowering.request.fields.map(swiftRequestField)
+  const fields = requestFields(callable)
+  const args = fields.map(swiftRequestField)
   const callArgs = ['operationID', ...args]
   if (callable.lowering.nativeInvocation.completion === 'callback') callArgs.push('resolve', 'reject')
   const call = `NativeOpenIMSDK.${nativeSymbol(callable, 'ios')}(${callArgs.join(', ')})`
   const statement = callable.lowering.nativeInvocation.completion === 'sync-return' ? `resolve(${call})` : call
+  const request = fields.length === 0 ? '' : '                let request = try requestObject(requestJSON)\n'
   return `            case ${callable.id}:
-                let request = try requestObject(requestJSON)
-                ${statement}`
+${request}                ${statement}`
 }
 
 function androidCoreAdapter(contract: ContractDocument): string {

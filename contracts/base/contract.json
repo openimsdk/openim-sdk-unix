@@ -3755,9 +3755,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const deleteConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }",
-        "ios": "export const deleteConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationID",
+              "parameter": "conversationID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -3769,7 +3784,7 @@
           "symbol": "deleteConversationAndDeleteAllMsg"
         }
       },
-      "signatureHash": "23aef4e0a2c767fb239a76bfc96b9b6f1a5f678ccc2232b4ac620526cbfe2ccb"
+      "signatureHash": "cccb45440816f73bde8c80d713fe5e4e4d579b1e3e8cfffcc34e9f1c30874af7"
     },
     {
       "id": 2064,
@@ -3780,9 +3795,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const markConversationMessageAsRead = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markConversationMessageAsRead(normalizeOperationID(operationID), conversationID, resolve, reject) }) }",
-        "ios": "export const markConversationMessageAsRead = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markConversationMessageAsRead(normalizeOperationID(operationID), conversationID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationID",
+              "parameter": "conversationID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -3794,7 +3824,7 @@
           "symbol": "markConversationMessageAsRead"
         }
       },
-      "signatureHash": "380345a8a15f519cb00040e606687629e324194b35e4e678e89b0dc3858da965"
+      "signatureHash": "cb29ca3826fea955c94d3db824e5657ae65a7934accc563897f344732b174ee9"
     },
     {
       "id": 2065,
@@ -3880,9 +3910,31 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setConversation(normalizeOperationID(operationID), params.conversationID, stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setConversation(normalizeOperationID(operationID), params.conversationID, stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationID",
+              "parameter": "params",
+              "member": "conversationID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "conversationInfo",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -3894,7 +3946,7 @@
           "symbol": "setConversation"
         }
       },
-      "signatureHash": "8f7aadac7ceb4ea443b21c03f5705e202d5939604a4fbf65d62a55e23d89b84e"
+      "signatureHash": "848b3d1c1c72130bb5839e09b9355bb11b4e5f1b4056e5d1b57eb6a1553f5c4a"
     },
     {
       "id": 2069,
@@ -4230,9 +4282,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const clearConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.clearConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }",
-        "ios": "export const clearConversationAndDeleteAllMsg = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.clearConversationAndDeleteAllMsg(normalizeOperationID(operationID), conversationID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationID",
+              "parameter": "conversationID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4244,7 +4311,7 @@
           "symbol": "clearConversationAndDeleteAllMsg"
         }
       },
-      "signatureHash": "70ea849dbf663a62f2a1a4ee981fd4bb2b490a6de1a5c5829f79cde5c4fd2e00"
+      "signatureHash": "5930baefe7498e14a1cbcac12b3f4c91dc1863e03e90629370cafb099cc510a2"
     },
     {
       "id": 2083,
@@ -4255,9 +4322,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const hideConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideConversation(normalizeOperationID(operationID), conversationID, resolve, reject) }) }",
-        "ios": "export const hideConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideConversation(normalizeOperationID(operationID), conversationID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationID",
+              "parameter": "conversationID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4269,7 +4351,7 @@
           "symbol": "hideConversation"
         }
       },
-      "signatureHash": "802dcdebf663f60fabaa94695305d240e8d1b2b1330060ff6846bc91d76bdc5d"
+      "signatureHash": "8d6310da74699b346b469db93d1bb8e7902fa063b31e6a1d9fcefde5dd44090e"
     },
     {
       "id": 2084,
@@ -4280,9 +4362,14 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const hideAllConversations = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideAllConversations(normalizeOperationID(operationID), resolve, reject) }) }",
-        "ios": "export const hideAllConversations = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.hideAllConversations(normalizeOperationID(operationID), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object",
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4294,7 +4381,7 @@
           "symbol": "hideAllConversations"
         }
       },
-      "signatureHash": "d34285e23cb61c58fbfede25df5e6a2bd2d85e2041d4b8160c12f4047a213c0c"
+      "signatureHash": "d26f25978e7297f049946a0ca4f999edd366b36ab0fa117fd35d578872fc0c3d"
     },
     {
       "id": 2085,
@@ -4305,9 +4392,14 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const markAllConversationMessageAsRead = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markAllConversationMessageAsRead(normalizeOperationID(operationID), resolve, reject) }) }",
-        "ios": "export const markAllConversationMessageAsRead = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.markAllConversationMessageAsRead(normalizeOperationID(operationID), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object",
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4319,7 +4411,7 @@
           "symbol": "markAllConversationMessageAsRead"
         }
       },
-      "signatureHash": "a0e7b4a6f97d5fdf0f38bbfce6c079bc0cbc86d21162ee7ba850556b2b575d72"
+      "signatureHash": "c87042d5326b2497db9faf5bc7e16f4069f14ece76c7f8ab565d5ef60241a9c6"
     },
     {
       "id": 2086,
@@ -4380,9 +4472,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const getConversationIDBySessionType = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getConversationIDBySessionType(normalizeOperationID(operationID), params.sourceID, params.sessionType)) }) }",
-        "ios": "export const getConversationIDBySessionType = function (params : OpenIMGetOneConversationParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getConversationIDBySessionType(normalizeOperationID(operationID), params.sourceID, params.sessionType)) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "sourceID",
+              "parameter": "params",
+              "member": "sourceID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "sessionType",
+              "parameter": "params",
+              "member": "sessionType",
+              "codec": "identity",
+              "wireType": "number"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        }
       },
       "binding": {
         "android": {
@@ -4394,7 +4509,7 @@
           "symbol": "getConversationIDBySessionType"
         }
       },
-      "signatureHash": "88e0a9664e6b3ec0a3a88ffc31f2de50343b2c2929a7d3d58d9d159d28ada05b"
+      "signatureHash": "a6d8602637f79187add36e3181e80af04b3a53aca73a48e8868cdf10306a5661"
     },
     {
       "id": 2089,
@@ -4430,9 +4545,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const deleteConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return deleteConversationAndDeleteAllMsg(conversationID, operationID) }",
-        "ios": "export const deleteConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return deleteConversationAndDeleteAllMsg(conversationID, operationID) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationID",
+              "parameter": "conversationID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4444,7 +4574,7 @@
           "symbol": "deleteConversationAndDeleteAllMsg"
         }
       },
-      "signatureHash": "f14b46bbb21c8e4c341003bf548f32323715709344f876f5781aa2b01c8615ba"
+      "signatureHash": "8c8d4e5a15ebc7bc1829a8e24ccf6f99458aa76b9a82c80300340f7e4348caa0"
     },
     {
       "id": 2091,
@@ -4455,9 +4585,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const setConversationDraft = function (params : OpenIMSetConversationDraftParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setConversationDraft(normalizeOperationID(operationID), params.conversationID, params.draftText, resolve, reject) }) }",
-        "ios": "export const setConversationDraft = function (params : OpenIMSetConversationDraftParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.setConversationDraft(normalizeOperationID(operationID), params.conversationID, params.draftText, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "conversationID",
+              "parameter": "params",
+              "member": "conversationID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "draftText",
+              "parameter": "params",
+              "member": "draftText",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -4469,7 +4622,7 @@
           "symbol": "setConversationDraft"
         }
       },
-      "signatureHash": "7a0449c71caea33f3f552a09ff954862c35d7ab36a180e8af6de0a847054b226"
+      "signatureHash": "00d0272663414b87ac9ccef19407e872ee433446b16fa24a6e8045d7c050d738"
     },
     {
       "id": 2092,

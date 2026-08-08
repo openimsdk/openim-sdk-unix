@@ -29,6 +29,44 @@ object OpenIMCoreAdapter {
         2054 -> resolve(NativeOpenIMSDK.getLoginStatus(operationID))
         2055 -> resolve(NativeOpenIMSDK.getLoginUserID())
         2058 -> resolve(NativeOpenIMSDK.unInitSDK(operationID))
+        2063 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, request.getString("conversationID"), resolve, reject)
+        }
+        2064 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.markConversationMessageAsRead(operationID, request.getString("conversationID"), resolve, reject)
+        }
+        2068 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setConversation(operationID, request.getString("conversationID"), request.getString("conversationInfo"), resolve, reject)
+        }
+        2082 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.clearConversationAndDeleteAllMsg(operationID, request.getString("conversationID"), resolve, reject)
+        }
+        2083 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.hideConversation(operationID, request.getString("conversationID"), resolve, reject)
+        }
+        2084 -> {
+          NativeOpenIMSDK.hideAllConversations(operationID, resolve, reject)
+        }
+        2085 -> {
+          NativeOpenIMSDK.markAllConversationMessageAsRead(operationID, resolve, reject)
+        }
+        2088 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.getConversationIDBySessionType(operationID, request.getString("sourceID"), request.getDouble("sessionType")))
+        }
+        2090 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.deleteConversationAndDeleteAllMsg(operationID, request.getString("conversationID"), resolve, reject)
+        }
+        2091 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setConversationDraft(operationID, request.getString("conversationID"), request.getString("draftText"), resolve, reject)
+        }
         2139 -> {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createTextMessage(operationID, request.getString("text")))
