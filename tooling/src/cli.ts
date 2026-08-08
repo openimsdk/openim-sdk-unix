@@ -36,6 +36,10 @@ import {
   verifyEnterpriseDeletionRegeneration,
   writeEnterpriseGeneratedManifest,
 } from './enterprise-generated-manifest.js'
+import {
+  verifyEnterpriseAutomationSummaryStructure,
+  verifyPublicAutomationSummaryStructure,
+} from './automation-summary.js'
 
 const toolingDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
 const root = resolve(toolingDirectory, '..')
@@ -116,6 +120,16 @@ switch (command) {
     console.log('Public generated sources, manifest, deletion, and consumer probes verified.')
     break
   }
+  case 'verify:automation-summary': {
+    const summary = requiredArgument('--summary')
+    const result = verifyPublicAutomationSummaryStructure(readAndValidateContract(root), summary)
+    console.log(JSON.stringify(result, null, 2))
+    if (result.failures.length > 0 || result.driftFailures.length > 0 || result.missingRecordedStructureValidation.length > 0) {
+      throw new Error('Public automation summary failed response structure verification.')
+    }
+    console.log(`Public automation summary structure verified (${result.verifiedCases} callable responses checked).`)
+    break
+  }
   case 'verify:policy': {
     verifyUTSPolicy(root)
     console.log('Stable UTS policy verified.')
@@ -184,6 +198,18 @@ switch (command) {
     verifyEnterpriseDeletionRegeneration(root, privateRoot)
     verifyEnterpriseDelta(root, privateRoot)
     console.log('Enterprise composer outputs, add-only delta, and Harmony ABI verified.')
+    break
+  }
+  case 'enterprise:verify-automation-summary': {
+    const privateRoot = requiredArgument('--private-root')
+    const summary = requiredArgument('--summary')
+    const delta = JSON.parse((await import('node:fs')).readFileSync(resolve(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'))
+    const result = verifyEnterpriseAutomationSummaryStructure(readAndValidateContract(root), delta, summary)
+    console.log(JSON.stringify(result, null, 2))
+    if (result.failures.length > 0 || result.driftFailures.length > 0 || result.missingRecordedStructureValidation.length > 0) {
+      throw new Error('Enterprise automation summary failed response structure verification.')
+    }
+    console.log(`Enterprise automation summary structure verified (${result.verifiedCases} callable responses checked).`)
     break
   }
   case 'enterprise:bootstrap': {
