@@ -31,7 +31,9 @@ test('automation summary verifier accepts a matching primitive response', () => 
         skipped: false,
         resolved: true,
         structureValidated: true,
-        detail: '3',
+        responseEvidence: true,
+        responseDetail: '3',
+        detail: 'login status response',
       },
     ],
   }, (path) => {
@@ -55,7 +57,9 @@ test('automation summary verifier rejects a typed response missing required fiel
         skipped: false,
         resolved: true,
         structureValidated: false,
-        detail: '{}',
+        responseEvidence: true,
+        responseDetail: '{}',
+        detail: 'send response',
       },
     ],
   }, (path) => {
@@ -78,7 +82,9 @@ test('automation summary verifier flags structurally valid responses that were n
         skipped: false,
         resolved: true,
         structureValidated: false,
-        detail: JSON.stringify('user_123'),
+        responseEvidence: true,
+        responseDetail: JSON.stringify('user_123'),
+        detail: 'login user response',
       },
     ],
   }, (path) => {
@@ -86,6 +92,39 @@ test('automation summary verifier flags structurally valid responses that were n
     assert.deepEqual(result.failures, [])
     assert.deepEqual(result.driftFailures, [])
     assert.deepEqual(result.missingRecordedStructureValidation, ['getLoginUserID'])
+  })
+})
+
+test('automation summary verifier never parses a side-effect narrative as an API response', () => {
+  withSummary({
+    cases: [
+      {
+        caseId: 'setup/initSDKResponse',
+        apiName: 'initSDK',
+        ok: true,
+        resolved: true,
+        structureValidated: true,
+        responseEvidence: true,
+        responseDetail: 'true',
+        detail: 'native init response',
+      },
+      {
+        caseId: 'setup/initSDKSideEffect',
+        apiName: 'initSDK',
+        ok: true,
+        resolved: true,
+        structureValidated: true,
+        responseEvidence: false,
+        responseDetail: '',
+        detail: 'successful login and initial sync observed after initSDK',
+      },
+    ],
+  }, (path) => {
+    const result = verifyPublicAutomationSummaryStructure(contract, path)
+    assert.equal(result.verifiedCases, 1)
+    assert.equal(result.skippedCases, 1)
+    assert.deepEqual(result.failures, [])
+    assert.deepEqual(result.missingRecordedStructureValidation, [])
   })
 })
 

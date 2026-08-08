@@ -53,6 +53,9 @@ function axisPassed(candidates, axis, kind) {
     if (kind === 'event' && axis === 'delivery') {
       return item[flag] === true && typeof item.count === 'number' && item.count > 0
     }
+    if (kind === 'callable' && axis === 'structure') {
+      return item[flag] === true && item.responseEvidence === true && isSuccessfulEvidence(item)
+    }
     return item[flag] === true && (kind === 'event' || isSuccessfulEvidence(item))
   })
 }

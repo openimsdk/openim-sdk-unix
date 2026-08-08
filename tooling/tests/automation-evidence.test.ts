@@ -65,6 +65,7 @@ test('a resolved Promise does not satisfy undeclared runtime validation evidence
         skipped: false,
         invoked: true,
         resolved: true,
+        responseEvidence: true,
         structureValidated: false,
         semanticValidated: false,
         sideEffectValidated: false,
@@ -101,6 +102,7 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
           skipped: false,
           invoked: true,
           resolved: true,
+          responseEvidence: true,
           structureValidated: true,
           semanticValidated: true,
         },
@@ -111,6 +113,7 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
           skipped: false,
           invoked: true,
           resolved: true,
+          responseEvidence: false,
           sideEffectValidated: true,
           eventCorrelated: true,
         },
@@ -121,6 +124,37 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
 
   assert.equal(result.passed, true)
   assert.deepEqual(result.issues, [])
+})
+
+test('a side-effect narrative cannot satisfy callable response structure', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      ...manifest(),
+      counts: { callables: 1, events: 0 },
+      callables: [manifest().callables[0]],
+      events: [],
+    },
+    platform: 'android',
+    report: {
+      cases: [{
+        apiName: 'sendMessage',
+        ok: true,
+        skipped: false,
+        invoked: true,
+        resolved: true,
+        responseEvidence: false,
+        structureValidated: true,
+        semanticValidated: true,
+        sideEffectValidated: true,
+        eventCorrelated: true,
+        detail: 'message delivered to the peer',
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, false)
+  assert.equal(result.issues.some((issue) => issue.axis === 'structure'), true)
 })
 
 test('capability and unsupported dispositions require executable negative evidence', () => {

@@ -18,6 +18,8 @@ export interface AutomationSummaryCaseRecord {
   apiName?: string
   ok?: boolean
   detail?: string
+  responseEvidence?: boolean
+  responseDetail?: string
   skipped?: boolean
   resolved?: boolean
   structureValidated?: boolean
@@ -90,7 +92,7 @@ function verifySummaryStructureWithDocuments(
       skippedCases += 1
       continue
     }
-    if (item.skipped === true || item.negativeValidated === true || item.ok !== true || item.resolved !== true) {
+    if (item.skipped === true || item.negativeValidated === true || item.ok !== true || item.resolved !== true || item.responseEvidence !== true) {
       skippedCases += 1
       continue
     }
@@ -100,7 +102,7 @@ function verifySummaryStructureWithDocuments(
       skippedCases += 1
       continue
     }
-    const value = parseRecordedValue(item.detail ?? '', schemas.callables[apiName]?.codec ?? 'any')
+    const value = parseRecordedValue(item.responseDetail ?? '', schemas.callables[apiName]?.codec ?? 'any')
     const issues = validateContractValue(schemas, schema, value)
     const errors = issues.filter((issue) => issue.severity === 'error')
     const drift = issues.filter((issue) => issue.severity === 'contract-drift')
