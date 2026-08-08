@@ -526,6 +526,7 @@ export function verifyEnterpriseDelta(
     nativeABI: { harSha256: string; inventorySha256: string }
     generatedSources: {
       driverSha256: string
+      platformDriverSha256: string
       bindingCodesSha256: string
       harmonyFacadeSha256: string
       monomorphicCodecManifestSha256: string
@@ -601,6 +602,10 @@ export function verifyEnterpriseDelta(
     )
   }
   assert(certification.generatedSources.driverSha256 === sha256(harmonyDriverSource), 'Harmony Driver certification is stale')
+  assert(
+    certification.generatedSources.platformDriverSha256 === sha256(readFileSync(join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/platform-driver.uts'))),
+    'Harmony PlatformDriver certification is stale',
+  )
   assert(certification.generatedSources.bindingCodesSha256 === sha256(harmonyOperationCodes), 'Harmony binding code certification is stale')
   assert(certification.generatedSources.harmonyFacadeSha256 === sha256(harmonySource), 'Harmony façade certification is stale')
   assert(
