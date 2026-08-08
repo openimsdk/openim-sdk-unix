@@ -580,7 +580,9 @@ export function verifyEnterpriseDelta(
     'Harmony onMessageModified binding drifted',
   )
   assert(
-    harmonySource.includes("onStringHarmonyEvent(harmonyEventCode('EventOnMessageModified'), handler)"),
+    harmonySource.includes(
+      "onStringHarmonyEvent('onMessageModified', harmonyEventCode('EventOnMessageModified'), handler)",
+    ),
     'Harmony onMessageModified subscription drifted',
   )
   assert(!harmonySource.includes("from '@openimsdk/imsdk'"), 'Harmony UTS imports the HAR instead of using the ETS Driver')
