@@ -123,3 +123,11 @@ test('Enterprise templates inherit newly introduced Public helpers', () => {
   assert.match(result, /function privateOnly\(\)/)
   assert.equal(result.match(/function shared\(\)/g)?.length, 1)
 })
+
+test('Enterprise imported helpers are not duplicated from the Public template', () => {
+  const publicTemplate = `function parseNativeStringListValue(data : string) : Array<string> | null { return null }\n// <openim-generated:event-callables>\n`
+  const enterpriseTemplate = `import { parseNativeStringListValue } from './native-call.uts'\n// <openim-generated:event-callables>\n`
+  const result = mergePublicTemplateHelpers(publicTemplate, enterpriseTemplate)
+  assert.equal(result.match(/parseNativeStringListValue/g)?.length, 1)
+  assert.equal(result.includes('function parseNativeStringListValue'), false)
+})

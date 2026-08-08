@@ -269,10 +269,22 @@ function exported(statement: ts.Statement): boolean {
     ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ?? false
 }
 
+function importedNames(statement: ts.Statement): string[] {
+  if (!ts.isImportDeclaration(statement) || statement.importClause == null) return []
+  const names = statement.importClause.name == null ? [] : [statement.importClause.name.text]
+  const bindings = statement.importClause.namedBindings
+  if (bindings == null) return names
+  if (ts.isNamespaceImport(bindings)) return [...names, bindings.name.text]
+  return [...names, ...bindings.elements.map((element) => element.name.text)]
+}
+
 export function mergePublicTemplateHelpers(publicTemplate: string, enterpriseTemplate: string): string {
   const publicSource = ts.createSourceFile('public-template.uts', publicTemplate, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
   const enterpriseSource = ts.createSourceFile('enterprise-template.uts', enterpriseTemplate, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
-  const enterpriseNames = new Set(enterpriseSource.statements.flatMap(declarationNames))
+  const enterpriseNames = new Set(enterpriseSource.statements.flatMap((statement) => [
+    ...declarationNames(statement),
+    ...importedNames(statement),
+  ]))
   const missing = publicSource.statements
     .filter((statement) => !exported(statement))
     .filter((statement) => {

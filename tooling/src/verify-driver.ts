@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { GENERATED_SOURCE_HEADER } from './generate.js'
+import { extractExportedValues, parseSource } from './source.js'
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -27,6 +28,12 @@ function assertOrdered(source: string, fragments: string[], label: string): void
   }
 }
 
+function assertEventControlInterface(path: string, label: string): void {
+  const callables = new Map(extractExportedValues(parseSource(path)).map((value) => [value.name, value.signature]))
+  assert(callables.get('off') === 'off(subscription:OpenIMSDKEventSubscription):void', `${label} off signature drifted`)
+  assert(callables.get('offAll') === 'offAll(eventName:OpenIMSDKEventName):void', `${label} offAll signature drifted`)
+}
+
 export function generatedDriverRuntime(source: string): string {
   const normalized = source.trimEnd()
   return `${normalized.startsWith(GENERATED_SOURCE_HEADER) ? normalized : `${GENERATED_SOURCE_HEADER}\n${normalized}`}\n`
@@ -43,7 +50,8 @@ export function verifyDriverInvariants(root: string): void {
   )
   const androidRuntime = readFileSync(join(root, 'sdk-src/native/android/OpenIMDriverRuntime.kt'), 'utf8')
   const iosRuntime = readFileSync(join(root, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8')
-  const utsInterface = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), 'utf8')
+  const utsInterfacePath = join(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts')
+  const utsInterface = readFileSync(utsInterfacePath, 'utf8')
   const androidEvents = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'), 'utf8')
   const iosEvents = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts'), 'utf8')
 
@@ -55,6 +63,7 @@ export function verifyDriverInvariants(root: string): void {
     'UTS event subscription interface',
   )
   assertExcludes(utsInterface, ['OpenIMSDKUnsubscribe', 'OpenIMSDKSubscriptionID'], 'UTS event subscription interface')
+  assertEventControlInterface(utsInterfacePath, 'UTS event subscription interface')
   for (const [label, source] of [['Android UTS events', androidEvents], ['iOS UTS events', iosEvents]] as const) {
     assertIncludes(
       source,
@@ -171,10 +180,8 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/OpenIMHarmonyDriver.ets'),
     'utf8',
   )
-  const enterpriseInterface = readFileSync(
-    join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'),
-    'utf8',
-  )
+  const enterpriseInterfacePath = join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts')
+  const enterpriseInterface = readFileSync(enterpriseInterfacePath, 'utf8')
   const enterpriseHarmonyIndex = readFileSync(
     join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/index.uts'),
     'utf8',
@@ -183,11 +190,11 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     enterpriseInterface,
     [
       'export type OpenIMSDKEventSubscription = {',
-      'export declare function off(subscription : OpenIMSDKEventSubscription) : void',
     ],
     'Enterprise UTS event subscription interface',
   )
   assertExcludes(enterpriseInterface, ['OpenIMSDKUnsubscribe', 'OpenIMSDKSubscriptionID'], 'Enterprise UTS event subscription interface')
+  assertEventControlInterface(enterpriseInterfacePath, 'Enterprise UTS event subscription interface')
   assertIncludes(
     enterpriseHarmonyIndex,
     [
