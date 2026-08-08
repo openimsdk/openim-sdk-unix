@@ -613,16 +613,17 @@ export function verifyEnterpriseDelta(
     'Harmony monomorphic codec certification is stale',
   )
   assert(!harmonySource.includes('noopUnsubscribe'), 'Harmony contains a silent noop event subscription')
+  assert(harmonySource.includes('driverBindEventSink('), 'Harmony event sink is not bound through PlatformDriver')
+  assert(harmonySource.includes('function dispatchHarmonyDriverEvent('), 'Harmony public-name event dispatcher drifted')
   assert(
-    harmonySource.includes("if (eventName == 'onMessageModified') { return harmonyEventCode('EventOnMessageModified') }"),
-    'Harmony onMessageModified binding drifted',
+    harmonySource.includes("onStringHarmonyEvent('onMessageModified', handler)"),
+    'Harmony onMessageModified public-name subscription drifted',
   )
   assert(
-    harmonySource.includes(
-      "onStringHarmonyEvent('onMessageModified', harmonyEventCode('EventOnMessageModified'), handler)",
-    ),
-    'Harmony onMessageModified subscription drifted',
+    harmonySource.includes('export function offAll(eventName : OpenIMSDKEventName) : void { offAllHarmonyUTSSubscriptions(eventName) }'),
+    'Harmony offAll does not clean by public event name',
   )
+  assert(!harmonySource.includes('OpenIMHarmonyDriver'), 'Harmony UTS façade bypasses PlatformDriver')
   assert(!harmonySource.includes("from '@openimsdk/imsdk'"), 'Harmony UTS imports the HAR instead of using the ETS Driver')
   assert(!/harmonySDK\.(?:on|off|offAll)\s*(?:<[^>]+>)?\s*\(/.test(harmonySource), 'Harmony UTS bypasses the ETS event seam')
   assert(!/harmonySDK\.invoke\s*(?:<[^>]+>)?\s*\(/.test(harmonySource), 'Harmony UTS bypasses the typed operation switch')

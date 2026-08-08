@@ -4,6 +4,7 @@ import type { ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
 import {
   callableOverrideHash,
   composeEnterpriseContract,
+  composeHarmonyDeclaration,
   mergePublicTemplateHelpers,
   type EnterpriseHarmonyFacadeProjection,
 } from '../src/enterprise-compose.js'
@@ -130,4 +131,22 @@ test('Enterprise imported helpers are not duplicated from the Public template', 
   const result = mergePublicTemplateHelpers(publicTemplate, enterpriseTemplate)
   assert.equal(result.match(/parseNativeStringListValue/g)?.length, 1)
   assert.equal(result.includes('function parseNativeStringListValue'), false)
+})
+
+test('Harmony event subscriptions and offAll are projected through the public-name registry', () => {
+  const eventCallable = {
+    id: 2003,
+    name: 'onConnecting',
+    role: 'event-subscription',
+  } as ContractDocument['callables'][number]
+  const eventDeclaration = "export function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onVoidHarmonyEvent('onConnecting', harmonyEventCode('EventOnConnecting'), handler) }"
+  assert.equal(
+    composeHarmonyDeclaration(eventCallable, eventDeclaration),
+    "export function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onVoidHarmonyEvent('onConnecting', handler) }",
+  )
+  const offAll = { id: 2002, name: 'offAll', role: 'event-control' } as ContractDocument['callables'][number]
+  assert.equal(
+    composeHarmonyDeclaration(offAll, 'legacy native-code cleanup'),
+    'export function offAll(eventName : OpenIMSDKEventName) : void { offAllHarmonyUTSSubscriptions(eventName) }',
+  )
 })

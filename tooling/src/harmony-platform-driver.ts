@@ -8,12 +8,15 @@ function harmonyNativeEventName(declaration: string): string | null {
   return /harmonyEventCode\('([^']+)'\)/.exec(declaration)?.[1] ?? null
 }
 
-export function renderHarmonyPlatformDriver(contract: ContractDocument): string {
+export function renderHarmonyPlatformDriver(
+  contract: ContractDocument,
+  projectedDeclarations: ReadonlyMap<string, string>,
+): string {
   const callables = new Map(contract.callables.map((callable) => [callable.name, callable]))
   const events = contract.events.flatMap((event) => {
     const callable = callables.get(event.callable)
     assert(callable != null, `Harmony event callable is missing: ${event.callable}`)
-    const declaration = callable.declaration.harmony ?? ''
+    const declaration = projectedDeclarations.get(callable.name) ?? callable.declaration.harmony ?? ''
     const nativeEventName = harmonyNativeEventName(declaration)
     if (nativeEventName == null) {
       assert(event.binding.harmony === 'unsupported-by-native-abi', `Harmony event lacks native binding: ${event.name}`)

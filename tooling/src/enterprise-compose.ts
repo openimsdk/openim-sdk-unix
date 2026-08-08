@@ -148,7 +148,13 @@ function composeCallable(
   }
 }
 
-function contractifyHarmonyDeclaration(callable: ContractCallable, declaration: string): string {
+export function composeHarmonyDeclaration(callable: ContractCallable, declaration: string): string {
+  if (callable.name === 'offAll') {
+    return 'export function offAll(eventName : OpenIMSDKEventName) : void { offAllHarmonyUTSSubscriptions(eventName) }'
+  }
+  if (callable.role === 'event-subscription') {
+    return declaration.replace(/,\s*harmonyEventCode\('[^']+'\)/g, '')
+  }
   if (callable.role !== 'operation') return declaration
   let result = declaration
     .replace(/OpenIMHarmonyDriver\.callAsync\(\d+/g, `callHarmonyDriverAsync(${callable.id}`)
@@ -188,7 +194,7 @@ export function composeEnterpriseContract(
     const override = base.callables.some((baseCallable) => baseCallable.name === value.name)
       ? overrides.get(value.name)
       : undefined
-    return composeCallable(value, contractifyHarmonyDeclaration(value, declaration), override)
+    return composeCallable(value, composeHarmonyDeclaration(value, declaration), override)
   })
   for (const override of overrides.values()) {
     assert(base.callables.some((value) => value.name === override.name), `Unknown Enterprise callable override: ${override.name}`)
@@ -450,7 +456,8 @@ function normalizeOutputs(outputs: GeneratedOutput[]): GeneratedOutput[] {
 export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot: string): GeneratedOutput[] {
   const base = readContract(join(publicRoot, 'contracts/base/contract.json'))
   const delta = readDelta(join(privateRoot, 'contracts/enterprise/delta.json'))
-  const contract = composeEnterpriseContract(base, delta, readEnterpriseHarmonyProjection(privateRoot))
+  const harmonyProjection = readEnterpriseHarmonyProjection(privateRoot)
+  const contract = composeEnterpriseContract(base, delta, harmonyProjection)
   const harmonyRaw = generateIndexFromTemplate(
     readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.harmony), 'utf8'),
     contract,
@@ -459,7 +466,10 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
   const harmony = monomorphizeHarmonySource(harmonyRaw)
   const harmonyDriver = renderHarmonyDriverBindings(privateRoot)
   const harmonyOperationCodes = renderHarmonyOperationCodes(privateRoot)
-  const harmonyPlatformDriver = renderHarmonyPlatformDriver(contract)
+  const harmonyPlatformDriver = renderHarmonyPlatformDriver(
+    contract,
+    new Map(harmonyProjection.callables.map((callable) => [callable.name, callable.declaration])),
+  )
   return normalizeOutputs([
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'),

@@ -236,11 +236,18 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     enterpriseHarmonyIndex,
     [
       'function registerHarmonyUTSSubscription(',
+      'function dispatchHarmonyDriverEvent(',
+      'driverBindEventSink(',
       'export function off(subscription : OpenIMSDKEventSubscription)',
+      'offAllHarmonyUTSSubscriptions(eventName)',
     ],
     'Enterprise Harmony UTS subscription registry',
   )
-  assertExcludes(enterpriseHarmonyIndex, ['OpenIMSDKUnsubscribe'], 'Enterprise Harmony UTS subscription registry')
+  assertExcludes(
+    enterpriseHarmonyIndex,
+    ['OpenIMSDKUnsubscribe', 'OpenIMHarmonyDriver.onEvent', 'OpenIMHarmonyDriver.offAll'],
+    'Enterprise Harmony UTS subscription registry',
+  )
   assert(sharedAndroid === enterpriseAndroid, 'Enterprise Android Driver Runtime is not the public shared source')
   assert(sharedIOS === enterpriseIOS, 'Enterprise iOS Driver Runtime is not the public shared source')
   assert(harmonySource === enterpriseHarmony, 'Enterprise Harmony Driver is not generated from its authoritative source')
