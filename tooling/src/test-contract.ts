@@ -104,6 +104,7 @@ const p0EventNames = new Set([
 ])
 
 const lifecycleCallables = new Set(['initSDK', 'login', 'logout', 'unInitSDK', 'getLoginStatus', 'getLoginUserID'])
+const lifecycleMutationCallables = new Set(['initSDK', 'login', 'logout', 'unInitSDK'])
 const messageDeliveryCallables = new Set(['sendMessage', 'sendMessageNotOss'])
 const uploadCallables = new Set(['uploadFile', 'uploadLogs', 'cancelUpload'])
 const harmonyUnsupportedCallables = new Set(['updateFcmToken', 'updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
@@ -313,7 +314,7 @@ function semanticProfile(callable: ContractCallable): string {
 
 function sideEffectProbe(callable: ContractCallable): string {
   if (callable.role !== 'operation') return 'registry-observation'
-  if (lifecycleCallables.has(callable.name)) return 'state-transition'
+  if (lifecycleMutationCallables.has(callable.name)) return 'state-transition'
   if (messageDeliveryCallables.has(callable.name) || callable.name.startsWith('signaling')) return 'cross-account-event-observation'
   if (callable.name === 'uploadFile' || callable.name === 'uploadLogs' || callable.name === 'cancelUpload') return 'progress-and-result-observation'
   if (/^(?:set|update|mark|delete|remove|pin|revoke|change)/.test(callable.name)) return 'read-after-write'

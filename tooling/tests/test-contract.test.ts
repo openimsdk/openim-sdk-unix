@@ -47,6 +47,9 @@ test('case manifest assigns concrete semantic and side-effect probes to P0 flows
   assert.equal(byAPI.get('uploadFile')?.cleanupAction, 'cancelUpload(cancelID)')
   assert.equal(byAPI.get('offAll')?.semanticProfile, 'subscription-lifecycle')
   assert.equal(byAPI.get('offAll')?.sideEffectProbe, 'registry-observation')
+  assert.equal(byAPI.get('getLoginStatus')?.sideEffectProbe, 'none')
+  assert.equal(byAPI.get('getLoginUserID')?.sideEffectProbe, 'none')
+  assert.deepEqual(byAPI.get('getLoginStatus')?.validationAxes, ['completion', 'structure', 'semantic'])
 
   const friend = byAPI.get('addFriend')
   assert.equal(friend?.semanticProfile, 'mutation-observation')

@@ -1862,7 +1862,7 @@
         "root": "callables.getLoginStatus.schema"
       },
       "semanticProfile": "lifecycle-state",
-      "sideEffectProbe": "state-transition",
+      "sideEffectProbe": "none",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
@@ -1872,8 +1872,7 @@
       "validationAxes": [
         "completion",
         "structure",
-        "semantic",
-        "side-effect"
+        "semantic"
       ]
     },
     {
@@ -1893,7 +1892,7 @@
         "root": "callables.getLoginUserID.schema"
       },
       "semanticProfile": "lifecycle-state",
-      "sideEffectProbe": "state-transition",
+      "sideEffectProbe": "none",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
@@ -1903,8 +1902,7 @@
       "validationAxes": [
         "completion",
         "structure",
-        "semantic",
-        "side-effect"
+        "semantic"
       ]
     },
     {

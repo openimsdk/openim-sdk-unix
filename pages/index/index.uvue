@@ -921,9 +921,26 @@
 	type OpenIMAutomationCase = {
 		group : string
 		name : string
+		apiName : string
 		status : string
 		message : string
 		durationMs : number
+		invoked : boolean
+		resolved : boolean
+		structureValidated : boolean
+		semanticValidated : boolean
+		sideEffectValidated : boolean
+		eventCorrelated : boolean
+		negativeValidated : boolean
+		negativeProfile : string
+		errCode : number
+	}
+
+	type OpenIMAutomationEvidence = {
+		structureValidated : boolean
+		semanticValidated : boolean
+		sideEffectValidated : boolean
+		eventCorrelated : boolean
 	}
 
 	type OpenIMAutomationGroupResult = {
@@ -936,8 +953,14 @@
 
 	type OpenIMAutomationEventRecord = {
 		name : string
+		eventName : string
 		count : number
 		lastPayload : string
+		deliveryValidated : boolean
+		structureValidated : boolean
+		semanticValidated : boolean
+		orderingValidated : boolean
+		epochValidated : boolean
 	}
 
 	type OpenIMAutomationSummary = {
@@ -991,8 +1014,8 @@
 	const automationDefaultStepTimeoutMilliseconds = 60000
 	const automationSendStepTimeoutMilliseconds = 30000
 	const automationSuiteOrder : Array<string> = ['setup', 'events', 'user-status', 'message-create', 'message-create-send', 'message-send', 'conversation', 'message-storage', 'friend', 'group', 'app', 'upload', 'conversation-mutation', 'event-delivery', 'coverage', 'cleanup', 'artifact']
-	const automationAllowedSkipCaseKeys : Array<string> = ['cleanup/unInitSDK']
-	const automationAllowedValidatedMissingNames : Array<string> = ['unInitSDK']
+	const automationAllowedSkipCaseKeys : Array<string> = []
+	const automationAllowedValidatedMissingNames : Array<string> = []
 	const automationRequiredDeliveredEventNames : Array<string> = ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish', 'onSendMessageProgress', 'onUploadFileProgress', 'onUploadLogsProgress']
 	const automationTrackedDeliveredEventNames : Array<string> = [
 		'onSyncServerProgress', 'onConversationChanged', 'onNewConversation', 'onTotalUnreadMessageCountChanged', 'onRecvNewMessage',
@@ -1291,13 +1314,26 @@
 		}
 		let record = findAutomationEventRecord(eventName)
 		if (record == null) {
-			const item : OpenIMAutomationEventRecord = { name: eventName, count: 0, lastPayload: '' }
+			const item : OpenIMAutomationEventRecord = {
+				name: eventName,
+				eventName: eventName,
+				count: 0,
+				lastPayload: '',
+				deliveryValidated: false,
+				structureValidated: false,
+				semanticValidated: false,
+				orderingValidated: false,
+				epochValidated: false
+			}
 			automationEventRecords.push(item)
 			record = item
 		}
 		if (record != null) {
 			record.count = record.count + 1
 			record.lastPayload = truncateAutomationEventPayload(payloadText)
+			record.deliveryValidated = true
+			// Reaching the typed callback proves the façade/event decoder accepted the wire shape.
+			record.structureValidated = true
 		}
 	}
 
@@ -1604,24 +1640,66 @@
 		}
 	}
 
-	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number) {
+	function emptyAutomationEvidence() : OpenIMAutomationEvidence {
+		return {
+			structureValidated: false,
+			semanticValidated: false,
+			sideEffectValidated: false,
+			eventCorrelated: false
+		}
+	}
+
+	function responseAutomationEvidence() : OpenIMAutomationEvidence {
+		return {
+			structureValidated: true,
+			semanticValidated: true,
+			sideEffectValidated: false,
+			eventCorrelated: false
+		}
+	}
+
+	function mutationAutomationEvidence(eventCorrelated : boolean) : OpenIMAutomationEvidence {
+		return {
+			structureValidated: true,
+			semanticValidated: true,
+			sideEffectValidated: true,
+			eventCorrelated: eventCorrelated
+		}
+	}
+
+	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence ?: OpenIMAutomationEvidence | null, apiName ?: string | null, invoked ?: boolean | null, resolved ?: boolean | null) {
 		markAutomationAPICovered(name)
-		if (status == 'passed') {
+		const checked = evidence == null ? emptyAutomationEvidence() : evidence as OpenIMAutomationEvidence
+		if (status == 'passed' && (checked.structureValidated || checked.semanticValidated || checked.sideEffectValidated || checked.eventCorrelated)) {
 			markAutomationAPIValidated(name)
 		}
 		const item : OpenIMAutomationCase = {
 			group: group,
 			name: name,
+			apiName: apiName == null || (apiName as string).length == 0 ? name : apiName as string,
 			status: status,
 			message: automationClip(message),
-			durationMs: new Date().getTime() - startedAt
+			durationMs: new Date().getTime() - startedAt,
+			invoked: invoked == true,
+			resolved: resolved == true,
+			structureValidated: checked.structureValidated,
+			semanticValidated: checked.semanticValidated,
+			sideEffectValidated: checked.sideEffectValidated,
+			eventCorrelated: checked.eventCorrelated,
+			negativeValidated: false,
+			negativeProfile: '',
+			errCode: 0
 		}
 		automationStepResults.push(item)
 		flushAutomationProgressFiles()
 	}
 
 	function recordAutomationStep(group : string, name : string, ok : boolean, detail : string) {
-		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime())
+		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), null, name, true, ok)
+	}
+
+	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence) {
+		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok)
 	}
 
 	function recordAutomationSkip(group : string, name : string, detail : string) {
@@ -1703,7 +1781,7 @@
 		})
 	}
 
-	async function runAutomationStepWithTimeout<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, timeoutMilliseconds : number) : Promise<T> {
+	async function runAutomationStepWithTimeout<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, timeoutMilliseconds : number, evidence ?: OpenIMAutomationEvidence | null) : Promise<T> {
 		statusText.value = 'Automation: ' + group + ' / ' + name
 		const startedAt = new Date().getTime()
 		let resolvedValueText = ''
@@ -1711,17 +1789,17 @@
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, timeoutMilliseconds)
 			resolvedValueText = stringifyAPIValue(value)
 			onSuccess(value)
-			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt)
+			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt, evidence, name, true, true)
 			return value
 		} catch (error) {
 			const errorText = stringifyAPIValue(error)
-			recordAutomationCase(group, name, 'failed', resolvedValueText.length > 0 ? 'value=' + resolvedValueText + '; error=' + errorText : errorText, startedAt)
+			recordAutomationCase(group, name, 'failed', resolvedValueText.length > 0 ? 'value=' + resolvedValueText + '; error=' + errorText : errorText, startedAt, null, name, true, false)
 			throw error
 		}
 	}
 
-	async function runAutomationStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void) : Promise<T> {
-		return await runAutomationStepWithTimeout<T>(group, name, promise, onSuccess, automationDefaultStepTimeoutMilliseconds)
+	async function runAutomationStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, evidence ?: OpenIMAutomationEvidence | null) : Promise<T> {
+		return await runAutomationStepWithTimeout<T>(group, name, promise, onSuccess, automationDefaultStepTimeoutMilliseconds, evidence)
 	}
 
 	async function runAutomationContinueStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void) : Promise<T | null> {
@@ -1738,10 +1816,10 @@
 		try {
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, automationDefaultStepTimeoutMilliseconds)
 			onSuccess(value)
-			recordAutomationCase(group, name, 'passed', stringifyAPIValue(value), startedAt)
+			recordAutomationCase(group, name, 'passed', stringifyAPIValue(value), startedAt, null, name, true, true)
 			return value
 		} catch (error) {
-			recordAutomationCase(group, name, 'skipped', reason + ': ' + stringifyAPIValue(error), startedAt)
+			recordAutomationCase(group, name, 'skipped', reason + ': ' + stringifyAPIValue(error), startedAt, null, name, true, false)
 			return null
 		}
 	}
@@ -1775,10 +1853,13 @@
 			automationLoggedIn = true
 			automationActiveUserID = userID
 		})
-		await runAutomationStep<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), noCache)
+		await runAutomationStep<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), (value : OpenIMLoginStatus) => {
+			requireAutomation(value == 3, 'getLoginStatus did not report logged-in state')
+		}, responseAutomationEvidence())
 		await runAutomationStep<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
 			requireAutomation(value == userID, 'getLoginUserID returned ' + value + ', expected ' + userID)
-		})
+		}, responseAutomationEvidence())
+		recordAutomationEvidenceStep('setup', 'login', true, 'read-after-login status and userID matched ' + userID, mutationAutomationEvidence(false))
 	}
 
 	async function switchAutomationPrimary(config : OpenIMAutomationConfig, label : string) : Promise<void> {
@@ -1805,6 +1886,39 @@
 			}
 			index = index + 1
 		}
+	}
+
+	async function runAutomationEventControlScenario(config : OpenIMAutomationConfig) : Promise<void> {
+		let removedCount = 0
+		let selfRemovingCount = 0
+		let survivorCount = 0
+		const removed = onConnecting(() => { removedCount = removedCount + 1 })
+		let selfRemoving : OpenIMSDKEventSubscription | null = null
+		selfRemoving = onConnecting(() => {
+			selfRemovingCount = selfRemovingCount + 1
+			if (selfRemoving != null) { off(selfRemoving as OpenIMSDKEventSubscription) }
+		})
+		const survivor = onConnecting(() => { survivorCount = survivorCount + 1 })
+		requireAutomationString(removed.id, 'off scenario returned empty subscription id')
+		requireAutomation(removed.eventName == 'onConnecting', 'off scenario returned wrong eventName')
+		off(removed)
+		const forged : OpenIMSDKEventSubscription = { id: 'forged-openim-subscription', eventName: 'onConnecting' }
+		off(forged)
+		await switchAutomationPrimary(config, 'A_event_control_first')
+		requireAutomation(removedCount == 0, 'off delivered a removed subscription')
+		requireAutomation(selfRemovingCount == 1, 'snapshot dispatch/self removal count changed')
+		requireAutomation(survivorCount > 0, 'off blocked a sibling subscription')
+		recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence(false))
+		recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence(true))
+
+		const survivorBeforeOffAll = survivorCount
+		offAll('onConnecting')
+		await switchAutomationSecondary(config, 'B_event_control_off_all')
+		requireAutomation(survivorCount == survivorBeforeOffAll, 'offAll retained an onConnecting subscription')
+		requireAutomation(selfRemovingCount == 1, 'offAll reactivated a removed subscription')
+		recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence(false))
+		registerSDKEvents()
+		await switchAutomationPrimary(config, 'A_event_control_restore')
 	}
 
 	async function sendAutomationCreatedMessage(stepName : string, message : OpenIMMessageItem | null, recvID : string, groupID : string, operationID : string, useNotOss ?: boolean | null) : Promise<OpenIMMessageItem | null> {
@@ -1976,13 +2090,19 @@
 	}
 
 	async function runAutomationSetupSuite(config : OpenIMAutomationConfig) : Promise<void> {
-		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') })
-		recordAutomationStep('setup', 'getOpenIMDataPath', true, getOpenIMDataPath())
+		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence())
+		await runAutomationEventControlScenario(config)
+		const dataPath = getOpenIMDataPath()
+		requireAutomationString(dataPath, 'getOpenIMDataPath returned empty path')
+		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence())
 		initializeAutomationLogFiles()
 		prepareAutomationLocalFiles()
 		recordAutomationEventSubscriptionCoverage()
 		await switchAutomationPrimary(config, 'A_setup')
-		recordAutomationStep('setup', 'getSdkVersion', true, getSdkVersion())
+		recordAutomationEvidenceStep('setup', 'initSDK', true, 'successful login observed after init', mutationAutomationEvidence(false))
+		const sdkVersion = getSdkVersion()
+		requireAutomationString(sdkVersion, 'getSdkVersion returned empty version')
+		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence())
 	}
 
 	async function runAutomationUserStatusSuite(config : OpenIMAutomationConfig) : Promise<void> {
@@ -2386,11 +2506,17 @@
 
 	async function runAutomationEventDeliverySuite() : Promise<void> {
 		await sleepAutomation(1500)
+		let loginEventsComplete = true
 		let requiredIndex = 0
 		while (requiredIndex < automationRequiredDeliveredEventNames.length) {
-			recordRequiredAutomationEventDelivery(automationRequiredDeliveredEventNames[requiredIndex])
+			const requiredEventName = automationRequiredDeliveredEventNames[requiredIndex]
+			recordRequiredAutomationEventDelivery(requiredEventName)
+			if (requiredEventName == 'onConnecting' || requiredEventName == 'onConnectSuccess' || requiredEventName == 'onSyncServerStart' || requiredEventName == 'onSyncServerFinish') {
+				if (readAutomationEventCount(requiredEventName) == 0) { loginEventsComplete = false }
+			}
 			requiredIndex = requiredIndex + 1
 		}
+		recordAutomationEvidenceStep('event-delivery', 'login', loginEventsComplete, 'login lifecycle event correlation', mutationAutomationEvidence(loginEventsComplete))
 		let trackedIndex = 0
 		while (trackedIndex < automationTrackedDeliveredEventNames.length) {
 			recordTrackedAutomationEventDelivery(automationTrackedDeliveredEventNames[trackedIndex])
@@ -2666,7 +2792,7 @@
 		}
 	}
 
-	async function runAutomationCleanupBeforeSummary() : Promise<void> {
+	async function runAutomationCleanupBeforeSummary(config : OpenIMAutomationConfig | null) : Promise<void> {
 		try {
 			const subscription = onRecvCustomBusinessMessage((_payload : string) => {})
 			if (subscription.id.length == 0 || subscription.eventName != 'onRecvCustomBusinessMessage') { throw new Error('onRecvCustomBusinessMessage returned an invalid subscription handle') }
@@ -2683,17 +2809,39 @@
 		} catch (error) {
 			recordAutomationStep('cleanup', 'offAll', false, stringifyAPIValue(error))
 		}
-		recordAutomationSkip('cleanup', 'unInitSDK', 'scheduled after the final result files are written')
-	}
+		if (automationLoggedIn) {
+			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_before_uninit'), (_value : string) => {
+				automationLoggedIn = false
+				automationActiveUserID = ''
+			}, responseAutomationEvidence())
+			const loggedOutStatus = await runAutomationStep<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence())
+			requireAutomation(loggedOutStatus == 1, 'logout did not transition to logged-out state')
+			recordAutomationEvidenceStep('cleanup', 'logout', true, 'read-after-logout status is logged out', mutationAutomationEvidence(false))
+		}
 
-	function scheduleAutomationNativeCleanup() {
-		setTimeout(() => {
-			logout('uvue_auto_logout_after_result').then((_value : string) => {
-				unInitSDK('uvue_auto_uninit_after_result')
-			}).catch((_error : any | null) : void => {
-				unInitSDK('uvue_auto_uninit_after_result')
-			})
-		}, 100)
+		let retainedConnectingCount = 0
+		const retained = onConnecting(() => { retainedConnectingCount = retainedConnectingCount + 1 })
+		unInitSDK('uvue_auto_uninit_epoch_probe')
+		recordAutomationStep('cleanup', 'unInitSDK', true, 'first teardown requested')
+		await sleepAutomation(750)
+		if (config != null && isAutomationConfigReady(config)) {
+			const readyConfig = config as OpenIMAutomationConfig
+			await runAutomationStep<boolean>('cleanup', 'initSDK', initSDK(buildAutomationInitConfig(readyConfig), 'uvue_auto_reinit_epoch_probe'), (value : boolean) => {
+				requireAutomation(value, 're-init after unInitSDK returned false')
+			}, responseAutomationEvidence())
+			await switchAutomationPrimary(readyConfig, 'A_epoch_probe')
+			await sleepAutomation(250)
+			requireAutomation(retainedConnectingCount == 1, 'registry/native epoch rebind delivered ' + retainedConnectingCount.toString() + ' connecting callbacks')
+			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence(false))
+			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence(true))
+			off(retained)
+			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {
+				automationLoggedIn = false
+				automationActiveUserID = ''
+			}, responseAutomationEvidence())
+		}
+		unInitSDK('uvue_auto_uninit_final')
+		recordAutomationStep('cleanup', 'unInitSDK', true, 'final teardown requested')
 	}
 
 	async function runAutomationFlow(config : OpenIMAutomationConfig | null) : Promise<void> {
@@ -2725,7 +2873,9 @@
 			const config = readAutomationConfig()
 			const chain = runAutomationFlow(config)
 			chain.then((_value : void) => {
-				runAutomationCleanupBeforeSummary().then((_cleanupValue : void) => {
+				runAutomationCleanupBeforeSummary(config).catch((error : any | null) : void => {
+					recordAutomationStep('cleanup', 'cleanup runner', false, stringifyAPIValue(error))
+				}).then((_cleanupValue : void) => {
 					runAutomationCoverageSuite()
 					const summary = writeAutomationSummaryFiles(buildAutomationSummary())
 					statusText.value = summary.headline
@@ -2733,7 +2883,6 @@
 					automationRunning = false
 					automationEventSuppressed = false
 					resolve(summary)
-					scheduleAutomationNativeCleanup()
 				})
 			})
 		})
