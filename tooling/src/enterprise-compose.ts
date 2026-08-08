@@ -14,7 +14,7 @@ import type {
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { normalizeContractText, sha256 } from './source.js'
 import { extractExportedTypes, extractExportedValues, parseSource } from './source.js'
-import { makeIndexTemplate } from './import-contract.js'
+import { INDEX_MARKERS, makeIndexTemplate } from './import-contract.js'
 import {
   generateEvents,
   generatedSource,
@@ -251,6 +251,42 @@ function buildEnterpriseIndexTemplate(
   return makeIndexTemplate(parseSource(path), constants, eventCallables, operations)
 }
 
+function declarationNames(statement: ts.Statement): string[] {
+  if (ts.isFunctionDeclaration(statement) || ts.isTypeAliasDeclaration(statement) || ts.isInterfaceDeclaration(statement) || ts.isClassDeclaration(statement) || ts.isEnumDeclaration(statement)) {
+    return statement.name == null ? [] : [statement.name.text]
+  }
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations
+      .map((value) => ts.isIdentifier(value.name) ? value.name.text : '')
+      .filter((value) => value !== '')
+  }
+  return []
+}
+
+function exported(statement: ts.Statement): boolean {
+  return (ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined)
+    ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ?? false
+}
+
+export function mergePublicTemplateHelpers(publicTemplate: string, enterpriseTemplate: string): string {
+  const publicSource = ts.createSourceFile('public-template.uts', publicTemplate, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+  const enterpriseSource = ts.createSourceFile('enterprise-template.uts', enterpriseTemplate, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+  const enterpriseNames = new Set(enterpriseSource.statements.flatMap(declarationNames))
+  const missing = publicSource.statements
+    .filter((statement) => !exported(statement))
+    .filter((statement) => {
+      const names = declarationNames(statement)
+      return names.length > 0 && names.every((name) => !enterpriseNames.has(name))
+    })
+    .map((statement) => statement.getText(publicSource))
+  if (missing.length === 0) return enterpriseTemplate
+  assert(enterpriseTemplate.includes(INDEX_MARKERS.eventCallables), 'Enterprise template event marker is missing')
+  return enterpriseTemplate.replace(
+    INDEX_MARKERS.eventCallables,
+    `${missing.join('\n\n')}\n\n${INDEX_MARKERS.eventCallables}`,
+  )
+}
+
 export interface EnterpriseComposerAuthority {
   delta: EnterpriseDeltaDocument
   projection: EnterpriseHarmonyFacadeProjection
@@ -336,8 +372,14 @@ export function extractEnterpriseComposerAuthority(
     delta,
     projection,
     templates: {
-      android: buildEnterpriseIndexTemplate(platformPaths.android, constantNames, callables),
-      ios: buildEnterpriseIndexTemplate(platformPaths.ios, constantNames, callables),
+      android: mergePublicTemplateHelpers(
+        readFileSync(join(publicRoot, 'sdk-src/uts/app-android/index.template.uts'), 'utf8'),
+        buildEnterpriseIndexTemplate(platformPaths.android, constantNames, callables),
+      ),
+      ios: mergePublicTemplateHelpers(
+        readFileSync(join(publicRoot, 'sdk-src/uts/app-ios/index.template.uts'), 'utf8'),
+        buildEnterpriseIndexTemplate(platformPaths.ios, constantNames, callables),
+      ),
       harmony: demonomorphizeHarmonySource(
         buildEnterpriseIndexTemplate(platformPaths.harmony, constantNames, callables),
         manifest,

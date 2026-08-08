@@ -4,6 +4,7 @@ import type { ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
 import {
   callableOverrideHash,
   composeEnterpriseContract,
+  mergePublicTemplateHelpers,
   type EnterpriseHarmonyFacadeProjection,
 } from '../src/enterprise-compose.js'
 import {
@@ -111,4 +112,14 @@ test('Harmony monomorphization is a pure reproducible projection', () => {
   const recovered = demonomorphizeHarmonySource(first.source, first.manifest as HarmonyMonomorphicManifest)
   assert.match(recovered, /wrapHarmonyPromise<string>/)
   assert.match(recovered, /invokeHarmonyMapped<string>/)
+})
+
+test('Enterprise templates inherit newly introduced Public helpers', () => {
+  const publicTemplate = `function shared() : string { return 'public' }\nfunction added() : string { return shared() }\n// <openim-generated:event-callables>\n`
+  const enterpriseTemplate = `function shared() : string { return 'enterprise' }\nfunction privateOnly() : string { return '' }\n// <openim-generated:event-callables>\n`
+  const result = mergePublicTemplateHelpers(publicTemplate, enterpriseTemplate)
+  assert.match(result, /function added\(\)/)
+  assert.match(result, /return 'enterprise'/)
+  assert.match(result, /function privateOnly\(\)/)
+  assert.equal(result.match(/function shared\(\)/g)?.length, 1)
 })
