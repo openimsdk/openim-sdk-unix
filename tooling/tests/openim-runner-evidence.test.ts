@@ -24,6 +24,8 @@ function manifest() {
       caseId: 'api/getLoginStatus',
       apiName: 'getLoginStatus',
       platforms: { android: 'required', ios: 'required' },
+      semanticProfile: 'lifecycle-state',
+      sideEffectProbe: 'none',
       validationAxes: ['completion', 'structure', 'semantic'],
     }],
     events: [],
@@ -54,6 +56,7 @@ test('Public runner evidence reads base authority and keeps response structure s
       apiName: 'getLoginStatus', status: 'passed', invoked: true, resolved: true,
       responseEvidence: true, responseEncoding: 'uts-typed-json-v1', responseDetail: '3',
       structureValidated: true, semanticValidated: true,
+      assertions: [{ axis: 'semantic', profile: 'lifecycle-state', rule: 'login-status-is-logged', expected: '3', actual: '3', ok: true }],
     }],
     events: [],
   }

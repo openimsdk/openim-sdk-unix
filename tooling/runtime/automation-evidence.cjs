@@ -226,9 +226,32 @@ function eventStructureResult(candidates, eventName, responseSchemas) {
   return { passed: issues.length === 0, issues }
 }
 
-function axisPassed(candidates, axis, kind) {
+function profileAssertionPassed(candidates, axis, profile) {
+  if (typeof profile !== 'string' || profile.length === 0) return false
+  return candidates.some((item) => {
+    if (!isSuccessfulEvidence(item) || !Array.isArray(item.assertions)) return false
+    return item.assertions.some((assertion) => isRecord(assertion)
+      && assertion.axis === axis
+      && assertion.profile === profile
+      && typeof assertion.rule === 'string'
+      && assertion.rule.length > 0
+      && typeof assertion.expected === 'string'
+      && typeof assertion.actual === 'string'
+      && assertion.ok === true)
+  })
+}
+
+function axisPassed(candidates, axis, kind, contractCase = null) {
   if (kind === 'callable' && axis === 'completion') {
     return candidates.some((item) => isSuccessfulEvidence(item) && item.invoked === true && item.resolved === true)
+  }
+  if (kind === 'callable' && axis === 'semantic') {
+    return candidates.some((item) => item.semanticValidated === true && isSuccessfulEvidence(item))
+      && profileAssertionPassed(candidates, 'semantic', contractCase?.semanticProfile)
+  }
+  if (kind === 'callable' && axis === 'side-effect') {
+    return candidates.some((item) => item.sideEffectValidated === true && isSuccessfulEvidence(item))
+      && profileAssertionPassed(candidates, 'side-effect', contractCase?.sideEffectProbe)
   }
   const flag = kind === 'callable' ? callableAxisFlags[axis] : eventAxisFlags[axis]
   if (flag == null) {
@@ -437,12 +460,19 @@ function validateAutomationEvidence(input) {
           }
           continue
         }
-        if (!axisPassed(candidates, axis, 'callable')) {
+        if (!axisPassed(candidates, axis, 'callable', contractCase)) {
+          const expectedProfile = axis === 'semantic'
+            ? contractCase.semanticProfile
+            : axis === 'side-effect'
+              ? contractCase.sideEffectProbe
+              : ''
           issues.push(issue(
             String(contractCase.caseId),
             String(axis),
-            candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated',
-            `${contractCase.apiName} has no passing ${String(axis)} evidence on ${platform}`,
+            candidates.length === 0 ? 'missing-evidence' : expectedProfile ? 'profile-assertion-invalid' : 'axis-not-validated',
+            expectedProfile
+              ? `${contractCase.apiName} has no passing ${String(axis)} assertion for generated profile ${String(expectedProfile)} on ${platform}`
+              : `${contractCase.apiName} has no passing ${String(axis)} evidence on ${platform}`,
           ))
         }
       }

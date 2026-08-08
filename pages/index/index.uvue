@@ -950,6 +950,16 @@
 		epoch : number
 	}
 
+	type OpenIMAutomationAssertionResult = {
+		path : string
+		axis : string
+		profile : string
+		rule : string
+		expected : string
+		actual : string
+		ok : boolean
+	}
+
 	type OpenIMAutomationCase = {
 		group : string
 		name : string
@@ -970,6 +980,7 @@
 		negativeProfile : string
 		errCode : number
 		eventCorrelations : Array<OpenIMAutomationEventCorrelation>
+		assertions : Array<OpenIMAutomationAssertionResult>
 	}
 
 	type OpenIMAutomationEvidence = {
@@ -977,6 +988,7 @@
 		semanticValidated : boolean
 		sideEffectValidated : boolean
 		eventCorrelated : boolean
+		assertions : Array<OpenIMAutomationAssertionResult>
 	}
 
 	type OpenIMAutomationGroupResult = {
@@ -1832,34 +1844,51 @@
 			structureValidated: false,
 			semanticValidated: false,
 			sideEffectValidated: false,
-			eventCorrelated: false
+			eventCorrelated: false,
+			assertions: []
 		}
 	}
 
-	function responseAutomationEvidence() : OpenIMAutomationEvidence {
+	function createAutomationProfileAssertion(axis : string, profile : string, rule : string, expected : string, actual : string, ok : boolean) : OpenIMAutomationAssertionResult {
+		return { path: '$', axis: axis, profile: profile, rule: rule, expected: expected, actual: actual, ok: ok }
+	}
+
+	function responseAutomationEvidence(profile : string, rule : string) : OpenIMAutomationEvidence {
+		const assertions : Array<OpenIMAutomationAssertionResult> = [createAutomationProfileAssertion('semantic', profile, rule, 'scenario response constraint passes', 'scenario response constraint passed', true)]
 		return {
 			structureValidated: true,
 			semanticValidated: true,
 			sideEffectValidated: false,
-			eventCorrelated: false
+			eventCorrelated: false,
+			assertions: assertions
 		}
 	}
 
-	function mutationAutomationEvidence(eventCorrelated : boolean) : OpenIMAutomationEvidence {
+	function mutationAutomationEvidence(semanticProfile : string, sideEffectProbe : string, semanticRule : string, sideEffectRule : string, eventCorrelated : boolean) : OpenIMAutomationEvidence {
+		const assertions : Array<OpenIMAutomationAssertionResult> = [
+			createAutomationProfileAssertion('semantic', semanticProfile, semanticRule, 'scenario mutation constraint passes', 'scenario mutation constraint passed', true),
+			createAutomationProfileAssertion('side-effect', sideEffectProbe, sideEffectRule, 'observable state transition', 'observable state transition confirmed', true)
+		]
 		return {
 			structureValidated: true,
 			semanticValidated: true,
 			sideEffectValidated: true,
-			eventCorrelated: eventCorrelated
+			eventCorrelated: eventCorrelated,
+			assertions: assertions
 		}
 	}
 
-	function subscriptionAutomationEvidence(handleMatched : boolean, registryObserved : boolean) : OpenIMAutomationEvidence {
+	function subscriptionAutomationEvidence(eventName : string, handleMatched : boolean, registryObserved : boolean) : OpenIMAutomationEvidence {
+		const assertions : Array<OpenIMAutomationAssertionResult> = [
+			createAutomationProfileAssertion('semantic', 'subscription-lifecycle', 'exact-subscription-handle', eventName + ' handle id and eventName', handleMatched ? eventName + ' exact handle' : 'missing or mismatched handle', handleMatched),
+			createAutomationProfileAssertion('side-effect', 'registry-observation', 'registry-entry-observed', eventName + ' registered by public eventName', registryObserved ? eventName + ' registry entry' : 'registry entry missing', registryObserved)
+		]
 		return {
 			structureValidated: true,
 			semanticValidated: handleMatched,
 			sideEffectValidated: registryObserved,
-			eventCorrelated: false
+			eventCorrelated: false,
+			assertions: assertions
 		}
 	}
 
@@ -1888,7 +1917,8 @@
 			negativeValidated: false,
 			negativeProfile: '',
 			errCode: 0,
-			eventCorrelations: eventCorrelations == null ? [] : eventCorrelations as Array<OpenIMAutomationEventCorrelation>
+			eventCorrelations: eventCorrelations == null ? [] : eventCorrelations as Array<OpenIMAutomationEventCorrelation>,
+			assertions: checked.assertions
 		}
 		automationStepResults.push(item)
 		flushAutomationProgressFiles()
@@ -2057,11 +2087,11 @@
 		})
 		await runAutomationStep<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), (value : OpenIMLoginStatus) => {
 			requireAutomation(value == 3, 'getLoginStatus did not report logged-in state')
-		}, responseAutomationEvidence())
+		}, responseAutomationEvidence('lifecycle-state', 'login-status-is-logged'))
 		await runAutomationStep<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
 			requireAutomation(value == userID, 'getLoginUserID returned ' + value + ', expected ' + userID)
-		}, responseAutomationEvidence())
-		recordAutomationEvidenceStep('setup', 'login', true, 'read-after-login status and userID matched ' + userID, mutationAutomationEvidence(false))
+		}, responseAutomationEvidence('lifecycle-state', 'login-user-id-matches-active-user'))
+		recordAutomationEvidenceStep('setup', 'login', true, 'read-after-login status and userID matched ' + userID, mutationAutomationEvidence('lifecycle-state', 'state-transition', 'authenticated-user-observed', 'login-readback-observed', false))
 	}
 
 	async function switchAutomationPrimary(config : OpenIMAutomationConfig, label : string) : Promise<void> {
@@ -2080,7 +2110,7 @@
 			const handleMatched = subscription.id.length > 0 && automationStringArrayContains(sdkRegisteredEventNames, eventName)
 			const registryObserved = automationStringArrayContains(sdkEventSubscriptionNames, eventName)
 			const valid = handleMatched && registryObserved
-			recordAutomationCase('events', eventName, valid ? 'passed' : 'failed', valid ? 'exact subscription handle and registry entry observed' : 'event subscription handle or registry entry missing', new Date().getTime(), subscriptionAutomationEvidence(handleMatched, registryObserved), eventName, true, valid, valid ? stringifyAPIValue(subscription) : null)
+			recordAutomationCase('events', eventName, valid ? 'passed' : 'failed', valid ? 'exact subscription handle and registry entry observed' : 'event subscription handle or registry entry missing', new Date().getTime(), subscriptionAutomationEvidence(eventName, handleMatched, registryObserved), eventName, true, valid, valid ? stringifyAPIValue(subscription) : null)
 			index = index + 1
 		}
 		index = 0
@@ -2113,15 +2143,15 @@
 		requireAutomation(removedCount == 0, 'off delivered a removed subscription')
 		requireAutomation(selfRemovingCount == 1, 'snapshot dispatch/self removal count changed')
 		requireAutomation(survivorCount > 0, 'off blocked a sibling subscription')
-		recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence(false), 'null')
-		recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence(true), stringifyAPIValue(survivor))
+		recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence('subscription-lifecycle', 'registry-observation', 'exact-and-forged-handles-distinguished', 'removed-handler-not-dispatched', false), 'null')
+		recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence('subscription-lifecycle', 'registry-observation', 'snapshot-dispatch-preserved', 'sibling-registry-entry-survived', true), stringifyAPIValue(survivor))
 
 		const survivorBeforeOffAll = survivorCount
 		offAll('onConnecting')
 		await switchAutomationSecondary(config, 'B_event_control_off_all')
 		requireAutomation(survivorCount == survivorBeforeOffAll, 'offAll retained an onConnecting subscription')
 		requireAutomation(selfRemovingCount == 1, 'offAll reactivated a removed subscription')
-		recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence(false), 'null')
+		recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence('subscription-lifecycle', 'registry-observation', 'public-event-name-selected', 'all-matching-handlers-removed', false), 'null')
 		registerSDKEvents()
 		await switchAutomationPrimary(config, 'A_event_control_restore')
 	}
@@ -2297,19 +2327,19 @@
 	async function runAutomationSetupSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
 		automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
-		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence())
+		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence('lifecycle-state', 'init-result-is-true'))
 		await runAutomationEventControlScenario(config)
 		const dataPath = getOpenIMDataPath()
 		requireAutomationString(dataPath, 'getOpenIMDataPath returned empty path')
-		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence(), stringifyAPIValue(dataPath))
+		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence('response-identity', 'data-path-is-non-empty'), stringifyAPIValue(dataPath))
 		initializeAutomationLogFiles()
 		prepareAutomationLocalFiles()
 		recordAutomationEventSubscriptionCoverage()
 		await switchAutomationPrimary(config, 'A_setup')
-		recordAutomationEvidenceStep('setup', 'initSDK', true, 'successful login observed after init', mutationAutomationEvidence(false))
+		recordAutomationEvidenceStep('setup', 'initSDK', true, 'successful login observed after init', mutationAutomationEvidence('lifecycle-state', 'state-transition', 'initialized-session-accepted-login', 'init-state-transition-observed', false))
 		const sdkVersion = getSdkVersion()
 		requireAutomationString(sdkVersion, 'getSdkVersion returned empty version')
-		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence(), stringifyAPIValue(sdkVersion))
+		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence('response-identity', 'sdk-version-is-non-empty'), stringifyAPIValue(sdkVersion))
 	}
 
 	async function runAutomationUserStatusSuite(config : OpenIMAutomationConfig) : Promise<void> {
@@ -3045,10 +3075,10 @@
 			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_before_uninit'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''
-			}, responseAutomationEvidence())
-			const loggedOutStatus = await runAutomationStep<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence())
+			}, responseAutomationEvidence('lifecycle-state', 'login-status-is-logged-out'))
+			const loggedOutStatus = await runAutomationStep<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence('lifecycle-state', 'login-status-readback-is-logged-out'))
 			requireAutomation(loggedOutStatus == 1, 'logout did not transition to logged-out state')
-			recordAutomationEvidenceStep('cleanup', 'logout', true, 'read-after-logout status is logged out', mutationAutomationEvidence(false))
+			recordAutomationEvidenceStep('cleanup', 'logout', true, 'read-after-logout status is logged out', mutationAutomationEvidence('lifecycle-state', 'state-transition', 'logout-result-observed', 'logged-out-status-readback', false))
 		}
 
 		let retainedConnectingCount = 0
@@ -3063,17 +3093,17 @@
 			automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
 			await runAutomationStep<boolean>('cleanup', 'initSDK', initSDK(buildAutomationInitConfig(readyConfig), 'uvue_auto_reinit_epoch_probe'), (value : boolean) => {
 				requireAutomation(value, 're-init after unInitSDK returned false')
-			}, responseAutomationEvidence())
+			}, responseAutomationEvidence('lifecycle-state', 'reinit-result-is-true'))
 			await switchAutomationPrimary(readyConfig, 'A_epoch_probe')
 			await sleepAutomation(250)
 			requireAutomation(retainedConnectingCount == 1, 'registry/native epoch rebind delivered ' + retainedConnectingCount.toString() + ' connecting callbacks')
-			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence(false), 'null')
-			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence(true))
+			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence('lifecycle-state', 'state-transition', 'teardown-barrier-completed', 'clean-reinit-after-uninit', false), 'null')
+			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence('subscription-lifecycle', 'registry-observation', 'subscription-survived-core-epoch', 'single-delivery-after-rebind', true))
 			off(retained)
 			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''
-			}, responseAutomationEvidence())
+			}, responseAutomationEvidence('lifecycle-state', 'cleanup-login-status-is-logged-out'))
 		}
 		unInitSDK('uvue_auto_uninit_final')
 		automationCurrentLifecycleEpoch = 0

@@ -35,6 +35,31 @@ test('runtime cases carry explicit contract evidence instead of deriving validat
   assert.match(page, /function recordAutomation(?:EvidenceStep|ValidatedStep)\(/)
 })
 
+test('callable semantic and side-effect evidence carries generated profile assertions', () => {
+  for (const field of [
+    'path : string',
+    'axis : string',
+    'profile : string',
+    'rule : string',
+    'expected : string',
+    'actual : string',
+    'ok : boolean',
+    'assertions : Array<OpenIMAutomationAssertionResult>',
+  ]) {
+    assert.match(page, new RegExp(field))
+  }
+  assert.match(functionSource('createAutomationProfileAssertion'), /path: '\$'/)
+  const response = functionSource('responseAutomationEvidence')
+  assert.match(response, /createAutomationProfileAssertion\('semantic', profile, rule/)
+  const mutation = functionSource('mutationAutomationEvidence')
+  assert.match(mutation, /createAutomationProfileAssertion\('semantic', semanticProfile, semanticRule/)
+  assert.match(mutation, /createAutomationProfileAssertion\('side-effect', sideEffectProbe, sideEffectRule/)
+  const subscription = functionSource('subscriptionAutomationEvidence')
+  assert.match(subscription, /'subscription-lifecycle'/)
+  assert.match(subscription, /'registry-observation'/)
+  assert.match(functionSource('recordAutomationCase'), /assertions: checked\.assertions/)
+})
+
 test('runtime response evidence carries the resolved wire value separately from narratives', () => {
   for (const field of ['responseEncoding : string', 'responseDetail : string']) {
     assert.match(page, new RegExp(field))
@@ -54,7 +79,7 @@ test('event subscriptions prove handle semantics and registry side effects separ
   const recorder = functionSource('recordAutomationEventSubscriptionCoverage')
   assert.match(recorder, /const handleMatched = subscription\.id\.length > 0/)
   assert.match(recorder, /const registryObserved = automationStringArrayContains\(sdkEventSubscriptionNames, eventName\)/)
-  assert.match(recorder, /subscriptionAutomationEvidence\(handleMatched, registryObserved\)/)
+  assert.match(recorder, /subscriptionAutomationEvidence\(eventName, handleMatched, registryObserved\)/)
   assert.doesNotMatch(recorder, /mutationAutomationEvidence/)
 })
 

@@ -23,6 +23,8 @@ function manifest() {
         apiName: 'sendMessage',
         priority: 'P0',
         platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        semanticProfile: 'message-delivery-correlation',
+        sideEffectProbe: 'cross-account-event-observation',
         expectedEvents: ['onSendMessageProgress', 'onRecvNewMessage'],
         validationAxes: ['completion', 'structure', 'semantic', 'side-effect', 'event'],
       },
@@ -54,6 +56,25 @@ function manifest() {
     ],
   }
 }
+
+const sendMessageProfileAssertions = [
+  {
+    axis: 'semantic',
+    profile: 'message-delivery-correlation',
+    rule: 'result-message-identity',
+    expected: 'sent message identity',
+    actual: 'sent message identity',
+    ok: true,
+  },
+  {
+    axis: 'side-effect',
+    profile: 'cross-account-event-observation',
+    rule: 'peer-delivery-observed',
+    expected: 'peer delivery',
+    actual: 'peer delivery',
+    ok: true,
+  },
+]
 
 test('a resolved Promise does not satisfy undeclared runtime validation evidence', () => {
   const result = validateAutomationEvidence({
@@ -106,6 +127,7 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
           responseEvidence: true,
           structureValidated: true,
           semanticValidated: true,
+          assertions: sendMessageProfileAssertions,
         },
         {
           apiName: 'sendMessage',
@@ -117,6 +139,7 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
           responseEvidence: false,
           sideEffectValidated: true,
           eventCorrelated: true,
+          assertions: sendMessageProfileAssertions,
           eventCorrelations: [
             {
               operationApiName: 'sendMessage',
@@ -264,6 +287,7 @@ test('callable event evidence covers every generated event in operation order an
         semanticValidated: true,
         sideEffectValidated: true,
         eventCorrelated: true,
+        assertions: sendMessageProfileAssertions,
         eventCorrelations,
       }],
       events: [],
@@ -312,6 +336,51 @@ test('callable event evidence covers every generated event in operation order an
   const valid = validate([
     progressCorrelation(),
     receiveCorrelation(),
+  ])
+  assert.equal(valid.passed, true)
+  assert.deepEqual(valid.issues, [])
+})
+
+test('callable semantic and side-effect PASS requires matching structured profile assertions', () => {
+  const profileManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/setSelfInfo',
+      apiName: 'setSelfInfo',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      semanticProfile: 'mutation-observation',
+      sideEffectProbe: 'read-after-write',
+      validationAxes: ['semantic', 'side-effect'],
+    }],
+    events: [],
+  }
+  const validate = (assertions: Array<Record<string, unknown>>) => validateAutomationEvidence({
+    manifest: profileManifest,
+    platform: 'android',
+    report: {
+      cases: [{
+        apiName: 'setSelfInfo',
+        ok: true,
+        semanticValidated: true,
+        sideEffectValidated: true,
+        assertions,
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(validate([]).passed, false)
+  assert.equal(validate([{ axis: 'semantic', profile: 'response-identity', rule: 'wrong-profile', expected: 'x', actual: 'x', ok: true }]).passed, false)
+  assert.equal(validate([
+    { axis: 'semantic', profile: 'mutation-observation', rule: 'response-only', expected: 'readback', actual: 'readback', ok: true },
+    { axis: 'side-effect', profile: 'read-after-write', rule: 'readback-mismatch', expected: 'new value', actual: 'old value', ok: false },
+  ]).passed, false)
+
+  const valid = validate([
+    { axis: 'semantic', profile: 'mutation-observation', rule: 'input-fields-observed', expected: 'new value', actual: 'new value', ok: true },
+    { axis: 'side-effect', profile: 'read-after-write', rule: 'readback-observed', expected: 'new value', actual: 'new value', ok: true },
   ])
   assert.equal(valid.passed, true)
   assert.deepEqual(valid.issues, [])
