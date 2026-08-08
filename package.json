@@ -1,7 +1,6 @@
 {
   "name": "openim-sdk-unix-workspace",
   "private": true,
-  "type": "module",
   "scripts": {
     "bootstrap": "tsx tooling/src/cli.ts generate",
     "generate": "tsx tooling/src/cli.ts generate",
