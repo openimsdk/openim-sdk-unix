@@ -171,6 +171,19 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
     }
     return `export const ${callable.name} = function () : ${returnType} { return ${lowering.symbol}() }`
   }
+  if (lowering.kind === 'event-subscription') {
+    if (callable.role !== 'event-subscription' || callable.completion !== 'sync') {
+      throw new Error(`Invalid event subscription lowering for ${callable.name}`)
+    }
+    if (lowering.eventName !== callable.name || parameters.startsWith('handler : ') === false) {
+      throw new Error(`Event subscription identity mismatch for ${callable.name}`)
+    }
+    const binding = callable.binding[platform]
+    if (binding?.kind !== 'event' || binding.symbol !== lowering.eventName) {
+      throw new Error(`Event subscription binding mismatch for ${callable.name} on ${platform}`)
+    }
+    return `@UTSJS.keepAlive\nexport function ${callable.name}(${parameters}) : ${returnType} { return ${lowering.eventName}Event(handler) }`
+  }
 
   const prelude: string[] = []
   let operationID: string

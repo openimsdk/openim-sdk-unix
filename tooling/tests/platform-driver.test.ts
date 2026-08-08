@@ -506,6 +506,34 @@ test('local data path stays generated without entering the native Core Driver', 
   }
 })
 
+test('event subscriptions are generated from structured event lowering', () => {
+  const subscriptions = contract.callables.filter((candidate) => candidate.role === 'event-subscription')
+  assert.equal(subscriptions.length, contract.events.length)
+  assert.equal(subscriptions.length, 48)
+  assert.equal(contract.callables.some((candidate) => candidate.declaration != null), false)
+  const facades = {
+    android: generateIndex(root, contract, 'android'),
+    ios: generateIndex(root, contract, 'ios'),
+  }
+
+  for (const callable of subscriptions) {
+    assert.deepEqual(callable.lowering, {
+      kind: 'event-subscription',
+      eventName: callable.name,
+    })
+    const event = contract.events.find((candidate) => candidate.callable === callable.name)
+    assert.notEqual(event, undefined)
+    assert.equal(event?.name, callable.name)
+    for (const platform of ['android', 'ios'] as const) {
+      assert.deepEqual(callable.binding[platform], { kind: 'event', symbol: callable.name })
+      assert.match(
+        facades[platform],
+        new RegExp(`@UTSJS\\.keepAlive\\nexport function ${callable.name}\\(handler : ${event?.handlerType}\\) : OpenIMSDKEventSubscription \\{ return ${callable.name}Event\\(handler\\) \\}`),
+      )
+    }
+  }
+})
+
 test('Android wire validators use Java wrapper classes instead of unsupported typeof any', () => {
   const source = readFileSync(
     resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts'),

@@ -80,6 +80,10 @@ export type CallableLowering =
     symbol: string
   }
   | {
+    kind: 'event-subscription'
+    eventName: string
+  }
+  | {
     kind: 'platform-driver'
     transport: 'async' | 'sync'
     operationID: 'parameter' | 'send-options' | 'empty'

@@ -2240,9 +2240,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectingEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onConnecting(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectingEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onConnecting"
       },
       "binding": {
         "android": {
@@ -2254,7 +2254,7 @@
           "symbol": "onConnecting"
         }
       },
-      "signatureHash": "973d3b4173ec1b4d8767b0217319d3e478dcab225e60b61fdf08144824a065dc"
+      "signatureHash": "9ff6889c61f796a383aea418319daa3c232f785d55064e09d589a2b2047c69f5"
     },
     {
       "id": 2004,
@@ -2265,9 +2265,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectSuccessEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onConnectSuccess(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onConnectSuccessEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onConnectSuccess"
       },
       "binding": {
         "android": {
@@ -2279,7 +2279,7 @@
           "symbol": "onConnectSuccess"
         }
       },
-      "signatureHash": "d50dc73928fd99277c19dadecd8f20f02d8c1ff086763d1ec427ffa9570251e2"
+      "signatureHash": "344620f7806e9d341fadea4f3cf4339b35af7ffd098c5ea398ca9025589570b0"
     },
     {
       "id": 2005,
@@ -2290,9 +2290,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onConnectFailedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onConnectFailed(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onConnectFailedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onConnectFailed"
       },
       "binding": {
         "android": {
@@ -2304,7 +2304,7 @@
           "symbol": "onConnectFailed"
         }
       },
-      "signatureHash": "5100ee6823e26d07012d1b756e10f4c2b4466e190413a2dd94b5aabe94a23a40"
+      "signatureHash": "8c841a95be728634963442216676da9278289c4dc2a8e5c00e087c0e50d84e08"
     },
     {
       "id": 2006,
@@ -2315,9 +2315,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onKickedOfflineEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onKickedOffline(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onKickedOfflineEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onKickedOffline"
       },
       "binding": {
         "android": {
@@ -2329,7 +2329,7 @@
           "symbol": "onKickedOffline"
         }
       },
-      "signatureHash": "ce42124b905c341d0f6937713f40b6a59c4d48c3a5237deaef636fcdb955083e"
+      "signatureHash": "e2bbca666f1178b222fefefe032b256eed2bcd8c9d5dd391b05d5994c0ddfe1b"
     },
     {
       "id": 2007,
@@ -2340,9 +2340,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onUserTokenExpiredEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onUserTokenExpired(handler : OpenIMVoidEventHandler) : OpenIMSDKEventSubscription { return onUserTokenExpiredEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onUserTokenExpired"
       },
       "binding": {
         "android": {
@@ -2354,7 +2354,7 @@
           "symbol": "onUserTokenExpired"
         }
       },
-      "signatureHash": "e5de380857c9771cbc69d64fb99f66d334f3b70da05431f184e360df14ffe031"
+      "signatureHash": "bc401371bc6ebcdb180b7b43b1fb8cc0d6b6b798b7595a12d7568176e957a460"
     },
     {
       "id": 2008,
@@ -2365,9 +2365,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onUserTokenInvalidEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onUserTokenInvalid(handler : OpenIMErrorEventHandler) : OpenIMSDKEventSubscription { return onUserTokenInvalidEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onUserTokenInvalid"
       },
       "binding": {
         "android": {
@@ -2379,7 +2379,7 @@
           "symbol": "onUserTokenInvalid"
         }
       },
-      "signatureHash": "90f563978cc1054723c12326ce40fda96928b3760e4717c3afeb5af6338c8000"
+      "signatureHash": "43158030b0625985f785fa314828eaf7c5a1a530fceb82568e47aad5c1eac9d8"
     },
     {
       "id": 2009,
@@ -2390,9 +2390,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessageEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onRecvNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessageEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onRecvNewMessage"
       },
       "binding": {
         "android": {
@@ -2404,7 +2404,7 @@
           "symbol": "onRecvNewMessage"
         }
       },
-      "signatureHash": "94d4705580369ef9a83b6e7346ba243ffef5230b80d1d666ceeaae9f3999bfc5"
+      "signatureHash": "7fd9650d9a4950f7b4714b88d1aec2aba65b5788fd28fccf5b5df34f52b8b6be"
     },
     {
       "id": 2010,
@@ -2415,9 +2415,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessageEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onRecvOfflineNewMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessageEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onRecvOfflineNewMessage"
       },
       "binding": {
         "android": {
@@ -2429,7 +2429,7 @@
           "symbol": "onRecvOfflineNewMessage"
         }
       },
-      "signatureHash": "fda7977ec2c96a680833e7b80a0f750dcfe0554409becb6a0c06de51c9cc3d15"
+      "signatureHash": "ac269d3b8a9668c2bba28ad79db40b798e4cfd8051545072d99161377f2aac23"
     },
     {
       "id": 2011,
@@ -2440,9 +2440,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOnlineOnlyMessageEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onRecvOnlineOnlyMessage(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onRecvOnlineOnlyMessageEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onRecvOnlineOnlyMessage"
       },
       "binding": {
         "android": {
@@ -2454,7 +2454,7 @@
           "symbol": "onRecvOnlineOnlyMessage"
         }
       },
-      "signatureHash": "dd7c9046968f8ee8e8d21dc6edbb5defcb0c7ca109c810ae24140cefa1fbe52a"
+      "signatureHash": "042447b8ae5779a8035933b982b3df034fc4a10c18c752e9c1d2d3cdc233ab1f"
     },
     {
       "id": 2012,
@@ -2465,9 +2465,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMsgDeletedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onMsgDeleted(handler : OpenIMMessageEventHandler) : OpenIMSDKEventSubscription { return onMsgDeletedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onMsgDeleted"
       },
       "binding": {
         "android": {
@@ -2479,7 +2479,7 @@
           "symbol": "onMsgDeleted"
         }
       },
-      "signatureHash": "20d9c828e6501cb7bfe081022417c891304e8e3a3fdbc3f53b903aff7e1ddeaf"
+      "signatureHash": "7ea33444e29a377e80ef883cd8dbc23236e73a6d6b1343d19d4ae07d289848db"
     },
     {
       "id": 2013,
@@ -2490,9 +2490,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription { return onNewRecvMessageRevokedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onNewRecvMessageRevoked(handler : OpenIMMessageRevokedEventHandler) : OpenIMSDKEventSubscription { return onNewRecvMessageRevokedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onNewRecvMessageRevoked"
       },
       "binding": {
         "android": {
@@ -2504,7 +2504,7 @@
           "symbol": "onNewRecvMessageRevoked"
         }
       },
-      "signatureHash": "eacc9e566373782e19535090fea73289b4d41a6c91e6ae2c38a1b91512f49b4a"
+      "signatureHash": "f5a3443fe7f7ef4610ae602a443a54cbf4857701c08d35abb8a432bca0fb205a"
     },
     {
       "id": 2014,
@@ -2515,9 +2515,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription { return onRecvC2CReadReceiptEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onRecvC2CReadReceipt(handler : OpenIMMessageReceiptListEventHandler) : OpenIMSDKEventSubscription { return onRecvC2CReadReceiptEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onRecvC2CReadReceipt"
       },
       "binding": {
         "android": {
@@ -2529,7 +2529,7 @@
           "symbol": "onRecvC2CReadReceipt"
         }
       },
-      "signatureHash": "bed1ab94fa173fe2126cf9f6d6f5e5a52628d6821558373dc7a7a4c69bd2d34a"
+      "signatureHash": "321dae165b523372d5e92bc81d886e07dff023581800e98bb2ced9e71fddbd22"
     },
     {
       "id": 2015,
@@ -2540,9 +2540,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessagesEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onRecvNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvNewMessagesEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onRecvNewMessages"
       },
       "binding": {
         "android": {
@@ -2554,7 +2554,7 @@
           "symbol": "onRecvNewMessages"
         }
       },
-      "signatureHash": "26f10644b63d09fed8881c0a6009c0eac6813d44c0335a939b0b5c51c97b30e8"
+      "signatureHash": "016a8b70d51f57c6bdc92c1ee1966b68a0178b72996a7f5cbf3af6954ac37755"
     },
     {
       "id": 2016,
@@ -2565,9 +2565,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessagesEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onRecvOfflineNewMessages(handler : OpenIMMessageListEventHandler) : OpenIMSDKEventSubscription { return onRecvOfflineNewMessagesEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onRecvOfflineNewMessages"
       },
       "binding": {
         "android": {
@@ -2579,7 +2579,7 @@
           "symbol": "onRecvOfflineNewMessages"
         }
       },
-      "signatureHash": "d39fe48c263634d757fb36bbd26b88510528087898e9615bb7d8d07672dea2a3"
+      "signatureHash": "7238129caf85b957dd329de792964822ff6f1d0aba2e4a51f7c209d1a7b0eb86"
     },
     {
       "id": 2017,
@@ -2590,9 +2590,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onConversationChangedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onConversationChanged(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onConversationChangedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onConversationChanged"
       },
       "binding": {
         "android": {
@@ -2604,7 +2604,7 @@
           "symbol": "onConversationChanged"
         }
       },
-      "signatureHash": "a6c8c0fce5cb90f2c58defdf3f287445394202dadf234a4d8c513cd181ebee20"
+      "signatureHash": "f2c4ccc97fb652b14474d8920c82bd8448746276271bc95bb113a1453de62bcd"
     },
     {
       "id": 2018,
@@ -2615,9 +2615,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription { return onConversationUserInputStatusChangedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onConversationUserInputStatusChanged(handler : OpenIMConversationInputStatusEventHandler) : OpenIMSDKEventSubscription { return onConversationUserInputStatusChangedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onConversationUserInputStatusChanged"
       },
       "binding": {
         "android": {
@@ -2629,7 +2629,7 @@
           "symbol": "onConversationUserInputStatusChanged"
         }
       },
-      "signatureHash": "ca6fdf1fb6868f60ea40d7f060791197ce3e6ffbd22608881bb0c6bc9d40e6d0"
+      "signatureHash": "7f590cd87714cf7862a5add27f51d8e2b76205e5b4df6f4d71e04e03ae14d2f1"
     },
     {
       "id": 2019,
@@ -2640,9 +2640,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onNewConversationEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onNewConversation(handler : OpenIMConversationListEventHandler) : OpenIMSDKEventSubscription { return onNewConversationEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onNewConversation"
       },
       "binding": {
         "android": {
@@ -2654,7 +2654,7 @@
           "symbol": "onNewConversation"
         }
       },
-      "signatureHash": "cb542b95c7acda7ec38ee124ee6ea089c88e5238486d29f108682e174e6542f5"
+      "signatureHash": "a08d67ce657dceda5fb8d81e9729c7514986d3fb3d5a4a0adfc79308a9919be5"
     },
     {
       "id": 2020,
@@ -2665,9 +2665,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFailedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onSyncServerFailed(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFailedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onSyncServerFailed"
       },
       "binding": {
         "android": {
@@ -2679,7 +2679,7 @@
           "symbol": "onSyncServerFailed"
         }
       },
-      "signatureHash": "3db004103b7df6470c01bcfec4cd35388c897afaf06d9c423a5040c62402f2cc"
+      "signatureHash": "9141181c7f4c8bf7efe014105f115f444b8c1712296a1b060e1666eca86182dd"
     },
     {
       "id": 2021,
@@ -2690,9 +2690,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFinishEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onSyncServerFinish(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerFinishEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onSyncServerFinish"
       },
       "binding": {
         "android": {
@@ -2704,7 +2704,7 @@
           "symbol": "onSyncServerFinish"
         }
       },
-      "signatureHash": "307f762ffa1c0485269ebbc1cfff108c1fd56cad451bf6c01fc5be555ae71469"
+      "signatureHash": "6a4e887567c4847e259c7a676b1330d45518cf40124d209ae600b1162502ccd3"
     },
     {
       "id": 2022,
@@ -2715,9 +2715,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onSyncServerProgressEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onSyncServerProgress(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onSyncServerProgressEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onSyncServerProgress"
       },
       "binding": {
         "android": {
@@ -2729,7 +2729,7 @@
           "symbol": "onSyncServerProgress"
         }
       },
-      "signatureHash": "9dd7fa4d017cbfe5dd5cb78dfce218dfe9692da4e22fd33bf5965328b1b80930"
+      "signatureHash": "ad09eea1ce279c30500eabe2754ed45225c20feaade3e4861042f8234ba996e7"
     },
     {
       "id": 2023,
@@ -2740,9 +2740,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerStartEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onSyncServerStart(handler : OpenIMBooleanEventHandler) : OpenIMSDKEventSubscription { return onSyncServerStartEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onSyncServerStart"
       },
       "binding": {
         "android": {
@@ -2754,7 +2754,7 @@
           "symbol": "onSyncServerStart"
         }
       },
-      "signatureHash": "33706a7feb14e2753d16d5836029d2a493d21a9e9d0321e5e03fcc8562ea2ba8"
+      "signatureHash": "dde29007c2b78f5b95ebbae498c0449c4a1d67b9a81920abb4b33043033a59c4"
     },
     {
       "id": 2024,
@@ -2765,9 +2765,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription { return onSendMessageProgressEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onSendMessageProgress(handler : OpenIMSendMessageProgressEventHandler) : OpenIMSDKEventSubscription { return onSendMessageProgressEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onSendMessageProgress"
       },
       "binding": {
         "android": {
@@ -2779,7 +2779,7 @@
           "symbol": "onSendMessageProgress"
         }
       },
-      "signatureHash": "d4f5e9c50bb344557cec00006289b2c7988f01e8c8081d4ed94060342f817d17"
+      "signatureHash": "d2419252ae164c2ec4005efc1d3c6e69270489e069afec2f936dddb05af107b9"
     },
     {
       "id": 2025,
@@ -2790,9 +2790,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadFileProgressEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onUploadFileProgress(handler : OpenIMUploadFileProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadFileProgressEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onUploadFileProgress"
       },
       "binding": {
         "android": {
@@ -2804,7 +2804,7 @@
           "symbol": "onUploadFileProgress"
         }
       },
-      "signatureHash": "51488a4a7abe7dd8d7800a7c83766c812764fdca30f45f6235796c5a624dd60f"
+      "signatureHash": "351b39e4ad049d8219f85fb92068af9af8d743899562d430138c8719aaf5d108"
     },
     {
       "id": 2026,
@@ -2815,9 +2815,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadLogsProgressEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onUploadLogsProgress(handler : OpenIMUploadLogsProgressEventHandler) : OpenIMSDKEventSubscription { return onUploadLogsProgressEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onUploadLogsProgress"
       },
       "binding": {
         "android": {
@@ -2829,7 +2829,7 @@
           "symbol": "onUploadLogsProgress"
         }
       },
-      "signatureHash": "a3a67b10efe7f7453342fd80b28423d4dca0dc6a030aaf30120bbfb22e508c5b"
+      "signatureHash": "c50f67b758a6b39a7d5ab16edbffab0bc843d926c5506bb17e7b7338f49c216e"
     },
     {
       "id": 2027,
@@ -2840,9 +2840,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onTotalUnreadMessageCountChangedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onTotalUnreadMessageCountChanged(handler : OpenIMNumberEventHandler) : OpenIMSDKEventSubscription { return onTotalUnreadMessageCountChangedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onTotalUnreadMessageCountChanged"
       },
       "binding": {
         "android": {
@@ -2854,7 +2854,7 @@
           "symbol": "onTotalUnreadMessageCountChanged"
         }
       },
-      "signatureHash": "181bbf0f4926842a24bded8cb1e6a369e1fe1b380ae702490df11cb3e6a1c707"
+      "signatureHash": "6364f74c348d542ee93f6e6631cf045f020cebee820d86608daf0652389fa71c"
     },
     {
       "id": 2028,
@@ -2865,9 +2865,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription { return onRecvCustomBusinessMessageEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onRecvCustomBusinessMessage(handler : OpenIMStringEventHandler) : OpenIMSDKEventSubscription { return onRecvCustomBusinessMessageEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onRecvCustomBusinessMessage"
       },
       "binding": {
         "android": {
@@ -2879,7 +2879,7 @@
           "symbol": "onRecvCustomBusinessMessage"
         }
       },
-      "signatureHash": "acb8aac273b509fea251df6314577dc2f433fd3790e49848b5a72438a2caac2a"
+      "signatureHash": "880fa8adbb4f0a2e01ad0cc219297dda1943bc966f83b5b4fa73fd3c86ab19cc"
     },
     {
       "id": 2029,
@@ -2890,9 +2890,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackAddedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onBlackAdded(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackAddedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onBlackAdded"
       },
       "binding": {
         "android": {
@@ -2904,7 +2904,7 @@
           "symbol": "onBlackAdded"
         }
       },
-      "signatureHash": "ef4382c35bb4224b5f5f56287e61f7b49715f4d94fdbe46960568f15c6fafffd"
+      "signatureHash": "8078b09095a54e336a840267c6491d579cc5a31333e39cca521a6e242f1a6d65"
     },
     {
       "id": 2030,
@@ -2915,9 +2915,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackDeletedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onBlackDeleted(handler : OpenIMBlackUserEventHandler) : OpenIMSDKEventSubscription { return onBlackDeletedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onBlackDeleted"
       },
       "binding": {
         "android": {
@@ -2929,7 +2929,7 @@
           "symbol": "onBlackDeleted"
         }
       },
-      "signatureHash": "69972ec2e00823d085bd10d8e56ab60288da01284337f1749941c1b17e620edf"
+      "signatureHash": "1fb6db05e0832e744af58a437cd7a8ad922cd783e36d33925ea9e869c52f87db"
     },
     {
       "id": 2031,
@@ -2940,9 +2940,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendAddedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onFriendAdded(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendAddedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onFriendAdded"
       },
       "binding": {
         "android": {
@@ -2954,7 +2954,7 @@
           "symbol": "onFriendAdded"
         }
       },
-      "signatureHash": "d48b7d6528639d9cc03b84743162beda0d00364e82fa0e566b17f3ea5fab2627"
+      "signatureHash": "73f592602849d0140b32d9b927d33bb68412b10662e2ed581cc1638578a6e3e3"
     },
     {
       "id": 2032,
@@ -2965,9 +2965,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAcceptedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onFriendApplicationAccepted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAcceptedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onFriendApplicationAccepted"
       },
       "binding": {
         "android": {
@@ -2979,7 +2979,7 @@
           "symbol": "onFriendApplicationAccepted"
         }
       },
-      "signatureHash": "1074e84cf5151e26c7b2d437f4deb15a79f0883ccd497b31180285d1ef094d32"
+      "signatureHash": "d4f64defd1041a2572f33f66b16b9af3379022aa6e5483a7c8c961f9d879c013"
     },
     {
       "id": 2033,
@@ -2990,9 +2990,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAddedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onFriendApplicationAdded(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationAddedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onFriendApplicationAdded"
       },
       "binding": {
         "android": {
@@ -3004,7 +3004,7 @@
           "symbol": "onFriendApplicationAdded"
         }
       },
-      "signatureHash": "df176e4150c3c6b7eadf98764143a4974e1fb90ad6ddc94f0666261a696cf86a"
+      "signatureHash": "31be9c00fb25a5bfe208dfa9d16a17206fad4ab4d029f8b1624702cab3ad49e5"
     },
     {
       "id": 2034,
@@ -3015,9 +3015,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationDeletedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onFriendApplicationDeleted(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationDeletedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onFriendApplicationDeleted"
       },
       "binding": {
         "android": {
@@ -3029,7 +3029,7 @@
           "symbol": "onFriendApplicationDeleted"
         }
       },
-      "signatureHash": "d0eab52a4758d6658592c90df145b906956fd6d40b00f77287d03522ad311247"
+      "signatureHash": "07a0360ecff8f3bac19dc06ee5e5cc18c84ca923cb313554577df1adc9c28ce4"
     },
     {
       "id": 2035,
@@ -3040,9 +3040,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationRejectedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onFriendApplicationRejected(handler : OpenIMFriendApplicationEventHandler) : OpenIMSDKEventSubscription { return onFriendApplicationRejectedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onFriendApplicationRejected"
       },
       "binding": {
         "android": {
@@ -3054,7 +3054,7 @@
           "symbol": "onFriendApplicationRejected"
         }
       },
-      "signatureHash": "2c600fb1d165973e5cb03824ba9a5bfddea6d1fe2f845bdb6030d8d9f23544f5"
+      "signatureHash": "b834c466f8c0dbb18a17c7c4305edbb269fc2e84e8afce55f17d2fedbee1a47b"
     },
     {
       "id": 2036,
@@ -3065,9 +3065,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendDeletedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onFriendDeleted(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendDeletedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onFriendDeleted"
       },
       "binding": {
         "android": {
@@ -3079,7 +3079,7 @@
           "symbol": "onFriendDeleted"
         }
       },
-      "signatureHash": "eeee0b9d676e35545f64ebf2f3d76935c4f31d121a050351932c0f58fd4415d5"
+      "signatureHash": "7709a69b6812a1004f7237937caff5fe213fa1ae5003660be6b5e5f983d4e47b"
     },
     {
       "id": 2037,
@@ -3090,9 +3090,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendInfoChangedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onFriendInfoChanged(handler : OpenIMFriendEventHandler) : OpenIMSDKEventSubscription { return onFriendInfoChangedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onFriendInfoChanged"
       },
       "binding": {
         "android": {
@@ -3104,7 +3104,7 @@
           "symbol": "onFriendInfoChanged"
         }
       },
-      "signatureHash": "ad31257b05a276e0672edbedf9972718699e3061317fe294b41429f937d1bc61"
+      "signatureHash": "b313647ddaf2e9749170935ef25e9af8400163fd826cfb92d2f8d930d8ea3511"
     },
     {
       "id": 2038,
@@ -3115,9 +3115,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAcceptedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupApplicationAccepted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAcceptedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupApplicationAccepted"
       },
       "binding": {
         "android": {
@@ -3129,7 +3129,7 @@
           "symbol": "onGroupApplicationAccepted"
         }
       },
-      "signatureHash": "45e2f558cadabad5a23f2648b82c1e3c7dcf73e2f4a55c51bc424e58f990fde3"
+      "signatureHash": "6db5f0e3b0ebe64b31458bd659df64e991652fb6192d5401715f3f6fe2469301"
     },
     {
       "id": 2039,
@@ -3140,9 +3140,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAddedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupApplicationAdded(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationAddedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupApplicationAdded"
       },
       "binding": {
         "android": {
@@ -3154,7 +3154,7 @@
           "symbol": "onGroupApplicationAdded"
         }
       },
-      "signatureHash": "b46a4cabf4f81103e12ac2bba0179b36d34265c045497ed656db5af8fc945eec"
+      "signatureHash": "7ac268145555b5de891e29c8c37bb02a5df71b12984897dbd8a0cede50ac5516"
     },
     {
       "id": 2040,
@@ -3165,9 +3165,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationDeletedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupApplicationDeleted(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationDeletedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupApplicationDeleted"
       },
       "binding": {
         "android": {
@@ -3179,7 +3179,7 @@
           "symbol": "onGroupApplicationDeleted"
         }
       },
-      "signatureHash": "5056ff46af78783c821048b81759486977c47ae14f5ee8236d40d075c71e3060"
+      "signatureHash": "06d726951b1c31fe0224ad79dc9fc94ff716414a158bec461929391f133762ea"
     },
     {
       "id": 2041,
@@ -3190,9 +3190,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationRejectedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupApplicationRejected(handler : OpenIMGroupApplicationEventHandler) : OpenIMSDKEventSubscription { return onGroupApplicationRejectedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupApplicationRejected"
       },
       "binding": {
         "android": {
@@ -3204,7 +3204,7 @@
           "symbol": "onGroupApplicationRejected"
         }
       },
-      "signatureHash": "8fcf8a18858e4e85a1d8a374d4741618d59bb7c591cf51dd80274fde1b0af7ba"
+      "signatureHash": "3f1865f6b02f981da5c6fe22ee258920bf153c738cabd4b233cf62fb1dd1312d"
     },
     {
       "id": 2042,
@@ -3215,9 +3215,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupDismissedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupDismissed(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupDismissedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupDismissed"
       },
       "binding": {
         "android": {
@@ -3229,7 +3229,7 @@
           "symbol": "onGroupDismissed"
         }
       },
-      "signatureHash": "a7817bcc4029e62427cc6320096d86dac924d1736030257c8884a912e13b9daf"
+      "signatureHash": "403493a9ec2bdb62b2eb157d7344ba33e274a03e423aad53e92ec799a3ff8f86"
     },
     {
       "id": 2043,
@@ -3240,9 +3240,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupInfoChangedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupInfoChanged(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onGroupInfoChangedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupInfoChanged"
       },
       "binding": {
         "android": {
@@ -3254,7 +3254,7 @@
           "symbol": "onGroupInfoChanged"
         }
       },
-      "signatureHash": "d0ddacbb0ad8e8c9db4eb91527a62f8e89632984473e96be31b7451a29b023ab"
+      "signatureHash": "18c2b07a211b1c33f448751113bbca64ab36592e236e63f847e3fe0a88f059d3"
     },
     {
       "id": 2044,
@@ -3265,9 +3265,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberAddedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupMemberAdded(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberAddedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupMemberAdded"
       },
       "binding": {
         "android": {
@@ -3279,7 +3279,7 @@
           "symbol": "onGroupMemberAdded"
         }
       },
-      "signatureHash": "c01107e0f69687727cf59379a2d0e53362633ac4adff96ddaf8f028ef64b2c5a"
+      "signatureHash": "b47cfced2e046826a5317a88bd6bb1dde6e9f2ccc9a7f016600d65739f6e06f0"
     },
     {
       "id": 2045,
@@ -3290,9 +3290,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberDeletedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupMemberDeleted(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberDeletedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupMemberDeleted"
       },
       "binding": {
         "android": {
@@ -3304,7 +3304,7 @@
           "symbol": "onGroupMemberDeleted"
         }
       },
-      "signatureHash": "c31f8f0ef46c7e988b1c814e01b41889035b30817852c5e843fba7078a95fa26"
+      "signatureHash": "5d22f52dba266ca38217cf92fc77413c1897a3dc873fea20addabadbc965ac56"
     },
     {
       "id": 2046,
@@ -3315,9 +3315,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberInfoChangedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onGroupMemberInfoChanged(handler : OpenIMGroupMemberEventHandler) : OpenIMSDKEventSubscription { return onGroupMemberInfoChangedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onGroupMemberInfoChanged"
       },
       "binding": {
         "android": {
@@ -3329,7 +3329,7 @@
           "symbol": "onGroupMemberInfoChanged"
         }
       },
-      "signatureHash": "78330cafa4a4e554ebabe9167770eec8d57fcabb5123a7c2e9b97a505fbab765"
+      "signatureHash": "a33ef5a593c6b01169249330fc55e26e8cdbb0329de3a98685a5e2afcda589b8"
     },
     {
       "id": 2047,
@@ -3340,9 +3340,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupAddedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onJoinedGroupAdded(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupAddedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onJoinedGroupAdded"
       },
       "binding": {
         "android": {
@@ -3354,7 +3354,7 @@
           "symbol": "onJoinedGroupAdded"
         }
       },
-      "signatureHash": "7001f2406b0ba51a30bd9f98741db0a37a2ccdc131836e76e37ce75911e1a232"
+      "signatureHash": "16b4a9cbca74b4f49f8cabfbb826c641dfbb4785f9950553de8a9de92f271d18"
     },
     {
       "id": 2048,
@@ -3365,9 +3365,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupDeletedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onJoinedGroupDeleted(handler : OpenIMGroupEventHandler) : OpenIMSDKEventSubscription { return onJoinedGroupDeletedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onJoinedGroupDeleted"
       },
       "binding": {
         "android": {
@@ -3379,7 +3379,7 @@
           "symbol": "onJoinedGroupDeleted"
         }
       },
-      "signatureHash": "cf8bf58280a56a1c4e71f0a5b4ad213e251cebe9146d344c500239d0d9b18b68"
+      "signatureHash": "45428adc2b5ca721647499d75b79346a417deee1c1000cb5ec9c9ce25d8d5227"
     },
     {
       "id": 2049,
@@ -3390,9 +3390,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription { return onSelfInfoUpdatedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onSelfInfoUpdated(handler : OpenIMUserEventHandler) : OpenIMSDKEventSubscription { return onSelfInfoUpdatedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onSelfInfoUpdated"
       },
       "binding": {
         "android": {
@@ -3404,7 +3404,7 @@
           "symbol": "onSelfInfoUpdated"
         }
       },
-      "signatureHash": "7928580b1758edda85be5077d46439d5f1913b520492b1fdb11cac242be48d76"
+      "signatureHash": "811e742fae5c83bf0a6c3b203299478f3b5d4605da87345148dfda19f4b5c734"
     },
     {
       "id": 2050,
@@ -3415,9 +3415,9 @@
       "errorPolicy": "none",
       "rawString": false,
       "role": "event-subscription",
-      "declaration": {
-        "android": "@UTSJS.keepAlive\nexport function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription { return onUserStatusChangedEvent(handler) }",
-        "ios": "@UTSJS.keepAlive\nexport function onUserStatusChanged(handler : OpenIMUserStatusListEventHandler) : OpenIMSDKEventSubscription { return onUserStatusChangedEvent(handler) }"
+      "lowering": {
+        "kind": "event-subscription",
+        "eventName": "onUserStatusChanged"
       },
       "binding": {
         "android": {
@@ -3429,7 +3429,7 @@
           "symbol": "onUserStatusChanged"
         }
       },
-      "signatureHash": "4205f884ea46adbbb2822c64030be3773ad7ee7060addab39ce53ec80f9e6b3c"
+      "signatureHash": "aaa0da0cc58e89585fa45c195b2195453e82e8dd32bd2f54e44f7d825238a724"
     },
     {
       "id": 2051,
