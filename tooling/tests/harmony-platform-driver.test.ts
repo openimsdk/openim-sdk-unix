@@ -5,9 +5,10 @@ import { renderHarmonyPlatformDriver } from '../src/harmony-platform-driver.js'
 
 function eventContract(): ContractDocument {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'enterprise',
-    generatedFrom: {
+    origin: {
+      kind: 'imported-facade',
       repository: 'private', revision: 'test', interfacePath: 'interface.uts',
       facadePaths: { android: 'android', ios: 'ios', harmony: 'harmony' },
     },

@@ -56,9 +56,10 @@ export interface ContractEvent {
 }
 
 export interface ContractDocument {
-  schemaVersion: 1
+  schemaVersion: 2
   edition: 'public' | 'enterprise'
-  generatedFrom: {
+  origin: {
+    kind: 'imported-facade'
     repository: string
     revision: string
     interfacePath: string
@@ -96,9 +97,10 @@ export interface EnterpriseTypeExtension {
 }
 
 export interface EnterpriseDeltaDocument {
-  schemaVersion: 1
+  schemaVersion: 2
   edition: 'enterprise-delta'
-  generatedFrom: {
+  origin: {
+    kind: 'imported-facade'
     repository: string
     revision: string
     publicBaseRevision: string

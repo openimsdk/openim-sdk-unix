@@ -373,7 +373,7 @@ export function previewContractMigration(input: ContractMigrationInput): Contrac
       normalizedCandidate[namespace] as MigrationSymbol[],
     ))
   }
-  if (JSON.stringify(input.currentContract.generatedFrom) !== JSON.stringify(input.candidateContract.generatedFrom)) {
+  if (JSON.stringify(input.currentContract.origin) !== JSON.stringify(input.candidateContract.origin)) {
     changes.push({ kind: 'provenance-only', namespace: 'contract' })
   }
   changes.sort(compareChanges)

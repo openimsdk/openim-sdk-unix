@@ -1,7 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "edition": "public",
-  "generatedFrom": {
+  "origin": {
+    "kind": "imported-facade",
     "repository": "https://github.com/openimsdk/openim-sdk-unix",
     "revision": "f4b91bae6c6f3dac0313a362666b7e0a8e237467",
     "interfacePath": "uni_modules/unix-openim-sdk/utssdk/interface.uts",

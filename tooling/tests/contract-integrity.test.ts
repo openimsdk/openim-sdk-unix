@@ -30,7 +30,7 @@ test('semantic verification rejects a changed declaration with a stale stored ha
   )
 })
 
-test('semantic verification covers callable implementations and event projections while IR v1 stores them', () => {
+test('semantic verification covers callable implementations and event projections during the IR v2 lowering migration', () => {
   const normalized = withComputedSemanticHashes(contract)
   const changedCallable = structuredClone(normalized)
   const login = changedCallable.callables.find((value) => value.name === 'login')

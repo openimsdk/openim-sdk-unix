@@ -293,11 +293,11 @@ export function importPublicContract(root: string): ContractDocument {
   })
 
   const contract = withComputedSemanticHashes({
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'public',
     // This field is the immutable origin of the initial façade import. Build
     // provenance belongs in generated-manifest.json and must not rewrite it.
-    generatedFrom: existingContract.generatedFrom,
+    origin: existingContract.origin,
     expected: { ...EXPECTED_PUBLIC },
     constants,
     types,

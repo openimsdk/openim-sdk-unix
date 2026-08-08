@@ -21,7 +21,8 @@ function unique<T>(values: T[], label: string): void {
 export function readAndValidateContract(root: string): ContractDocument {
   const path = join(root, 'contracts/base/contract.json')
   const contract = JSON.parse(readFileSync(path, 'utf8')) as ContractDocument
-  assert(contract.schemaVersion === 1, 'Unsupported contract schema')
+  assert(contract.schemaVersion === 2, 'Unsupported contract schema')
+  assert(contract.origin.kind === 'imported-facade', 'Contract origin kind changed')
   assert(contract.edition === 'public', 'Main must contain the public base contract')
   assert(contract.constants.length === contract.expected.constants, 'Constant count changed')
   assert(contract.types.length === contract.expected.types, 'Type count changed')

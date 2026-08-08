@@ -17,9 +17,10 @@ import { normalizeContractText, sha256 } from '../src/source.js'
 
 function baseContract(): ContractDocument {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'public',
-    generatedFrom: {
+    origin: {
+      kind: 'imported-facade',
       repository: 'public', revision: 'base', interfacePath: 'interface.uts',
       facadePaths: { android: 'android', ios: 'ios' },
     },
@@ -48,9 +49,10 @@ test('Enterprise composition applies explicit overrides and additive type extens
   const enterpriseType = 'export type GetLoginUserID = (operationID ?: string | null) => Promise<string>'
   const extendedParams = 'export type Params = {\n  value : string\n  extra ?: string | null\n}'
   const delta: EnterpriseDeltaDocument = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'enterprise-delta',
-    generatedFrom: {
+    origin: {
+      kind: 'imported-facade',
       repository: 'private', revision: 'private', publicBaseRevision: 'base', publicBaseContractHash: 'hash',
       interfacePath: 'interface.uts', facadePaths: { android: 'android', ios: 'ios', harmony: 'harmony' },
     },

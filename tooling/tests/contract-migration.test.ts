@@ -50,9 +50,10 @@ function callable(id: number, name: string, signature = `${name}():void`): Contr
 
 function contract(callables: ContractCallable[], revision = 'current'): ContractDocument {
   return withComputedSemanticHashes({
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'public',
-    generatedFrom: {
+    origin: {
+      kind: 'imported-facade',
       repository: 'fixture',
       revision,
       interfacePath: 'interface.uts',

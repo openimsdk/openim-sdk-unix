@@ -5,8 +5,8 @@
   "inputs": [
     {
       "path": "contracts/base/contract.json",
-      "sha256": "a05473daed25a8a47a3cb29d93da8026e39235b1db972f46718e42c0c97bc9ee",
-      "bytes": 343566
+      "sha256": "14b2d89bd319de515e97a3c0e4e753336153aab98c25fccf7fb27d385accdf84",
+      "bytes": 343590
     },
     {
       "path": "sdk-src/uts/app-android/index.template.uts",
@@ -50,13 +50,13 @@
     },
     {
       "path": "tooling/src/import-contract.ts",
-      "sha256": "af931e4c0b4db276b37038e7de6d56101718b88940b79aa0ba41a3f29caf0de8",
-      "bytes": 14838
+      "sha256": "fd91570e0185a51f1a1754439ae6e01803d0692f229c5303de7f74ae5d6007c3",
+      "bytes": 14824
     },
     {
       "path": "tooling/src/model.ts",
-      "sha256": "25a9565ca73d86dd09f37aa9cc69b11e6b053edfe627af5b8dd7ab9f90e09be8",
-      "bytes": 3463
+      "sha256": "b52537178a9e8f91eb0e6cec92d468a4418d61851e922f5a3747bfb807208a40",
+      "bytes": 3505
     },
     {
       "path": "tooling/src/platform-driver.ts",

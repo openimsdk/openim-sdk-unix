@@ -411,10 +411,10 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   assert(JSON.stringify(actualDelta) === JSON.stringify(EXPECTED_DELTA), `Enterprise delta count mismatch: ${JSON.stringify(actualDelta)}`)
 
   const delta: EnterpriseDeltaDocument = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'enterprise-delta',
-    generatedFrom: {
-      ...existingDelta.generatedFrom,
+    origin: {
+      ...existingDelta.origin,
       publicBaseContractHash: baseSnapshot.contractHash,
     },
     expectedTotal: { ...EXPECTED_TOTAL },
@@ -465,7 +465,9 @@ export function verifyEnterpriseDelta(
     readFileSync(join(publicRoot, 'contracts/base/contract.json'), 'utf8'),
   ) as ContractDocument
   assert(delta.edition === 'enterprise-delta', 'Invalid enterprise delta edition')
-  assert(delta.generatedFrom.publicBaseContractHash === baseSnapshot.contractHash, 'Enterprise public base hash is stale')
+  assert(delta.schemaVersion === 2, 'Unsupported Enterprise delta schema')
+  assert(delta.origin.kind === 'imported-facade', 'Enterprise delta origin kind changed')
+  assert(delta.origin.publicBaseContractHash === baseSnapshot.contractHash, 'Enterprise public base hash is stale')
   assert(JSON.stringify(delta.expectedTotal) === JSON.stringify(EXPECTED_TOTAL), 'Enterprise total counts changed')
   assert(JSON.stringify(delta.expectedDelta) === JSON.stringify(EXPECTED_DELTA), 'Enterprise delta counts changed')
   assert(delta.approvedBaseCallableOverrides.length === APPROVED_BASE_CALLABLE_OVERRIDES.length, 'Enterprise approved base callable override count changed')

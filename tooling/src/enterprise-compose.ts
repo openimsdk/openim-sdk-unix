@@ -228,13 +228,14 @@ export function composeEnterpriseContract(
   assert(callables.length === expected.callables, 'Enterprise callable composition count changed')
   assert(events.length === expected.events, 'Enterprise event composition count changed')
   return withComputedSemanticHashes({
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition: 'enterprise',
-    generatedFrom: {
-      repository: delta.generatedFrom.repository,
-      revision: delta.generatedFrom.revision,
-      interfacePath: delta.generatedFrom.interfacePath,
-      facadePaths: delta.generatedFrom.facadePaths,
+    origin: {
+      kind: 'imported-facade',
+      repository: delta.origin.repository,
+      revision: delta.origin.revision,
+      interfacePath: delta.origin.interfacePath,
+      facadePaths: delta.origin.facadePaths,
     },
     expected,
     constants,
