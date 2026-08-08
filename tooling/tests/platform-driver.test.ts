@@ -394,7 +394,7 @@ test('typed conversation queries select strict response parsers by contract code
       assert.notEqual(declaration, undefined)
       assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
       if (responseAdapter.startsWith('resolve')) {
-        assert.match(declaration!, new RegExp(`${responseAdapter}\\(\\(resolve, reject\\) =>`))
+        assert.match(declaration!, new RegExp(`${responseAdapter}\\('${name}', \\(resolve, reject\\) =>`))
       } else {
         assert.match(declaration!, new RegExp(`resolve\\(${responseAdapter}\\(data\\)\\)`))
       }
@@ -425,9 +425,9 @@ test('advanced history keeps platform compatibility behind one generated respons
     const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
     assert.notEqual(declaration, undefined)
     assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
-    assert.match(declaration!, /resolveAdvancedHistoryNative\(\(resolve, reject\) =>/)
+    assert.match(declaration!, /resolveAdvancedHistoryNative\('getAdvancedHistoryMessageList', \(resolve, reject\) =>/)
     assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
-    assert.match(facade, /function resolveAdvancedHistoryNative\(invoke :/)
+    assert.match(facade, /function resolveAdvancedHistoryNative\(apiName : string, invoke :/)
   }
 })
 
@@ -462,8 +462,8 @@ test('message, user, and friend operations retain structured wire semantics behi
       assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
       assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
     }
-    assert.match(facade, /resolveNumberNative\(\(resolve, reject\) =>/)
-    assert.match(facade, /resolveCheckFriendNative\(\(resolve, reject\) =>/)
+    assert.match(facade, /resolveNumberNative\('getFriendApplicationUnhandledCount', \(resolve, reject\) =>/)
+    assert.match(facade, /resolveCheckFriendNative\('checkFriend', \(resolve, reject\) =>/)
   }
 })
 
@@ -611,6 +611,41 @@ test('native login guards live inside generated CoreAdapters', () => {
 test('shared compiler names every Enterprise typed response parser explicitly', () => {
   for (const [codec, parser] of ENTERPRISE_TYPED_RESPONSE_PARSERS) {
     assert.equal(DRIVER_TYPED_RESPONSE_PARSERS[codec], parser)
+  }
+})
+
+test('typed response decoders reject parser failures instead of leaving Promises pending', () => {
+  for (const platform of ['android', 'ios'] as const) {
+    const source = generateIndex(root, contract, platform)
+    assert.doesNotMatch(source, /\(data : string\) => \{ resolve\(parse[A-Za-z_$][\w$]*\(data\)\) \}/)
+    for (const [name, , codec, resolver] of CONVERSATION_TYPED_QUERIES) {
+      const declaration = source.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+      assert.notEqual(declaration, undefined)
+      if (resolver.startsWith('resolve')) {
+        assert.match(declaration!, new RegExp(`${resolver}\\('${name}',`))
+      } else {
+        assert.match(declaration!, new RegExp(`try \\{ resolve\\(${resolver}\\(data\\)\\) \\} catch`))
+        assert.match(declaration!, new RegExp(`${name} returned unparseable response`))
+      }
+    }
+
+    for (const resolver of new Set(CONVERSATION_TYPED_QUERIES.map((entry) => entry[3]).filter((name) => name.startsWith('resolve')))) {
+      const definition = source.split('\n').find((line) => line.startsWith(`function ${resolver}(`))
+      assert.notEqual(definition, undefined)
+      assert.match(definition!, /try \{ resolve\(/)
+      assert.match(definition!, /catch \(error\) \{ rejectNativeError\(reject, -1, apiName \+ ' returned unparseable response: '/)
+    }
+
+    for (const callable of contract.callables) {
+      if (callable.lowering?.kind !== 'platform-driver' || callable.completion !== 'promise' || callable.responseCodec === 'raw-string') continue
+      const declaration = source.split('\n').find((line) => line.startsWith(`export const ${callable.name} =`))
+      assert.notEqual(declaration, undefined)
+      assert.match(
+        declaration!,
+        new RegExp(`(?:resolve[A-Za-z_$][\\w$]*\\('${callable.name}',|resolveSendMessageData\\(data, '${callable.name}',|${callable.name} returned unparseable response)`),
+        `${platform} ${callable.name} does not name a parse-failure rejection path`,
+      )
+    }
   }
 })
 

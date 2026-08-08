@@ -179,7 +179,9 @@ function driverResolveExpression(callable: ContractCallable): string {
     return `(data : string) => { resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
   }
   const parser = DRIVER_TYPED_RESPONSE_PARSERS[callable.responseCodec]
-  if (parser != null) return `(data : string) => { resolve(${parser}(data)) }`
+  if (parser != null) {
+    return `(data : string) => { try { resolve(${parser}(data)) } catch (error) { rejectNativeError(reject, -1, '${callable.name} returned unparseable response: ' + stringifyJSON(error)) } }`
+  }
   throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
 }
 
@@ -257,7 +259,8 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
   const valueType = promiseValueType(returnType)
   const promiseResolver = DRIVER_PROMISE_RESPONSE_RESOLVERS[callable.responseCodec]
   if (promiseResolver != null) {
-    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, resolve, reject) }) }`
+    const apiName = callable.responseCodec === 'raw-string' ? '' : `'${callable.name}', `
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}(${apiName}(resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, resolve, reject) }) }`
   }
   const resolveExpression = driverResolveExpression(callable)
   return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
