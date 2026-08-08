@@ -19,6 +19,9 @@ test('private compile builds a candidate without trusting stale release certific
 
 test('Enterprise verify remains the release certification gate', () => {
   const block = commandBlock('enterprise:verify', 'enterprise:bootstrap')
+  assert.ok(block.includes('assertEnterpriseGeneratedManifestCurrent(root, privateRoot)'))
+  assert.ok(block.includes('verifyEnterpriseDeletionRegeneration(root, privateRoot)'))
   assert.ok(block.includes('verifyEnterpriseDelta(root, privateRoot)'))
+  assert.ok(!block.includes('assertEnterpriseExtractionCurrent'))
   assert.ok(!block.includes('verifyHarmonyCertification: false'))
 })

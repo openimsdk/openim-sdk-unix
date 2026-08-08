@@ -23,7 +23,6 @@ import { verifyEventControlConsumerCompile } from './consumer-compile.js'
 import { buildEnterpriseStableIDRegistry, writeEnterpriseStableIDRegistry } from './enterprise-integrity.js'
 import {
   applyEnterpriseMigration,
-  assertEnterpriseExtractionCurrent,
   previewEnterpriseImport,
   readEnterpriseMigrationApproval,
 } from './enterprise-migration.js'
@@ -181,9 +180,10 @@ switch (command) {
   }
   case 'enterprise:verify': {
     const privateRoot = requiredArgument('--private-root')
-    assertEnterpriseExtractionCurrent(root, privateRoot)
+    assertEnterpriseGeneratedManifestCurrent(root, privateRoot)
+    verifyEnterpriseDeletionRegeneration(root, privateRoot)
     verifyEnterpriseDelta(root, privateRoot)
-    console.log('Enterprise add-only delta and Harmony ABI verified.')
+    console.log('Enterprise composer outputs, add-only delta, and Harmony ABI verified.')
     break
   }
   case 'enterprise:bootstrap': {
