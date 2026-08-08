@@ -9,6 +9,20 @@ export const PLATFORM_DRIVER_SLICE_NAMES = [
   'getSdkVersion',
   'unInitSDK',
   'createTextMessage',
+  'createImageMessageByURL',
+  'createCustomMessage',
+  'createQuoteMessage',
+  'createAdvancedQuoteMessage',
+  'createAdvancedTextMessage',
+  'createTextAtMessage',
+  'createSoundMessageByURL',
+  'createVideoMessageByURL',
+  'createFileMessageByURL',
+  'createMergerMessage',
+  'createForwardMessage',
+  'createFaceMessage',
+  'createLocationMessage',
+  'createCardMessage',
   'sendMessage',
   'sendMessageNotOss',
 ] as const
@@ -183,6 +197,7 @@ function iosCoreAdapter(contract: ContractDocument): string {
     ? 'NativeOpenIMSDK.getLoginUserID(operationID)'
     : 'NativeOpenIMSDK.getLoginUserID()'
   return `import Foundation
+import CoreFoundation
 
 /// Generated contract-ID adapter. Lifecycle state and callback arbitration stay in DriverRuntime.
 class OpenIMCoreAdapter {
@@ -215,7 +230,7 @@ class OpenIMCoreAdapter {
     }
 
     private static func requiredNumber(_ request: [String: Any], _ name: String) throws -> NSNumber {
-        guard let value = request[name] as? NSNumber else {
+        guard let value = request[name] as? NSNumber, CFGetTypeID(value) != CFBooleanGetTypeID() else {
             throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing request number: \\(name)"])
         }
         return value

@@ -31,7 +31,16 @@ export interface ContractConstant {
 
 export type DriverRequestFieldCodec =
   | 'identity'
+  | 'json'
+  | 'file-json'
+  | 'message-entity-list-json'
   | 'message-json'
+  | 'message-list-json'
+  | 'optional-message-json'
+  | 'optional-string'
+  | 'picture-json'
+  | 'sound-json'
+  | 'video-json'
   | 'offline-push-json'
   | 'online-only'
 

@@ -5721,9 +5721,47 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createImageMessageByURL = function (params : OpenIMPictureElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createImageMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createImageMessageByURL(op, optionalString(params.sourcePath), stringifyJSON(params.sourcePicture), stringifyJSON(params.bigPicture), stringifyJSON(params.snapshotPicture)))) }) }",
-        "ios": "export const createImageMessageByURL = function (params : OpenIMPictureElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createImageMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createImageMessageByURL(op, optionalString(params.sourcePath), stringifyOpenIMPicture(params.sourcePicture), stringifyOpenIMPicture(params.bigPicture), stringifyOpenIMPicture(params.snapshotPicture)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "sourcePath",
+              "parameter": "params",
+              "member": "sourcePath",
+              "codec": "optional-string",
+              "wireType": "string"
+            },
+            {
+              "name": "sourcePicture",
+              "parameter": "params",
+              "member": "sourcePicture",
+              "codec": "picture-json",
+              "wireType": "string"
+            },
+            {
+              "name": "bigPicture",
+              "parameter": "params",
+              "member": "bigPicture",
+              "codec": "picture-json",
+              "wireType": "string"
+            },
+            {
+              "name": "snapshotPicture",
+              "parameter": "params",
+              "member": "snapshotPicture",
+              "codec": "picture-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5735,7 +5773,7 @@
           "symbol": "createImageMessageByURL"
         }
       },
-      "signatureHash": "a1ff242fdc251e397b2aaeccfb84b8bfb3c0990715aee95aedfed2e1b2af8ec7"
+      "signatureHash": "94b888e3715dceeef8c1449e6bba7515801124906c049e9d51afc69673833da3"
     },
     {
       "id": 2142,
@@ -5746,9 +5784,40 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createCustomMessage = function (params : OpenIMCreateCustomMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCustomMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCustomMessage(op, params.data, params.extension, params.descriptionText))) }) }",
-        "ios": "export const createCustomMessage = function (params : OpenIMCreateCustomMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCustomMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCustomMessage(op, params.data, params.extension, params.descriptionText))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "data",
+              "parameter": "params",
+              "member": "data",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "extension",
+              "parameter": "params",
+              "member": "extension",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "descriptionText",
+              "parameter": "params",
+              "member": "descriptionText",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5760,7 +5829,7 @@
           "symbol": "createCustomMessage"
         }
       },
-      "signatureHash": "b606f53c71f711f9ac25b00f4e71ebfa53c863805b7dfb2781d1520cac72d7ec"
+      "signatureHash": "6f457208ccd4c5e511482d7ab7e256a9b4460fc377f067c2e8e76f5e80e7bbdc"
     },
     {
       "id": 2143,
@@ -5771,9 +5840,33 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createQuoteMessage = function (params : OpenIMCreateQuoteMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createQuoteMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createQuoteMessage(op, params.text, params.message))) }) }",
-        "ios": "export const createQuoteMessage = function (params : OpenIMCreateQuoteMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createQuoteMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createQuoteMessage(op, params.text, params.message))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "text",
+              "parameter": "params",
+              "member": "text",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "message",
+              "parameter": "params",
+              "member": "message",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5785,7 +5878,7 @@
           "symbol": "createQuoteMessage"
         }
       },
-      "signatureHash": "149428bf21c8ebdf241c4acddc8e02273284b713bb7bd4e9f4ffeeaaf40a3bc6"
+      "signatureHash": "7a69364964f01e47d852f3d177e35647e540aac3c1764fb0b5f417856f5e89a8"
     },
     {
       "id": 2144,
@@ -5796,9 +5889,40 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createAdvancedQuoteMessage = function (params : OpenIMCreateAdvancedQuoteMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createAdvancedQuoteMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createAdvancedQuoteMessage(op, params.text, params.message, stringifyJSON(params.messageEntityList)))) }) }",
-        "ios": "export const createAdvancedQuoteMessage = function (params : OpenIMCreateAdvancedQuoteMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createAdvancedQuoteMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createAdvancedQuoteMessage(op, params.text, params.message, stringifyOpenIMMessageEntityList(params.messageEntityList)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "text",
+              "parameter": "params",
+              "member": "text",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "message",
+              "parameter": "params",
+              "member": "message",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "messageEntityList",
+              "parameter": "params",
+              "member": "messageEntityList",
+              "codec": "message-entity-list-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5810,7 +5934,7 @@
           "symbol": "createAdvancedQuoteMessage"
         }
       },
-      "signatureHash": "65f1e65c7e09395e94d347cab50c16ff9b517d5af8e41bd91e99384d1783f9f4"
+      "signatureHash": "b0424fd04e2494312a3bad614a0160619c9d2068e65291d9a69d8169323602b9"
     },
     {
       "id": 2145,
@@ -5821,9 +5945,33 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createAdvancedTextMessage = function (params : OpenIMCreateAdvancedTextMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createAdvancedTextMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createAdvancedTextMessage(op, params.text, stringifyJSON(params.messageEntityList)))) }) }",
-        "ios": "export const createAdvancedTextMessage = function (params : OpenIMCreateAdvancedTextMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createAdvancedTextMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createAdvancedTextMessage(op, params.text, stringifyOpenIMMessageEntityList(params.messageEntityList)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "text",
+              "parameter": "params",
+              "member": "text",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "messageEntityList",
+              "parameter": "params",
+              "member": "messageEntityList",
+              "codec": "message-entity-list-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5835,7 +5983,7 @@
           "symbol": "createAdvancedTextMessage"
         }
       },
-      "signatureHash": "931cebcc060b9a63a2d8d34cf897ace9ec9a05b231900cdb459d695c0b72284e"
+      "signatureHash": "b7ef4e0de6604eca0d2e93093239eac357d8e2f8ffa293adcfff484cac594c0f"
     },
     {
       "id": 2146,
@@ -5846,9 +5994,47 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createTextAtMessage = function (params : OpenIMCreateTextAtMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createTextAtMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createTextAtMessage(op, params.text, stringifyJSON(params.atUserIDList), stringifyJSON(params.atUsersInfo), params.quoteMessage != null ? stringifyOpenIMMessage(params.quoteMessage) : ''))) }) }",
-        "ios": "export const createTextAtMessage = function (params : OpenIMCreateTextAtMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createTextAtMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createTextAtMessage(op, params.text, stringifyJSON(params.atUserIDList), stringifyJSON(params.atUsersInfo), params.quoteMessage != null ? stringifyOpenIMMessage(params.quoteMessage) : ''))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "text",
+              "parameter": "params",
+              "member": "text",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "atUserIDList",
+              "parameter": "params",
+              "member": "atUserIDList",
+              "codec": "json",
+              "wireType": "string"
+            },
+            {
+              "name": "atUsersInfo",
+              "parameter": "params",
+              "member": "atUsersInfo",
+              "codec": "json",
+              "wireType": "string"
+            },
+            {
+              "name": "quoteMessage",
+              "parameter": "params",
+              "member": "quoteMessage",
+              "codec": "optional-message-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5860,7 +6046,7 @@
           "symbol": "createTextAtMessage"
         }
       },
-      "signatureHash": "fd31cfe664340d54cd0094709eaff93b3ad5a33efa2e433e01e0e0972e59bfff"
+      "signatureHash": "ae5177237bd54816f163671658da607c53f3fc9aa14c3d360cb52c6e61054251"
     },
     {
       "id": 2147,
@@ -5896,9 +6082,25 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createSoundMessageByURL = function (params : OpenIMSoundElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createSoundMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createSoundMessageByURL(op, stringifyJSON(params)))) }) }",
-        "ios": "export const createSoundMessageByURL = function (params : OpenIMSoundElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createSoundMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createSoundMessageByURL(op, stringifyOpenIMSoundElem(params)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "soundInfo",
+              "parameter": "params",
+              "codec": "sound-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5910,7 +6112,7 @@
           "symbol": "createSoundMessageByURL"
         }
       },
-      "signatureHash": "aef417ef0446f0e9185a99bfcbaf6514265b785a81009243c0b9070172a2cf20"
+      "signatureHash": "057ebfbae199b0ec4b4650add469f3d9bb1177124102fbeba75da1d04e98982f"
     },
     {
       "id": 2149,
@@ -5946,9 +6148,25 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createVideoMessageByURL = function (params : OpenIMVideoElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createVideoMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createVideoMessageByURL(op, stringifyJSON(params)))) }) }",
-        "ios": "export const createVideoMessageByURL = function (params : OpenIMVideoElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createVideoMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createVideoMessageByURL(op, stringifyOpenIMVideoElem(params)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "videoInfo",
+              "parameter": "params",
+              "codec": "video-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5960,7 +6178,7 @@
           "symbol": "createVideoMessageByURL"
         }
       },
-      "signatureHash": "f463eec239d2dfbde46851f957312e1aa64a0472bdb845abeac129169d71cb2f"
+      "signatureHash": "3b82260d3dba4d6518e361419177d1046eb920f69dc05784e6529d735d3212a7"
     },
     {
       "id": 2151,
@@ -5996,9 +6214,25 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createFileMessageByURL = function (params : OpenIMFileElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFileMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFileMessageByURL(op, stringifyJSON(params)))) }) }",
-        "ios": "export const createFileMessageByURL = function (params : OpenIMFileElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFileMessageByURL', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFileMessageByURL(op, stringifyOpenIMFileElem(params)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "fileInfo",
+              "parameter": "params",
+              "codec": "file-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6010,7 +6244,7 @@
           "symbol": "createFileMessageByURL"
         }
       },
-      "signatureHash": "3dba065577bfcba6d7873f4c243dc26d040251e7258d29859bbe0037adc93937"
+      "signatureHash": "9c8648327dba19b777577f5c4bfd88fb216f10ba69cdc9ac4b12d99601f3a904"
     },
     {
       "id": 2153,
@@ -6021,9 +6255,40 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createMergerMessage = function (params : OpenIMCreateMergerMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createMergerMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createMergerMessage(op, stringifyOpenIMMessagePayload(params.messageList), params.title, stringifyJSON(params.abstractList)))) }) }",
-        "ios": "export const createMergerMessage = function (params : OpenIMCreateMergerMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createMergerMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createMergerMessage(op, stringifyOpenIMMessageList(params.messageList), params.title, stringifyJSON(params.abstractList)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "messageList",
+              "parameter": "params",
+              "member": "messageList",
+              "codec": "message-list-json",
+              "wireType": "string"
+            },
+            {
+              "name": "title",
+              "parameter": "params",
+              "member": "title",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "abstractList",
+              "parameter": "params",
+              "member": "abstractList",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6035,7 +6300,7 @@
           "symbol": "createMergerMessage"
         }
       },
-      "signatureHash": "d54630c4a51fa1237666a9e3a96bd3ce5744d935c6010aaa1df18952d21577dc"
+      "signatureHash": "ae6367878ca0201db3a3daf401c63bb364e86bdb41469f8a70e2823af5cc7171"
     },
     {
       "id": 2154,
@@ -6046,9 +6311,25 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createForwardMessage = function (message : OpenIMMessageItem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createForwardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createForwardMessage(op, stringifyOpenIMMessage(message)))) }) }",
-        "ios": "export const createForwardMessage = function (message : OpenIMMessageItem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createForwardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createForwardMessage(op, stringifyOpenIMMessage(message)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "message",
+              "parameter": "message",
+              "codec": "message-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6060,7 +6341,7 @@
           "symbol": "createForwardMessage"
         }
       },
-      "signatureHash": "4fbbea086d1e441b1231e9a0c55d1cb5ca5ef393208bc4034e2fbea85d3c582d"
+      "signatureHash": "a3f353befd538dca0f5bce03327347b6e8a603e37706090f32dd2269f31b6188"
     },
     {
       "id": 2155,
@@ -6071,9 +6352,33 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createFaceMessage = function (params : OpenIMCreateFaceMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFaceMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFaceMessage(op, params.index, params.data))) }) }",
-        "ios": "export const createFaceMessage = function (params : OpenIMCreateFaceMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createFaceMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createFaceMessage(op, params.index, params.data))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "index",
+              "parameter": "params",
+              "member": "index",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "data",
+              "parameter": "params",
+              "member": "data",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6085,7 +6390,7 @@
           "symbol": "createFaceMessage"
         }
       },
-      "signatureHash": "8ffe74c5c1b4b27d4e2f8890489be8e5a88e64c55d5e7b768fa721706dffb90e"
+      "signatureHash": "ed3b8fcd56b16220c04b3cc9613d64467ce116250f551e3672b4d82ef016807b"
     },
     {
       "id": 2156,
@@ -6096,9 +6401,40 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createLocationMessage = function (params : OpenIMCreateLocationMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createLocationMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createLocationMessage(op, params.descriptionText, params.longitude, params.latitude))) }) }",
-        "ios": "export const createLocationMessage = function (params : OpenIMCreateLocationMessageParams, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createLocationMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createLocationMessage(op, params.descriptionText, params.longitude, params.latitude))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "descriptionText",
+              "parameter": "params",
+              "member": "descriptionText",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "longitude",
+              "parameter": "params",
+              "member": "longitude",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "latitude",
+              "parameter": "params",
+              "member": "latitude",
+              "codec": "identity",
+              "wireType": "number"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6110,7 +6446,7 @@
           "symbol": "createLocationMessage"
         }
       },
-      "signatureHash": "5961fb7c27f6ef597c74a27a110d73a235bb211b7168669da2a7f5b81b929ccf"
+      "signatureHash": "845aa8eab9807dd69c99566c0173ce4fe2de6eb5c3480177d6e4f7d2873aae72"
     },
     {
       "id": 2157,
@@ -6121,9 +6457,25 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createCardMessage = function (card : OpenIMCardElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCardMessage(op, stringifyJSON(card)))) }) }",
-        "ios": "export const createCardMessage = function (card : OpenIMCardElem, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createCardMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createCardMessage(op, stringifyJSON(card)))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "cardInfo",
+              "parameter": "card",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "sync-return"
+        },
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -6135,7 +6487,7 @@
           "symbol": "createCardMessage"
         }
       },
-      "signatureHash": "ef53267d65012ef3a03a986490e03b99900e70c99a0323f23c926588ca4b5515"
+      "signatureHash": "1c300e8137dfa2e1a656767881890d08684a8f56c63d23b667cdee68764339ea"
     },
     {
       "id": 2158,

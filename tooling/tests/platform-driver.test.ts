@@ -15,6 +15,23 @@ import { generateIndex } from '../src/generate.js'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
 
+const IN_MEMORY_MESSAGE_CREATORS = [
+  ['createImageMessageByURL', 2141],
+  ['createCustomMessage', 2142],
+  ['createQuoteMessage', 2143],
+  ['createAdvancedQuoteMessage', 2144],
+  ['createAdvancedTextMessage', 2145],
+  ['createTextAtMessage', 2146],
+  ['createSoundMessageByURL', 2148],
+  ['createVideoMessageByURL', 2150],
+  ['createFileMessageByURL', 2152],
+  ['createMergerMessage', 2153],
+  ['createForwardMessage', 2154],
+  ['createFaceMessage', 2155],
+  ['createLocationMessage', 2156],
+  ['createCardMessage', 2157],
+] as const
+
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
   assert.deepEqual(
     platformDriverBindings(contract).map(({ id, name }) => ({ id, name })),
@@ -27,6 +44,7 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
       { id: 2056, name: 'getSdkVersion' },
       { id: 2058, name: 'unInitSDK' },
       { id: 2139, name: 'createTextMessage' },
+      ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
       { id: 2158, name: 'sendMessage' },
       { id: 2159, name: 'sendMessageNotOss' },
     ],
@@ -40,6 +58,7 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
     'getSdkVersion',
     'unInitSDK',
     'createTextMessage',
+    ...IN_MEMORY_MESSAGE_CREATORS.map(([name]) => name),
     'sendMessage',
     'sendMessageNotOss',
   ])
@@ -114,6 +133,55 @@ test('first compiler slice is rendered from lowering data for both Public platfo
       const declaration = source.split('\n').find((line) => line.startsWith(`export const ${name} =`))
       assert.notEqual(declaration, undefined)
       assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
+    }
+  }
+})
+
+test('in-memory message creators cross the same structured PlatformDriver seam', () => {
+  for (const [name, id] of IN_MEMORY_MESSAGE_CREATORS) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.id, id)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind !== 'platform-driver') continue
+    assert.equal(callable.lowering.transport, 'async')
+    assert.equal(callable.lowering.precondition, 'logged-in-create')
+    assert.deepEqual(callable.lowering.nativeInvocation, { completion: 'sync-return' })
+    assert.equal(typeof callable.lowering.request, 'object')
+    if (typeof callable.lowering.request === 'string') continue
+    assert.equal(callable.lowering.request.kind, 'fields')
+    assert.ok(callable.lowering.request.fields.length > 0)
+  }
+
+  for (const platform of ['android', 'ios'] as const) {
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    const facade = generateIndex(root, contract, platform)
+    for (const [name, id] of IN_MEMORY_MESSAGE_CREATORS) {
+      assert.match(adapter, new RegExp(`(?:case )?${id}`), `${platform} adapter is missing ${name}`)
+      const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+      assert.notEqual(declaration, undefined)
+      assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
+      assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
+    }
+    for (const pathCreator of [
+      'createImageMessageFromFullPath',
+      'createSoundMessageFromFullPath',
+      'createVideoMessageFromFullPath',
+      'createFileMessageFromFullPath',
+    ]) {
+      const callable = contract.callables.find((candidate) => candidate.name === pathCreator)
+      assert.equal(callable?.lowering, undefined)
+      assert.match(facade, new RegExp(`NativeOpenIMSDK\\.${pathCreator}`), `${pathCreator} must retain its platform path adapter`)
+    }
+    if (platform === 'android') {
+      assert.match(facade, /stringifyJSON\(params\.sourcePicture\)/)
+      assert.match(facade, /stringifyOpenIMMessagePayload\(params\.messageList\)/)
+    } else {
+      assert.match(facade, /stringifyOpenIMPicture\(params\.sourcePicture\)/)
+      assert.match(facade, /stringifyOpenIMSoundElem\(params\)/)
+      assert.match(facade, /stringifyOpenIMVideoElem\(params\)/)
+      assert.match(facade, /stringifyOpenIMFileElem\(params\)/)
+      assert.match(facade, /stringifyOpenIMMessageList\(params\.messageList\)/)
+      assert.match(adapter, /CFGetTypeID\(value\) != CFBooleanGetTypeID\(\)/)
     }
   }
 })

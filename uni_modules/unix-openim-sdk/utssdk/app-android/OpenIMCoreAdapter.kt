@@ -33,6 +33,62 @@ object OpenIMCoreAdapter {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createTextMessage(operationID, request.getString("text")))
         }
+        2141 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createImageMessageByURL(operationID, request.getString("sourcePath"), request.getString("sourcePicture"), request.getString("bigPicture"), request.getString("snapshotPicture")))
+        }
+        2142 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createCustomMessage(operationID, request.getString("data"), request.getString("extension"), request.getString("descriptionText")))
+        }
+        2143 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createQuoteMessage(operationID, request.getString("text"), request.getString("message")))
+        }
+        2144 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createAdvancedQuoteMessage(operationID, request.getString("text"), request.getString("message"), request.getString("messageEntityList")))
+        }
+        2145 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createAdvancedTextMessage(operationID, request.getString("text"), request.getString("messageEntityList")))
+        }
+        2146 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createTextAtMessage(operationID, request.getString("text"), request.getString("atUserIDList"), request.getString("atUsersInfo"), request.getString("quoteMessage")))
+        }
+        2148 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createSoundMessageByURL(operationID, request.getString("soundInfo")))
+        }
+        2150 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createVideoMessageByURL(operationID, request.getString("videoInfo")))
+        }
+        2152 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createFileMessageByURL(operationID, request.getString("fileInfo")))
+        }
+        2153 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createMergerMessage(operationID, request.getString("messageList"), request.getString("title"), request.getString("abstractList")))
+        }
+        2154 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createForwardMessage(operationID, request.getString("message")))
+        }
+        2155 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createFaceMessage(operationID, request.getDouble("index"), request.getString("data")))
+        }
+        2156 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createLocationMessage(operationID, request.getString("descriptionText"), request.getDouble("longitude"), request.getDouble("latitude")))
+        }
+        2157 -> {
+          val request = JSONObject(requestJSON)
+          resolve(NativeOpenIMSDK.createCardMessage(operationID, request.getString("cardInfo")))
+        }
         2158 -> {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.sendMessage(operationID, request.getString("message"), request.getString("recvID"), request.getString("groupID"), request.getString("offlinePushInfo"), request.getBoolean("isOnlineOnly"), resolve, reject)
