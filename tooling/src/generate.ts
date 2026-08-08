@@ -162,6 +162,15 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
       : 'offAllSDKEvents(eventName)'
     return `export function ${callable.name}(${parameters}) { ${call} }`
   }
+  if (lowering.kind === 'local-helper') {
+    if (callable.completion !== 'sync') throw new Error(`Local helper lowering must be synchronous: ${callable.name}`)
+    if (parameters.trim() !== '') throw new Error(`Local helper lowering does not support parameters: ${callable.name}`)
+    const binding = callable.binding[platform]
+    if (binding?.kind !== 'facade-alias' || binding.symbol !== lowering.symbol) {
+      throw new Error(`Local helper binding mismatch for ${callable.name} on ${platform}`)
+    }
+    return `export const ${callable.name} = function () : ${returnType} { return ${lowering.symbol}() }`
+  }
 
   const prelude: string[] = []
   let operationID: string

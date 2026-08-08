@@ -479,6 +479,33 @@ test('group, status, and upload operations complete native dispatch coverage', (
   }
 })
 
+test('local data path stays generated without entering the native Core Driver', () => {
+  const callable = contract.callables.find((candidate) => candidate.name === 'getOpenIMDataPath')
+  assert.equal(callable?.id, 2057)
+  assert.deepEqual(callable?.lowering, {
+    kind: 'local-helper',
+    symbol: 'getOpenIMDataPathNative',
+  })
+  assert.equal('declaration' in callable!, false)
+  assert.deepEqual(
+    contract.callables.filter((candidate) => candidate.role === 'operation' && candidate.lowering == null),
+    [],
+  )
+  assert.equal(platformDriverBindings(contract).some(({ id }) => id === 2057), false)
+
+  for (const platform of ['android', 'ios'] as const) {
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    const facade = generateIndex(root, contract, platform)
+    const declaration = facade.split('\n').find((line) => line.startsWith('export const getOpenIMDataPath ='))
+    assert.equal(
+      declaration,
+      'export const getOpenIMDataPath = function () : string { return getOpenIMDataPathNative() }',
+    )
+    assert.doesNotMatch(adapter, /(?:case )?2057/)
+    assert.doesNotMatch(declaration!, /driverCall(?:Async|Sync)/)
+  }
+})
+
 test('Android wire validators use Java wrapper classes instead of unsupported typeof any', () => {
   const source = readFileSync(
     resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts'),

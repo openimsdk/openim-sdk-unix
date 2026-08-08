@@ -76,6 +76,10 @@ export type CallableLowering =
     action: 'remove-subscription' | 'remove-all'
   }
   | {
+    kind: 'local-helper'
+    symbol: string
+  }
+  | {
     kind: 'platform-driver'
     transport: 'async' | 'sync'
     operationID: 'parameter' | 'send-options' | 'empty'

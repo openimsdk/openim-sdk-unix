@@ -3603,9 +3603,9 @@
       "errorPolicy": "none",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const getOpenIMDataPath = function () : string { return getOpenIMDataPathNative() }",
-        "ios": "export const getOpenIMDataPath = function () : string { return getOpenIMDataPathNative() }"
+      "lowering": {
+        "kind": "local-helper",
+        "symbol": "getOpenIMDataPathNative"
       },
       "binding": {
         "android": {
@@ -3617,7 +3617,7 @@
           "symbol": "getOpenIMDataPathNative"
         }
       },
-      "signatureHash": "667eb97f54b66438b0ace74eec81377a10bda76d4da952ecdad8c12ec50c2e87"
+      "signatureHash": "28e09c50030caa482d3d8c297be77070790f7a1f1ee84d1623c8ec6b2dea83c0"
     },
     {
       "id": 2058,

@@ -1915,7 +1915,7 @@
       "id": 2057,
       "name": "getOpenIMDataPath",
       "signature": "getOpenIMDataPath():string",
-      "signatureHash": "667eb97f54b66438b0ace74eec81377a10bda76d4da952ecdad8c12ec50c2e87"
+      "signatureHash": "28e09c50030caa482d3d8c297be77070790f7a1f1ee84d1623c8ec6b2dea83c0"
     },
     {
       "id": 2058,
@@ -2880,5 +2880,5 @@
       "signatureHash": "d1a6f9042697c344fed15b109150f2c02cb5cd9556b13f72c561bc0648bb5d32"
     }
   ],
-  "contractHash": "292ce9c85e6344aff1d670ca49a40bd8431d564cf32097e10446caf571801a24"
+  "contractHash": "512fad724eabaae3f23ff372721cb76b31342c5aba6236ce2c7501a4242dd428"
 }
