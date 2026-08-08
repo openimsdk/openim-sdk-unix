@@ -54,6 +54,18 @@ export function verifyDriverInvariants(root: string): void {
   const utsInterface = readFileSync(utsInterfacePath, 'utf8')
   const androidEvents = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'), 'utf8')
   const iosEvents = readFileSync(join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts'), 'utf8')
+  const androidPlatformDriverPath = join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/platform-driver.uts')
+  const iosPlatformDriverPath = join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/platform-driver.uts')
+  const androidPlatformDriver = readFileSync(androidPlatformDriverPath, 'utf8')
+  const iosPlatformDriver = readFileSync(iosPlatformDriverPath, 'utf8')
+  const androidCoreAdapter = readFileSync(
+    join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMCoreAdapter.kt'),
+    'utf8',
+  )
+  const iosCoreAdapter = readFileSync(
+    join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMCoreAdapter.swift'),
+    'utf8',
+  )
 
   assertIncludes(
     utsInterface,
@@ -64,6 +76,29 @@ export function verifyDriverInvariants(root: string): void {
   )
   assertExcludes(utsInterface, ['OpenIMSDKUnsubscribe', 'OpenIMSDKSubscriptionID'], 'UTS event subscription interface')
   assertEventControlInterface(utsInterfacePath, 'UTS event subscription interface')
+  for (const [label, path, source] of [
+    ['Android PlatformDriver', androidPlatformDriverPath, androidPlatformDriver],
+    ['iOS PlatformDriver', iosPlatformDriverPath, iosPlatformDriver],
+  ] as const) {
+    const entries = extractExportedValues(parseSource(path))
+    assert(
+      entries.map((entry) => entry.name).join(',') === 'driverCallAsync,driverCallSync,driverBindEventSink',
+      `${label} must expose exactly the three PlatformDriver entries`,
+    )
+    assertExcludes(source, ['400001', 'NativeOpenIMSDK'], label)
+  }
+  assertIncludes(
+    androidCoreAdapter,
+    ['2051 ->', '2052 ->', '2053 ->', '2054 ->', '2055 ->', '2056 ->', '2058 ->'],
+    'Android generated CoreAdapter',
+  )
+  assertIncludes(
+    iosCoreAdapter,
+    ['case 2051:', 'case 2052:', 'case 2053:', 'case 2054:', 'case 2055:', 'case 2056:', 'case 2058:'],
+    'iOS generated CoreAdapter',
+  )
+  assertExcludes(androidCoreAdapter, ['400001'], 'Android generated CoreAdapter')
+  assertExcludes(iosCoreAdapter, ['400001'], 'iOS generated CoreAdapter')
   for (const [label, source] of [['Android UTS events', androidEvents], ['iOS UTS events', iosEvents]] as const) {
     assertIncludes(
       source,
@@ -72,6 +107,8 @@ export function verifyDriverInvariants(root: string): void {
       ],
       label,
     )
+    assertIncludes(source, ['driverBindEventSink('], label)
+    assertExcludes(source, ['NativeOpenIMSDK.bindNativeEvents'], label)
     const perEventHandle = source.includes("return { id: subscriptionID, eventName: 'onConnecting' }")
     const genericHandle = source.includes('return { id: subscriptionID, eventName: eventName }')
     assert(perEventHandle || genericHandle, `${label} does not return a stable event subscription handle`)

@@ -3440,8 +3440,8 @@
       "rawString": false,
       "role": "operation",
       "declaration": {
-        "android": "export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); resolve(NativeOpenIMSDK.initSDK(normalizeOperationID(operationID), normalizeInitConfig(config)) == 'true') }) }",
-        "ios": "export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); resolve(NativeOpenIMSDK.initSDK(normalizeOperationID(operationID), normalizeInitConfig(config)) == 'true') }) }"
+        "android": "export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); driverCallAsync(2051, normalizeOperationID(operationID), normalizeInitConfig(config), (data : string) => { resolve(data == 'true') }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
+        "ios": "export const initSDK = function (config : OpenIMInitConfig, operationID ?: string | null) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { ensureNativeEventsBound(); driverCallAsync(2051, normalizeOperationID(operationID), normalizeInitConfig(config), (data : string) => { resolve(data == 'true') }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
       },
       "binding": {
         "android": {
@@ -3453,7 +3453,7 @@
           "symbol": "initSDK"
         }
       },
-      "signatureHash": "dd8107662e72ac820a6c9a1be02ecc8226f8a8cfd8efc00fb984ca15ced30786"
+      "signatureHash": "08d3e75b2159b057c526443d9d078b0d4dd9b162142a18b8d1dddf115bf3c653"
     },
     {
       "id": 2052,
@@ -3465,8 +3465,8 @@
       "rawString": true,
       "role": "operation",
       "declaration": {
-        "android": "export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.login(normalizeOperationID(operationID), userID, token, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.login(normalizeOperationID(operationID), userID, token, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+        "android": "export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { const requestJSON = '{\"userID\":' + stringifyJSON(userID) + ',\"token\":' + stringifyJSON(token) + '}'; driverCallAsync(2052, normalizeOperationID(operationID), requestJSON, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
+        "ios": "export const login = function (userID : string, token : string, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { const requestJSON = '{\"userID\":' + stringifyJSON(userID) + ',\"token\":' + stringifyJSON(token) + '}'; driverCallAsync(2052, normalizeOperationID(operationID), requestJSON, resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
       },
       "binding": {
         "android": {
@@ -3478,7 +3478,7 @@
           "symbol": "login"
         }
       },
-      "signatureHash": "bff7d4154c1e172e1c2a6a053cf95454053e14587041cd2a36a09539c36a36c0"
+      "signatureHash": "4ac4992f10e5c881dc0d5e37e6595f223848745faa302ce47194326735f8fd1a"
     },
     {
       "id": 2053,
@@ -3490,8 +3490,8 @@
       "rawString": true,
       "role": "operation",
       "declaration": {
-        "android": "export const logout = function (operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.logout(normalizeOperationID(operationID), resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const logout = function (operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.logout(normalizeOperationID(operationID), resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+        "android": "export const logout = function (operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2053, normalizeOperationID(operationID), '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
+        "ios": "export const logout = function (operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2053, normalizeOperationID(operationID), '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
       },
       "binding": {
         "android": {
@@ -3503,7 +3503,7 @@
           "symbol": "logout"
         }
       },
-      "signatureHash": "5319ca73f85794ea7cc34b7ace943b4a6d237c8ee52db759140a759feeebeda7"
+      "signatureHash": "b96c9a2da683ef55e93e46ea84ce69718836d5c9aece8468f7966797602eff22"
     },
     {
       "id": 2054,
@@ -3515,8 +3515,8 @@
       "rawString": false,
       "role": "operation",
       "declaration": {
-        "android": "export const getLoginStatus = function (operationID ?: string | null) : Promise<OpenIMLoginStatus> { return new Promise<OpenIMLoginStatus>((resolve, reject) => { resolve(parseNativeLoginStatus(NativeOpenIMSDK.getLoginStatus(normalizeOperationID(operationID)))) }) }",
-        "ios": "export const getLoginStatus = function (operationID ?: string | null) : Promise<OpenIMLoginStatus> { return new Promise<OpenIMLoginStatus>((resolve, reject) => { resolve(parseNativeLoginStatus(NativeOpenIMSDK.getLoginStatus(normalizeOperationID(operationID)))) }) }"
+        "android": "export const getLoginStatus = function (operationID ?: string | null) : Promise<OpenIMLoginStatus> { return new Promise<OpenIMLoginStatus>((resolve, reject) => { driverCallAsync(2054, normalizeOperationID(operationID), '{}', (data : string) => { resolve(parseNativeLoginStatus(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
+        "ios": "export const getLoginStatus = function (operationID ?: string | null) : Promise<OpenIMLoginStatus> { return new Promise<OpenIMLoginStatus>((resolve, reject) => { driverCallAsync(2054, normalizeOperationID(operationID), '{}', (data : string) => { resolve(parseNativeLoginStatus(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
       },
       "binding": {
         "android": {
@@ -3528,7 +3528,7 @@
           "symbol": "getLoginStatus"
         }
       },
-      "signatureHash": "5f7e1f3022568166daefef3ce454aabacb662fe499bd2b892ea8102d8bcdfb25"
+      "signatureHash": "82f0fb3af171c5fb4ed13f0d001913fcb997af3ce310d1a715e0d1964dc956ce"
     },
     {
       "id": 2055,
@@ -3540,8 +3540,8 @@
       "rawString": true,
       "role": "operation",
       "declaration": {
-        "android": "export const getLoginUserID = function () : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getLoginUserID()) }) }",
-        "ios": "export const getLoginUserID = function () : Promise<string> { return new Promise<string>((resolve, reject) => { resolve(NativeOpenIMSDK.getLoginUserID()) }) }"
+        "android": "export const getLoginUserID = function () : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2055, '', '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
+        "ios": "export const getLoginUserID = function () : Promise<string> { return new Promise<string>((resolve, reject) => { driverCallAsync(2055, '', '{}', resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
       },
       "binding": {
         "android": {
@@ -3553,7 +3553,7 @@
           "symbol": "getLoginUserID"
         }
       },
-      "signatureHash": "e6c0f1787b82982d8a5f0b38f662d69c0110294befa25fe6e1cb792a5fbc5412"
+      "signatureHash": "23e37bd5ad60b392f5b9819fbc76be08094b10cf1595cef432332d1e5ada793a"
     },
     {
       "id": 2056,
@@ -3565,8 +3565,8 @@
       "rawString": true,
       "role": "operation",
       "declaration": {
-        "android": "export const getSdkVersion = function () : string { return NativeOpenIMSDK.getSdkVersion() }",
-        "ios": "export const getSdkVersion = function () : string { return NativeOpenIMSDK.getSdkVersion() }"
+        "android": "export const getSdkVersion = function () : string { return driverCallSync(2056, '', '{}') }",
+        "ios": "export const getSdkVersion = function () : string { return driverCallSync(2056, '', '{}') }"
       },
       "binding": {
         "android": {
@@ -3578,7 +3578,7 @@
           "symbol": "getSdkVersion"
         }
       },
-      "signatureHash": "1b27903d9feb4950cd33f25aebbe4937ac24a0e91df2c47cb4f1e15fe5e18246"
+      "signatureHash": "9208f486239eef8968647db08e2c852750f4fee8d6ff53082201560602e89f8b"
     },
     {
       "id": 2057,
@@ -3615,8 +3615,8 @@
       "rawString": false,
       "role": "operation",
       "declaration": {
-        "android": "export const unInitSDK = function (operationID ?: string | null) { NativeOpenIMSDK.unInitSDK(normalizeOperationID(operationID)) }",
-        "ios": "export const unInitSDK = function (operationID ?: string | null) { NativeOpenIMSDK.unInitSDK(normalizeOperationID(operationID)) }"
+        "android": "export const unInitSDK = function (operationID ?: string | null) { driverCallAsync(2058, normalizeOperationID(operationID), '{}', (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }",
+        "ios": "export const unInitSDK = function (operationID ?: string | null) { driverCallAsync(2058, normalizeOperationID(operationID), '{}', (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }"
       },
       "binding": {
         "android": {
@@ -3628,7 +3628,7 @@
           "symbol": "unInitSDK"
         }
       },
-      "signatureHash": "59b16fc84ce34cf4aa11f43c426e4092de3b497ba0152dea0caa3515e0b5dadc"
+      "signatureHash": "47c3d9eb5bfd1d066e9c716aec119e556116ec7bec52d051812a4a8b6c6ffd82"
     },
     {
       "id": 2059,

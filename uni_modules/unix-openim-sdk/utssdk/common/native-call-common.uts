@@ -48,6 +48,7 @@ import {
   OpenIMQuoteElem,
   OpenIMSearchMessageResult,
   OpenIMSearchMessageResultItem,
+  OpenIMSendMessageProgressEvent,
   OpenIMSessionType,
   OpenIMSoundElem,
   OpenIMTextElem,
@@ -222,6 +223,16 @@ export function parseNativeUploadLogsProgressEventCommon(data : string, helpers 
   const raw = helpers.parseNativeAny(data)
   if (raw instanceof UTSJSONObject) {
     return { progress: helpers.readNumberParam(raw, 'progress') }
+  }
+  return null
+}
+
+export function parseNativeSendMessageProgressEventCommon(data : string, helpers : NativeParserHelpers) : OpenIMSendMessageProgressEvent | null {
+  const raw = helpers.parseNativeAny(data)
+  if (raw instanceof UTSJSONObject) {
+    const result : OpenIMSendMessageProgressEvent = { progress: helpers.readNumberParam(raw, 'progress') }
+    if (hasNativeKey(raw, 'operationID')) { result.operationID = helpers.readStringParam(raw, 'operationID') }
+    return result
   }
   return null
 }

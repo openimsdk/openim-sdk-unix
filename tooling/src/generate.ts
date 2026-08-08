@@ -5,6 +5,7 @@ import { INDEX_MARKERS } from './import-contract.js'
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { sha256 } from './source.js'
 import { buildPublicResponseSchemas, buildPublicTestDisposition } from './test-contract.js'
+import { renderNativeCoreAdapter, renderPlatformDriverUTS } from './platform-driver.js'
 
 export interface GeneratedOutput {
   path: string
@@ -175,7 +176,7 @@ ${dispatchCases}
 }
 
 function bindNativeEvents() {
-  NativeOpenIMSDK.bindNativeEvents((eventName : string, payload : string, errCode : number, errMsg : string) => {
+  driverBindEventSink((eventName : string, payload : string, errCode : number, errMsg : string) => {
     emitSDKEvent(eventName, payload, errCode, errMsg)
   })
 }
@@ -264,6 +265,22 @@ export function buildGeneratedOutputs(root: string): GeneratedOutput[] {
     {
       path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMDriverRuntime.swift'),
       content: generatedSource(readFileSync(join(root, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8')),
+    },
+    {
+      path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/platform-driver.uts'),
+      content: generatedSource(renderPlatformDriverUTS('android')),
+    },
+    {
+      path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/platform-driver.uts'),
+      content: generatedSource(renderPlatformDriverUTS('ios')),
+    },
+    {
+      path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMCoreAdapter.kt'),
+      content: generatedSource(renderNativeCoreAdapter(contract, 'android')),
+    },
+    {
+      path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMCoreAdapter.swift'),
+      content: generatedSource(renderNativeCoreAdapter(contract, 'ios')),
     },
     { path: join(root, 'contracts/base/surface.snapshot.json'), content: snapshot },
     { path: join(root, 'contracts/base/response-schemas.json'), content: responseSchemas },

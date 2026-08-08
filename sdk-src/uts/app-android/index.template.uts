@@ -1,5 +1,6 @@
 import { NativeOpenIMSDK } from 'uts.sdk.modules.unixOpenimSdk'
 import { UTSAndroid } from 'io.dcloud.uts' // UTS-COMPAT-JSON-001
+import { driverCallAsync, driverCallSync } from './platform-driver.uts'
 import {
   OpenIMMessageStatus,
   OpenIMPlatform,

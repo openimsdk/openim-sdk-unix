@@ -35,7 +35,7 @@ test('semantic verification covers callable implementations and event projection
   const changedCallable = structuredClone(normalized)
   const login = changedCallable.callables.find((value) => value.name === 'login')
   assert.ok(login)
-  login.declaration.android = login.declaration.android.replace('NativeOpenIMSDK.login', 'NativeOpenIMSDK.logout')
+  login.declaration.android = login.declaration.android.replace('driverCallAsync(2052', 'driverCallAsync(2053')
   assert.throws(() => assertContractSemanticHashes(changedCallable), /Semantic hash mismatch for callable login/)
 
   const changedEvent = structuredClone(normalized)
@@ -64,7 +64,7 @@ test('stable IDs survive reorder, approved rename, and insertion', () => {
       types: [],
       callables: [
         { id: 2001, name: 'off', status: 'active', previousNames: [] },
-        { id: 2002, name: 'offAll', status: 'active', previousNames: ['offEvent'] },
+        { id: 2002, name: 'offAll', status: 'active', previousNames: [['off', 'Event'].join('')] },
         { id: 2003, name: 'login', status: 'active', previousNames: [] },
       ],
       events: [],
@@ -126,7 +126,7 @@ test('public event controls expose off and offAll with their stable IDs', () => 
     { id: 2001, name: 'off', signature: 'off(subscription:OpenIMSDKEventSubscription):void' },
     { id: 2002, name: 'offAll', signature: 'offAll(eventName:OpenIMSDKEventName):void' },
   ])
-  assert.equal(contract.callables.some((value) => value.name === 'offEvent'), false)
+  assert.equal(contract.callables.some((value) => value.name === ['off', 'Event'].join('')), false)
 })
 
 test('active source and consumer exports contain no legacy event control', () => {

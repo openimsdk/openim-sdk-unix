@@ -1,3 +1,4 @@
+import { driverBindEventSink } from './platform-driver.uts'
 import {
   OpenIMBlackUserEventHandler,
   OpenIMBooleanEventHandler,
@@ -41,6 +42,7 @@ import {
   parseNativeMessageEventList,
   parseNativeMessageReceiptList,
   parseNativeMessageRevoked,
+  parseNativeSendMessageProgressEvent,
   parseNativeUploadFileProgressEvent,
   parseNativeUploadLogsProgressEvent,
   parseNativeUserObject,
@@ -48,4 +50,4 @@ import {
 } from './native-call.uts'
 function readBooleanPayload(payload : string) : boolean { return payload == 'true' }
 function readNumberPayload(payload : string) : number { return parseFloat(payload) }
-function parseSendMessageProgress(payload : string) : OpenIMSendMessageProgressEvent | null { return JSON.parseObject<OpenIMSendMessageProgressEvent>(payload) }
+function parseSendMessageProgress(payload : string) : OpenIMSendMessageProgressEvent | null { return parseNativeSendMessageProgressEvent(payload) }
