@@ -120,12 +120,38 @@ export function verifyDriverInvariants(root: string): void {
 
   assertIncludes(
     androidRuntime,
-    ['newSingleThreadExecutor', 'terminalScheduled', 'pending.remove(ticket.taskID)', 'OpenIM SDK was uninitialized'],
+    [
+      'enum class OpenIMDriverState',
+      'IDLE,',
+      'STARTING,',
+      'ACTIVE,',
+      'STOPPING',
+      'newSingleThreadExecutor',
+      'terminalScheduled',
+      'pending.remove(ticket.taskID)',
+      'OpenIM SDK was uninitialized',
+      'state = if (value) OpenIMDriverState.ACTIVE else OpenIMDriverState.IDLE',
+      'fun finishShutdown(stoppingEpoch: Long)',
+      'allowWhileStarting',
+    ],
     'Android Driver exactly-once runtime',
   )
   assertIncludes(
     iosRuntime,
-    ['DispatchQueue(label:', 'terminalScheduled', 'pending.removeValue(forKey: ticket.taskID)', 'OpenIM SDK was uninitialized'],
+    [
+      'enum OpenIMDriverState',
+      'case idle',
+      'case starting',
+      'case active',
+      'case stopping',
+      'DispatchQueue(label:',
+      'terminalScheduled',
+      'pending.removeValue(forKey: ticket.taskID)',
+      'OpenIM SDK was uninitialized',
+      'state = value ? .active : .idle',
+      'func finishShutdown(_ stoppingEpoch: Int64)',
+      'allowWhileStarting',
+    ],
     'iOS Driver exactly-once runtime',
   )
 
@@ -137,6 +163,7 @@ export function verifyDriverInvariants(root: string): void {
       'sdkInitialized = false',
       'unbindNativeEventListeners()',
       'Open_im_sdk.unInitSDK(operationID)',
+      'OpenIMDriverRuntime.finishShutdown(stoppingEpoch)',
     ],
     'Android teardown barrier',
   )
@@ -147,6 +174,8 @@ export function verifyDriverInvariants(root: string): void {
       'OpenIMDriverRuntime.shared.shutdown()',
       'sdkInitialized = false',
       'unbindNativeEventListeners()',
+      'defer {',
+      'OpenIMDriverRuntime.shared.finishShutdown(stoppingEpoch)',
       'Open_im_sdkUnInitSDK(operationID)',
     ],
     'iOS teardown barrier',

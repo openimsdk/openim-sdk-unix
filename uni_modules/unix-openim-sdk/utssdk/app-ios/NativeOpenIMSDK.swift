@@ -283,7 +283,7 @@ class NativeOpenIMSDK {
         sessionEpoch = epoch
         let listener = OpenIMConnListener()
         listener.emit = { eventName, errCode, errMsg in
-            OpenIMDriverRuntime.shared.emitEvent(epoch) {
+            OpenIMDriverRuntime.shared.emitEvent(epoch, true) {
                 NativeOpenIMSDK.nativeEventEmit?(eventName, "", errCode, errMsg)
             }
         }
@@ -312,13 +312,16 @@ class NativeOpenIMSDK {
     }
 
     static func unInitSDK(_ operationID: String) -> String {
-        OpenIMDriverRuntime.shared.shutdown()
+        let stoppingEpoch = OpenIMDriverRuntime.shared.shutdown()
         sdkInitialized = false
         connListener?.emit = nil
         unbindNativeEventListeners()
+        defer {
+            connListener = nil
+            sessionEpoch = -1
+            OpenIMDriverRuntime.shared.finishShutdown(stoppingEpoch)
+        }
         Open_im_sdkUnInitSDK(operationID)
-        connListener = nil
-        sessionEpoch = -1
         return ""
     }
 

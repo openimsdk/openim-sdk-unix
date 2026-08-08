@@ -249,7 +249,7 @@ object NativeOpenIMSDK {
     sessionEpoch = epoch
     val listener = OpenIMConnListener()
     listener.emit = { eventName, errCode, errMsg ->
-      OpenIMDriverRuntime.emitEvent(epoch) {
+      OpenIMDriverRuntime.emitEvent(epoch, allowWhileStarting = true) {
         nativeEventEmit?.invoke(eventName, "", errCode, errMsg)
       }
     }
@@ -278,13 +278,17 @@ object NativeOpenIMSDK {
   }
 
   fun unInitSDK(operationID: String): String {
-    OpenIMDriverRuntime.shutdown()
+    val stoppingEpoch = OpenIMDriverRuntime.shutdown()
     sdkInitialized = false
     connListener?.emit = null
     unbindNativeEventListeners()
-    Open_im_sdk.unInitSDK(operationID)
-    connListener = null
-    sessionEpoch = -1
+    try {
+      Open_im_sdk.unInitSDK(operationID)
+    } finally {
+      connListener = null
+      sessionEpoch = -1
+      OpenIMDriverRuntime.finishShutdown(stoppingEpoch)
+    }
     return ""
   }
 

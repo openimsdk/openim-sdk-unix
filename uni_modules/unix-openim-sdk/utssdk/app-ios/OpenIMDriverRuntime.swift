@@ -22,6 +22,13 @@ final class OpenIMDriverTicket {
     }
 }
 
+enum OpenIMDriverState {
+    case idle
+    case starting
+    case active
+    case stopping
+}
+
 private final class OpenIMPendingCallback {
     let ticket: OpenIMDriverTicket
     let resolve: OpenIMResolveString
@@ -44,15 +51,15 @@ final class OpenIMDriverRuntime {
     private let serial = DispatchQueue(label: "org.openim.uts.driver")
     private var epoch: Int64 = 0
     private var nextTaskID: Int64 = 1
-    private var initialized = false
+    private var state: OpenIMDriverState = .idle
     private var pending: [Int64: OpenIMPendingCallback] = [:]
 
     private init() {}
 
-    private func invalidateEpoch() -> (Int64, [OpenIMPendingCallback]) {
+    private func invalidateEpoch(_ nextState: OpenIMDriverState) -> (Int64, [OpenIMPendingCallback]) {
         return serial.sync {
             epoch += 1
-            initialized = false
+            state = nextState
             let cancelled = Array(pending.values)
             pending.removeAll()
             return (epoch, cancelled)
@@ -69,22 +76,32 @@ final class OpenIMDriverRuntime {
     }
 
     func startSession() -> Int64 {
-        let transition = invalidateEpoch()
+        let transition = invalidateEpoch(.starting)
         rejectCancelled(transition.1)
         return transition.0
     }
 
     func markInitialized(_ sessionEpoch: Int64, _ value: Bool) {
         serial.sync {
-            if epoch == sessionEpoch { initialized = value }
+            if epoch == sessionEpoch && state == .starting {
+                state = value ? .active : .idle
+            }
         }
     }
 
     @discardableResult
     func shutdown() -> Int64 {
-        let transition = invalidateEpoch()
+        let transition = invalidateEpoch(.stopping)
         rejectCancelled(transition.1)
         return transition.0
+    }
+
+    func finishShutdown(_ stoppingEpoch: Int64) {
+        serial.sync {
+            if epoch == stoppingEpoch && state == .stopping {
+                state = .idle
+            }
+        }
     }
 
     func register(resolve: @escaping OpenIMResolveString, reject: @escaping OpenIMReject) -> OpenIMDriverTicket {
@@ -136,17 +153,21 @@ final class OpenIMDriverRuntime {
                   self.epoch == ticket.epoch,
                   !callback.terminalScheduled else { return }
             dispatchOpenIMMain {
-                let active = self.serial.sync { self.epoch == ticket.epoch }
+                let active = self.serial.sync { self.epoch == ticket.epoch && self.state == .active }
                 if active { delivery() }
             }
         }
     }
 
-    func emitEvent(_ sessionEpoch: Int64, _ delivery: @escaping () -> Void) {
+    private func canEmitEvent(_ sessionEpoch: Int64, _ allowWhileStarting: Bool) -> Bool {
+        return epoch == sessionEpoch && (state == .active || (allowWhileStarting && state == .starting))
+    }
+
+    func emitEvent(_ sessionEpoch: Int64, _ allowWhileStarting: Bool = false, _ delivery: @escaping () -> Void) {
         serial.async {
-            guard self.epoch == sessionEpoch, self.initialized else { return }
+            guard self.canEmitEvent(sessionEpoch, allowWhileStarting) else { return }
             dispatchOpenIMMain {
-                let active = self.serial.sync { self.epoch == sessionEpoch && self.initialized }
+                let active = self.serial.sync { self.canEmitEvent(sessionEpoch, allowWhileStarting) }
                 if active { delivery() }
             }
         }
@@ -154,4 +175,5 @@ final class OpenIMDriverRuntime {
 
     func pendingCountForTests() -> Int { return serial.sync { pending.count } }
     func epochForTests() -> Int64 { return serial.sync { epoch } }
+    func stateForTests() -> OpenIMDriverState { return serial.sync { state } }
 }

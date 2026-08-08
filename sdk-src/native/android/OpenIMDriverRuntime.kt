@@ -24,6 +24,13 @@ internal data class OpenIMDriverTicket(
   val epoch: Long
 )
 
+internal enum class OpenIMDriverState {
+  IDLE,
+  STARTING,
+  ACTIVE,
+  STOPPING
+}
+
 private class OpenIMPendingCallback(
   val ticket: OpenIMDriverTicket,
   val resolve: OpenIMResolveString,
@@ -44,17 +51,17 @@ internal object OpenIMDriverRuntime {
   }
   private var epoch: Long = 0
   private var nextTaskID: Long = 1
-  private var initialized: Boolean = false
+  private var state: OpenIMDriverState = OpenIMDriverState.IDLE
   private val pending = LinkedHashMap<Long, OpenIMPendingCallback>()
 
   private fun <T> readSerial(block: () -> T): T {
     return serial.submit(Callable<T> { block() }).get()
   }
 
-  private fun invalidateEpoch(): Pair<Long, List<OpenIMPendingCallback>> {
+  private fun invalidateEpoch(nextState: OpenIMDriverState): Pair<Long, List<OpenIMPendingCallback>> {
     return readSerial {
       epoch += 1
-      initialized = false
+      state = nextState
       val cancelled = pending.values.toList()
       pending.clear()
       Pair(epoch, cancelled)
@@ -71,21 +78,31 @@ internal object OpenIMDriverRuntime {
   }
 
   fun startSession(): Long {
-    val transition = invalidateEpoch()
+    val transition = invalidateEpoch(OpenIMDriverState.STARTING)
     rejectCancelled(transition.second)
     return transition.first
   }
 
   fun markInitialized(sessionEpoch: Long, value: Boolean) {
     readSerial {
-      if (epoch == sessionEpoch) initialized = value
+      if (epoch == sessionEpoch && state == OpenIMDriverState.STARTING) {
+        state = if (value) OpenIMDriverState.ACTIVE else OpenIMDriverState.IDLE
+      }
     }
   }
 
   fun shutdown(): Long {
-    val transition = invalidateEpoch()
+    val transition = invalidateEpoch(OpenIMDriverState.STOPPING)
     rejectCancelled(transition.second)
     return transition.first
+  }
+
+  fun finishShutdown(stoppingEpoch: Long) {
+    readSerial {
+      if (epoch == stoppingEpoch && state == OpenIMDriverState.STOPPING) {
+        state = OpenIMDriverState.IDLE
+      }
+    }
   }
 
   fun register(resolve: OpenIMResolveString, reject: OpenIMReject): OpenIMDriverTicket {
@@ -137,17 +154,24 @@ internal object OpenIMDriverRuntime {
         return@execute
       }
       dispatchOpenIMMain {
-        val active = readSerial { epoch == ticket.epoch }
+        val active = readSerial { epoch == ticket.epoch && state == OpenIMDriverState.ACTIVE }
         if (active) delivery()
       }
     }
   }
 
-  fun emitEvent(sessionEpoch: Long, delivery: () -> Unit) {
+  private fun canEmitEvent(sessionEpoch: Long, allowWhileStarting: Boolean): Boolean {
+    return epoch == sessionEpoch && (
+      state == OpenIMDriverState.ACTIVE ||
+        (allowWhileStarting && state == OpenIMDriverState.STARTING)
+      )
+  }
+
+  fun emitEvent(sessionEpoch: Long, allowWhileStarting: Boolean = false, delivery: () -> Unit) {
     serial.execute {
-      if (epoch != sessionEpoch || !initialized) return@execute
+      if (!canEmitEvent(sessionEpoch, allowWhileStarting)) return@execute
       dispatchOpenIMMain {
-        val active = readSerial { epoch == sessionEpoch && initialized }
+        val active = readSerial { canEmitEvent(sessionEpoch, allowWhileStarting) }
         if (active) delivery()
       }
     }
@@ -155,4 +179,5 @@ internal object OpenIMDriverRuntime {
 
   internal fun pendingCountForTests(): Int = readSerial { pending.size }
   internal fun epochForTests(): Long = readSerial { epoch }
+  internal fun stateForTests(): OpenIMDriverState = readSerial { state }
 }
