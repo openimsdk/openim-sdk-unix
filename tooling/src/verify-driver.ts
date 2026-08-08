@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { GENERATED_SOURCE_HEADER } from './generate.js'
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -24,6 +25,11 @@ function assertOrdered(source: string, fragments: string[], label: string): void
     assert(index >= 0, `${label} is missing or out of order: ${fragment}`)
     offset = index + fragment.length
   }
+}
+
+export function generatedDriverRuntime(source: string): string {
+  const normalized = source.trimEnd()
+  return `${normalized.startsWith(GENERATED_SOURCE_HEADER) ? normalized : `${GENERATED_SOURCE_HEADER}\n${normalized}`}\n`
 }
 
 export function verifyDriverInvariants(root: string): void {
@@ -143,8 +149,12 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-ios/NativeOpenIMSDK.swift'),
     'utf8',
   )
-  const sharedAndroid = readFileSync(join(publicRoot, 'sdk-src/native/android/OpenIMDriverRuntime.kt'), 'utf8')
-  const sharedIOS = readFileSync(join(publicRoot, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8')
+  const sharedAndroid = generatedDriverRuntime(
+    readFileSync(join(publicRoot, 'sdk-src/native/android/OpenIMDriverRuntime.kt'), 'utf8'),
+  )
+  const sharedIOS = generatedDriverRuntime(
+    readFileSync(join(publicRoot, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8'),
+  )
   const enterpriseAndroid = readFileSync(
     join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMDriverRuntime.kt'),
     'utf8',
