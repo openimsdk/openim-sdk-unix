@@ -108,12 +108,20 @@ export interface ContractCallable {
   signatureHash: string
 }
 
+export type EventDecoder =
+  | { kind: 'void' }
+  | { kind: 'native-error' }
+  | { kind: 'boolean' }
+  | { kind: 'number' }
+  | { kind: 'raw-string' }
+  | { kind: 'parser'; symbol: string }
+
 export interface ContractEvent {
   id: number
   name: string
   callable: string
   handlerType: string
-  dispatchArguments: SourceByPlatform
+  decoder: EventDecoder
   rawPayload: boolean
   binding: Record<Platform, 'bound' | 'projected' | 'unsupported-by-native-abi' | 'not-in-edition'>
   compatibilityRule?: string

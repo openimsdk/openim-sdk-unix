@@ -30,7 +30,7 @@ test('semantic verification rejects a changed declaration with a stale stored ha
   )
 })
 
-test('semantic verification covers callable lowering and event projections during the IR v2 lowering migration', () => {
+test('semantic verification covers callable lowering and event decoders in IR v2', () => {
   const normalized = withComputedSemanticHashes(contract)
   const changedCallable = structuredClone(normalized)
   const login = changedCallable.callables.find((value) => value.name === 'login')
@@ -42,7 +42,7 @@ test('semantic verification covers callable lowering and event projections durin
   const changedEvent = structuredClone(normalized)
   const event = changedEvent.events[0]
   assert.ok(event)
-  event.dispatchArguments.android = `${event.dispatchArguments.android}, payload`
+  event.decoder = { kind: 'raw-string' }
   assert.throws(() => assertContractSemanticHashes(changedEvent), /Semantic hash mismatch for event/)
 })
 

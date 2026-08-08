@@ -82,11 +82,7 @@ export function semanticHashForEvent(value: ContractEvent): string {
     callable: value.callable,
     handlerType: normalizeContractText(value.handlerType),
     rawPayload: value.rawPayload,
-    dispatchArguments: {
-      android: normalizeContractText(value.dispatchArguments.android),
-      ios: normalizeContractText(value.dispatchArguments.ios),
-      harmony: value.dispatchArguments.harmony == null ? null : normalizeContractText(value.dispatchArguments.harmony),
-    },
+    decoder: value.decoder,
     binding: stableEventBinding(value.binding),
     compatibilityRule: value.compatibilityRule ?? null,
   }))

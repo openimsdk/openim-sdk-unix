@@ -34,12 +34,12 @@ function eventContract(): ContractDocument {
     events: [
       {
         id: 3001, name: 'onConnecting', callable: 'onConnecting', handlerType: 'Handler',
-        dispatchArguments: { android: '', ios: '', harmony: '' }, rawPayload: false,
+        decoder: { kind: 'void' }, rawPayload: false,
         binding: { android: 'bound', ios: 'bound', harmony: 'bound' }, signatureHash: '',
       },
       {
         id: 3002, name: 'onMsgDeleted', callable: 'onMsgDeleted', handlerType: 'Handler',
-        dispatchArguments: { android: '', ios: '', harmony: '' }, rawPayload: false,
+        decoder: { kind: 'void' }, rawPayload: false,
         binding: { android: 'bound', ios: 'bound', harmony: 'bound' }, signatureHash: '',
       },
     ],

@@ -8,6 +8,7 @@ import type {
   ContractDocument,
   ContractEvent,
   ContractType,
+  EventDecoder,
   NativeBinding,
   SourceByPlatform,
 } from './model.js'
@@ -96,6 +97,18 @@ export function dispatchArguments(eventFunctionText: string, generatedEventsSour
     .replaceAll('event.errCode', 'errCode')
     .replaceAll('event.errMsg', 'errMsg')
     .trim()
+}
+
+export function eventDecoderForDispatchArguments(value: string): EventDecoder {
+  const normalized = normalizeContractText(value)
+  if (normalized === '') return { kind: 'void' }
+  if (normalized === 'errCode,errMsg') return { kind: 'native-error' }
+  if (normalized === "payload=='true'") return { kind: 'boolean' }
+  if (normalized === 'parseFloat(payload)') return { kind: 'number' }
+  if (normalized === 'payload') return { kind: 'raw-string' }
+  const parser = /^([A-Za-z_$][\w$]*)\(payload\)$/.exec(normalized)
+  if (parser?.[1] != null) return { kind: 'parser', symbol: parser[1] }
+  throw new Error(`Unsupported event decoder expression: ${value}`)
 }
 
 function makeEventPrelude(parsed: ParsedSource): string {
@@ -227,15 +240,17 @@ export function importPublicContract(root: string): ContractDocument {
     if (normalizeContractText(androidHandler) !== normalizeContractText(iosHandler)) {
       throw new Error(`Event handler ${name} differs by platform`)
     }
+    const androidDispatch = dispatchArguments(androidFunction.getText(androidEvents.sourceFile), androidEvents.text, name)
+    const iosDispatch = dispatchArguments(iosFunction.getText(iosEvents.sourceFile), iosEvents.text, name)
+    if (normalizeContractText(androidDispatch) !== normalizeContractText(iosDispatch)) {
+      throw new Error(`Event decoder ${name} differs by platform`)
+    }
     const event: ContractEvent = {
       id: eventIDs.entries[index]!.id,
       name,
       callable: name,
       handlerType: normalizeContractText(androidHandler),
-      dispatchArguments: {
-        android: dispatchArguments(androidFunction.getText(androidEvents.sourceFile), androidEvents.text, name),
-        ios: dispatchArguments(iosFunction.getText(iosEvents.sourceFile), iosEvents.text, name),
-      },
+      decoder: eventDecoderForDispatchArguments(androidDispatch),
       rawPayload: androidHandler === 'OpenIMStringEventHandler',
       binding: {
         android: 'bound',

@@ -17,6 +17,7 @@ import {
   completionMode,
   declarationParts,
   dispatchArguments,
+  eventDecoderForDispatchArguments,
   pairValues,
 } from './import-contract.js'
 import {
@@ -365,16 +366,15 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       assert(androidHandler === iosHandler && androidHandler === harmonyHandler, `Enterprise event handler differs by platform: ${name}`)
       const isUnsupported = unsupported.has(name)
       assert(isUnsupported === harmonyFunction.declaration.includes('unsupportedHarmonyEvent('), `Harmony unsupported classification drifted: ${name}`)
+      const androidDispatch = dispatchArguments(androidFunction.getText(androidEvents.sourceFile), androidEvents.text, name)
+      const iosDispatch = dispatchArguments(iosFunction.getText(iosEvents.sourceFile), iosEvents.text, name)
+      assert(normalizeContractText(androidDispatch) === normalizeContractText(iosDispatch), `Enterprise event decoder differs by platform: ${name}`)
       const event: ContractEvent = {
         id: 0,
         name,
         callable: name,
         handlerType: androidHandler,
-        dispatchArguments: {
-          android: dispatchArguments(androidFunction.getText(androidEvents.sourceFile), androidEvents.text, name),
-          ios: dispatchArguments(iosFunction.getText(iosEvents.sourceFile), iosEvents.text, name),
-          harmony: '',
-        },
+        decoder: eventDecoderForDispatchArguments(androidDispatch),
         rawPayload: androidHandler === 'OpenIMStringEventHandler',
         binding: {
           android: 'bound',

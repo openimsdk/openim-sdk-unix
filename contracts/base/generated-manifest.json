@@ -5,8 +5,8 @@
   "inputs": [
     {
       "path": "contracts/base/contract.json",
-      "sha256": "a1084e0bc4b4d1f77fc5463da575c69aa522b00d926f286819563688f1910d37",
-      "bytes": 307170
+      "sha256": "49f6339f9fa4c7fb702399ffef4f056bfffc3841ade7d4d00624a274030b4afc",
+      "bytes": 304843
     },
     {
       "path": "sdk-src/uts/app-android/index.template.uts",
@@ -40,18 +40,18 @@
     },
     {
       "path": "tooling/src/contract-integrity.ts",
-      "sha256": "3b42be0ed1253be4eb843c904c84379f2c8ac72d3bfcca52f02abc01afbb591b",
-      "bytes": 9337
+      "sha256": "e9f1e72796b5e2daf13e0aad291fd93df7301a104f784a41e589699ede50fbef",
+      "bytes": 9079
     },
     {
       "path": "tooling/src/generate.ts",
-      "sha256": "5cef6b2e7ee817db207eb5cd6d5dc043ba4318a848415df3080cb141929e0fc7",
-      "bytes": 25415
+      "sha256": "7269106c2370228cd80723144f7bf92dc42c18201699bf93755cfdb1bcf4afdb",
+      "bytes": 25899
     },
     {
       "path": "tooling/src/model.ts",
-      "sha256": "8c7ffb364a71a8e52aea26ea3e63a8c242468804bf191b017d6365c79a35983a",
-      "bytes": 4989
+      "sha256": "a3455ce7846e1133014e61ea2180901ca48f64fbb9584b88535034cb71ec9b5e",
+      "bytes": 5166
     },
     {
       "path": "tooling/src/platform-driver.ts",
@@ -132,7 +132,7 @@
     },
     {
       "path": "contracts/base/surface.snapshot.json",
-      "sha256": "3d13c37384768f299ced00851a6a011732de2c96c285706671add08396e4a197",
+      "sha256": "71afc17bfc4eefd984ebc8481e02a28d4829983cd598a4bc6d184649109be21b",
       "bytes": 106843
     },
     {

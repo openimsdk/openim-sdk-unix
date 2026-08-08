@@ -321,10 +321,21 @@ function generateOffSubscriptionCase(event: ContractEvent): string {
 `
 }
 
+function eventDispatchArguments(event: ContractEvent): string {
+  if (event.decoder.kind === 'void') return ''
+  if (event.decoder.kind === 'native-error') return 'errCode, errMsg'
+  if (event.decoder.kind === 'boolean') return "payload == 'true'"
+  if (event.decoder.kind === 'number') return 'parseFloat(payload)'
+  if (event.decoder.kind === 'raw-string') return 'payload'
+  if (/^[A-Za-z_$][\w$]*$/.test(event.decoder.symbol) === false) {
+    throw new Error(`Invalid event parser symbol for ${event.name}: ${event.decoder.symbol}`)
+  }
+  return `${event.decoder.symbol}(payload)`
+}
+
 function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios'): string {
   const handlers = handlerVariable(event)
-  const args = event.dispatchArguments[platform]
-  if (args === undefined) throw new Error(`Missing ${platform} event projection for ${event.name}`)
+  const args = eventDispatchArguments(event)
   const snapshot = `${event.name}DispatchSnapshot`
   const copyIndex = `${event.name}CopyIndex`
   const dispatchIndex = `${event.name}DispatchIndex`

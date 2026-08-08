@@ -534,6 +534,30 @@ test('event subscriptions are generated from structured event lowering', () => {
   }
 })
 
+test('event payload decoding is platform-neutral contract data', () => {
+  assert.equal(contract.events.some((event) => 'dispatchArguments' in event), false)
+  assert.deepEqual(
+    [...new Set(contract.events.map((event) => event.decoder.kind))].sort(),
+    ['boolean', 'native-error', 'number', 'parser', 'raw-string', 'void'],
+  )
+  for (const event of contract.events) {
+    if (event.decoder.kind === 'parser') assert.match(event.decoder.symbol, /^[A-Za-z_$][\w$]*$/)
+  }
+
+  for (const platform of ['android', 'ios'] as const) {
+    const source = readFileSync(
+      resolve(root, `uni_modules/unix-openim-sdk/utssdk/app-${platform}/events.uts`),
+      'utf8',
+    )
+    assert.match(source, /onConnectingDispatchHandler\(\)/)
+    assert.match(source, /onConnectFailedDispatchHandler\(errCode, errMsg\)/)
+    assert.match(source, /onSyncServerFinishDispatchHandler\(payload == 'true'\)/)
+    assert.match(source, /onSyncServerProgressDispatchHandler\(parseFloat\(payload\)\)/)
+    assert.match(source, /onRecvCustomBusinessMessageDispatchHandler\(payload\)/)
+    assert.match(source, /onRecvNewMessageDispatchHandler\(parseNativeMessage\(payload\)\)/)
+  }
+})
+
 test('Android wire validators use Java wrapper classes instead of unsupported typeof any', () => {
   const source = readFileSync(
     resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts'),

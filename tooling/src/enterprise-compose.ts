@@ -216,7 +216,6 @@ export function composeEnterpriseContract(
     assert(projection != null, `Missing Harmony event projection: ${value.name}`)
     return {
       ...value,
-      dispatchArguments: { ...value.dispatchArguments, harmony: projection.dispatchArguments },
       binding: { ...value.binding, harmony: projection.binding },
       signatureHash: '',
     }
@@ -380,7 +379,7 @@ export function extractEnterpriseComposerAuthority(
     }),
     events: [...base.events, ...delta.events].map((value) => ({
       name: value.name,
-      dispatchArguments: value.dispatchArguments.harmony ?? '',
+      dispatchArguments: '',
       binding: value.binding.harmony === 'unsupported-by-native-abi' ? 'unsupported-by-native-abi' : 'bound',
     })),
   }
