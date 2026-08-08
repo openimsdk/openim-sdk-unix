@@ -203,6 +203,26 @@ ${removals}
 ${registrations}`)
 }
 
+function callableInterfaceDeclaration(callable: ContractCallable): string {
+  const prefix = `${callable.name}(`
+  if (!callable.signature.startsWith(prefix)) throw new Error(`Invalid callable signature: ${callable.signature}`)
+  const separator = callable.signature.lastIndexOf('):')
+  if (separator < prefix.length) throw new Error(`Invalid callable return signature: ${callable.signature}`)
+  const parameters = callable.signature.slice(prefix.length, separator)
+  const returnType = callable.signature.slice(separator + 2)
+  if (callable.role !== 'operation') {
+    return `export declare function ${callable.name}(${parameters}) : ${returnType}`
+  }
+  return `export declare const ${callable.name} : (${parameters}) => ${returnType}`
+}
+
+export function generateInterface(contract: ContractDocument): string {
+  const types = contract.types.map((value) => value.declaration)
+  const constants = contract.constants.map((value) => `export declare const ${value.name} : ${value.type}`)
+  const callables = contract.callables.map(callableInterfaceDeclaration)
+  return generatedSource([...types, ...constants, ...callables].join('\n\n'))
+}
+
 export function buildSurfaceSnapshot(contract: ContractDocument): SurfaceSnapshot {
   contract = withComputedSemanticHashes(contract)
   const constants = contract.constants.map(({ id, name, type, value, signatureHash }) => ({ id, name, type, value, signatureHash }))
@@ -227,7 +247,7 @@ export function buildSurfaceSnapshot(contract: ContractDocument): SurfaceSnapsho
 
 export function buildGeneratedOutputs(root: string): GeneratedOutput[] {
   const contract = readContract(root)
-  const interfaceSource = generatedSource(contract.types.map((value) => value.declaration).join('\n\n'))
+  const interfaceSource = generateInterface(contract)
   const snapshot = `${JSON.stringify(buildSurfaceSnapshot(contract), null, 2)}\n`
   const responseSchemas = `${JSON.stringify(buildPublicResponseSchemas(contract), null, 2)}\n`
   const testDisposition = `${JSON.stringify(buildPublicTestDisposition(contract), null, 2)}\n`

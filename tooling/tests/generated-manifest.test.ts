@@ -44,3 +44,11 @@ test('deleting every generated output and regenerating twice reproduces reposito
   assert.equal(result.repositoryIdentical, true)
   assert.equal(result.deterministic, true)
 })
+
+test('generated interface declares every public constant and callable', () => {
+  const source = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), 'utf8')
+  assert.match(source, /export declare const OpenIMMessageStatusNotExist : OpenIMMessageStatus/)
+  assert.match(source, /export declare function off\(subscription:OpenIMSDKEventSubscription\) : void/)
+  assert.match(source, /export declare function offAll\(eventName:OpenIMSDKEventName\) : void/)
+  assert.match(source, /export declare const login : \(userID:string,token:string,operationID\?:string\|null\) => Promise<string>/)
+})

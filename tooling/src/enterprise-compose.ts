@@ -17,6 +17,7 @@ import { extractExportedTypes, extractExportedValues, parseSource } from './sour
 import { INDEX_MARKERS, makeIndexTemplate } from './import-contract.js'
 import {
   generateEvents,
+  generateInterface,
   generatedSource,
   generateIndexFromTemplate,
   buildSurfaceSnapshot,
@@ -430,7 +431,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
   return normalizeOutputs([
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'),
-      content: generatedSource(contract.types.map((value) => value.declaration).join('\n\n')),
+      content: generateInterface(contract),
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/index.uts'),

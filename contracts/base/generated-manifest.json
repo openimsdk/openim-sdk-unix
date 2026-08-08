@@ -5,8 +5,8 @@
   "outputs": [
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/interface.uts",
-      "sha256": "08cdd423df179aeb5dbc0d8f9b0940422d5744f0e7731b222b9f261785714194",
-      "bytes": 25188
+      "sha256": "3e4e0ccf3b7a4ba76240377459a3a0b01a063b70dc9f7ea7e6a488d4a800a703",
+      "bytes": 52397
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/index.uts",
