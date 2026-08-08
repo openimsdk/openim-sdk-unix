@@ -5655,9 +5655,12 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createTextMessage = function (text : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createTextMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createTextMessage(op, text))) }) }",
-        "ios": "export const createTextMessage = function (text : string, operationID ?: string | null) : Promise<OpenIMMessageItem | null> { return new Promise<OpenIMMessageItem | null>((resolve, reject) => { const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('createTextMessage', op, reject) == false) { return }; resolve(parseNativeMessage(NativeOpenIMSDK.createTextMessage(op, text))) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "text-message",
+        "precondition": "logged-in-create"
       },
       "binding": {
         "android": {
@@ -5669,7 +5672,7 @@
           "symbol": "createTextMessage"
         }
       },
-      "signatureHash": "a255a98b02e199d1de71ff1d94da368fb0a263fcf78a4f3e977707c7dbc421ce"
+      "signatureHash": "eb4a88dac3094256a0b82ad9539649fdf2f4b050570993c91a7c9debe9725292"
     },
     {
       "id": 2140,
@@ -6130,9 +6133,11 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const sendMessage = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessage(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessage', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const sendMessage = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessage(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessage', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "send-options",
+        "request": "send-message-options"
       },
       "binding": {
         "android": {
@@ -6144,7 +6149,7 @@
           "symbol": "sendMessage"
         }
       },
-      "signatureHash": "b6ae374d083f17ccf9ee64682d573cb65a869a225b31b35810d375213ca65451"
+      "signatureHash": "9d3f81f06ac2501a50e69685f4818f2871f8e21ee2a1b23eae1411d7607f709f"
     },
     {
       "id": 2159,
@@ -6155,9 +6160,11 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const sendMessageNotOss = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessageNotOss(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessageNotOss', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const sendMessageNotOss = function (options : OpenIMSendMessageOptions) : Promise<OpenIMMessageItem> { return new Promise<OpenIMMessageItem>((resolve, reject) => { NativeOpenIMSDK.sendMessageNotOss(readOperationID(options), stringifyOpenIMMessage(options.message), options.recvID, options.groupID, readOfflinePushInfo(options), readIsOnlineOnly(options), (data : string) => { resolveSendMessageData(data, 'sendMessageNotOss', resolve, reject) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "send-options",
+        "request": "send-message-options"
       },
       "binding": {
         "android": {
@@ -6169,7 +6176,7 @@
           "symbol": "sendMessageNotOss"
         }
       },
-      "signatureHash": "92c1907ba58ed688514c2d47d1130cfeacf6ddd6764cfd7bad1d143d82bad464"
+      "signatureHash": "9fea215fb33d60ba5eb76227f26e93c78a8be8feec45ddbd58fa82322e86dbb7"
     },
     {
       "id": 2160,

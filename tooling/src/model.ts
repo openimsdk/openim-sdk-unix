@@ -37,8 +37,9 @@ export type CallableLowering =
   | {
     kind: 'platform-driver'
     transport: 'async' | 'sync'
-    operationID: 'parameter' | 'empty'
-    request: 'init-config' | 'login-credentials' | 'empty-object'
+    operationID: 'parameter' | 'send-options' | 'empty'
+    request: 'init-config' | 'login-credentials' | 'text-message' | 'send-message-options' | 'empty-object'
+    precondition?: 'logged-in-create'
     bindEvents?: boolean
   }
 

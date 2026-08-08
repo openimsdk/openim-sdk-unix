@@ -77,14 +77,27 @@ function renderLoweredCallable(callable: ContractCallable): string {
     return `export function ${callable.name}(${parameters}) { ${call} }`
   }
 
-  const operationID = lowering.operationID === 'parameter' ? 'normalizeOperationID(operationID)' : "''"
+  const prelude: string[] = []
+  let operationID: string
+  if (lowering.operationID === 'send-options') operationID = 'readOperationID(options)'
+  else if (lowering.operationID === 'parameter' && lowering.precondition === 'logged-in-create') {
+    operationID = 'op'
+    prelude.push(`const op = normalizeOperationID(operationID); if (requireLoggedInForCreate('${callable.name}', op, reject) == false) { return };`)
+  } else if (lowering.operationID === 'parameter') operationID = 'normalizeOperationID(operationID)'
+  else operationID = "''"
   let requestExpression: string
-  let requestPrelude = ''
   if (lowering.request === 'init-config') requestExpression = 'normalizeInitConfig(config)'
   else if (lowering.request === 'login-credentials') {
     requestExpression = 'requestJSON'
-    requestPrelude = `const requestJSON = '{"userID":' + stringifyJSON(userID) + ',"token":' + stringifyJSON(token) + '}'; `
+    prelude.push(`const requestJSON = '{"userID":' + stringifyJSON(userID) + ',"token":' + stringifyJSON(token) + '}';`)
+  } else if (lowering.request === 'text-message') {
+    requestExpression = 'requestJSON'
+    prelude.push(`const requestJSON = '{"text":' + stringifyJSON(text) + '}';`)
+  } else if (lowering.request === 'send-message-options') {
+    requestExpression = 'requestJSON'
+    prelude.push(`const requestJSON = '{"message":' + stringifyJSON(stringifyOpenIMMessage(options.message)) + ',"recvID":' + stringifyJSON(options.recvID) + ',"groupID":' + stringifyJSON(options.groupID) + ',"offlinePushInfo":' + stringifyJSON(readOfflinePushInfo(options)) + ',"isOnlineOnly":' + (readIsOnlineOnly(options) ? 'true' : 'false') + '}';`)
   } else requestExpression = "'{}'"
+  const requestPrelude = prelude.length === 0 ? '' : `${prelude.join(' ')} `
 
   if (lowering.transport === 'sync') {
     if (callable.completion !== 'sync') throw new Error(`Sync lowering has non-sync completion: ${callable.name}`)
@@ -100,6 +113,8 @@ function renderLoweredCallable(callable: ContractCallable): string {
   if (callable.responseCodec === 'raw-string') resolveExpression = 'resolve'
   else if (callable.responseCodec === 'boolean') resolveExpression = `(data : string) => { resolve(data == 'true') }`
   else if (callable.responseCodec === 'typed:OpenIMLoginStatus') resolveExpression = '(data : string) => { resolve(parseNativeLoginStatus(data)) }'
+  else if (callable.responseCodec === 'typed:OpenIMMessageItem|null') resolveExpression = '(data : string) => { resolve(parseNativeMessage(data)) }'
+  else if (callable.responseCodec === 'typed:OpenIMMessageItem') resolveExpression = `(data : string) => { resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
   else throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
   return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
 }

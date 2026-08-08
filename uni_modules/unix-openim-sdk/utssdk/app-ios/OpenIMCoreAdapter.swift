@@ -9,14 +9,46 @@ class OpenIMCoreAdapter {
         reject(localErrorCode, error.localizedDescription)
     }
 
-    private static func loginRequest(_ requestJSON: String) throws -> (String, String) {
+    private static func requestObject(_ requestJSON: String) throws -> [String: Any] {
         let data = Data(requestJSON.utf8)
-        guard let request = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let userID = request["userID"] as? String,
-              let token = request["token"] as? String else {
-            throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid login request JSON"])
+        guard let request = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid request JSON object"])
         }
-        return (userID, token)
+        return request
+    }
+
+    private static func requiredString(_ request: [String: Any], _ name: String) throws -> String {
+        guard let value = request[name] as? String else {
+            throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing request string: \(name)"])
+        }
+        return value
+    }
+
+    private static func loginRequest(_ requestJSON: String) throws -> (String, String) {
+        let request = try requestObject(requestJSON)
+        return (try requiredString(request, "userID"), try requiredString(request, "token"))
+    }
+
+    private static func sendMessage(
+        _ requestJSON: String,
+        _ operationID: String,
+        _ withoutOss: Bool,
+        _ resolve: @escaping OpenIMResolveString,
+        _ reject: @escaping OpenIMReject
+    ) throws {
+        let request = try requestObject(requestJSON)
+        let message = try requiredString(request, "message")
+        let recvID = try requiredString(request, "recvID")
+        let groupID = try requiredString(request, "groupID")
+        let offlinePushInfo = try requiredString(request, "offlinePushInfo")
+        guard let isOnlineOnly = request["isOnlineOnly"] as? Bool else {
+            throw NSError(domain: "OpenIMPlatformDriver", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing request boolean: isOnlineOnly"])
+        }
+        if withoutOss {
+            NativeOpenIMSDK.sendMessageNotOss(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
+        } else {
+            NativeOpenIMSDK.sendMessage(operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly, resolve, reject)
+        }
     }
 
     static func callAsync(
@@ -41,6 +73,13 @@ class OpenIMCoreAdapter {
                 resolve(NativeOpenIMSDK.getLoginUserID())
             case 2058:
                 resolve(NativeOpenIMSDK.unInitSDK(operationID))
+            case 2139:
+                let request = try requestObject(requestJSON)
+                resolve(NativeOpenIMSDK.createTextMessage(operationID, try requiredString(request, "text")))
+            case 2158:
+                try sendMessage(requestJSON, operationID, false, resolve, reject)
+            case 2159:
+                try sendMessage(requestJSON, operationID, true, resolve, reject)
             default:
                 reject(localErrorCode, "Unsupported OpenIM callable ID: \(callableID)")
             }

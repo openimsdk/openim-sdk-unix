@@ -26,6 +26,9 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
       { id: 2055, name: 'getLoginUserID' },
       { id: 2056, name: 'getSdkVersion' },
       { id: 2058, name: 'unInitSDK' },
+      { id: 2139, name: 'createTextMessage' },
+      { id: 2158, name: 'sendMessage' },
+      { id: 2159, name: 'sendMessageNotOss' },
     ],
   )
   assert.deepEqual(PLATFORM_DRIVER_SLICE_NAMES, [
@@ -36,6 +39,9 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
     'getLoginUserID',
     'getSdkVersion',
     'unInitSDK',
+    'createTextMessage',
+    'sendMessage',
+    'sendMessageNotOss',
   ])
 })
 
@@ -53,9 +59,12 @@ test('UTS PlatformDriver exposes exactly the three free-function entries', () =>
 test('native CoreAdapters dispatch the first slice by canonical callable ID', () => {
   for (const platform of ['android', 'ios'] as const) {
     const source = renderNativeCoreAdapter(contract, platform)
-    for (const id of [2051, 2052, 2053, 2054, 2055, 2056, 2058]) assert.match(source, new RegExp(`(?:case |${platform === 'android' ? '' : 'case '})${id}`))
+    for (const id of [2051, 2052, 2053, 2054, 2055, 2056, 2058, 2139, 2158, 2159]) assert.match(source, new RegExp(`(?:case |${platform === 'android' ? '' : 'case '})${id}`))
     assert.doesNotMatch(source, /400\d{3}/)
     assert.match(source, /Unsupported OpenIM callable ID/)
+    assert.match(source, /NativeOpenIMSDK\.createTextMessage/)
+    assert.match(source, /NativeOpenIMSDK\.sendMessage\(/)
+    assert.match(source, /NativeOpenIMSDK\.sendMessageNotOss\(/)
     if (platform === 'ios') assert.match(source, /\\\(callableID\)/)
   }
 })
@@ -84,6 +93,11 @@ test('first compiler slice is rendered from lowering data for both Public platfo
     assert.match(source, /driverCallAsync\(2051, normalizeOperationID\(operationID\), normalizeInitConfig\(config\)/)
     assert.match(source, /driverCallAsync\(2052, normalizeOperationID\(operationID\), requestJSON/)
     assert.match(source, /driverCallSync\(2056, '', '\{\}'\)/)
+    assert.match(source, /driverCallAsync\(2139, op, requestJSON/)
+    assert.match(source, /driverCallAsync\(2158, readOperationID\(options\), requestJSON/)
+    assert.match(source, /driverCallAsync\(2159, readOperationID\(options\), requestJSON/)
+    assert.match(source, /resolveSendMessageData\(data, 'sendMessage'/)
+    assert.match(source, /resolveSendMessageData\(data, 'sendMessageNotOss'/)
     for (const name of PLATFORM_DRIVER_SLICE_NAMES) {
       const declaration = source.split('\n').find((line) => line.startsWith(`export const ${name} =`))
       assert.notEqual(declaration, undefined)
