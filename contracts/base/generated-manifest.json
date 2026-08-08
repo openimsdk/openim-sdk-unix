@@ -45,8 +45,8 @@
     },
     {
       "path": "tooling/src/generate.ts",
-      "sha256": "e1c6e2868bab9c2ad2ad92e0926ba621d5dc4f2001e91473e1e7ad91f3804122",
-      "bytes": 29684
+      "sha256": "314d145720d6f436980ef40a321615fe8c676953043b8b9fadca5f2eab51bb2e",
+      "bytes": 30535
     },
     {
       "path": "tooling/src/model.ts",
@@ -75,6 +75,11 @@
     }
   ],
   "outputs": [
+    {
+      "path": "pages/index/openim-automation-profiles.uts",
+      "sha256": "de991c262142b07f4acd126584fb137a20f2340448e88ba80f4ade8d14c29265",
+      "bytes": 18665
+    },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/interface.uts",
       "sha256": "3e4e0ccf3b7a4ba76240377459a3a0b01a063b70dc9f7ea7e6a488d4a800a703",

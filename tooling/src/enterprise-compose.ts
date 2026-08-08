@@ -17,6 +17,7 @@ import { extractExportedTypes, extractExportedValues, parseSource } from './sour
 import { INDEX_MARKERS, makeIndexTemplate } from './template-authority.js'
 import {
   generateEvents,
+  generateAutomationProfileRegistry,
   generateInterface,
   generatedSource,
   generateIndexFromTemplate,
@@ -461,6 +462,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
   const delta = readDelta(join(privateRoot, 'contracts/enterprise/delta.json'))
   const harmonyProjection = readEnterpriseHarmonyProjection(privateRoot)
   const contract = composeEnterpriseContract(base, delta, harmonyProjection)
+  const testDisposition = buildEnterpriseTestDisposition(base, delta)
   const harmonyRaw = generateIndexFromTemplate(
     readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.harmony), 'utf8'),
     contract,
@@ -477,6 +479,10 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
     harmonyEventInventory,
   )
   return normalizeOutputs([
+    {
+      path: join(privateRoot, 'pages/index/openim-automation-profiles.uts'),
+      content: generateAutomationProfileRegistry(testDisposition),
+    },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'),
       content: generateInterface(contract),
@@ -559,7 +565,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
     },
     {
       path: join(privateRoot, 'contracts/enterprise/test-disposition.json'),
-      content: JSON.stringify(buildEnterpriseTestDisposition(base, delta), null, 2),
+      content: JSON.stringify(testDisposition, null, 2),
     },
     {
       path: join(privateRoot, 'contracts/enterprise/harmony-monomorphic-codecs.json'),

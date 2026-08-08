@@ -4,7 +4,7 @@ import type { ContractCallable, ContractDocument, ContractEvent, DriverRequestFi
 import { INDEX_MARKERS } from './template-authority.js'
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { sha256 } from './source.js'
-import { buildPublicResponseSchemas, buildPublicTestDisposition } from './test-contract.js'
+import { buildPublicResponseSchemas, buildPublicTestDisposition, type TestDispositionDocument } from './test-contract.js'
 import { renderNativeCoreAdapter, renderPlatformDriverUTS } from './platform-driver.js'
 
 export interface GeneratedOutput {
@@ -481,6 +481,23 @@ export function generateInterface(contract: ContractDocument): string {
   return generatedSource([...types, ...constants, ...callables].join('\n\n'))
 }
 
+export function generateAutomationProfileRegistry(disposition: TestDispositionDocument): string {
+  const entries = disposition.callables.map((item) => (
+    `\t{ apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}' }`
+  )).join(',\n')
+  return generatedSource(`export type OpenIMAutomationProfileEntry = {
+\tapiName : string
+\tsemanticProfile : string
+\tsideEffectProbe : string
+}
+
+export const openIMAutomationContractEdition = '${disposition.edition}'
+
+export const openIMAutomationProfileEntries : Array<OpenIMAutomationProfileEntry> = [
+${entries}
+]`)
+}
+
 export function buildSurfaceSnapshot(contract: ContractDocument): SurfaceSnapshot {
   contract = withComputedSemanticHashes(contract)
   const constants = contract.constants.map(({ id, name, type, value, signatureHash }) => ({ id, name, type, value, signatureHash }))
@@ -508,8 +525,10 @@ export function buildGeneratedOutputs(root: string): GeneratedOutput[] {
   const interfaceSource = generateInterface(contract)
   const snapshot = `${JSON.stringify(buildSurfaceSnapshot(contract), null, 2)}\n`
   const responseSchemas = `${JSON.stringify(buildPublicResponseSchemas(contract), null, 2)}\n`
-  const testDisposition = `${JSON.stringify(buildPublicTestDisposition(contract), null, 2)}\n`
+  const testDispositionDocument = buildPublicTestDisposition(contract)
+  const testDisposition = `${JSON.stringify(testDispositionDocument, null, 2)}\n`
   return [
+    { path: join(root, 'pages/index/openim-automation-profiles.uts'), content: generateAutomationProfileRegistry(testDispositionDocument) },
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), content: interfaceSource },
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/index.uts'), content: generateIndex(root, contract, 'android') },
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts'), content: generateIndex(root, contract, 'ios') },

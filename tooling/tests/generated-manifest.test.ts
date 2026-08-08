@@ -67,3 +67,18 @@ test('generated interface declares every public constant and callable', () => {
   assert.match(source, /export declare function offAll\(eventName:OpenIMSDKEventName\) : void/)
   assert.match(source, /export declare const login : \(userID:string,token:string,operationID\?:string\|null\) => Promise<string>/)
 })
+
+test('generated automation profile registry matches every callable disposition', () => {
+  const disposition = JSON.parse(readFileSync(resolve(root, 'contracts/base/test-disposition.json'), 'utf8')) as {
+    callables: Array<{ apiName: string; semanticProfile: string; sideEffectProbe: string }>
+  }
+  const output = buildGeneratedOutputs(root).find((item) => item.path === resolve(root, 'pages/index/openim-automation-profiles.uts'))
+  assert.ok(output, 'automation profile registry must be a generated output')
+  for (const item of disposition.callables) {
+    assert.match(
+      output.content,
+      new RegExp(`apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}'`),
+    )
+  }
+  assert.equal((output.content.match(/apiName:/g) ?? []).length, disposition.callables.length)
+})
