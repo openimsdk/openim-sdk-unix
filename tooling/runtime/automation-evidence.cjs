@@ -161,6 +161,9 @@ function validateAutomationEvidence(input) {
     if (!fullRun && candidates.length === 0) {
       continue
     }
+    if (contractEvent.deliveryDisposition === 'passive-only' && candidates.length === 0) {
+      continue
+    }
     checkedEvents += 1
     const before = issues.length
     if (disposition === 'platform-unsupported') {

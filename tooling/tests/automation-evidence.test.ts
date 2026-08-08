@@ -6,6 +6,8 @@ const require = createRequire(import.meta.url)
 const { validateAutomationEvidence } = require('../runtime/automation-evidence.cjs') as {
   validateAutomationEvidence: (input: Record<string, unknown>) => {
     passed: boolean
+    checkedEvents: number
+    passedEvents: number
     issues: Array<{ caseId: string; axis: string; rule: string }>
   }
 }
@@ -222,4 +224,22 @@ test('event PASS requires every generated event axis', () => {
     },
   })
   assert.equal(complete.passed, true)
+})
+
+test('an unobserved passive-only event does not satisfy or fail required runtime evidence', () => {
+  const passiveManifest = manifest()
+  passiveManifest.events[0] = {
+    ...passiveManifest.events[0]!,
+    deliveryDisposition: 'passive-only',
+  }
+  const result = validateAutomationEvidence({
+    manifest: passiveManifest,
+    report: { cases: [], events: [] },
+    platform: 'android',
+    fullRun: true,
+  })
+
+  assert.equal(result.checkedEvents, 0)
+  assert.equal(result.passedEvents, 0)
+  assert.equal(result.issues.some((item: { caseId: string }) => item.caseId === 'event/onRecvNewMessage'), false)
 })

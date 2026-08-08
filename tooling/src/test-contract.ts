@@ -352,7 +352,7 @@ function callableValidationAxes(callable: ContractCallable, probe: string, expec
   }
   axes.push('structure', 'semantic')
   if (probe !== 'none') axes.push('side-effect')
-  if (expectedEvents.length > 0 || callable.role === 'event-subscription') axes.push('event')
+  if (expectedEvents.length > 0 && callable.role === 'operation') axes.push('event')
   return axes
 }
 

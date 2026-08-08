@@ -50,6 +50,11 @@ test('case manifest assigns concrete semantic and side-effect probes to P0 flows
   assert.equal(byAPI.get('getLoginStatus')?.sideEffectProbe, 'none')
   assert.equal(byAPI.get('getLoginUserID')?.sideEffectProbe, 'none')
   assert.deepEqual(byAPI.get('getLoginStatus')?.validationAxes, ['completion', 'structure', 'semantic'])
+  assert.deepEqual(
+    byAPI.get('onConnecting')?.validationAxes,
+    ['completion', 'structure', 'semantic', 'side-effect'],
+    'event subscriptions validate the returned registry handle; event delivery is verified by the event case',
+  )
 
   const friend = byAPI.get('addFriend')
   assert.equal(friend?.semanticProfile, 'mutation-observation')
