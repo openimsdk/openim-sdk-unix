@@ -256,8 +256,8 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
       'private static trackNumberPromise(',
       'private static trackBooleanPromise(',
       'static callAsync(',
-      'case 400059:',
-      'case 400063:',
+      'case 2059:',
+      'case 2060:',
       'terminalScheduled',
       "task.reject(new Error('OpenIM SDK was uninitialized'))",
       'static offAll(',
@@ -271,6 +271,11 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
       'OpenIMHarmonyDriver.invalidateEventEpoch()',
     ],
     'Enterprise Harmony raw JSON event seam',
+  )
+  assertExcludes(
+    harmonySource,
+    ['400001', 'callBindingUnInitSDK', 'Unsupported Harmony operation code'],
+    'Enterprise Harmony contract-ID seam',
   )
   assert(!androidFacade.includes('dispatchOpenIMMain'), 'Enterprise Android façade bypasses the Driver callback seam')
   assert(!iosFacade.includes('dispatchOpenIMMain'), 'Enterprise iOS façade bypasses the Driver callback seam')

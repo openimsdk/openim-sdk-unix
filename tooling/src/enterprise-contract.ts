@@ -33,7 +33,12 @@ import {
   type ParsedSource,
 } from './source.js'
 import { verifyEnterpriseDriverInvariants } from './verify-driver.js'
-import { harmonyTypedMethods, renderHarmonyDriverBindings, renderHarmonyOperationCodes } from './harmony-bindings.js'
+import {
+  harmonyContractMethodBindings,
+  harmonyTypedMethods,
+  renderHarmonyDriverBindings,
+  renderHarmonyOperationCodes,
+} from './harmony-bindings.js'
 import { renderHarmonyMonomorphicHelpers } from './harmony-monomorphize.js'
 import { buildEnterpriseResponseSchemas, buildEnterpriseTestDisposition } from './test-contract.js'
 import {
@@ -584,9 +589,17 @@ export function verifyEnterpriseDelta(
     'utf8',
   )
   assert(harmonyOperationCodes === renderHarmonyOperationCodes(privateRoot), 'Harmony operation code projection is stale')
-  assert((harmonyOperationCodes.match(/if \(method == '/g) ?? []).length === 142, 'Harmony operation code coverage changed')
+  const harmonyContractBindings = harmonyContractMethodBindings(privateRoot)
+  assert(!harmonyOperationCodes.includes('harmonyOperationCode'), 'Harmony operation code translator was reintroduced')
   assert((harmonyOperationCodes.match(/if \(eventName == '/g) ?? []).length === 69, 'Harmony event code coverage changed')
-  assert((harmonyDriverSource.match(/case 400\d{3}:/g) ?? []).length === 142, 'Harmony typed Driver switch coverage changed')
+  assert(!/400\d{3}/.test(harmonyDriverSource), 'Harmony legacy operation IDs were reintroduced')
+  assert(!harmonyDriverSource.includes('callBindingUnInitSDK'), 'Harmony unInit bypassed the lifecycle barrier')
+  for (const binding of harmonyContractBindings) {
+    assert(
+      harmonyDriverSource.includes(`case ${binding.callableID}:`),
+      `Harmony Driver lacks contract callable ID ${binding.callableID}/${binding.callableName}`,
+    )
+  }
   assert(certification.generatedSources.driverSha256 === sha256(harmonyDriverSource), 'Harmony Driver certification is stale')
   assert(certification.generatedSources.bindingCodesSha256 === sha256(harmonyOperationCodes), 'Harmony binding code certification is stale')
   assert(certification.generatedSources.harmonyFacadeSha256 === sha256(harmonySource), 'Harmony façade certification is stale')
