@@ -210,6 +210,91 @@ class OpenIMCoreAdapter {
                 NativeOpenIMSDK.removeBlack(operationID, try requiredString(request, "userID"), resolve, reject)
             case 2109:
                 NativeOpenIMSDK.getBlackList(operationID, resolve, reject)
+            case 2110:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.inviteUserToGroup(operationID, try requiredString(request, "groupID"), try requiredString(request, "reason"), try requiredString(request, "userIDList"), resolve, reject)
+            case 2111:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.kickGroupMember(operationID, try requiredString(request, "groupID"), try requiredString(request, "reason"), try requiredString(request, "userIDList"), resolve, reject)
+            case 2112:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.isJoinGroup(operationID, try requiredString(request, "groupID"), resolve, reject)
+            case 2113:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getSpecifiedGroupMembersInfo(operationID, try requiredString(request, "groupID"), try requiredString(request, "userIDList"), resolve, reject)
+            case 2114:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getUsersInGroup(operationID, try requiredString(request, "groupID"), try requiredString(request, "userIDList"), resolve, reject)
+            case 2115:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.searchGroupMembers(operationID, try requiredString(request, "searchParams"), resolve, reject)
+            case 2116:
+                NativeOpenIMSDK.getJoinedGroupList(operationID, resolve, reject)
+            case 2117:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getJoinedGroupListPage(operationID, try requiredNumber(request, "offset"), try requiredNumber(request, "count"), resolve, reject)
+            case 2118:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.createGroup(operationID, try requiredString(request, "groupInfo"), resolve, reject)
+            case 2119:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.setGroupInfo(operationID, try requiredString(request, "groupInfo"), resolve, reject)
+            case 2120:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.setGroupMemberInfo(operationID, try requiredString(request, "memberInfo"), resolve, reject)
+            case 2121:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.joinGroup(operationID, try requiredString(request, "groupID"), try requiredString(request, "reqMsg"), try requiredNumber(request, "joinSource"), try requiredString(request, "ex"), resolve, reject)
+            case 2122:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.searchGroups(operationID, try requiredString(request, "searchParams"), resolve, reject)
+            case 2123:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.quitGroup(operationID, try requiredString(request, "groupID"), resolve, reject)
+            case 2124:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.dismissGroup(operationID, try requiredString(request, "groupID"), resolve, reject)
+            case 2125:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.changeGroupMute(operationID, try requiredString(request, "groupID"), try requiredBool(request, "isMute"), resolve, reject)
+            case 2126:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.changeGroupMemberMute(operationID, try requiredString(request, "groupID"), try requiredString(request, "userID"), try requiredNumber(request, "mutedSeconds"), resolve, reject)
+            case 2127:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.transferGroupOwner(operationID, try requiredString(request, "groupID"), try requiredString(request, "newOwnerUserID"), resolve, reject)
+            case 2128:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getGroupApplicationListAsApplicant(operationID, try requiredString(request, "request"), resolve, reject)
+            case 2129:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getGroupApplicationListAsRecipient(operationID, try requiredString(request, "request"), resolve, reject)
+            case 2130:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getGroupApplicationUnhandledCount(operationID, try requiredString(request, "page"), resolve, reject)
+            case 2131:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.acceptGroupApplication(operationID, try requiredString(request, "groupID"), try requiredString(request, "fromUserID"), try requiredString(request, "handleMsg"), resolve, reject)
+            case 2132:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.refuseGroupApplication(operationID, try requiredString(request, "groupID"), try requiredString(request, "fromUserID"), try requiredString(request, "handleMsg"), resolve, reject)
+            case 2133:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.findMessageList(operationID, try requiredString(request, "findParams"), resolve, reject)
+            case 2134:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.updateFcmToken(operationID, try requiredString(request, "fcmToken"), try requiredNumber(request, "expireTime"), resolve, reject)
+            case 2135:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.subscribeUsersStatus(operationID, try requiredString(request, "userIDList"), resolve, reject)
+            case 2136:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.unsubscribeUsersStatus(operationID, try requiredString(request, "userIDList"), resolve, reject)
+            case 2137:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.getUserStatus(operationID, try requiredString(request, "userIDList"), resolve, reject)
+            case 2138:
+                NativeOpenIMSDK.getSubscribeUsersStatus(operationID, resolve, reject)
             case 2139:
                 let request = try requestObject(requestJSON)
                 resolve(NativeOpenIMSDK.createTextMessage(operationID, try requiredString(request, "text")))
@@ -273,6 +358,12 @@ class OpenIMCoreAdapter {
             case 2159:
                 let request = try requestObject(requestJSON)
                 NativeOpenIMSDK.sendMessageNotOss(operationID, try requiredString(request, "message"), try requiredString(request, "recvID"), try requiredString(request, "groupID"), try requiredString(request, "offlinePushInfo"), try requiredBool(request, "isOnlineOnly"), resolve, reject)
+            case 2160:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.uploadFile(operationID, try requiredString(request, "uploadParams"), resolve, reject)
+            case 2161:
+                let request = try requestObject(requestJSON)
+                NativeOpenIMSDK.uploadLogs(operationID, try requiredNumber(request, "line"), try requiredString(request, "ex"), resolve, reject)
             default:
                 reject(localErrorCode, "Unsupported OpenIM callable ID: \(callableID)")
             }

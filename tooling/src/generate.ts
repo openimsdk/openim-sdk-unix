@@ -116,6 +116,7 @@ const DRIVER_TYPED_RESPONSE_PARSERS: Readonly<Record<string, string>> = {
   'typed:OpenIMLoginStatus': 'parseNativeLoginStatus',
   'typed:OpenIMMessageItem|null': 'parseNativeMessage',
   'typed:OpenIMSearchMessageResult|null': 'parseNativeSearchMessageResult',
+  'typed:OpenIMUploadFileResult|null': 'parseNativeUploadFileResult',
 }
 
 const DRIVER_PROMISE_RESPONSE_RESOLVERS: Readonly<Record<string, string>> = {

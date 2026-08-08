@@ -5773,9 +5773,39 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const inviteUserToGroup = function (params : OpenIMGroupInviteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.inviteUserToGroup(normalizeOperationID(operationID), params.groupID, params.reason, stringifyJSON(params.userIDList), resolve, reject) }) }",
-        "ios": "export const inviteUserToGroup = function (params : OpenIMGroupInviteParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.inviteUserToGroup(normalizeOperationID(operationID), params.groupID, params.reason, stringifyJSON(params.userIDList), resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "reason",
+              "parameter": "params",
+              "member": "reason",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "userIDList",
+              "parameter": "params",
+              "member": "userIDList",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5787,7 +5817,7 @@
           "symbol": "inviteUserToGroup"
         }
       },
-      "signatureHash": "63f56969bd8039e6089ab97efbed7acf91e29744d3fb9ae68b1b095b89a3c7db"
+      "signatureHash": "e4a71c68e18fefad2ec6fd7db6253cff0b6dc9e0e35560353e7d94e71a2ca00d"
     },
     {
       "id": 2111,
@@ -5798,9 +5828,39 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const kickGroupMember = function (params : OpenIMGroupInviteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.kickGroupMember(normalizeOperationID(operationID), params.groupID, params.reason, stringifyJSON(params.userIDList), resolve, reject) }) }",
-        "ios": "export const kickGroupMember = function (params : OpenIMGroupInviteParams, operationID ?: string | null) : Promise<string> { return new Promise<string>((resolve, reject) => { NativeOpenIMSDK.kickGroupMember(normalizeOperationID(operationID), params.groupID, params.reason, stringifyJSON(params.userIDList), resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "reason",
+              "parameter": "params",
+              "member": "reason",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "userIDList",
+              "parameter": "params",
+              "member": "userIDList",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5812,7 +5872,7 @@
           "symbol": "kickGroupMember"
         }
       },
-      "signatureHash": "20c31030f327baf25f162aa39fd2bec19b68e7fb6f57d46293d7792b88c1fb7a"
+      "signatureHash": "641034300213e47ac6cff08b7a0a08d8a4a76c07a1b47c3b7ab33e476e37e947"
     },
     {
       "id": 2112,
@@ -5823,9 +5883,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const isJoinGroup = function (groupID : string, operationID ?: string | null) : Promise<boolean> { return resolveBooleanNative((resolve, reject) => { NativeOpenIMSDK.isJoinGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }",
-        "ios": "export const isJoinGroup = function (groupID : string, operationID ?: string | null) : Promise<boolean> { return resolveBooleanNative((resolve, reject) => { NativeOpenIMSDK.isJoinGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5837,7 +5912,7 @@
           "symbol": "isJoinGroup"
         }
       },
-      "signatureHash": "190f2bb88bf005ef43ef97b32fc821627b9db54f1d05f971d94bd2f4f7f42c27"
+      "signatureHash": "1b062d9330d1bd7c870eeaa0800a9e8b25393929d83b680cf07044dfc0ba6a31"
     },
     {
       "id": 2113,
@@ -5848,9 +5923,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getSpecifiedGroupMembersInfo = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { NativeOpenIMSDK.getSpecifiedGroupMembersInfo(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), (data : string) => { resolve(parseNativeGroupMemberListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }",
-        "ios": "export const getSpecifiedGroupMembersInfo = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { NativeOpenIMSDK.getSpecifiedGroupMembersInfo(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), (data : string) => { resolve(parseNativeGroupMemberListResult(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "userIDList",
+              "parameter": "params",
+              "member": "userIDList",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5862,7 +5960,7 @@
           "symbol": "getSpecifiedGroupMembersInfo"
         }
       },
-      "signatureHash": "537ecd5623b5a0b1464eae6c80fb061ec0bebb40b85e4231fa8677a487433ec5"
+      "signatureHash": "3172ef4ccb7376b09b6dbf8fbf0e041a25ff80ed481c865b5c48051692a3506f"
     },
     {
       "id": 2114,
@@ -5873,9 +5971,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getUsersInGroup = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<Array<string> | null> { return resolveStringListNative((resolve, reject) => { NativeOpenIMSDK.getUsersInGroup(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), resolve, reject) }) }",
-        "ios": "export const getUsersInGroup = function (params : OpenIMGroupUserListParams, operationID ?: string | null) : Promise<Array<string> | null> { return resolveStringListNative((resolve, reject) => { NativeOpenIMSDK.getUsersInGroup(normalizeOperationID(operationID), params.groupID, stringifyJSON(params.userIDList), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "userIDList",
+              "parameter": "params",
+              "member": "userIDList",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5887,7 +6008,7 @@
           "symbol": "getUsersInGroup"
         }
       },
-      "signatureHash": "05d911b3313afafcb28005cd66af419b390b5b08a9b05250a8bb8291dc77512d"
+      "signatureHash": "03b7913575b18e9e5926c2a98ad8388cb4bb575f917a934f7cabb3890c97f559"
     },
     {
       "id": 2115,
@@ -5898,9 +6019,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const searchGroupMembers = function (params : OpenIMSearchGroupMembersParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative((resolve, reject) => { NativeOpenIMSDK.searchGroupMembers(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const searchGroupMembers = function (params : OpenIMSearchGroupMembersParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative((resolve, reject) => { NativeOpenIMSDK.searchGroupMembers(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "searchParams",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5912,7 +6048,7 @@
           "symbol": "searchGroupMembers"
         }
       },
-      "signatureHash": "6eb461d2387384251569bc85a47ce3e28098e84f38b1b3e1dd341ac643ad9704"
+      "signatureHash": "4af3b6c76850d2fcab5a683b45fdb488ecdce87c96c8fdc7cd5a6df4b1ea8eda"
     },
     {
       "id": 2116,
@@ -5923,9 +6059,14 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getJoinedGroupList = function (operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupList(normalizeOperationID(operationID), resolve, reject) }) }",
-        "ios": "export const getJoinedGroupList = function (operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupList(normalizeOperationID(operationID), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object",
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5937,7 +6078,7 @@
           "symbol": "getJoinedGroupList"
         }
       },
-      "signatureHash": "5ec917a94d39e0a6f384a0cb2557d1a0f1da854c0f98ba32e476c1bf8f4c957e"
+      "signatureHash": "fbe0740bfbcf9633597d1bd57413497dfa8642b1453690fc5b04970a58165337"
     },
     {
       "id": 2117,
@@ -5948,9 +6089,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getJoinedGroupListPage = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupListPage(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }",
-        "ios": "export const getJoinedGroupListPage = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.getJoinedGroupListPage(normalizeOperationID(operationID), params.offset, params.count, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "offset",
+              "parameter": "params",
+              "member": "offset",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "count",
+              "parameter": "params",
+              "member": "count",
+              "codec": "identity",
+              "wireType": "number"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5962,7 +6126,7 @@
           "symbol": "getJoinedGroupListPage"
         }
       },
-      "signatureHash": "08ab100431996afd279db62633c652330ad769604bb6474d61faf7d95fc754c4"
+      "signatureHash": "2d673412a0279ab9bfe75cdeee22e2f461eb436c727635217cd9609b35f4fd41"
     },
     {
       "id": 2118,
@@ -5973,9 +6137,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const createGroup = function (params : OpenIMCreateGroupParams, operationID ?: string | null) : Promise<OpenIMGroupItem | null> { return resolveGroupObjectNative((resolve, reject) => { NativeOpenIMSDK.createGroup(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const createGroup = function (params : OpenIMCreateGroupParams, operationID ?: string | null) : Promise<OpenIMGroupItem | null> { return resolveGroupObjectNative((resolve, reject) => { NativeOpenIMSDK.createGroup(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupInfo",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -5987,7 +6166,7 @@
           "symbol": "createGroup"
         }
       },
-      "signatureHash": "7402febad679022c4753e57732fe32f4c0a3f6e3626664cf4ba2e1d703b018cf"
+      "signatureHash": "f80d885d6e6ac6870e2aad68826e2c78b56745208470f4718f732cd0685119c5"
     },
     {
       "id": 2119,
@@ -5998,9 +6177,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const setGroupInfo = function (params : OpenIMSetGroupInfoParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifySetGroupInfoPayload(params); NativeOpenIMSDK.setGroupInfo(op, payload, resolve, reject) }) }",
-        "ios": "export const setGroupInfo = function (params : OpenIMSetGroupInfoParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifySetGroupInfoPayload(params); NativeOpenIMSDK.setGroupInfo(op, payload, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupInfo",
+              "parameter": "params",
+              "codec": "set-group-info-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6012,7 +6206,7 @@
           "symbol": "setGroupInfo"
         }
       },
-      "signatureHash": "37e9bc0e48eb87c947f27dba44e903895aee291c0cdb79d8a6238f70562ec051"
+      "signatureHash": "8b4e4ab7b920f6b66effe3f37ef415e6c47b411990fc8485a3b5821c95084b14"
     },
     {
       "id": 2120,
@@ -6023,9 +6217,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const setGroupMemberInfo = function (params : OpenIMSetGroupMemberInfoParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifySetGroupMemberInfoPayload(params); NativeOpenIMSDK.setGroupMemberInfo(op, payload, resolve, reject) }) }",
-        "ios": "export const setGroupMemberInfo = function (params : OpenIMSetGroupMemberInfoParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const op = normalizeOperationID(operationID); const payload = stringifySetGroupMemberInfoPayload(params); NativeOpenIMSDK.setGroupMemberInfo(op, payload, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "memberInfo",
+              "parameter": "params",
+              "codec": "set-group-member-info-json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6037,7 +6246,7 @@
           "symbol": "setGroupMemberInfo"
         }
       },
-      "signatureHash": "c0a3a793ef9ecd293c415148d8779e18648c6c79947d5b4512e83f8bcadddb0d"
+      "signatureHash": "2f09e395414076759b00380f44615f8853eb834ed145e53215528eb508604bd5"
     },
     {
       "id": 2121,
@@ -6048,9 +6257,46 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const joinGroup = function (params : OpenIMJoinGroupParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.joinGroup(normalizeOperationID(operationID), params.groupID, params.reqMsg, params.joinSource, optionalString(params.ex), resolve, reject) }) }",
-        "ios": "export const joinGroup = function (params : OpenIMJoinGroupParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.joinGroup(normalizeOperationID(operationID), params.groupID, params.reqMsg, params.joinSource, optionalString(params.ex), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "reqMsg",
+              "parameter": "params",
+              "member": "reqMsg",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "joinSource",
+              "parameter": "params",
+              "member": "joinSource",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "ex",
+              "parameter": "params",
+              "member": "ex",
+              "codec": "optional-string",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6062,7 +6308,7 @@
           "symbol": "joinGroup"
         }
       },
-      "signatureHash": "34c7995ef724d23602129d69afb8728f3aca86cd3c696affc70f7c6685503b96"
+      "signatureHash": "86809ce95115076c1635e6bbe99fdb5ec3ebc3ceba9fcf601e5948b6b46d0217"
     },
     {
       "id": 2122,
@@ -6073,9 +6319,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const searchGroups = function (params : OpenIMSearchGroupsParams, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.searchGroups(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const searchGroups = function (params : OpenIMSearchGroupsParams, operationID ?: string | null) : Promise<OpenIMGroupListResult | null> { return resolveGroupListNative((resolve, reject) => { NativeOpenIMSDK.searchGroups(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "searchParams",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6087,7 +6348,7 @@
           "symbol": "searchGroups"
         }
       },
-      "signatureHash": "a5e7f3a8ffd796d27c6ad08647ceb2ed551cff595d0dc10ec4c68c4aff309db8"
+      "signatureHash": "010b73aafbece8d9c6fa591357bbdb7dabbcd4f37f50ab4632815b43e897ca58"
     },
     {
       "id": 2123,
@@ -6098,9 +6359,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const quitGroup = function (groupID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.quitGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }",
-        "ios": "export const quitGroup = function (groupID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.quitGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6112,7 +6388,7 @@
           "symbol": "quitGroup"
         }
       },
-      "signatureHash": "b801e268089a25910c60f23c56ff13c19c0dcd9de9a95f43ef21be169f20ea26"
+      "signatureHash": "b0a8f4b66825f9cac70570762c97cd0160c69a8e08ec69a3aecc74adf23439be"
     },
     {
       "id": 2124,
@@ -6123,9 +6399,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const dismissGroup = function (groupID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.dismissGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }",
-        "ios": "export const dismissGroup = function (groupID : string, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.dismissGroup(normalizeOperationID(operationID), groupID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6137,7 +6428,7 @@
           "symbol": "dismissGroup"
         }
       },
-      "signatureHash": "3078837172b8bd3a6cc04f493bf4e1e6e5fb15dd9e80814471a005510d0d4434"
+      "signatureHash": "d3487574de8a5bd5f967597ec95b566b9e3cc30e30b65a677639c2af0f9ec2c7"
     },
     {
       "id": 2125,
@@ -6148,9 +6439,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const changeGroupMute = function (params : OpenIMChangeGroupMuteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeGroupMute(normalizeOperationID(operationID), params.groupID, params.isMute, resolve, reject) }) }",
-        "ios": "export const changeGroupMute = function (params : OpenIMChangeGroupMuteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeGroupMute(normalizeOperationID(operationID), params.groupID, params.isMute, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "isMute",
+              "parameter": "params",
+              "member": "isMute",
+              "codec": "identity",
+              "wireType": "boolean"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6162,7 +6476,7 @@
           "symbol": "changeGroupMute"
         }
       },
-      "signatureHash": "091951c49758af43709851342824244699efddbc568f82ae601be257868f89d4"
+      "signatureHash": "5692d617f4315b791c3fbe47241eb796aea038e155813dfd7c1f6f703e55160a"
     },
     {
       "id": 2126,
@@ -6173,9 +6487,39 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const changeGroupMemberMute = function (params : OpenIMChangeGroupMemberMuteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeGroupMemberMute(normalizeOperationID(operationID), params.groupID, params.userID, params.mutedSeconds, resolve, reject) }) }",
-        "ios": "export const changeGroupMemberMute = function (params : OpenIMChangeGroupMemberMuteParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.changeGroupMemberMute(normalizeOperationID(operationID), params.groupID, params.userID, params.mutedSeconds, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "userID",
+              "parameter": "params",
+              "member": "userID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "mutedSeconds",
+              "parameter": "params",
+              "member": "mutedSeconds",
+              "codec": "identity",
+              "wireType": "number"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6187,7 +6531,7 @@
           "symbol": "changeGroupMemberMute"
         }
       },
-      "signatureHash": "9b0098106e084d2d015002425786cdae0e96169b277a01c9337b81a079c6d52c"
+      "signatureHash": "bfddcf7cf66d9b44200f3a69854fc3a3e0100298bfa344d10b099ad3efd42b38"
     },
     {
       "id": 2127,
@@ -6198,9 +6542,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const transferGroupOwner = function (params : OpenIMTransferGroupOwnerParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.transferGroupOwner(normalizeOperationID(operationID), params.groupID, params.newOwnerUserID, resolve, reject) }) }",
-        "ios": "export const transferGroupOwner = function (params : OpenIMTransferGroupOwnerParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.transferGroupOwner(normalizeOperationID(operationID), params.groupID, params.newOwnerUserID, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "newOwnerUserID",
+              "parameter": "params",
+              "member": "newOwnerUserID",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6212,7 +6579,7 @@
           "symbol": "transferGroupOwner"
         }
       },
-      "signatureHash": "37bfe73841f8ea256581d450cf0dcab8f62bc350448b77a63d705980d83e1e00"
+      "signatureHash": "43dd1d69a456aef1cac7769b660cfa8ef229b39902b60a1292b89a39856fa806"
     },
     {
       "id": 2128,
@@ -6223,9 +6590,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getGroupApplicationListAsApplicant = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMGroupApplicationListResult | null> { return resolveGroupApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationListAsApplicant(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const getGroupApplicationListAsApplicant = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMGroupApplicationListResult | null> { return resolveGroupApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationListAsApplicant(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "request",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6237,7 +6619,7 @@
           "symbol": "getGroupApplicationListAsApplicant"
         }
       },
-      "signatureHash": "38259d33ba22e0e380bacf5e1a302944f5d0b51484e30945d5c0d93479704b95"
+      "signatureHash": "8c270204f8419ca7b57df2eac1f4e541ae5c9e371099845e3bf90b6cbaa66513"
     },
     {
       "id": 2129,
@@ -6248,9 +6630,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getGroupApplicationListAsRecipient = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMGroupApplicationListResult | null> { return resolveGroupApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationListAsRecipient(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const getGroupApplicationListAsRecipient = function (params ?: OpenIMApplicationListParams | null, operationID ?: string | null) : Promise<OpenIMGroupApplicationListResult | null> { return resolveGroupApplicationListNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationListAsRecipient(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "request",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6262,7 +6659,7 @@
           "symbol": "getGroupApplicationListAsRecipient"
         }
       },
-      "signatureHash": "a1b2b68976849c5aa460f2ffc5f088f86f9d10d34baf0304e65657bac196bf59"
+      "signatureHash": "37370e7b32d98c8b9e6743d8ee71f457e444312787efe8aafb0a0421eec81214"
     },
     {
       "id": 2130,
@@ -6273,9 +6670,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getGroupApplicationUnhandledCount = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<number | null> { return resolveNumberNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationUnhandledCount(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const getGroupApplicationUnhandledCount = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<number | null> { return resolveNumberNative((resolve, reject) => { NativeOpenIMSDK.getGroupApplicationUnhandledCount(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "page",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6287,7 +6699,7 @@
           "symbol": "getGroupApplicationUnhandledCount"
         }
       },
-      "signatureHash": "bcc98fef038abad237466ae9348fc75396576378c47e67e50dfa2549466c602b"
+      "signatureHash": "87755654d1bf0c5622c9c1f3396317611ccb0c8f303f1bba08c80168bfaeedab"
     },
     {
       "id": 2131,
@@ -6298,9 +6710,39 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const acceptGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.acceptGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }",
-        "ios": "export const acceptGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.acceptGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "fromUserID",
+              "parameter": "params",
+              "member": "fromUserID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "handleMsg",
+              "parameter": "params",
+              "member": "handleMsg",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6312,7 +6754,7 @@
           "symbol": "acceptGroupApplication"
         }
       },
-      "signatureHash": "86875342073ca9f79293915b1237cb71cb3368fc354ffc9e345fb7f813f5d0db"
+      "signatureHash": "7d2a2d02f9bee30146bdb1608a85efaa389be46da96948619713b7ada62086d6"
     },
     {
       "id": 2132,
@@ -6323,9 +6765,39 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const refuseGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.refuseGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }",
-        "ios": "export const refuseGroupApplication = function (params : OpenIMGroupApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.refuseGroupApplication(normalizeOperationID(operationID), params.groupID, params.fromUserID, params.handleMsg, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "groupID",
+              "parameter": "params",
+              "member": "groupID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "fromUserID",
+              "parameter": "params",
+              "member": "fromUserID",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "handleMsg",
+              "parameter": "params",
+              "member": "handleMsg",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6337,7 +6809,7 @@
           "symbol": "refuseGroupApplication"
         }
       },
-      "signatureHash": "5c794edff0d2d1371240660dd659d9ed1834c1fb4f3d03c1e37077e8574ddc03"
+      "signatureHash": "25aa06c2f63ed9a386a169fc0a55855739ddf4656294806baa4423baafe588f4"
     },
     {
       "id": 2133,
@@ -6348,9 +6820,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const findMessageList = function (params : Array<OpenIMFindMessageParams>, operationID ?: string | null) : Promise<OpenIMFindMessageResult | null> { return resolveMessageListNative((resolve, reject) => { NativeOpenIMSDK.findMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }",
-        "ios": "export const findMessageList = function (params : Array<OpenIMFindMessageParams>, operationID ?: string | null) : Promise<OpenIMFindMessageResult | null> { return resolveMessageListNative((resolve, reject) => { NativeOpenIMSDK.findMessageList(normalizeOperationID(operationID), stringifyJSON(params), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "findParams",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6362,7 +6849,7 @@
           "symbol": "findMessageList"
         }
       },
-      "signatureHash": "f57b6778024329f3c8e7460ebc2dc5d5063cf0546c248983dd4b287782f59823"
+      "signatureHash": "c7507d3bf4f8f601a4309adb2ae8c1da7be2fc92a9c965f44b5dc269ba328b1f"
     },
     {
       "id": 2134,
@@ -6373,9 +6860,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const updateFcmToken = function (params : OpenIMUpdateFcmTokenParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.updateFcmToken(normalizeOperationID(operationID), params.fcmToken, params.expireTime, resolve, reject) }) }",
-        "ios": "export const updateFcmToken = function (params : OpenIMUpdateFcmTokenParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.updateFcmToken(normalizeOperationID(operationID), params.fcmToken, params.expireTime, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "fcmToken",
+              "parameter": "params",
+              "member": "fcmToken",
+              "codec": "identity",
+              "wireType": "string"
+            },
+            {
+              "name": "expireTime",
+              "parameter": "params",
+              "member": "expireTime",
+              "codec": "identity",
+              "wireType": "number"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6387,7 +6897,7 @@
           "symbol": "updateFcmToken"
         }
       },
-      "signatureHash": "cd8cf7fb92a10af092a4880d1f394a80148bed5264fecaaa2eec282c23acea21"
+      "signatureHash": "6142901250c3e13b4be797aff632adc7abbc31493e2bdd5d974de495920d2464"
     },
     {
       "id": 2135,
@@ -6398,9 +6908,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const subscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.subscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }",
-        "ios": "export const subscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.subscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "userIDList",
+              "parameter": "data",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6412,7 +6937,7 @@
           "symbol": "subscribeUsersStatus"
         }
       },
-      "signatureHash": "4fdbd408b9c7283d1ca997b7d5c6c12379210e6299a93d7f05596a23f136b216"
+      "signatureHash": "62f3d886ed98bf971a05975ced14f9602e30e70d5aaf39583f8ad2709d2c3278"
     },
     {
       "id": 2136,
@@ -6423,9 +6948,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const unsubscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.unsubscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }",
-        "ios": "export const unsubscribeUsersStatus = function (data : Array<string>, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.unsubscribeUsersStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "userIDList",
+              "parameter": "data",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6437,7 +6977,7 @@
           "symbol": "unsubscribeUsersStatus"
         }
       },
-      "signatureHash": "7751987405797905db74437fb49e2edfb1b604cada8b014144e1135a8d7929c7"
+      "signatureHash": "8c1195d95ce0c2e8d6c5bd2bca7aff90a0d978e35312f7b7a9b5242d0f2d8772"
     },
     {
       "id": 2137,
@@ -6448,9 +6988,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getUserStatus = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getUserStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }",
-        "ios": "export const getUserStatus = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getUserStatus(normalizeOperationID(operationID), stringifyJSON(data), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "userIDList",
+              "parameter": "data",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6462,7 +7017,7 @@
           "symbol": "getUserStatus"
         }
       },
-      "signatureHash": "e4ff39dc1762ab89932e5865a8b0f25db457aae0b4dce82eb1265ed0cd25a4ae"
+      "signatureHash": "68dc44422c2209cc3ad7c0467ea8a18a7c5c14cb7ccdc816c73a723ec023eb0e"
     },
     {
       "id": 2138,
@@ -6473,9 +7028,14 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const getSubscribeUsersStatus = function (operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getSubscribeUsersStatus(normalizeOperationID(operationID), resolve, reject) }) }",
-        "ios": "export const getSubscribeUsersStatus = function (operationID ?: string | null) : Promise<OpenIMUserStatusListResult | null> { return resolveUserStatusListNative((resolve, reject) => { NativeOpenIMSDK.getSubscribeUsersStatus(normalizeOperationID(operationID), resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": "empty-object",
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -6487,7 +7047,7 @@
           "symbol": "getSubscribeUsersStatus"
         }
       },
-      "signatureHash": "a7bbbec71a93e933a75136fee77ce94e731e24579de8e5ee01b61e5cb144bb85"
+      "signatureHash": "a566bf947b03f0df4609a066498543118778f9b8418eac0380e85ece7afa2386"
     },
     {
       "id": 2139,
@@ -7577,9 +8137,24 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": false,
       "role": "operation",
-      "declaration": {
-        "android": "export const uploadFile = function (params : OpenIMUploadFileParams, operationID ?: string | null) : Promise<OpenIMUploadFileResult | null> {\n  return new Promise<OpenIMUploadFileResult | null>((resolve, reject) => {\n    NativeOpenIMSDK.uploadFile(normalizeOperationID(operationID), stringifyJSON(params), (data : string) => {\n      resolve(parseNativeUploadFileResult(data))\n    }, (errCode : number, errMsg : string) => {\n      rejectNativeError(reject, errCode, errMsg)\n    })\n  })\n}",
-        "ios": "export const uploadFile = function (params : OpenIMUploadFileParams, operationID ?: string | null) : Promise<OpenIMUploadFileResult | null> {\n  return new Promise<OpenIMUploadFileResult | null>((resolve, reject) => {\n    NativeOpenIMSDK.uploadFile(normalizeOperationID(operationID), stringifyJSON(params), (data : string) => {\n      resolve(parseNativeUploadFileResult(data))\n    }, (errCode : number, errMsg : string) => {\n      rejectNativeError(reject, errCode, errMsg)\n    })\n  })\n}"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "uploadParams",
+              "parameter": "params",
+              "codec": "json",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -7591,7 +8166,7 @@
           "symbol": "uploadFile"
         }
       },
-      "signatureHash": "4b59cab6d0fbfef8fb9c21f10ed4c2cd498243128bc5ef798c5c296e5ff7fd2e"
+      "signatureHash": "11a83a943540d88079d86b454d88fad5dfdbc19f1e9bcb67d95ed4180b4deb11"
     },
     {
       "id": 2161,
@@ -7602,9 +8177,32 @@
       "errorPolicy": "frozen-native-rejection",
       "rawString": true,
       "role": "operation",
-      "declaration": {
-        "android": "export const uploadLogs = function (params : OpenIMUploadLogsParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.uploadLogs(normalizeOperationID(operationID), params.line, params.ex, resolve, reject) }) }",
-        "ios": "export const uploadLogs = function (params : OpenIMUploadLogsParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { NativeOpenIMSDK.uploadLogs(normalizeOperationID(operationID), params.line, params.ex, resolve, reject) }) }"
+      "lowering": {
+        "kind": "platform-driver",
+        "transport": "async",
+        "operationID": "parameter",
+        "request": {
+          "kind": "fields",
+          "fields": [
+            {
+              "name": "line",
+              "parameter": "params",
+              "member": "line",
+              "codec": "identity",
+              "wireType": "number"
+            },
+            {
+              "name": "ex",
+              "parameter": "params",
+              "member": "ex",
+              "codec": "identity",
+              "wireType": "string"
+            }
+          ]
+        },
+        "nativeInvocation": {
+          "completion": "callback"
+        }
       },
       "binding": {
         "android": {
@@ -7616,7 +8214,7 @@
           "symbol": "uploadLogs"
         }
       },
-      "signatureHash": "54e2c5ac80ee251598793654cb03d477e718ed7e7ec9bfb89a730da9680d12a7"
+      "signatureHash": "28383cfe8a091fedd1c74f6d3da742f00fd807b743c4cd673ea0443c0bdf195c"
     }
   ],
   "events": [

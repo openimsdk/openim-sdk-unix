@@ -99,8 +99,42 @@ const MESSAGE_USER_FRIEND_OPERATIONS = [
   ['getBlackList', 2109],
 ] as const
 
+const GROUP_STATUS_UPLOAD_OPERATIONS = [
+  ['inviteUserToGroup', 2110],
+  ['kickGroupMember', 2111],
+  ['isJoinGroup', 2112],
+  ['getSpecifiedGroupMembersInfo', 2113],
+  ['getUsersInGroup', 2114],
+  ['searchGroupMembers', 2115],
+  ['getJoinedGroupList', 2116],
+  ['getJoinedGroupListPage', 2117],
+  ['createGroup', 2118],
+  ['setGroupInfo', 2119],
+  ['setGroupMemberInfo', 2120],
+  ['joinGroup', 2121],
+  ['searchGroups', 2122],
+  ['quitGroup', 2123],
+  ['dismissGroup', 2124],
+  ['changeGroupMute', 2125],
+  ['changeGroupMemberMute', 2126],
+  ['transferGroupOwner', 2127],
+  ['getGroupApplicationListAsApplicant', 2128],
+  ['getGroupApplicationListAsRecipient', 2129],
+  ['getGroupApplicationUnhandledCount', 2130],
+  ['acceptGroupApplication', 2131],
+  ['refuseGroupApplication', 2132],
+  ['findMessageList', 2133],
+  ['updateFcmToken', 2134],
+  ['subscribeUsersStatus', 2135],
+  ['unsubscribeUsersStatus', 2136],
+  ['getUserStatus', 2137],
+  ['getSubscribeUsersStatus', 2138],
+  ['uploadFile', 2160],
+  ['uploadLogs', 2161],
+] as const
+
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
-  const expected = [
+  const expected = ([
     { id: 2051, name: 'initSDK' },
     { id: 2052, name: 'login' },
     { id: 2053, name: 'logout' },
@@ -113,6 +147,7 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
       ...CONVERSATION_TYPED_QUERIES.map(([name, id]) => ({ id, name })),
       { id: ADVANCED_HISTORY_QUERY[1], name: ADVANCED_HISTORY_QUERY[0] },
       ...MESSAGE_USER_FRIEND_OPERATIONS.map(([name, id]) => ({ id, name })),
+      ...GROUP_STATUS_UPLOAD_OPERATIONS.map(([name, id]) => ({ id, name })),
     ].sort((left, right) => left.id - right.id),
     { id: 2139, name: 'createTextMessage' },
     ...[
@@ -121,7 +156,7 @@ test('first PlatformDriver slice keeps canonical contract IDs', () => {
     ].sort((left, right) => left.id - right.id),
     { id: 2158, name: 'sendMessage' },
     { id: 2159, name: 'sendMessageNotOss' },
-  ]
+  ] as Array<{ id: number; name: string }>).sort((left, right) => left.id - right.id)
   assert.deepEqual(platformDriverBindings(contract), expected)
 })
 
@@ -405,6 +440,42 @@ test('message, user, and friend operations retain structured wire semantics behi
     }
     assert.match(facade, /resolveNumberNative\(\(resolve, reject\) =>/)
     assert.match(facade, /resolveCheckFriendNative\(\(resolve, reject\) =>/)
+  }
+})
+
+test('group, status, and upload operations complete native dispatch coverage', () => {
+  for (const [name, id] of GROUP_STATUS_UPLOAD_OPERATIONS) {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.id, id)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind === 'platform-driver') {
+      assert.deepEqual(callable.lowering.nativeInvocation, { completion: 'callback' })
+    }
+  }
+
+  const fieldCodecs = (name: string) => {
+    const callable = contract.callables.find((candidate) => candidate.name === name)
+    assert.equal(callable?.lowering?.kind, 'platform-driver')
+    if (callable?.lowering?.kind !== 'platform-driver' || typeof callable.lowering.request !== 'object') return []
+    return callable.lowering.request.fields.map((field) => field.codec)
+  }
+  assert.deepEqual(fieldCodecs('setGroupInfo'), ['set-group-info-json'])
+  assert.deepEqual(fieldCodecs('setGroupMemberInfo'), ['set-group-member-info-json'])
+  assert.deepEqual(fieldCodecs('joinGroup'), ['identity', 'identity', 'identity', 'optional-string'])
+  assert.deepEqual(fieldCodecs('uploadFile'), ['json'])
+
+  for (const platform of ['android', 'ios'] as const) {
+    const adapter = renderNativeCoreAdapter(contract, platform)
+    const facade = generateIndex(root, contract, platform)
+    for (const [name, id] of GROUP_STATUS_UPLOAD_OPERATIONS) {
+      assert.match(adapter, new RegExp(`(?:case )?${id}`), `${platform} adapter is missing ${name}`)
+      const declaration = facade.split('\n').find((line) => line.startsWith(`export const ${name} =`))
+      assert.notEqual(declaration, undefined)
+      assert.match(declaration!, new RegExp(`driverCallAsync\\(${id},`))
+      assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
+    }
+    const upload = facade.split('\n').find((line) => line.startsWith('export const uploadFile ='))
+    assert.match(upload!, /resolve\(parseNativeUploadFileResult\(data\)\)/)
   }
 })
 

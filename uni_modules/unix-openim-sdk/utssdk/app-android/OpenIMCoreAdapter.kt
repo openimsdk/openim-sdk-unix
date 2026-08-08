@@ -224,6 +224,120 @@ object OpenIMCoreAdapter {
         2109 -> {
           NativeOpenIMSDK.getBlackList(operationID, resolve, reject)
         }
+        2110 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.inviteUserToGroup(operationID, request.getString("groupID"), request.getString("reason"), request.getString("userIDList"), resolve, reject)
+        }
+        2111 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.kickGroupMember(operationID, request.getString("groupID"), request.getString("reason"), request.getString("userIDList"), resolve, reject)
+        }
+        2112 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.isJoinGroup(operationID, request.getString("groupID"), resolve, reject)
+        }
+        2113 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getSpecifiedGroupMembersInfo(operationID, request.getString("groupID"), request.getString("userIDList"), resolve, reject)
+        }
+        2114 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getUsersInGroup(operationID, request.getString("groupID"), request.getString("userIDList"), resolve, reject)
+        }
+        2115 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.searchGroupMembers(operationID, request.getString("searchParams"), resolve, reject)
+        }
+        2116 -> {
+          NativeOpenIMSDK.getJoinedGroupList(operationID, resolve, reject)
+        }
+        2117 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getJoinedGroupListPage(operationID, request.getDouble("offset"), request.getDouble("count"), resolve, reject)
+        }
+        2118 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.createGroup(operationID, request.getString("groupInfo"), resolve, reject)
+        }
+        2119 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setGroupInfo(operationID, request.getString("groupInfo"), resolve, reject)
+        }
+        2120 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.setGroupMemberInfo(operationID, request.getString("memberInfo"), resolve, reject)
+        }
+        2121 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.joinGroup(operationID, request.getString("groupID"), request.getString("reqMsg"), request.getDouble("joinSource"), request.getString("ex"), resolve, reject)
+        }
+        2122 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.searchGroups(operationID, request.getString("searchParams"), resolve, reject)
+        }
+        2123 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.quitGroup(operationID, request.getString("groupID"), resolve, reject)
+        }
+        2124 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.dismissGroup(operationID, request.getString("groupID"), resolve, reject)
+        }
+        2125 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.changeGroupMute(operationID, request.getString("groupID"), request.getBoolean("isMute"), resolve, reject)
+        }
+        2126 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.changeGroupMemberMute(operationID, request.getString("groupID"), request.getString("userID"), request.getDouble("mutedSeconds"), resolve, reject)
+        }
+        2127 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.transferGroupOwner(operationID, request.getString("groupID"), request.getString("newOwnerUserID"), resolve, reject)
+        }
+        2128 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getGroupApplicationListAsApplicant(operationID, request.getString("request"), resolve, reject)
+        }
+        2129 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getGroupApplicationListAsRecipient(operationID, request.getString("request"), resolve, reject)
+        }
+        2130 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getGroupApplicationUnhandledCount(operationID, request.getString("page"), resolve, reject)
+        }
+        2131 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.acceptGroupApplication(operationID, request.getString("groupID"), request.getString("fromUserID"), request.getString("handleMsg"), resolve, reject)
+        }
+        2132 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.refuseGroupApplication(operationID, request.getString("groupID"), request.getString("fromUserID"), request.getString("handleMsg"), resolve, reject)
+        }
+        2133 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.findMessageList(operationID, request.getString("findParams"), resolve, reject)
+        }
+        2134 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.updateFcmToken(operationID, request.getString("fcmToken"), request.getDouble("expireTime"), resolve, reject)
+        }
+        2135 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.subscribeUsersStatus(operationID, request.getString("userIDList"), resolve, reject)
+        }
+        2136 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.unsubscribeUsersStatus(operationID, request.getString("userIDList"), resolve, reject)
+        }
+        2137 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.getUserStatus(operationID, request.getString("userIDList"), resolve, reject)
+        }
+        2138 -> {
+          NativeOpenIMSDK.getSubscribeUsersStatus(operationID, resolve, reject)
+        }
         2139 -> {
           val request = JSONObject(requestJSON)
           resolve(NativeOpenIMSDK.createTextMessage(operationID, request.getString("text")))
@@ -307,6 +421,14 @@ object OpenIMCoreAdapter {
         2159 -> {
           val request = JSONObject(requestJSON)
           NativeOpenIMSDK.sendMessageNotOss(operationID, request.getString("message"), request.getString("recvID"), request.getString("groupID"), request.getString("offlinePushInfo"), request.getBoolean("isOnlineOnly"), resolve, reject)
+        }
+        2160 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.uploadFile(operationID, request.getString("uploadParams"), resolve, reject)
+        }
+        2161 -> {
+          val request = JSONObject(requestJSON)
+          NativeOpenIMSDK.uploadLogs(operationID, request.getDouble("line"), request.getString("ex"), resolve, reject)
         }
         else -> reject(LOCAL_ERROR_CODE, "Unsupported OpenIM callable ID: " + callableID.toString())
       }

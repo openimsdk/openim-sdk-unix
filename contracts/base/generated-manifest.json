@@ -5,8 +5,8 @@
   "inputs": [
     {
       "path": "contracts/base/contract.json",
-      "sha256": "9e8f7c0b81dc927615c765a6dbcbde5b16e6f44a65e71c6a3319c9e496663890",
-      "bytes": 325758
+      "sha256": "53b626c7302d53c52e89b00c3947c4f2157551b1d2fa45f0aa267d4eaddc3cc6",
+      "bytes": 321768
     },
     {
       "path": "sdk-src/uts/app-android/index.template.uts",
@@ -45,8 +45,8 @@
     },
     {
       "path": "tooling/src/generate.ts",
-      "sha256": "e0fe3c06b9c8a51debea8c423a682b2ce1ba997f8c206b68d6fd5595416bb357",
-      "bytes": 23948
+      "sha256": "b398b4cb735e219417d68013d58b862089198b4e67d162b610c9bbbc34460d40",
+      "bytes": 24018
     },
     {
       "path": "tooling/src/model.ts",
@@ -82,13 +82,13 @@
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/index.uts",
-      "sha256": "8f7de88dafe81a6dd4983a066191373f1712771c55cac71a43425463adc42ded",
-      "bytes": 82431
+      "sha256": "e0430fdfa8b3e39206ebd77722c2200d1def7f9fb2f361996064d226a7684638",
+      "bytes": 84497
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts",
-      "sha256": "cdde2eba841c77b09b7711754f7c83b43b588092612cd08267193b510aae600a",
-      "bytes": 83830
+      "sha256": "e122cea52ad46f6c4530ac773f358b2fdd7333c97db5aa817fc3d85bf68f8557",
+      "bytes": 85738
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/events.uts",
@@ -122,17 +122,17 @@
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMCoreAdapter.kt",
-      "sha256": "2d670723806b1d6f30ecc3b60cede85be90dc911c2b2e64cef1dbdb8a429dd82",
-      "bytes": 15992
+      "sha256": "48810e23f87630ad993004ea958c80e37997013a3621f538971c09fd8db318c8",
+      "bytes": 22094
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMCoreAdapter.swift",
-      "sha256": "a6125edfccb410e195b0dde179974bf42fbd6a97a5288fed53e0d0d15635cf45",
-      "bytes": 19952
+      "sha256": "42e6f67acb92e49b8d0391ae93b107fe0c389fbacd409d47482f8bd50b82ed7c",
+      "bytes": 26949
     },
     {
       "path": "contracts/base/surface.snapshot.json",
-      "sha256": "e3204b8f69d3e11bdf0c97b3d1cf739348847663a3cdf21b1ab62006584e3c91",
+      "sha256": "581bf6340aea21e07c17e66892994ff7aa356d5ce057452b8e72cf6697192a68",
       "bytes": 106843
     },
     {
