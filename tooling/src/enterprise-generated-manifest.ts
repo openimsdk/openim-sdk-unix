@@ -25,6 +25,7 @@ export const ENTERPRISE_GENERATOR_AUTHORITY_INPUTS = [
   'sdk-src/native/android/OpenIMDriverRuntime.kt',
   'sdk-src/native/ios/OpenIMDriverRuntime.swift',
   'sdk-src/native/harmony/OpenIMHarmonyDriver.ets',
+  'tooling/src/harmony-platform-driver.ts',
   'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har',
 ] as const
 

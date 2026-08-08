@@ -30,6 +30,8 @@ import {
   type HarmonyMonomorphicManifest,
 } from './harmony-monomorphize.js'
 import { renderHarmonyDriverBindings, renderHarmonyOperationCodes } from './harmony-bindings.js'
+import { renderHarmonyPlatformDriver } from './harmony-platform-driver.js'
+import { renderNativeCoreAdapter, renderPlatformDriverUTS } from './platform-driver.js'
 import { buildEnterpriseResponseSchemas, buildEnterpriseTestDisposition } from './test-contract.js'
 
 export interface HarmonyFacadeProjectionEntry {
@@ -146,6 +148,23 @@ function composeCallable(
   }
 }
 
+function contractifyHarmonyDeclaration(callable: ContractCallable, declaration: string): string {
+  if (callable.role !== 'operation') return declaration
+  let result = declaration
+    .replace(/OpenIMHarmonyDriver\.callAsync\(\d+/g, `callHarmonyDriverAsync(${callable.id}`)
+    .replace(/callHarmonyDriverAsync\(400\d{3}/g, `callHarmonyDriverAsync(${callable.id}`)
+    .replace(/(invokeHarmonyEmpty\()('(?:[^'\\]|\\.)*')/g, `$1${callable.id}, $2`)
+    .replace(/(invokeHarmonyMapped<[^\n]+?>\()('(?:[^'\\]|\\.)*')/g, `$1${callable.id}, $2`)
+  if (callable.name === 'deleteConversation') {
+    result = `export const deleteConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'deleteConversationAndDeleteAllMsg', makeConversationIDReq(conversationID), operationID) }`
+  }
+  if (callable.name === 'updateFriends') {
+    result = `export const updateFriends = function (params : OpenIMUpdateFriendsParams, operationID ?: string | null) : Promise<string> { return updateFriendsSequential(${callable.id}, params, operationID) }`
+  }
+  assert(!/400\d{3}/.test(result), `Harmony callable retained a legacy operation ID: ${callable.name}`)
+  return result
+}
+
 export function composeEnterpriseContract(
   base: ContractDocument,
   delta: EnterpriseDeltaDocument,
@@ -169,7 +188,7 @@ export function composeEnterpriseContract(
     const override = base.callables.some((baseCallable) => baseCallable.name === value.name)
       ? overrides.get(value.name)
       : undefined
-    return composeCallable(value, declaration, override)
+    return composeCallable(value, contractifyHarmonyDeclaration(value, declaration), override)
   })
   for (const override of overrides.values()) {
     assert(base.callables.some((value) => value.name === override.name), `Unknown Enterprise callable override: ${override.name}`)
@@ -440,6 +459,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
   const harmony = monomorphizeHarmonySource(harmonyRaw)
   const harmonyDriver = renderHarmonyDriverBindings(privateRoot)
   const harmonyOperationCodes = renderHarmonyOperationCodes(privateRoot)
+  const harmonyPlatformDriver = renderHarmonyPlatformDriver(contract)
   return normalizeOutputs([
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'),
@@ -478,12 +498,32 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
       content: generatedSource(readFileSync(join(publicRoot, 'sdk-src/native/ios/OpenIMDriverRuntime.swift'), 'utf8')),
     },
     {
+      path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/platform-driver.uts'),
+      content: generatedSource(renderPlatformDriverUTS('android')),
+    },
+    {
+      path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-ios/platform-driver.uts'),
+      content: generatedSource(renderPlatformDriverUTS('ios')),
+    },
+    {
+      path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMCoreAdapter.kt'),
+      content: generatedSource(renderNativeCoreAdapter(contract, 'android')),
+    },
+    {
+      path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMCoreAdapter.swift'),
+      content: generatedSource(renderNativeCoreAdapter(contract, 'ios')),
+    },
+    {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/index.uts'),
       content: harmony.source,
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/OpenIMHarmonyDriver.ets'),
       content: harmonyDriver,
+    },
+    {
+      path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/platform-driver.uts'),
+      content: generatedSource(harmonyPlatformDriver),
     },
     {
       path: join(privateRoot, 'sdk-src/uts/app-harmony/harmony-operation-codes.uts'),

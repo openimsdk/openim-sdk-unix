@@ -8,7 +8,7 @@ const OPERATIONS_START = '  // <openim-generated-harmony-operations>'
 const OPERATIONS_END = '  // </openim-generated-harmony-operations>'
 
 export type HarmonyTypedMethod = {
-  code: number
+  harOrdinal: number
   name: string
   requestType: string | null
   responseType: string
@@ -19,6 +19,69 @@ export type HarmonyNativeEvent = {
   name: string
   value: number
 }
+
+export type HarmonyContractMethodBinding = {
+  callableID: number
+  callableName: string
+  methodName: string
+}
+
+const HARMONY_METHOD_ALIASES: Record<string, string> = {
+  getSdkVersion: 'version',
+  getAdvancedHistoryMessageList: 'getHistoryMessageList',
+  getGroupMemberList: 'getGroupMembers',
+  deleteMessageFromLocalStorage: 'deleteMessageFromLocal',
+  deleteAllMsgFromLocal: 'deleteAllMessageFromLocal',
+  deleteAllMsgFromLocalAndSvr: 'deleteAllMsgFromLocalAndServer',
+  insertSingleMessageToLocalStorage: 'insertSingleMessageToLocal',
+  insertGroupMessageToLocalStorage: 'insertGroupMessageToLocal',
+  getSpecifiedFriendsInfo: 'getSpecifiedFriends',
+  getFriendApplicationListAsRecipient: 'getFriendApplication',
+  getFriendApplicationListAsApplicant: 'getFriendApplication',
+  getFriendList: 'getFriends',
+  getFriendListPage: 'getFriendsPage',
+  deleteConversation: 'deleteConversationAndDeleteAllMsg',
+  updateFriends: 'updateFriend',
+  acceptFriendApplication: 'handleFriendApplication',
+  refuseFriendApplication: 'handleFriendApplication',
+  removeBlack: 'deleteBlack',
+  getBlackList: 'getBlacks',
+  getJoinedGroupList: 'getJoinedGroups',
+  getJoinedGroupListPage: 'getJoinedGroupsPage',
+  getGroupApplicationListAsApplicant: 'getGroupApplication',
+  getGroupApplicationListAsRecipient: 'getGroupApplication',
+  acceptGroupApplication: 'handleGroupApplication',
+  refuseGroupApplication: 'handleGroupApplication',
+  subscribeUsersStatus: 'subscribeUsersOnlineStatus',
+  unsubscribeUsersStatus: 'unsubscribeUsersOnlineStatus',
+  getUserStatus: 'subscribeUsersOnlineStatus',
+  getSubscribeUsersStatus: 'subscribeUsersOnlineStatus',
+  createImageMessageFromFullPath: 'createImageMessage',
+  createSoundMessageFromFullPath: 'createSoundMessage',
+  createVideoMessageFromFullPath: 'createVideoMessage',
+  createFileMessageFromFullPath: 'createFileMessage',
+  sendMessageNotOss: 'sendMessage',
+  uploadLogs: 'uploadSDKData',
+}
+
+const HARMONY_LOCAL_OR_UNSUPPORTED_OPERATIONS = new Set([
+  'getLoginUserID',
+  'getOpenIMDataPath',
+  'updateFcmToken',
+  'updateToken',
+  'translateText',
+  'getArchivedConversationList',
+  'translateMessage',
+])
+
+const HARMONY_SPECIAL_METHODS = new Set([
+  'initSDK',
+  'login',
+  'logout',
+  'unInitSDK',
+  'getLoginStatus',
+  'version',
+])
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -44,7 +107,7 @@ export function harmonyTypedMethods(privateRoot: string): HarmonyTypedMethod[] {
     const requestMatch = /^params: ([A-Za-z_$][\w$]*), operationID\?: string$/.exec(parameters)
     assert(noRequest || requestMatch != null, `Unsupported Harmony typed method signature: ${match[0]}`)
     methods.push({
-      code: 400001 + methods.length,
+      harOrdinal: methods.length + 1,
       name,
       requestType: noRequest ? null : requestMatch?.[1] ?? null,
       responseType,
@@ -53,6 +116,29 @@ export function harmonyTypedMethods(privateRoot: string): HarmonyTypedMethod[] {
   }
   assert(methods.length === 142, `Expected 142 typed Harmony Promise methods, got ${methods.length}`)
   return methods
+}
+
+export function harmonyContractMethodBindings(privateRoot: string): HarmonyContractMethodBinding[] {
+  const base = JSON.parse(readFileSync(join(privateRoot, 'contracts/base/contract.json'), 'utf8')) as {
+    callables: Array<{ id: number; name: string; role: string }>
+  }
+  const delta = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8')) as {
+    callables: Array<{ id: number; name: string; role: string }>
+  }
+  const nativeMethods = new Set(harmonyTypedMethods(privateRoot).map((method) => method.name))
+  const bindings: HarmonyContractMethodBinding[] = []
+  const missing: string[] = []
+  for (const callable of [...base.callables, ...delta.callables]) {
+    if (callable.role !== 'operation') continue
+    const methodName = HARMONY_METHOD_ALIASES[callable.name] ?? callable.name
+    if (nativeMethods.has(methodName)) {
+      bindings.push({ callableID: callable.id, callableName: callable.name, methodName })
+    } else if (!HARMONY_LOCAL_OR_UNSUPPORTED_OPERATIONS.has(callable.name)) {
+      missing.push(`${callable.id}/${callable.name}->${methodName}`)
+    }
+  }
+  assert(missing.length === 0, `Harmony contract operations lack HAR bindings: ${missing.join(', ')}`)
+  return bindings
 }
 
 export function harmonyNativeEvents(privateRoot: string): HarmonyNativeEvent[] {
@@ -103,19 +189,78 @@ function renderMethod(method: HarmonyTypedMethod): string {
   ].filter((line) => line !== '').join('\n')
 }
 
-function renderOperations(methods: HarmonyTypedMethod[]): string {
-  const functions = methods.map(renderMethod).join('\n\n')
-  const cases = methods.map((method) => [
-    `      case ${method.code}:`,
-    `        return OpenIMHarmonyDriver.${methodName(method.name)}(requestJSON, operationID)`,
-  ].join('\n')).join('\n')
-  return `${functions}\n\n  static callAsync(operationCode: number, operationID: string, requestJSON: string): Promise<string> {\n    switch (operationCode) {\n${cases}\n      default:\n        return Promise.reject(new Error('Unsupported Harmony operation code: ' + String(operationCode)))\n    }\n  }\n`
+function renderOperations(
+  methods: HarmonyTypedMethod[],
+  bindings: HarmonyContractMethodBinding[],
+  harVersion: string,
+): string {
+  const functions = methods.filter((method) => !HARMONY_SPECIAL_METHODS.has(method.name)).map(renderMethod).join('\n\n')
+  const cases = bindings
+    .filter((binding) => binding.callableName !== 'getSdkVersion')
+    .map((binding) => {
+      let invoke = `OpenIMHarmonyDriver.${methodName(binding.methodName)}(requestJSON, operationID)`
+      if (binding.callableName === 'initSDK') invoke = 'OpenIMHarmonyDriver.callContractInitSDK(requestJSON, operationID)'
+      if (binding.callableName === 'login') invoke = 'OpenIMHarmonyDriver.callContractLogin(requestJSON, operationID)'
+      if (binding.callableName === 'logout') invoke = 'OpenIMHarmonyDriver.logout(operationID)'
+      if (binding.callableName === 'getLoginStatus') invoke = 'OpenIMHarmonyDriver.callContractGetLoginStatus(operationID)'
+      if (binding.callableName === 'unInitSDK') invoke = 'OpenIMHarmonyDriver.unInitSDK(operationID)'
+      return [`      case ${binding.callableID}:`, `        return ${invoke}`].join('\n')
+    })
+    .join('\n')
+  return `${functions}\n\n  private static callContractInitSDK(requestJSON: string, operationID: string): Promise<string> {
+    const request: OpenIMDriverInitRequest = JSON.parse(requestJSON) as OpenIMDriverInitRequest
+    return OpenIMHarmonyDriver.initSDK(
+      request.apiAddr,
+      request.wsAddr,
+      request.dataDir,
+      request.logFilePath,
+      request.logLevel,
+      request.isLogStandardOutput,
+      operationID
+    ).then((initialized: boolean): string => initialized ? 'true' : 'false')
+  }
+
+  private static callContractLogin(requestJSON: string, operationID: string): Promise<string> {
+    const request: LoginReq = JSON.parse(requestJSON) as LoginReq
+    return OpenIMHarmonyDriver.login(request.userID, request.token, operationID)
+  }
+
+  private static callContractGetLoginStatus(operationID: string): Promise<string> {
+    return OpenIMHarmonyDriver.getLoginStatus(operationID).then((status: number): string => String(status))
+  }
+
+  static callAsync(callableID: number, operationID: string, requestJSON: string): Promise<string> {
+    switch (callableID) {
+${cases}
+      default:
+        return Promise.reject(new Error('Unsupported Harmony callable ID: ' + String(callableID)))
+    }
+  }
+
+  static callSync(callableID: number, operationID: string, requestJSON: string): string {
+    switch (callableID) {
+      case 2056:
+        return '${harVersion}'
+      default:
+        throw new Error('Unsupported Harmony synchronous callable ID: ' + String(callableID))
+    }
+  }
+`
+}
+
+function harPackageVersion(privateRoot: string): string {
+  const harPath = join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har')
+  const manifest = execFileSync('tar', ['-xOzf', harPath, 'package/oh-package.json5'], { encoding: 'utf8' })
+  const version = (JSON.parse(manifest) as { version?: string }).version
+  assert(version != null && version !== '', 'Harmony HAR package version is missing')
+  return version
 }
 
 export function renderHarmonyDriverBindings(privateRoot: string): string {
   const driverPath = join(privateRoot, 'sdk-src/native/harmony/OpenIMHarmonyDriver.ets')
   const source = readFileSync(driverPath, 'utf8')
   const methods = harmonyTypedMethods(privateRoot)
+  const bindings = harmonyContractMethodBindings(privateRoot)
   const manualImports = manualHarImports(source)
   const generatedImports = new Set<string>()
   for (const method of methods) {
@@ -127,21 +272,15 @@ export function renderHarmonyDriverBindings(privateRoot: string): string {
     ? ''
     : `import {\n${importNames.map((name) => `  ${name}`).join(',\n')}\n} from '@openimsdk/imsdk'\n`
   const withImports = replaceRegion(source, IMPORT_START, IMPORT_END, importBlock)
-  return replaceRegion(withImports, OPERATIONS_START, OPERATIONS_END, renderOperations(methods))
+  return replaceRegion(withImports, OPERATIONS_START, OPERATIONS_END, renderOperations(methods, bindings, harPackageVersion(privateRoot)))
 }
 
 export function renderHarmonyOperationCodes(privateRoot: string): string {
-  const methods = harmonyTypedMethods(privateRoot)
-  const mappings = methods.map((method) => [
-    `  if (method == '${method.name}') {`,
-    `    return ${method.code}`,
-    '  }',
-  ].join('\n')).join('\n')
   const events = harmonyNativeEvents(privateRoot)
   const eventMappings = events.map((event) => [
     `  if (eventName == '${event.name}') {`,
     `    return ${event.value}`,
     '  }',
   ].join('\n')).join('\n')
-  return `// Generated from the locked Harmony HAR ABI. Do not edit.\nexport function harmonyOperationCode(method : string) : number {\n${mappings}\n  return -1\n}\n\nexport function harmonyEventCode(eventName : string) : number {\n${eventMappings}\n  return -1\n}\n`
+  return `// Generated from the locked Harmony HAR ABI. Do not edit.\nexport function harmonyEventCode(eventName : string) : number {\n${eventMappings}\n  return -1\n}\n`
 }

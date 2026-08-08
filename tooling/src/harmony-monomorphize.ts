@@ -76,7 +76,7 @@ function renderReject(type: string): string {
 
 function renderMapped(type: string): string {
   const name = mappedName(type)
-  return `function ${name}(method : string, params : ESObject, mapper : (payload : ESObject) => ${type}, operationID ?: string | null) : Promise<${type}> {\n  return ${wrapName(type)}(OpenIMHarmonyDriver.callAsync(harmonyOperationCode(method), normalizeOperationID(operationID), stringifyESObject(params)).then((payloadJSON : string) : ${type} => {\n    return mapper(parseHarmonyResponseObject(payloadJSON, method))\n  }), method)\n}`
+  return `function ${name}(callableID : number, method : string, params : ESObject, mapper : (payload : ESObject) => ${type}, operationID ?: string | null) : Promise<${type}> {\n  return ${wrapName(type)}(callHarmonyDriverAsync(callableID, normalizeOperationID(operationID), stringifyESObject(params)).then((payloadJSON : string) : ${type} => {\n    return mapper(parseHarmonyResponseObject(payloadJSON, method))\n  }), method)\n}`
 }
 
 function replaceRegion(source: string, content: string): string {
