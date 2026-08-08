@@ -362,8 +362,8 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
         callable: name,
         handlerType: androidHandler,
         dispatchArguments: {
-          android: dispatchArguments(androidFunction.getText(androidEvents.sourceFile)),
-          ios: dispatchArguments(iosFunction.getText(iosEvents.sourceFile)),
+          android: dispatchArguments(androidFunction.getText(androidEvents.sourceFile), androidEvents.text, name),
+          ios: dispatchArguments(iosFunction.getText(iosEvents.sourceFile), iosEvents.text, name),
           harmony: '',
         },
         rawPayload: androidHandler === 'OpenIMStringEventHandler',
