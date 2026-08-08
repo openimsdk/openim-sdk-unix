@@ -1,39 +1,8 @@
 import type { ContractCallable, ContractDocument, DriverRequestField, Platform } from './model.js'
 
-export const PLATFORM_DRIVER_SLICE_NAMES = [
-  'initSDK',
-  'login',
-  'logout',
-  'getLoginStatus',
-  'getLoginUserID',
-  'getSdkVersion',
-  'unInitSDK',
-  'createTextMessage',
-  'createImageMessageFromFullPath',
-  'createImageMessageByURL',
-  'createCustomMessage',
-  'createQuoteMessage',
-  'createAdvancedQuoteMessage',
-  'createAdvancedTextMessage',
-  'createTextAtMessage',
-  'createSoundMessageFromFullPath',
-  'createSoundMessageByURL',
-  'createVideoMessageFromFullPath',
-  'createVideoMessageByURL',
-  'createFileMessageFromFullPath',
-  'createFileMessageByURL',
-  'createMergerMessage',
-  'createForwardMessage',
-  'createFaceMessage',
-  'createLocationMessage',
-  'createCardMessage',
-  'sendMessage',
-  'sendMessageNotOss',
-] as const
-
 export interface PlatformDriverBinding {
   id: number
-  name: typeof PLATFORM_DRIVER_SLICE_NAMES[number]
+  name: string
 }
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -41,11 +10,10 @@ function assert(condition: unknown, message: string): asserts condition {
 }
 
 export function platformDriverBindings(contract: ContractDocument): PlatformDriverBinding[] {
-  return PLATFORM_DRIVER_SLICE_NAMES.map((name) => {
-    const callable = contract.callables.find((candidate) => candidate.name === name)
-    assert(callable != null, `Missing PlatformDriver callable: ${name}`)
-    return { id: callable.id, name }
-  })
+  return contract.callables
+    .filter((callable) => callable.lowering?.kind === 'platform-driver')
+    .map(({ id, name }) => ({ id, name }))
+    .sort((left, right) => left.id - right.id)
 }
 
 export function renderPlatformDriverUTS(platform: 'android' | 'ios'): string {
@@ -74,8 +42,8 @@ export function driverBindEventSink(
 `
 }
 
-function bindingIDs(contract: ContractDocument): Record<PlatformDriverBinding['name'], number> {
-  return Object.fromEntries(platformDriverBindings(contract).map((binding) => [binding.name, binding.id])) as Record<PlatformDriverBinding['name'], number>
+function bindingIDs(contract: ContractDocument): Record<string, number> {
+  return Object.fromEntries(platformDriverBindings(contract).map((binding) => [binding.name, binding.id]))
 }
 
 function nativeInvocationCallables(contract: ContractDocument): ContractCallable[] {

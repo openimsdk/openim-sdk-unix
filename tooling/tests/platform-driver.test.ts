@@ -5,7 +5,6 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import type { ContractDocument } from '../src/model.js'
 import {
-  PLATFORM_DRIVER_SLICE_NAMES,
   platformDriverBindings,
   renderNativeCoreAdapter,
   renderPlatformDriverUTS,
@@ -40,41 +39,23 @@ const PATH_MESSAGE_CREATORS = [
 ] as const
 
 test('first PlatformDriver slice keeps canonical contract IDs', () => {
-  assert.deepEqual(
-    platformDriverBindings(contract).map(({ id, name }) => ({ id, name })),
-    [
-      { id: 2051, name: 'initSDK' },
-      { id: 2052, name: 'login' },
-      { id: 2053, name: 'logout' },
-      { id: 2054, name: 'getLoginStatus' },
-      { id: 2055, name: 'getLoginUserID' },
-      { id: 2056, name: 'getSdkVersion' },
-      { id: 2058, name: 'unInitSDK' },
-      { id: 2139, name: 'createTextMessage' },
-      ...[
-        ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
-        ...PATH_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
-      ].sort((left, right) => left.id - right.id),
-      { id: 2158, name: 'sendMessage' },
-      { id: 2159, name: 'sendMessageNotOss' },
-    ],
-  )
-  assert.deepEqual(PLATFORM_DRIVER_SLICE_NAMES, [
-    'initSDK',
-    'login',
-    'logout',
-    'getLoginStatus',
-    'getLoginUserID',
-    'getSdkVersion',
-    'unInitSDK',
-    'createTextMessage',
+  const expected = [
+    { id: 2051, name: 'initSDK' },
+    { id: 2052, name: 'login' },
+    { id: 2053, name: 'logout' },
+    { id: 2054, name: 'getLoginStatus' },
+    { id: 2055, name: 'getLoginUserID' },
+    { id: 2056, name: 'getSdkVersion' },
+    { id: 2058, name: 'unInitSDK' },
+    { id: 2139, name: 'createTextMessage' },
     ...[
       ...IN_MEMORY_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
       ...PATH_MESSAGE_CREATORS.map(([name, id]) => ({ id, name })),
-    ].sort((left, right) => left.id - right.id).map(({ name }) => name),
-    'sendMessage',
-    'sendMessageNotOss',
-  ])
+    ].sort((left, right) => left.id - right.id),
+    { id: 2158, name: 'sendMessage' },
+    { id: 2159, name: 'sendMessageNotOss' },
+  ]
+  assert.deepEqual(platformDriverBindings(contract), expected)
 })
 
 test('UTS PlatformDriver exposes exactly the three free-function entries', () => {
@@ -102,7 +83,8 @@ test('native CoreAdapters dispatch the first slice by canonical callable ID', ()
 })
 
 test('first compiler slice stores lowering data instead of platform implementation bodies', () => {
-  for (const name of [...PLATFORM_DRIVER_SLICE_NAMES, 'off', 'offAll']) {
+  const driverNames = platformDriverBindings(contract).map(({ name }) => name)
+  for (const name of [...driverNames, 'off', 'offAll']) {
     const callable = contract.callables.find((candidate) => candidate.name === name)
     assert.notEqual(callable, undefined)
     assert.equal('declaration' in callable!, false)
@@ -110,7 +92,7 @@ test('first compiler slice stores lowering data instead of platform implementati
   }
 
   const serialized = JSON.stringify(contract.callables.filter((callable) => (
-    PLATFORM_DRIVER_SLICE_NAMES.includes(callable.name as typeof PLATFORM_DRIVER_SLICE_NAMES[number])
+    driverNames.includes(callable.name)
     || callable.name === 'off'
     || callable.name === 'offAll'
   )))
@@ -142,7 +124,7 @@ test('first compiler slice is rendered from lowering data for both Public platfo
     assert.match(source, /driverCallAsync\(2159, readOperationID\(options\), requestJSON/)
     assert.match(source, /resolveSendMessageData\(data, 'sendMessage'/)
     assert.match(source, /resolveSendMessageData\(data, 'sendMessageNotOss'/)
-    for (const name of PLATFORM_DRIVER_SLICE_NAMES) {
+    for (const { name } of platformDriverBindings(contract)) {
       const declaration = source.split('\n').find((line) => line.startsWith(`export const ${name} =`))
       assert.notEqual(declaration, undefined)
       assert.doesNotMatch(declaration!, /NativeOpenIMSDK/)
