@@ -16,6 +16,7 @@ export const ENTERPRISE_GENERATED_MANIFEST_PATH = 'contracts/enterprise/generate
 export const ENTERPRISE_GENERATOR_AUTHORITY_INPUTS = [
   'contracts/base/contract.json',
   'contracts/enterprise/delta.json',
+  'contracts/enterprise/native-abi/harmony.json',
   'sdk-src/uts/app-android/index.enterprise.template.uts',
   'sdk-src/uts/app-ios/index.enterprise.template.uts',
   'sdk-src/uts/app-harmony/index.template.uts',
