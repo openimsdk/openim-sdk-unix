@@ -25,9 +25,12 @@ export interface ResponseSchemaDocument {
 
 export type TestDisposition = 'required' | 'capability-gated' | 'platform-unsupported' | 'negative-only' | 'diagnostic-only'
 export type EventDeliveryDisposition = 'required' | 'passive-only' | 'platform-unsupported'
+export type PlatformTestDisposition = 'required' | 'capability-negative' | 'platform-unsupported' | 'not-in-edition'
+export type CallableValidationAxis = 'completion' | 'structure' | 'semantic' | 'side-effect' | 'event'
+export type EventValidationAxis = 'delivery' | 'structure' | 'semantic' | 'ordering' | 'epoch'
 
 export interface TestDispositionDocument {
-  schemaVersion: 1
+  schemaVersion: 2
   edition: 'public' | 'enterprise'
   counts: { callables: number; events: number }
   callables: Array<{
@@ -37,6 +40,14 @@ export interface TestDispositionDocument {
     disposition: TestDisposition
     capability: string
     responseCodec: string
+    platforms: { android: PlatformTestDisposition; ios: PlatformTestDisposition; harmony: PlatformTestDisposition }
+    responseSchema: { document: string; root: string }
+    semanticProfile: string
+    sideEffectProbe: string
+    expectedEvents: string[]
+    negativeProfiles: string[]
+    cleanupAction: string
+    validationAxes: CallableValidationAxis[]
   }>
   events: Array<{
     caseId: string
@@ -44,6 +55,14 @@ export interface TestDispositionDocument {
     priority: 'P0' | 'P1' | 'P2'
     deliveryDisposition: EventDeliveryDisposition
     payloadProfile: 'void' | 'typed' | 'scalar' | 'opaque-string'
+    platforms: { android: PlatformTestDisposition; ios: PlatformTestDisposition; harmony: PlatformTestDisposition }
+    eventSchema: { document: string; root: string }
+    semanticProfile: string
+    sideEffectProbe: string
+    expectedEvents: string[]
+    negativeProfiles: string[]
+    cleanupAction: string
+    validationAxes: EventValidationAxis[]
   }>
 }
 
@@ -82,6 +101,33 @@ const p0EventNames = new Set([
   'onFriendApplicationAdded', 'onFriendAdded', 'onGroupApplicationAdded', 'onGroupMemberAdded',
   'onReceiveNewInvitation', 'onInviteeAccepted', 'onInviteeRejected', 'onInvitationCancelled',
   'onHangUp', 'onReceiveCustomSignaling',
+])
+
+const lifecycleCallables = new Set(['initSDK', 'login', 'logout', 'unInitSDK', 'getLoginStatus', 'getLoginUserID'])
+const messageDeliveryCallables = new Set(['sendMessage', 'sendMessageNotOss'])
+const uploadCallables = new Set(['uploadFile', 'uploadLogs', 'cancelUpload'])
+const harmonyUnsupportedCallables = new Set(['updateFcmToken', 'updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
+
+const expectedEventsByCallable = new Map<string, string[]>([
+  ['login', ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish']],
+  ['sendMessage', ['onSendMessageProgress', 'onRecvNewMessage']],
+  ['sendMessageNotOss', ['onSendMessageProgress', 'onRecvNewMessage']],
+  ['uploadFile', ['onUploadFileProgress']],
+  ['uploadLogs', ['onUploadLogsProgress']],
+  ['addFriend', ['onFriendApplicationAdded']],
+  ['acceptFriendApplication', ['onFriendAdded']],
+  ['refuseFriendApplication', ['onFriendApplicationRejected']],
+  ['createGroup', ['onJoinedGroupAdded']],
+  ['joinGroup', ['onGroupApplicationAdded']],
+  ['acceptGroupApplication', ['onGroupMemberAdded']],
+  ['refuseGroupApplication', ['onGroupApplicationRejected']],
+  ['signalingInvite', ['onReceiveNewInvitation']],
+  ['signalingInviteInGroup', ['onReceiveNewInvitation']],
+  ['signalingAccept', ['onInviteeAccepted']],
+  ['signalingReject', ['onInviteeRejected']],
+  ['signalingCancel', ['onInvitationCancelled']],
+  ['signalingHungUp', ['onHangUp']],
+  ['signalingSendCustomSignaling', ['onReceiveCustomSignaling']],
 ])
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -231,19 +277,105 @@ export function buildEnterpriseResponseSchemas(base: ContractDocument, delta: En
   return buildResponseSchemas('enterprise', [...base.types, ...delta.types], [...base.callables, ...delta.callables], [...base.events, ...delta.events], delta.typeExtensions)
 }
 
+function callablePlatformDisposition(
+  edition: 'public' | 'enterprise',
+  callable: ContractCallable,
+  capability: string,
+  platform: 'android' | 'ios' | 'harmony',
+): PlatformTestDisposition {
+  if (edition === 'public' && platform === 'harmony') return 'not-in-edition'
+  if (platform === 'harmony' && harmonyUnsupportedCallables.has(callable.name)) return 'platform-unsupported'
+  if (callable.binding[platform]?.kind === 'unsupported') return 'platform-unsupported'
+  if (capability !== 'core') return 'capability-negative'
+  return 'required'
+}
+
+function eventPlatformDisposition(
+  edition: 'public' | 'enterprise',
+  event: ContractEvent,
+  platform: 'android' | 'ios' | 'harmony',
+): PlatformTestDisposition {
+  if (edition === 'public' && platform === 'harmony') return 'not-in-edition'
+  return event.binding[platform] === 'unsupported-by-native-abi' ? 'platform-unsupported' : 'required'
+}
+
+function semanticProfile(callable: ContractCallable): string {
+  if (callable.role !== 'operation') return 'subscription-lifecycle'
+  if (lifecycleCallables.has(callable.name)) return 'lifecycle-state'
+  if (messageDeliveryCallables.has(callable.name)) return 'message-delivery-correlation'
+  if (/^create.*Message/.test(callable.name)) return 'message-content-correlation'
+  if (uploadCallables.has(callable.name)) return 'progress-terminal-correlation'
+  if (callable.name.startsWith('signaling')) return 'signaling-correlation'
+  if (/History|List|Search|Split|Page|Find/.test(callable.name)) return 'pagination-integrity'
+  if (/^(?:set|update|mark|delete|remove|add|accept|refuse|create|join|quit|dismiss|change|pin|revoke|typing|kick|invite)/.test(callable.name)) return 'mutation-observation'
+  return 'response-identity'
+}
+
+function sideEffectProbe(callable: ContractCallable): string {
+  if (callable.role !== 'operation') return 'registry-observation'
+  if (lifecycleCallables.has(callable.name)) return 'state-transition'
+  if (messageDeliveryCallables.has(callable.name) || callable.name.startsWith('signaling')) return 'cross-account-event-observation'
+  if (callable.name === 'uploadFile' || callable.name === 'uploadLogs' || callable.name === 'cancelUpload') return 'progress-and-result-observation'
+  if (/^(?:set|update|mark|delete|remove|pin|revoke|change)/.test(callable.name)) return 'read-after-write'
+  if (/^(?:add|accept|refuse|createGroup|joinGroup|quitGroup|dismissGroup|kickGroupMember|inviteUserToGroup)/.test(callable.name)) return 'cross-account-event-observation'
+  return 'none'
+}
+
+function negativeProfiles(callable: ContractCallable, capability: string): string[] {
+  if (callable.role === 'event-control') return ['forged-or-stale-subscription', 'callback-removal-during-dispatch']
+  if (callable.role === 'event-subscription') return ['off-subscription', 'off-all-event-name', 'stale-epoch']
+  if (capability === 'speech' || capability === 'translation') return ['feature-disabled-1080', 'invalid-input']
+  if (capability === 'push-launch') return ['missing-push-payload', 'expired-invitation']
+  if (callable.name === 'initSDK') return ['invalid-config', 'duplicate-init']
+  if (callable.name === 'login') return ['uninitialized', 'invalid-token']
+  if (callable.name === 'getSdkVersion' || callable.name === 'getOpenIMDataPath') return ['unsupported-callable-id']
+  return ['uninitialized', 'invalid-input']
+}
+
+function cleanupAction(callable: ContractCallable, probe: string): string {
+  if (callable.role === 'event-subscription') return 'off(subscription)'
+  if (callable.role === 'event-control') return 'none'
+  if (callable.name === 'initSDK') return 'unInitSDK()'
+  if (callable.name === 'login') return 'logout()'
+  if (callable.name === 'uploadFile' || callable.name === 'uploadLogs') return 'cancelUpload(cancelID)'
+  if (probe === 'read-after-write') return 'restore-via-read-before-write'
+  if (probe === 'cross-account-event-observation') return 'fixture-cleanup'
+  return 'none'
+}
+
+function callableValidationAxes(callable: ContractCallable, probe: string, expectedEvents: string[]): CallableValidationAxis[] {
+  const axes: CallableValidationAxis[] = ['completion']
+  if (callable.role === 'event-control') {
+    axes.push('semantic', 'side-effect')
+    return axes
+  }
+  axes.push('structure', 'semantic')
+  if (probe !== 'none') axes.push('side-effect')
+  if (expectedEvents.length > 0 || callable.role === 'event-subscription') axes.push('event')
+  return axes
+}
+
 function buildDisposition(
   edition: 'public' | 'enterprise',
   callables: ContractCallable[],
   events: ContractEvent[],
   responseSchemas: ResponseSchemaDocument,
 ): TestDispositionDocument {
+  const responseSchemaDocument = edition === 'public'
+    ? 'contracts/base/response-schemas.json'
+    : 'contracts/enterprise/response-schemas.json'
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     edition,
     counts: { callables: callables.length, events: events.length },
     callables: callables.map((callable) => {
       const capability = capabilityByCallable.get(callable.name) ?? 'core'
       const unsupported = callable.binding.android?.kind === 'unsupported' && callable.binding.ios?.kind === 'unsupported'
+      const profile = semanticProfile(callable)
+      const probe = sideEffectProbe(callable)
+      const expectedEvents = callable.role === 'event-subscription'
+        ? [callable.name]
+        : [...(expectedEventsByCallable.get(callable.name) ?? [])]
       return {
         caseId: `api/${callable.name}`,
         apiName: callable.name,
@@ -251,6 +383,18 @@ function buildDisposition(
         disposition: unsupported ? 'platform-unsupported' : capability !== 'core' ? 'capability-gated' : 'required',
         capability,
         responseCodec: callable.responseCodec,
+        platforms: {
+          android: callablePlatformDisposition(edition, callable, capability, 'android'),
+          ios: callablePlatformDisposition(edition, callable, capability, 'ios'),
+          harmony: callablePlatformDisposition(edition, callable, capability, 'harmony'),
+        },
+        responseSchema: { document: responseSchemaDocument, root: `callables.${callable.name}.schema` },
+        semanticProfile: profile,
+        sideEffectProbe: probe,
+        expectedEvents,
+        negativeProfiles: negativeProfiles(callable, capability),
+        cleanupAction: cleanupAction(callable, probe),
+        validationAxes: callableValidationAxes(callable, probe, expectedEvents),
       }
     }),
     events: events.map((event) => {
@@ -261,6 +405,18 @@ function buildDisposition(
         priority: p0EventNames.has(event.name) ? 'P0' : 'P1',
         deliveryDisposition: unsupported ? 'platform-unsupported' : p0EventNames.has(event.name) ? 'required' : 'passive-only',
         payloadProfile: responseSchemas.events[event.name]!.payloadProfile,
+        platforms: {
+          android: eventPlatformDisposition(edition, event, 'android'),
+          ios: eventPlatformDisposition(edition, event, 'ios'),
+          harmony: eventPlatformDisposition(edition, event, 'harmony'),
+        },
+        eventSchema: { document: responseSchemaDocument, root: `events.${event.name}.arguments` },
+        semanticProfile: event.rawPayload ? 'opaque-event-correlation' : 'typed-event-correlation',
+        sideEffectProbe: 'emitted-event-observation',
+        expectedEvents: [event.name],
+        negativeProfiles: ['off-subscription', 'off-all-event-name', 'stale-epoch'],
+        cleanupAction: 'off(subscription)',
+        validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch'],
       }
     }),
   }
