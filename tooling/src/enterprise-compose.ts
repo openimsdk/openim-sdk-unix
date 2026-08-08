@@ -274,12 +274,6 @@ function readDelta(path: string): EnterpriseDeltaDocument {
   return JSON.parse(readFileSync(path, 'utf8')) as EnterpriseDeltaDocument
 }
 
-function exportedDeclaration(path: string, name: string): string {
-  const value = extractExportedValues(parseSource(path)).find((entry) => entry.name === name)
-  assert(value != null, `Missing exported callable ${name}: ${path}`)
-  return value.declaration
-}
-
 function buildEnterpriseIndexTemplate(
   path: string,
   constants: Set<string>,
@@ -396,10 +390,12 @@ export function extractEnterpriseComposerAuthority(
   assert(loginOverride != null, 'Enterprise getLoginUserID override is missing')
   loginOverride.baseHash = callableOverrideHash(loginOverride.baseSignature)
   loginOverride.enterpriseHash = callableOverrideHash(loginOverride.enterpriseSignature)
-  loginOverride.declaration = {
-    android: exportedDeclaration(platformPaths.android, 'getLoginUserID'),
-    ios: exportedDeclaration(platformPaths.ios, 'getLoginUserID'),
-    harmony: demonomorphizeHarmonyText(exportedDeclaration(platformPaths.harmony, 'getLoginUserID'), manifest),
+  delete loginOverride.declaration
+  loginOverride.lowering = {
+    kind: 'platform-driver',
+    transport: 'async',
+    operationID: 'parameter',
+    request: 'empty-object',
   }
   loginOverride.binding = {
     android: loginCallable.binding.android,

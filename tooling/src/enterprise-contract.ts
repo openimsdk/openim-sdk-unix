@@ -479,7 +479,14 @@ export function verifyEnterpriseDelta(
     assert(override.reason === approved.reason, `Enterprise override reason changed: ${approved.name}`)
     assert(override.baseHash === sha256(normalizeContractText(override.baseSignature)), `Enterprise base override hash is stale: ${approved.name}`)
     assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseSignature)), `Enterprise override hash is stale: ${approved.name}`)
-    assert(override.declaration?.android != null && override.declaration.ios != null && override.declaration.harmony != null, `Enterprise override declarations are incomplete: ${approved.name}`)
+    assert(override.declaration == null, `Enterprise override embeds platform implementation declarations: ${approved.name}`)
+    assert(
+      override.lowering?.kind === 'platform-driver'
+      && override.lowering.transport === 'async'
+      && override.lowering.operationID === 'parameter'
+      && override.lowering.request === 'empty-object',
+      `Enterprise override lowering is incomplete: ${approved.name}`,
+    )
   }
   assert(delta.approvedBaseTypeOverrides?.length === APPROVED_BASE_TYPE_OVERRIDES.length, 'Enterprise approved base type override count changed')
   for (const approved of APPROVED_BASE_TYPE_OVERRIDES) {

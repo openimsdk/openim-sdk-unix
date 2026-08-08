@@ -36,7 +36,9 @@ function baseContract(): ContractDocument {
       signature: 'getLoginUserID():Promise<string>',
       completion: 'promise', responseCodec: 'raw-string', errorPolicy: 'frozen-native-rejection',
       rawString: true, role: 'operation',
-      declaration: { android: 'export const getLoginUserID = function () : Promise<string> { return Promise.resolve(\'\') }', ios: 'export const getLoginUserID = function () : Promise<string> { return Promise.resolve(\'\') }' },
+      lowering: {
+        kind: 'platform-driver', transport: 'async', operationID: 'empty', request: 'empty-object',
+      },
       binding: { android: { kind: 'native', symbol: 'getLoginUserID' }, ios: { kind: 'native', symbol: 'getLoginUserID' }, harmony: undefined },
       signatureHash: '',
     }],
@@ -65,10 +67,11 @@ test('Enterprise composition applies explicit overrides and additive type extens
       baseHash: callableOverrideHash('getLoginUserID():Promise<string>'),
       enterpriseHash: callableOverrideHash('getLoginUserID(operationID?:string|null):Promise<string>'),
       reason: 'native ABI',
-      declaration: {
-        android: 'export const getLoginUserID = function (operationID ?: string | null) : Promise<string> { return Promise.resolve(operationID ?? \'\') }',
-        ios: 'export const getLoginUserID = function (operationID ?: string | null) : Promise<string> { return Promise.resolve(operationID ?? \'\') }',
-        harmony: 'export const getLoginUserID = function (operationID ?: string | null) : Promise<string> { return Promise.resolve(operationID ?? \'\') }',
+      lowering: {
+        kind: 'platform-driver',
+        transport: 'async',
+        operationID: 'parameter',
+        request: 'empty-object',
       },
     }],
     approvedBaseTypeOverrides: [{
@@ -93,7 +96,10 @@ test('Enterprise composition applies explicit overrides and additive type extens
     edition: 'enterprise-harmony-facade',
     origin: { sourcePath: 'legacy', sourceSha256: '0'.repeat(64) },
     constants: [],
-    callables: [{ name: 'getLoginUserID', declaration: delta.approvedBaseCallableOverrides[0]!.declaration!.harmony! }],
+    callables: [{
+      name: 'getLoginUserID',
+      declaration: 'export const getLoginUserID = function (operationID ?: string | null) : Promise<string> { return Promise.resolve(operationID ?? \'\') }',
+    }],
     events: [],
   }
 
@@ -102,6 +108,9 @@ test('Enterprise composition applies explicit overrides and additive type extens
   assert.equal(result.types.find((value) => value.name === 'GetLoginUserID')?.declaration, enterpriseType)
   assert.equal(result.types.find((value) => value.name === 'Params')?.declaration, extendedParams)
   assert.equal(result.callables[0]?.signature, 'getLoginUserID(operationID?:string|null):Promise<string>')
+  assert.equal(result.callables[0]?.lowering?.kind, 'platform-driver')
+  assert.equal(result.callables[0]?.lowering?.operationID, 'parameter')
+  assert.equal(result.callables[0]?.declaration?.android, undefined)
   assert.equal(result.callables[0]?.declaration?.harmony, harmony.callables[0]?.declaration)
 })
 
