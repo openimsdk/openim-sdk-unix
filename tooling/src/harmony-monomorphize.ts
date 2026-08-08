@@ -99,13 +99,28 @@ function renderHelpers(manifest: HarmonyMonomorphicManifest): string {
   ].join('\n\n') + '\n'
 }
 
-export function renderHarmonyMonomorphicHelpers(privateRoot: string): string {
-  const source = readFileSync(facadePath(privateRoot), 'utf8')
-  return replaceRegion(source, renderHelpers(readManifest(privateRoot)))
+export function demonomorphizeHarmonyText(
+  source: string,
+  manifest: HarmonyMonomorphicManifest,
+): string {
+  let result = source
+  for (const type of manifest.wrapTypes) result = result.replaceAll(wrapName(type), `wrapHarmonyPromise<${type}>`)
+  for (const type of manifest.rejectTypes) result = result.replaceAll(rejectName(type), `rejectHarmonyPromise<${type}>`)
+  for (const type of manifest.mappedTypes) result = result.replaceAll(mappedName(type), `invokeHarmonyMapped<${type}>`)
+  return result
 }
 
-export function monomorphizeHarmonyFacade(privateRoot: string): HarmonyMonomorphicManifest {
-  let source = readFileSync(facadePath(privateRoot), 'utf8')
+export function demonomorphizeHarmonySource(
+  source: string,
+  manifest: HarmonyMonomorphicManifest,
+): string {
+  return replaceRegion(demonomorphizeHarmonyText(source, manifest), '')
+}
+
+export function monomorphizeHarmonySource(source: string): {
+  source: string
+  manifest: HarmonyMonomorphicManifest
+} {
   const calls = parseCalls(source)
   const mappedTypes = [...(calls.get('invokeHarmonyMapped') ?? [])].filter(Boolean).sort()
   const wrapTypes = [...new Set([...(calls.get('wrapHarmonyPromise') ?? []), ...mappedTypes])].filter(Boolean).sort()
@@ -117,14 +132,25 @@ export function monomorphizeHarmonyFacade(privateRoot: string): HarmonyMonomorph
     rejectTypes,
     mappedTypes,
   }
-  for (const type of wrapTypes) source = source.replaceAll(`wrapHarmonyPromise<${type}>`, wrapName(type))
-  for (const type of rejectTypes) source = source.replaceAll(`rejectHarmonyPromise<${type}>`, rejectName(type))
-  for (const type of mappedTypes) source = source.replaceAll(`invokeHarmonyMapped<${type}>`, mappedName(type))
-  assert(!/\b(?:wrapHarmonyPromise|rejectHarmonyPromise|invokeHarmonyMapped)\s*</.test(source), 'Harmony generic codec calls remain')
+  let result = source
+  for (const type of wrapTypes) result = result.replaceAll(`wrapHarmonyPromise<${type}>`, wrapName(type))
+  for (const type of rejectTypes) result = result.replaceAll(`rejectHarmonyPromise<${type}>`, rejectName(type))
+  for (const type of mappedTypes) result = result.replaceAll(`invokeHarmonyMapped<${type}>`, mappedName(type))
+  assert(!/\b(?:wrapHarmonyPromise|rejectHarmonyPromise|invokeHarmonyMapped)\s*</.test(result), 'Harmony generic codec calls remain')
+  return { source: replaceRegion(result, renderHelpers(manifest)), manifest }
+}
+
+export function renderHarmonyMonomorphicHelpers(privateRoot: string): string {
+  const source = readFileSync(facadePath(privateRoot), 'utf8')
+  return replaceRegion(source, renderHelpers(readManifest(privateRoot)))
+}
+
+export function monomorphizeHarmonyFacade(privateRoot: string): HarmonyMonomorphicManifest {
+  const projection = monomorphizeHarmonySource(readFileSync(facadePath(privateRoot), 'utf8'))
+  const { manifest, source } = projection
   const targetManifest = manifestPath(privateRoot)
   mkdirSync(dirname(targetManifest), { recursive: true })
   writeFileSync(targetManifest, `${JSON.stringify(manifest, null, 2)}\n`)
-  source = replaceRegion(source, renderHelpers(manifest))
   writeFileSync(facadePath(privateRoot), source.endsWith('\n') ? source : `${source}\n`)
   return manifest
 }

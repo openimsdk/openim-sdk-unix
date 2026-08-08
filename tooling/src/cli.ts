@@ -27,6 +27,16 @@ import {
   previewEnterpriseImport,
   readEnterpriseMigrationApproval,
 } from './enterprise-migration.js'
+import {
+  extractEnterpriseComposerAuthority,
+  generateEnterprise,
+  writeEnterpriseComposerAuthority,
+} from './enterprise-compose.js'
+import {
+  assertEnterpriseGeneratedManifestCurrent,
+  verifyEnterpriseDeletionRegeneration,
+  writeEnterpriseGeneratedManifest,
+} from './enterprise-generated-manifest.js'
 
 const toolingDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
 const root = resolve(toolingDirectory, '..')
@@ -142,6 +152,31 @@ switch (command) {
     const delta = JSON.parse((await import('node:fs')).readFileSync(resolve(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'))
     writeEnterpriseStableIDRegistry(privateRoot, buildEnterpriseStableIDRegistry(delta))
     console.log('Initialized the Enterprise stable ID registry with retired callable 200001.')
+    break
+  }
+  case 'enterprise:composer:extract': {
+    const privateRoot = requiredArgument('--private-root')
+    const approvalIndex = process.argv.indexOf('--approve-bootstrap')
+    const approval = approvalIndex >= 0 ? process.argv[approvalIndex + 1] : undefined
+    if (approval !== 'current-facade') {
+      throw new Error('Enterprise composer authority extraction requires --approve-bootstrap current-facade')
+    }
+    writeEnterpriseComposerAuthority(privateRoot, extractEnterpriseComposerAuthority(root, privateRoot))
+    console.log('Extracted the one-time Enterprise compiler authority from the approved current façade.')
+    break
+  }
+  case 'enterprise:generate': {
+    const privateRoot = requiredArgument('--private-root')
+    generateEnterprise(root, privateRoot)
+    writeEnterpriseGeneratedManifest(root, privateRoot)
+    console.log('Generated the Enterprise projection from Public base plus Enterprise authority.')
+    break
+  }
+  case 'enterprise:verify-generated': {
+    const privateRoot = requiredArgument('--private-root')
+    assertEnterpriseGeneratedManifestCurrent(root, privateRoot)
+    const result = verifyEnterpriseDeletionRegeneration(root, privateRoot)
+    console.log(`Enterprise generated projection verified (${result.outputCount} reproducible outputs).`)
     break
   }
   case 'enterprise:verify': {

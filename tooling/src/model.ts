@@ -108,7 +108,24 @@ export interface EnterpriseDeltaDocument {
   }
   expectedTotal: ContractDocument['expected']
   expectedDelta: ContractDocument['expected'] & { typeExtensions: number }
-  approvedBaseCallableOverrides: Array<{ name: string; baseSignature: string; enterpriseSignature: string; reason: string }>
+  approvedBaseCallableOverrides: Array<{
+    name: string
+    baseSignature: string
+    enterpriseSignature: string
+    baseHash?: string
+    enterpriseHash?: string
+    reason: string
+    declaration?: SourceByPlatform
+    binding?: Record<Platform, NativeBinding | undefined>
+  }>
+  approvedBaseTypeOverrides?: Array<{
+    name: string
+    baseDeclaration: string
+    enterpriseDeclaration: string
+    baseHash: string
+    enterpriseHash: string
+    reason: string
+  }>
   constants: ContractConstant[]
   types: ContractType[]
   typeExtensions: EnterpriseTypeExtension[]

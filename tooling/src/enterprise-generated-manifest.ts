@@ -1,0 +1,181 @@
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { buildEnterpriseGeneratedOutputs, generateEnterprise } from './enterprise-compose.js'
+import { sha256 } from './source.js'
+
+export const ENTERPRISE_GENERATED_MANIFEST_PATH = 'contracts/enterprise/generated-manifest.json'
+
+export const ENTERPRISE_GENERATOR_AUTHORITY_INPUTS = [
+  'contracts/base/contract.json',
+  'contracts/enterprise/delta.json',
+  'sdk-src/uts/app-android/index.enterprise.template.uts',
+  'sdk-src/uts/app-ios/index.enterprise.template.uts',
+  'sdk-src/uts/app-harmony/index.template.uts',
+  'sdk-src/uts/app-harmony/facade-projection.json',
+  'sdk-src/uts/app-android/events.prelude.uts',
+  'sdk-src/uts/app-ios/events.prelude.uts',
+  'sdk-src/native/android/OpenIMDriverRuntime.kt',
+  'sdk-src/native/ios/OpenIMDriverRuntime.swift',
+  'sdk-src/native/harmony/OpenIMHarmonyDriver.ets',
+  'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har',
+] as const
+
+export interface EnterpriseGeneratedManifestOutput {
+  path: string
+  sha256: string
+  bytes: number
+}
+
+export interface EnterpriseGeneratedManifest {
+  schemaVersion: 1
+  edition: 'enterprise'
+  generator: 'tooling/src/enterprise-compose.ts#buildEnterpriseGeneratedOutputs'
+  outputs: EnterpriseGeneratedManifestOutput[]
+}
+
+export interface EnterpriseDeletionRegenerationResult {
+  outputCount: number
+  deterministic: boolean
+  repositoryIdentical: boolean
+}
+
+function assert(condition: unknown, message: string): asserts condition {
+  if (!condition) throw new Error(message)
+}
+
+function relativeProjectPath(root: string, path: string): string {
+  const value = relative(resolve(root), resolve(path))
+  assert(value.length > 0, `Generated output cannot be the project root: ${path}`)
+  assert(!isAbsolute(value) && value !== '..' && !value.startsWith(`..${sep}`), `Generated output escapes project root: ${path}`)
+  return value.split(sep).join('/')
+}
+
+function projectPath(root: string, path: string): string {
+  assert(path.length > 0 && !isAbsolute(path), `Manifest path must be project-relative: ${path}`)
+  const value = resolve(root, path.split('/').join(sep))
+  relativeProjectPath(root, value)
+  return value
+}
+
+function copyProjectFile(sourceRoot: string, destinationRoot: string, path: string): void {
+  const destination = projectPath(destinationRoot, path)
+  mkdirSync(dirname(destination), { recursive: true })
+  copyFileSync(projectPath(sourceRoot, path), destination)
+}
+
+function readOutputBytes(root: string, paths: readonly string[]): Map<string, Buffer> {
+  return new Map(paths.map((path) => [path, readFileSync(projectPath(root, path))]))
+}
+
+function assertSameBytes(expected: Map<string, Buffer>, actual: Map<string, Buffer>, label: string): void {
+  assert(expected.size === actual.size, `${label} output count changed`)
+  for (const [path, expectedBytes] of expected) {
+    const actualBytes = actual.get(path)
+    assert(actualBytes != null, `${label} is missing generated output: ${path}`)
+    assert(expectedBytes.equals(actualBytes), `${label} generated different bytes: ${path}`)
+  }
+}
+
+export function buildEnterpriseGeneratedManifest(
+  publicRoot: string,
+  privateRoot: string,
+): EnterpriseGeneratedManifest {
+  const paths = new Set<string>()
+  const outputs = buildEnterpriseGeneratedOutputs(publicRoot, privateRoot).map((output) => {
+    const path = relativeProjectPath(privateRoot, output.path)
+    assert(!paths.has(path), `Duplicate Enterprise generated output: ${path}`)
+    paths.add(path)
+    const bytes = Buffer.from(output.content)
+    return { path, sha256: sha256(bytes), bytes: bytes.byteLength }
+  })
+  return {
+    schemaVersion: 1,
+    edition: 'enterprise',
+    generator: 'tooling/src/enterprise-compose.ts#buildEnterpriseGeneratedOutputs',
+    outputs,
+  }
+}
+
+export function writeEnterpriseGeneratedManifest(
+  publicRoot: string,
+  privateRoot: string,
+): EnterpriseGeneratedManifest {
+  const manifest = buildEnterpriseGeneratedManifest(publicRoot, privateRoot)
+  const path = projectPath(privateRoot, ENTERPRISE_GENERATED_MANIFEST_PATH)
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`)
+  return manifest
+}
+
+export function readEnterpriseGeneratedManifest(privateRoot: string): EnterpriseGeneratedManifest {
+  const manifest = JSON.parse(
+    readFileSync(projectPath(privateRoot, ENTERPRISE_GENERATED_MANIFEST_PATH), 'utf8'),
+  ) as EnterpriseGeneratedManifest
+  assert(manifest.schemaVersion === 1, 'Unsupported Enterprise generated manifest schema')
+  assert(manifest.edition === 'enterprise', 'Enterprise generated manifest edition changed')
+  assert(
+    manifest.generator === 'tooling/src/enterprise-compose.ts#buildEnterpriseGeneratedOutputs',
+    'Unknown Enterprise generated manifest producer',
+  )
+  const paths = new Set<string>()
+  for (const output of manifest.outputs) {
+    projectPath(privateRoot, output.path)
+    assert(!paths.has(output.path), `Duplicate Enterprise manifest path: ${output.path}`)
+    paths.add(output.path)
+    assert(/^[0-9a-f]{64}$/.test(output.sha256), `Invalid Enterprise generated hash: ${output.path}`)
+    assert(Number.isSafeInteger(output.bytes) && output.bytes >= 0, `Invalid Enterprise generated byte count: ${output.path}`)
+  }
+  return manifest
+}
+
+export function assertEnterpriseGeneratedManifestCurrent(
+  publicRoot: string,
+  privateRoot: string,
+): EnterpriseGeneratedManifest {
+  const actual = readEnterpriseGeneratedManifest(privateRoot)
+  const expected = buildEnterpriseGeneratedManifest(publicRoot, privateRoot)
+  assert(JSON.stringify(actual) === JSON.stringify(expected), 'Enterprise generated manifest is stale or incomplete')
+  for (const output of actual.outputs) {
+    const bytes = readFileSync(projectPath(privateRoot, output.path))
+    assert(bytes.byteLength === output.bytes, `Enterprise generated byte count is stale: ${output.path}`)
+    assert(sha256(bytes) === output.sha256, `Enterprise generated output hash is stale: ${output.path}`)
+  }
+  return actual
+}
+
+export function verifyEnterpriseDeletionRegeneration(
+  publicRoot: string,
+  privateRoot: string,
+): EnterpriseDeletionRegenerationResult {
+  const manifest = assertEnterpriseGeneratedManifestCurrent(publicRoot, privateRoot)
+  const paths = manifest.outputs.map((output) => output.path)
+  const repositoryBytes = readOutputBytes(privateRoot, paths)
+  const temporaryRoot = mkdtempSync(join(tmpdir(), 'openim-enterprise-generated-deletion-'))
+  try {
+    for (const input of ENTERPRISE_GENERATOR_AUTHORITY_INPUTS) {
+      const sourceRoot = input.startsWith('contracts/base/') || input.includes('OpenIMDriverRuntime')
+        ? publicRoot
+        : privateRoot
+      copyProjectFile(sourceRoot, temporaryRoot, input)
+    }
+    generateEnterprise(temporaryRoot, temporaryRoot)
+    const firstBytes = readOutputBytes(temporaryRoot, paths)
+    assertSameBytes(repositoryBytes, firstBytes, 'First Enterprise clean regeneration')
+    for (const output of paths) rmSync(projectPath(temporaryRoot, output), { force: true })
+    generateEnterprise(temporaryRoot, temporaryRoot)
+    const secondBytes = readOutputBytes(temporaryRoot, paths)
+    assertSameBytes(firstBytes, secondBytes, 'Second Enterprise clean regeneration')
+    assertSameBytes(repositoryBytes, secondBytes, 'Enterprise repository comparison')
+    return { outputCount: paths.length, deterministic: true, repositoryIdentical: true }
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true })
+  }
+}

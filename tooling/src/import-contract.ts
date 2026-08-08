@@ -102,7 +102,7 @@ export function dispatchArguments(eventFunctionText: string, generatedEventsSour
     .trim()
 }
 
-function makeIndexTemplate(
+export function makeIndexTemplate(
   parsed: ParsedSource,
   constants: Set<string>,
   eventCallables: Set<string>,
