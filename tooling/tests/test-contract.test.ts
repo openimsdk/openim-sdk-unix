@@ -89,6 +89,17 @@ test('case manifest assigns concrete semantic and side-effect probes to P0 flows
   assert.ok(friend?.expectedEvents.includes('onFriendApplicationAdded'))
 })
 
+test('write-only app mutations require a server acknowledgement probe', () => {
+  const manifest = buildPublicTestDisposition(contract)
+  const byAPI = new Map(manifest.callables.map((item) => [item.apiName, item]))
+
+  for (const apiName of ['setAppBackgroundStatus', 'setAppBadge', 'updateFcmToken']) {
+    assert.equal(byAPI.get(apiName)?.semanticProfile, 'mutation-observation')
+    assert.equal(byAPI.get(apiName)?.sideEffectProbe, 'server-acknowledgement')
+    assert.ok(byAPI.get(apiName)?.validationAxes.includes('side-effect'))
+  }
+})
+
 test('case manifest makes edition boundaries and cancelled subscriptions explicit', () => {
   const manifest = buildPublicTestDisposition(contract)
   const login = manifest.callables.find((item) => item.apiName === 'login')

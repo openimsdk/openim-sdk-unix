@@ -3970,10 +3970,10 @@
           "symbol": "setAppBackgroundStatus"
         }
       },
-      "signatureHash": "02c9c5f2f6bc49c691fab38572fb0cfa0570d51e0581b83dac022873dabd9568",
+      "signatureHash": "c7adb4c4bf882f3b06823b164e922085b89fe2deca399cd696eec8e799b6f731",
       "testProfile": {
         "semanticProfile": "mutation-observation",
-        "sideEffectProbe": "read-after-write"
+        "sideEffectProbe": "server-acknowledgement"
       }
     },
     {
@@ -4014,10 +4014,10 @@
           "symbol": "setAppBadge"
         }
       },
-      "signatureHash": "5e99e4b0725e6e5cc5bec5112e035bf23c7a83cfad2e7820686f36914934ae0d",
+      "signatureHash": "73e9325bf542593d9495e4ba3b26b9a34294800e2ce37ff1192c9d0c1734747a",
       "testProfile": {
         "semanticProfile": "mutation-observation",
-        "sideEffectProbe": "read-after-write"
+        "sideEffectProbe": "server-acknowledgement"
       }
     },
     {
@@ -6993,10 +6993,10 @@
           "symbol": "updateFcmToken"
         }
       },
-      "signatureHash": "f9e03edd926518739e7eb5230250b4a08eea63838bfa00ff3431f4a11a634ae4",
+      "signatureHash": "fa9058d0f69a336d812b23c125a910c5584d48dfdbb50d43a126409c25c18336",
       "testProfile": {
         "semanticProfile": "mutation-observation",
-        "sideEffectProbe": "read-after-write"
+        "sideEffectProbe": "server-acknowledgement"
       }
     },
     {

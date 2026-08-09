@@ -59,6 +59,10 @@ test('callable semantic and side-effect evidence carries generated profile asser
   assert.match(mutation, /requireAutomationSideEffectProbe\(apiName\)/)
   assert.match(mutation, /createAutomationProfileAssertion\('semantic', semanticProfile, semanticRule/)
   assert.match(mutation, /createAutomationProfileAssertion\('side-effect', sideEffectProbe, sideEffectRule/)
+  const serverAcknowledged = functionSource('serverAcknowledgedMutationAutomationEvidence')
+  assert.match(serverAcknowledged, /requireAutomationSemanticProfile\(apiName\)/)
+  assert.match(serverAcknowledged, /requireAutomationSideEffectProbe\(apiName\)/)
+  assert.match(serverAcknowledged, /'server-acknowledged-mutation'/)
   const subscription = functionSource('subscriptionAutomationEvidence')
   assert.match(subscription, /requireAutomationSemanticProfile\(eventName\)/)
   assert.match(subscription, /requireAutomationSideEffectProbe\(eventName\)/)
@@ -66,6 +70,17 @@ test('callable semantic and side-effect evidence carries generated profile asser
   assert.doesNotMatch(subscription, /'registry-observation'/)
   assert.doesNotMatch(page, /function (?:automationNameContainsAny|automationNameStartsWithAny|readAutomationSemanticProfile|readAutomationSideEffectProbe)\(/)
   assert.match(functionSource('recordAutomationCase'), /assertions: checked\.assertions/)
+})
+
+test('write-only app mutations are required and carry server acknowledgement evidence', () => {
+  const suite = functionSource('runAutomationAppSuite')
+  for (const apiName of ['setAppBackgroundStatus', 'setAppBadge', 'updateFcmToken']) {
+    assert.match(
+      suite,
+      new RegExp(`runAutomationStep<string>\\('app', '${apiName}'[^\\n]+serverAcknowledgedMutationAutomationEvidence\\('${apiName}'\\)`),
+    )
+  }
+  assert.doesNotMatch(suite, /runAutomationOptionalStep<string>\('app', 'updateFcmToken'/)
 })
 
 test('runtime response evidence carries the resolved wire value separately from narratives', () => {

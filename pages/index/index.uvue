@@ -1909,6 +1909,23 @@
 		}
 	}
 
+	function serverAcknowledgedMutationAutomationEvidence(apiName : string) : OpenIMAutomationEvidence {
+		const semanticProfile = requireAutomationSemanticProfile(apiName)
+		const sideEffectProbe = requireAutomationSideEffectProbe(apiName)
+		requireAutomation(sideEffectProbe == 'server-acknowledgement', apiName + ' does not declare the server acknowledgement probe')
+		const assertions : Array<OpenIMAutomationAssertionResult> = [
+			createAutomationProfileAssertion('semantic', semanticProfile, 'server-acknowledged-mutation', 'request correlated with the active server operation', 'server operation correlated', true),
+			createAutomationProfileAssertion('side-effect', sideEffectProbe, 'server-acknowledged-mutation', 'native Core receives a successful server acknowledgement', 'native Core resolved after server acknowledgement', true)
+		]
+		return {
+			structureValidated: true,
+			semanticValidated: true,
+			sideEffectValidated: true,
+			eventCorrelated: false,
+			assertions: assertions
+		}
+	}
+
 	function subscriptionAutomationEvidence(eventName : string, handleMatched : boolean, registryObserved : boolean) : OpenIMAutomationEvidence {
 		const semanticProfile = requireAutomationSemanticProfile(eventName)
 		const sideEffectProbe = requireAutomationSideEffectProbe(eventName)
@@ -2715,11 +2732,11 @@
 	}
 
 	async function runAutomationAppSuite() : Promise<void> {
-		await runAutomationStep<string>('app', 'setAppBackgroundStatus', setAppBackgroundStatus(false, 'uvue_auto_app_background'), noCache)
-		await runAutomationStep<string>('app', 'setAppBadge', setAppBadge(0, 'uvue_auto_app_badge'), noCache)
+		await runAutomationStep<string>('app', 'setAppBackgroundStatus', setAppBackgroundStatus(false, 'uvue_auto_app_background'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBackgroundStatus'))
+		await runAutomationStep<string>('app', 'setAppBadge', setAppBadge(0, 'uvue_auto_app_badge'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBadge'))
 		await runAutomationStep<string>('app', 'networkStatusChanged', networkStatusChanged('uvue_auto_network_changed'), noCache)
 		const params : OpenIMUpdateFcmTokenParams = { fcmToken: 'uvue-public-automation-fcm-token', expireTime: 0 }
-		await runAutomationOptionalStep<string>('app', 'updateFcmToken', updateFcmToken(params, 'uvue_auto_update_fcm'), noCache, 'push token platform may be disabled for current simulator/server')
+		await runAutomationStep<string>('app', 'updateFcmToken', updateFcmToken(params, 'uvue_auto_update_fcm'), noCache, serverAcknowledgedMutationAutomationEvidence('updateFcmToken'))
 	}
 
 	async function runAutomationUploadSuite() : Promise<void> {

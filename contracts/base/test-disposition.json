@@ -2268,13 +2268,13 @@
         "root": "callables.setAppBackgroundStatus.schema"
       },
       "semanticProfile": "mutation-observation",
-      "sideEffectProbe": "read-after-write",
+      "sideEffectProbe": "server-acknowledgement",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
         "invalid-input"
       ],
-      "cleanupAction": "restore-via-read-before-write",
+      "cleanupAction": "none",
       "validationAxes": [
         "completion",
         "structure",
@@ -2299,13 +2299,13 @@
         "root": "callables.setAppBadge.schema"
       },
       "semanticProfile": "mutation-observation",
-      "sideEffectProbe": "read-after-write",
+      "sideEffectProbe": "server-acknowledgement",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
         "invalid-input"
       ],
-      "cleanupAction": "restore-via-read-before-write",
+      "cleanupAction": "none",
       "validationAxes": [
         "completion",
         "structure",
@@ -4269,13 +4269,13 @@
         "root": "callables.updateFcmToken.schema"
       },
       "semanticProfile": "mutation-observation",
-      "sideEffectProbe": "read-after-write",
+      "sideEffectProbe": "server-acknowledgement",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
         "invalid-input"
       ],
-      "cleanupAction": "restore-via-read-before-write",
+      "cleanupAction": "none",
       "validationAxes": [
         "completion",
         "structure",

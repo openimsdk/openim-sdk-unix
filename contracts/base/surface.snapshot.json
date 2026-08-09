@@ -1987,13 +1987,13 @@
       "id": 2069,
       "name": "setAppBackgroundStatus",
       "signature": "setAppBackgroundStatus(data:boolean,operationID?:string|null):Promise<string>",
-      "signatureHash": "02c9c5f2f6bc49c691fab38572fb0cfa0570d51e0581b83dac022873dabd9568"
+      "signatureHash": "c7adb4c4bf882f3b06823b164e922085b89fe2deca399cd696eec8e799b6f731"
     },
     {
       "id": 2070,
       "name": "setAppBadge",
       "signature": "setAppBadge(appUnreadCount:number,operationID?:string|null):Promise<string>",
-      "signatureHash": "5e99e4b0725e6e5cc5bec5112e035bf23c7a83cfad2e7820686f36914934ae0d"
+      "signatureHash": "73e9325bf542593d9495e4ba3b26b9a34294800e2ce37ff1192c9d0c1734747a"
     },
     {
       "id": 2071,
@@ -2377,7 +2377,7 @@
       "id": 2134,
       "name": "updateFcmToken",
       "signature": "updateFcmToken(params:OpenIMUpdateFcmTokenParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "f9e03edd926518739e7eb5230250b4a08eea63838bfa00ff3431f4a11a634ae4"
+      "signatureHash": "fa9058d0f69a336d812b23c125a910c5584d48dfdbb50d43a126409c25c18336"
     },
     {
       "id": 2135,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "02f9c715bd446b331e98f2ee5b0ec219c2d26e3b2c535780c155f3916595e8cc"
+  "contractHash": "ed768cb82542bd31d9a33c529bf033a21a6ef9adbfe45d550eab011b5e89824f"
 }
