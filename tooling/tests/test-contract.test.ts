@@ -166,6 +166,60 @@ test('Harmony dispatcher gaps remain executable capability negatives', () => {
   assert.equal(callable?.negativeProfiles.includes('platform-unsupported'), false)
 })
 
+test('Enterprise Harmony known issues are manifest-scoped and axis-specific', () => {
+  const resetConversationUnread = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))
+  const setMessageLocalContent = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))
+  assert.ok(resetConversationUnread)
+  assert.ok(setMessageLocalContent)
+  resetConversationUnread.name = 'resetConversationUnread'
+  resetConversationUnread.signature = 'resetConversationUnread(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>'
+  resetConversationUnread.testProfile = { semanticProfile: 'response-identity', sideEffectProbe: 'none' }
+  setMessageLocalContent.name = 'setMessageLocalContent'
+  setMessageLocalContent.signature = 'setMessageLocalContent(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>'
+  const delta: EnterpriseDeltaDocument = {
+    schemaVersion: 2,
+    edition: 'enterprise-delta',
+    origin: {
+      kind: 'imported-facade',
+      repository: 'test',
+      revision: 'test',
+      publicBaseRevision: 'test',
+      importedPublicBaseContractHash: '0'.repeat(64),
+      interfacePath: 'test',
+      facadePaths: { android: 'test', ios: 'test', harmony: 'test' },
+    },
+    expectedTotal: { constants: 0, types: 0, callables: 0, events: 0 },
+    expectedDelta: { constants: 0, types: 0, callables: 0, events: 0, typeExtensions: 0 },
+    approvedBaseCallableOverrides: [],
+    constants: [],
+    types: [],
+    typeExtensions: [],
+    callables: [resetConversationUnread, setMessageLocalContent],
+    events: [],
+  }
+  const enterprise = new Map(buildEnterpriseTestDisposition(contract, delta).callables.map((item) => [item.apiName, item]))
+
+  assert.deepEqual(enterprise.get('unInitSDK')?.approvedKnownIssue, {
+    harmony: {
+      code: 'harmony-uninit-sdk-sigsegv',
+      waivedAxes: ['completion', 'structure', 'semantic', 'side-effect'],
+    },
+  })
+  assert.deepEqual(enterprise.get('resetConversationUnread')?.approvedKnownIssue, {
+    harmony: {
+      code: 'harmony-reset-conversation-unread-mismatch',
+      waivedAxes: ['semantic'],
+    },
+  })
+  assert.deepEqual(enterprise.get('setMessageLocalContent')?.approvedKnownIssue, {
+    harmony: {
+      code: 'harmony-set-message-local-content-uncertified',
+      waivedAxes: ['semantic', 'side-effect'],
+    },
+  })
+  assert.equal(buildPublicTestDisposition(contract).callables.some((item) => item.approvedKnownIssue != null), false)
+})
+
 test('fixture-backed push launch remains a positive capability path', () => {
   const template = structuredClone(contract.callables.find((item) => item.name === 'updateFcmToken'))
   assert.ok(template)

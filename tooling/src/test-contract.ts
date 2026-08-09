@@ -115,6 +115,20 @@ const p0EventNames = new Set([
 
 const harmonyUnsupportedCallables = new Set(['updateFcmToken'])
 const harmonyDispatcherMissingCallables = new Set(['updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
+const enterpriseHarmonyApprovedKnownIssues = new Map<string, ApprovedKnownIssueDisposition>([
+  ['unInitSDK', {
+    code: 'harmony-uninit-sdk-sigsegv',
+    waivedAxes: ['completion', 'structure', 'semantic', 'side-effect'],
+  }],
+  ['resetConversationUnread', {
+    code: 'harmony-reset-conversation-unread-mismatch',
+    waivedAxes: ['semantic'],
+  }],
+  ['setMessageLocalContent', {
+    code: 'harmony-set-message-local-content-uncertified',
+    waivedAxes: ['semantic', 'side-effect'],
+  }],
+])
 
 const expectedEventsByCallable = new Map<string, string[]>([
   ['login', ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish']],
@@ -380,6 +394,16 @@ function buildDisposition(
         ios: callablePlatformDisposition(edition, callable, capability, 'ios'),
         harmony: callablePlatformDisposition(edition, callable, capability, 'harmony'),
       }
+      const validationAxes = callableValidationAxes(callable, probe, expectedEvents)
+      const approvedKnownIssue = edition === 'enterprise'
+        ? enterpriseHarmonyApprovedKnownIssues.get(callable.name)
+        : undefined
+      if (approvedKnownIssue != null) {
+        assert(
+          approvedKnownIssue.waivedAxes.every((axis) => validationAxes.includes(axis)),
+          `${callable.name} approved known issue waives an axis that is not required by its contract`,
+        )
+      }
       return {
         caseId: `api/${callable.name}`,
         apiName: callable.name,
@@ -394,7 +418,15 @@ function buildDisposition(
         expectedEvents,
         negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms, callable.name),
         cleanupAction: cleanupAction(callable, probe),
-        validationAxes: callableValidationAxes(callable, probe, expectedEvents),
+        validationAxes,
+        ...(approvedKnownIssue == null ? {} : {
+          approvedKnownIssue: {
+            harmony: {
+              code: approvedKnownIssue.code,
+              waivedAxes: [...approvedKnownIssue.waivedAxes],
+            },
+          },
+        }),
       }
     }),
     events: events.map((event) => {
