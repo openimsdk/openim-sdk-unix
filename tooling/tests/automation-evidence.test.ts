@@ -341,6 +341,162 @@ test('callable event evidence covers every generated event in operation order an
   assert.deepEqual(valid.issues, [])
 })
 
+test('cross-account message delivery accepts exact peer identity after operation completion', () => {
+  const eventCase = manifest().callables[0]
+  const result = validateAutomationEvidence({
+    manifest: {
+      ...manifest(),
+      counts: { callables: 1, events: 0 },
+      callables: [eventCase],
+      events: [],
+    },
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'sendMessage',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        structureValidated: true,
+        semanticValidated: true,
+        sideEffectValidated: true,
+        assertions: sendMessageProfileAssertions,
+        eventCorrelations: [{
+          operationApiName: 'sendMessage',
+          eventName: 'onSendMessageProgress',
+          operationSequence: 10,
+          eventSequence: 11,
+          operationEpoch: 3,
+          eventEpoch: 3,
+          payloadMatched: true,
+          correlationKind: 'exclusive-operation-window',
+          operationTerminalSequence: 12,
+          exclusiveOperation: true,
+          payloadIdentity: '',
+          eventPayloadDetail: JSON.stringify({ operationID: null, progress: 100 }),
+        }, {
+          operationApiName: 'sendMessage',
+          eventName: 'onRecvNewMessage',
+          operationSequence: 10,
+          eventSequence: 13,
+          operationEpoch: 3,
+          eventEpoch: 4,
+          payloadMatched: true,
+          correlationKind: 'cross-account-payload-identity',
+          operationTerminalSequence: 12,
+          exclusiveOperation: true,
+          payloadIdentity: 'message-10',
+          eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10' }),
+        }],
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, true)
+  assert.deepEqual(result.issues, [])
+})
+
+test('cross-account social correlation uses the declared event identity field exactly', () => {
+  const cases: Array<[string, string]> = [
+    ['onFriendApplicationAdded', 'fromUserID'],
+    ['onFriendApplicationRejected', 'fromUserID'],
+    ['onFriendAdded', 'userID'],
+    ['onJoinedGroupAdded', 'groupID'],
+    ['onGroupApplicationAdded', 'groupID'],
+    ['onGroupMemberAdded', 'groupID'],
+    ['onGroupApplicationRejected', 'groupID'],
+  ]
+  const validate = (eventName: string, eventPayloadDetail: string) => validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'public',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/socialMutation',
+        apiName: 'socialMutation',
+        platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        expectedEvents: [eventName],
+        validationAxes: ['event'],
+      }],
+      events: [],
+    },
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'socialMutation',
+        ok: true,
+        eventCorrelations: [{
+          operationApiName: 'socialMutation',
+          eventName,
+          operationSequence: 20,
+          eventSequence: 22,
+          operationEpoch: 5,
+          eventEpoch: 6,
+          payloadMatched: true,
+          correlationKind: 'cross-account-payload-identity',
+          operationTerminalSequence: 21,
+          exclusiveOperation: true,
+          payloadIdentity: 'identity-20',
+          eventPayloadDetail,
+        }],
+      }],
+      events: [],
+    },
+  })
+
+  for (const [eventName, identityField] of cases) {
+    assert.equal(validate(eventName, JSON.stringify({ [identityField]: 'identity-20' })).passed, true)
+    assert.equal(validate(eventName, JSON.stringify({ [identityField]: 'other', ex: 'identity-20' })).passed, false)
+  }
+})
+
+test('cross-account signaling correlation validates the exact room or custom payload identity', () => {
+  const signalingManifest = {
+    schemaVersion: 2,
+    edition: 'enterprise',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/signalingInvite',
+      apiName: 'signalingInvite',
+      platforms: { android: 'required', ios: 'required', harmony: 'required' },
+      expectedEvents: ['onReceiveNewInvitation'],
+      validationAxes: ['event'],
+    }],
+    events: [],
+  }
+  const validate = (payloadIdentity: string, eventPayloadDetail: string) => validateAutomationEvidence({
+    manifest: signalingManifest,
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'signalingInvite',
+        ok: true,
+        eventCorrelations: [{
+          operationApiName: 'signalingInvite',
+          eventName: 'onReceiveNewInvitation',
+          operationSequence: 10,
+          eventSequence: 12,
+          operationEpoch: 3,
+          eventEpoch: 4,
+          payloadMatched: true,
+          correlationKind: 'cross-account-payload-identity',
+          operationTerminalSequence: 11,
+          exclusiveOperation: false,
+          payloadIdentity,
+          eventPayloadDetail,
+        }],
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(validate('room-1', JSON.stringify({ invitation: { roomID: 'room-1' } })).passed, true)
+  assert.equal(validate('room-1', JSON.stringify(JSON.stringify({ invitation: { roomID: 'room-1' } }))).passed, true)
+  assert.equal(validate('room-1', JSON.stringify({ invitation: { roomID: 'room-other' }, customInfo: 'room-1' })).passed, false)
+})
+
 test('callable semantic and side-effect PASS requires matching structured profile assertions', () => {
   const profileManifest = {
     schemaVersion: 2,
@@ -802,6 +958,50 @@ test('generated event schema, not typed callback arrival, certifies payload stru
   })
   assert.equal(invalid.passed, false)
   assert.equal(invalid.issues.some((issue) => issue.rule === 'event-schema-invalid'), true)
+})
+
+test('opaque string event payloads remain strings even when their contents are JSON', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'enterprise',
+      counts: { callables: 0, events: 1 },
+      callables: [],
+      events: [{
+        caseId: 'event/onReceiveCustomSignaling',
+        eventName: 'onReceiveCustomSignaling',
+        deliveryDisposition: 'required',
+        platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        validationAxes: ['delivery', 'structure'],
+      }],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: {},
+      events: {
+        onReceiveCustomSignaling: {
+          payloadProfile: 'opaque-string',
+          arguments: [{ kind: 'string' }],
+        },
+      },
+      schemas: {},
+    },
+    platform: 'harmony',
+    report: {
+      cases: [],
+      events: [{
+        eventName: 'onReceiveCustomSignaling',
+        count: 1,
+        deliveryValidated: true,
+        payloadEvidence: true,
+        payloadEncoding: 'uts-typed-json-v1',
+        payloadDetails: [JSON.stringify({ customInfo: 'custom-1' })],
+      }],
+    },
+  })
+
+  assert.equal(result.passed, true)
+  assert.deepEqual(result.issues, [])
 })
 
 test('generated event schema validates every argument in multi-argument callbacks', () => {

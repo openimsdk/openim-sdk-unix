@@ -217,10 +217,16 @@ function eventStructureResult(candidates, eventName, responseSchemas) {
     if (item.payloadDetails.length !== item.count) {
       return [schemaIssue('$', 'payload-count', String(item.count), String(item.payloadDetails.length))]
     }
+    const opaqueStringPayload = eventSchema.payloadProfile === 'opaque-string'
+      && Array.isArray(eventSchema.arguments)
+      && eventSchema.arguments.length === 1
+      && eventSchema.arguments[0]?.kind === 'string'
     return item.payloadDetails.flatMap((detail) => validateEventArguments(
       responseSchemas,
       eventSchema,
-      normalizeRecordedValue(parseRecordedValue(detail, 'any'), item.payloadEncoding),
+      opaqueStringPayload
+        ? detail
+        : normalizeRecordedValue(parseRecordedValue(detail, 'any'), item.payloadEncoding),
     ))
   })
   return { passed: issues.length === 0, issues }
@@ -302,6 +308,12 @@ function completionPassedByApprovedKnownIssue(candidates, contractCase, platform
 function eventCorrelationIdentityField(eventName) {
   if (eventName === 'onSendMessageProgress') return 'operationID'
   if (eventName === 'onRecvNewMessage') return 'clientMsgID'
+  if (eventName === 'onFriendApplicationAdded' || eventName === 'onFriendApplicationRejected') return 'fromUserID'
+  if (eventName === 'onFriendAdded') return 'userID'
+  if (eventName === 'onJoinedGroupAdded'
+    || eventName === 'onGroupApplicationAdded'
+    || eventName === 'onGroupMemberAdded'
+    || eventName === 'onGroupApplicationRejected') return 'groupID'
   return ''
 }
 
@@ -310,10 +322,12 @@ function validCallableEventCorrelation(value, apiName, eventName) {
   if (value.operationApiName !== apiName || value.eventName !== eventName || value.payloadMatched !== true) return false
   if (!Number.isFinite(value.operationSequence) || !Number.isFinite(value.eventSequence)) return false
   if (!Number.isFinite(value.operationEpoch) || !Number.isFinite(value.eventEpoch)) return false
+  const crossAccountCorrelation = value.correlationKind === 'cross-account-payload-identity'
   const commonWindow = value.operationSequence >= 0
     && value.eventSequence > value.operationSequence
     && value.operationEpoch > 0
-    && value.eventEpoch === value.operationEpoch
+    && value.eventEpoch > 0
+    && (crossAccountCorrelation || value.eventEpoch === value.operationEpoch)
   if (!commonWindow) return false
   if (value.correlationKind === 'lifecycle-order') {
     return value.exclusiveOperation === false && value.payloadIdentity === ''
@@ -333,6 +347,27 @@ function validCallableEventCorrelation(value, apiName, eventName) {
       && value.eventPayloadDetail.length > 0
       && Number.isFinite(value.operationTerminalSequence)
       && value.operationTerminalSequence > value.eventSequence
+  }
+  if (value.correlationKind === 'cross-account-payload-identity') {
+    if ((value.exclusiveOperation !== true && value.exclusiveOperation !== false)
+      || typeof value.payloadIdentity !== 'string'
+      || value.payloadIdentity.length === 0) return false
+    if (typeof value.eventPayloadDetail !== 'string' || !Number.isFinite(value.operationTerminalSequence)) return false
+    if (value.operationTerminalSequence <= value.operationSequence) return false
+    let recorded = parseRecordedValue(value.eventPayloadDetail, 'any')
+    if (typeof recorded === 'string') {
+      recorded = parseRecordedValue(recorded, 'any')
+    }
+    recorded = normalizeRecordedValue(recorded, 'uts-typed-json-v1')
+    if (!isRecord(recorded)) return false
+    if (eventName === 'onReceiveCustomSignaling') {
+      return recorded.customInfo === value.payloadIdentity
+    }
+    if (isRecord(recorded.invitation)) {
+      return recorded.invitation.roomID === value.payloadIdentity
+    }
+    const identityField = eventCorrelationIdentityField(eventName)
+    return identityField.length > 0 && recorded[identityField] === value.payloadIdentity
   }
   return false
 }
