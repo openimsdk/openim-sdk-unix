@@ -166,7 +166,8 @@ function isRequiredField(value : UTSJSONObject, key : string) : boolean {
 }
 
 function isOptionalNumberField(value : UTSJSONObject, key : string) : boolean {
-  return true
+  const raw = readNativeValue(value, key)
+  return raw == null || isNativeNumberValue(raw)
 }
 
 function parseNativeConversationItemData(data : string) : OpenIMConversationItem | null { return JSON.parseObject<OpenIMConversationItem>(data) }
