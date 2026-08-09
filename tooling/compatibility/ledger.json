@@ -4,6 +4,7 @@
   "entries": [
     {
       "id": "UTS-COMPAT-EDITION-001",
+      "editions": ["public", "enterprise"],
       "classification": "platform-stable",
       "platforms": ["android", "ios"],
       "reason": "The locked public Core ABI exposes user-command callbacks that are not present in the frozen public UTS contract; the adapter implements and explicitly ignores them.",
@@ -18,6 +19,7 @@
     },
     {
       "id": "UTS-COMPAT-CODEC-001",
+      "editions": ["public", "enterprise"],
       "classification": "platform-stable",
       "platforms": ["android", "ios"],
       "reason": "any and UTSJSONObject are isolated to native-call codec boundary files and converted immediately into concrete public models.",
@@ -32,6 +34,7 @@
     },
     {
       "id": "UTS-COMPAT-SWITCH-001",
+      "editions": ["public", "enterprise"],
       "classification": "proven-workaround",
       "platforms": ["ios"],
       "reason": "The locked iOS UTS compiler rejects break inside a braced switch case; generated cases use unique local names and no case block.",
@@ -46,6 +49,7 @@
     },
     {
       "id": "UTS-COMPAT-JSON-001",
+      "editions": ["public", "enterprise"],
       "classification": "proven-workaround",
       "platforms": ["android"],
       "reason": "The locked Android UTS compiler lowers typed JSON.parseObject/parseArray calls through UTSAndroid and requires that named platform symbol in every source file using the typed parser.",
@@ -60,6 +64,7 @@
     },
     {
       "id": "UTS-COMPAT-HARMONY-ETS-001",
+      "editions": ["enterprise"],
       "classification": "experimental",
       "platforms": ["harmony"],
       "reason": "The Harmony UTS façade imports a mixed-source ETS Driver and exchanges only operation/event codes, primitive values, and raw JSON strings; the ETS Driver is the sole HAR importer.",
@@ -75,6 +80,7 @@
     },
     {
       "id": "UTS-COMPAT-HARMONY-INFER-001",
+      "editions": ["enterprise"],
       "classification": "proven-workaround",
       "platforms": ["harmony"],
       "reason": "The locked UTS-to-ArkTS compiler can lower an unannotated local initialized from an ESObject-returning helper to any; Harmony adapter locals at raw codec boundaries require explicit ESObject and concrete result annotations.",
@@ -89,6 +95,7 @@
     },
     {
       "id": "UTS-COMPAT-NATIVE-LISTENER-001",
+      "editions": ["public", "enterprise"],
       "classification": "proven-workaround",
       "platforms": ["android", "ios"],
       "reason": "The locked Core headers expose nullable listener setters, but the Go implementation passes reflect.ValueOf(listener) to Call; a null listener becomes a zero reflect.Value and panics. Drivers invalidate the epoch, retire local listener references, and let Core unInit release its listener state instead of calling setters with null.",
@@ -103,6 +110,7 @@
     },
     {
       "id": "UTS-COMPAT-NATIVE-ABI-002",
+      "editions": ["enterprise"],
       "classification": "proven-workaround",
       "platforms": ["android"],
       "reason": "The enterprise AAR exports the new batch-message listener through UserContext, while the hybrid Kotlin compiler cannot resolve an equivalent Open_im_sdk global setter. The Android adapter calls the typed UserContext method directly.",

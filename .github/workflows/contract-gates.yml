@@ -75,7 +75,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Refuse unresolved compatibility debt
+      - name: Refuse edition-scoped compatibility and native artifact debt
         run: npm run verify:release-policy
       - name: Prove deterministic regeneration twice
         run: |

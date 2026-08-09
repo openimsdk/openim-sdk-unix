@@ -1,9 +1,10 @@
+import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { compilePlatform, type CompilePlatform, verifyToolchain } from './compile.js'
 import { generate } from './generate.js'
 import { importNativeABI } from './native-abi.js'
-import { verifyCompatibilityLedger, verifyUTSPolicy } from './policy.js'
+import { verifyCompatibilityLedger, verifyReleaseNativeArtifacts, verifyUTSPolicy, type ReleaseEdition } from './policy.js'
 import { verifyGenerated, verifySurfaceSnapshot, readAndValidateContract } from './verify-contract.js'
 import { verifyDriverInvariants } from './verify-driver.js'
 import { bootstrapEnterpriseDrivers, verifyEnterpriseDelta } from './enterprise-contract.js'
@@ -137,9 +138,11 @@ switch (command) {
     break
   }
   case 'verify:release-policy': {
+    const edition: ReleaseEdition = existsSync(resolve(root, 'contracts/enterprise/delta.json')) ? 'enterprise' : 'public'
     verifyUTSPolicy(root)
-    verifyCompatibilityLedger(root, true)
-    console.log('Release compatibility policy verified.')
+    verifyCompatibilityLedger(root, true, undefined, edition)
+    verifyReleaseNativeArtifacts(root, edition)
+    console.log(`${edition} release compatibility and native artifact policy verified.`)
     break
   }
   case 'native:import': {

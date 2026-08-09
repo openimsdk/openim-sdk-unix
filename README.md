@@ -51,6 +51,8 @@ uni_modules/unix-openim-sdk
 - Android：`io.openim:core-sdk:3.8.3-patch14.1@aar`
 - iOS：`OpenIMSDKCore` `3.8.3-hotfix.14-dynamic`
 
+发布门禁会分别校验 Public 与 Enterprise 的兼容债务。Public 发布还要求上述 Maven AAR 的 SHA-256 与锁定源码产物一致、Pod XCFramework 的解包 inventory SHA-256 与锁定源码产物一致；在 `toolchain.lock.json` 记录完整等价证据前，`npm run verify:release-policy` 会明确阻断发布。
+
 由于本插件依赖原生 SDK，请使用自定义基座或正式打包产物验证原生能力。标准基座可以用于页面编译和渲染验证，但无法实际调用依赖原生 SDK 的能力。
 
 ## 使用 🚀
