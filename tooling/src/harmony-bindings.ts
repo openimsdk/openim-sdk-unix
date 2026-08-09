@@ -170,6 +170,22 @@ function methodName(name: string): string {
   return `callBinding${name.slice(0, 1).toUpperCase()}${name.slice(1)}`
 }
 
+export function harmonyObjectResponseEncoder(methodName: string): string {
+  if (methodName === 'signalingInvite' || methodName === 'signalingInviteInGroup' || methodName === 'signalingAccept') {
+    return 'OpenIMHarmonyDriver.normalizeSignalingInvitePayload(request, response)'
+  }
+  if (methodName === 'signalingGetTokenByRoomID') {
+    return 'OpenIMHarmonyDriver.normalizeSignalingTokenPayload(response)'
+  }
+  if (methodName === 'signalingGetRoomByGroupID') {
+    return 'OpenIMHarmonyDriver.normalizeSignalingRoomPayload(response)'
+  }
+  if (methodName === 'signalingGetInvitationInfoStartApp') {
+    return 'OpenIMHarmonyDriver.normalizeSignalingStartAppPayload(response)'
+  }
+  return 'OpenIMHarmonyDriver.encodeObjectResponse(response)'
+}
+
 function renderMethod(method: HarmonyTypedMethod): string {
   const call = method.requestType == null
     ? `harmonySDK.${method.name}(operationID)`
@@ -179,7 +195,7 @@ function renderMethod(method: HarmonyTypedMethod): string {
     : `    const request: ${method.requestType} = JSON.parse(requestJSON) as ${method.requestType}\n`
   const response = method.responseType === 'OpenIMSDKEmptyPayload'
     ? `    const nativePromise: Promise<string> = ${call}.then((_response: OpenIMSDKEmptyPayload): string => {\n      return ''\n    })`
-    : `    const nativePromise: Promise<string> = ${call}.then((response: ${method.responseType}): string => {\n      return OpenIMHarmonyDriver.encodeObjectResponse(response)\n    })`
+    : `    const nativePromise: Promise<string> = ${call}.then((response: ${method.responseType}): string => {\n      return ${harmonyObjectResponseEncoder(method.name)}\n    })`
   return [
     `  private static ${methodName(method.name)}(requestJSON: string, operationID: string): Promise<string> {`,
     request.trimEnd(),
