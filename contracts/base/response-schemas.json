@@ -5579,8 +5579,17 @@
         "contentType": {
           "required": true,
           "schema": {
-            "kind": "reference",
-            "name": "OpenIMMessageType"
+            "kind": "union",
+            "options": [
+              {
+                "kind": "reference",
+                "name": "OpenIMMessageType"
+              },
+              {
+                "kind": "literal",
+                "value": 0
+              }
+            ]
           }
         },
         "sessionType": {

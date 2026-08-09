@@ -305,6 +305,22 @@ test('requires message isRead to remain a boolean', () => {
   assert.ok(validateContractValue(document, schema, { ...message, isRead: 0 }).some((issue) => issue.path === '$.isRead' && issue.rule === 'type'))
 })
 
+test('allows Core C2C read receipts to omit message metadata as protobuf zero values', () => {
+  const document = buildPublicResponseSchemas(contract)
+  const schema = document.schemas.OpenIMMessageReceiptItem
+  assert.ok(schema)
+  const receipt = {
+    groupID: '',
+    userID: 'reader',
+    msgIDList: ['client-1'],
+    readTime: 1,
+    msgFrom: 0,
+    contentType: 0,
+    sessionType: 1,
+  }
+  assert.deepEqual(validateContractValue(document, schema, receipt).filter((issue) => issue.severity === 'error'), [])
+})
+
 test('allows locked Core group applications to omit or null groupType', () => {
   const document = buildPublicResponseSchemas(contract)
   const schema = document.schemas.OpenIMGroupApplicationItem

@@ -1428,8 +1428,8 @@
     {
       "id": 1108,
       "name": "OpenIMMessageReceiptItem",
-      "declaration": "export type OpenIMMessageReceiptItem = {\n  groupID : string\n  userID : string\n  msgIDList : Array<string>\n  readTime : number\n  msgFrom : number\n  contentType : OpenIMMessageType\n  sessionType : OpenIMSessionType\n}",
-      "signatureHash": "993b8cfbd29dcd0c5a9b74f240e7882619cd429c04d7ecc61a98671e2b071156"
+      "declaration": "export type OpenIMMessageReceiptItem = {\n  groupID : string\n  userID : string\n  msgIDList : Array<string>\n  readTime : number\n  msgFrom : number\n  contentType : OpenIMMessageType | 0\n  sessionType : OpenIMSessionType\n}",
+      "signatureHash": "2eb37aa8fa133a4be81504cb3882de71c4e9babf2b70eabaa3eae2d2bc4cb8da"
     },
     {
       "id": 1109,

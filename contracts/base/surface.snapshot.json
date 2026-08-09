@@ -1311,7 +1311,7 @@
     {
       "id": 1108,
       "name": "OpenIMMessageReceiptItem",
-      "signatureHash": "993b8cfbd29dcd0c5a9b74f240e7882619cd429c04d7ecc61a98671e2b071156"
+      "signatureHash": "2eb37aa8fa133a4be81504cb3882de71c4e9babf2b70eabaa3eae2d2bc4cb8da"
     },
     {
       "id": 1109,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "d8434f5c10fa21465a46b852314b3f4863b5e6cf7e4e3743d2e802682ba67eac"
+  "contractHash": "dbd14551ea0e1fbcb8f65e70f86d640de748d3735f096fa772fdff7d7352f2a2"
 }
