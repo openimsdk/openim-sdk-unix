@@ -11,6 +11,9 @@ test('Public runner makes contract evidence part of the process success gate', (
   const source = readFileSync(runnerPath, 'utf8')
   assert.match(source, /writeLatestAutomationEvidence\(\{/)
   assert.match(source, /startedAtMs: runStartedAtMs/)
+  assert.match(source, /runtime: \{/)
+  assert.match(source, /target,/)
+  assert.match(source, /deviceID,/)
   assert.match(source, /!evidence\.contractEvidence\.passed/)
   assert.match(source, /passed && evidenceFailure\.length === 0/)
 })
@@ -63,9 +66,23 @@ test('Public runner evidence reads base authority and keeps response structure s
   const reportPath = resolve(root, 'test-results/openim-automation/openim-automation-new.json')
   writeFileSync(reportPath, JSON.stringify(report))
 
-  const { evidence, evidencePath } = writeLatestAutomationEvidence({ projectRoot: root, platform: 'android' })
+  const { evidence, evidencePath } = writeLatestAutomationEvidence({
+    projectRoot: root,
+    platform: 'android',
+    repositoryOverride: { revision: 'a'.repeat(40), dirty: false },
+    runtime: {
+      target: 'app-android', deviceID: 'emulator-1', deviceKind: 'emulator',
+      osVersion: '16', architecture: 'x86_64', buildConfiguration: 'Debug',
+    },
+    series: { id: 'fixture-series', sequence: 1, total: 1 },
+  })
   assert.equal(evidence.contractEvidence.passed, true)
-  assert.equal(JSON.parse(readFileSync(evidencePath, 'utf8')).contractEvidence.passed, true)
+  const persisted = JSON.parse(readFileSync(evidencePath, 'utf8'))
+  assert.equal(persisted.schemaVersion, 2)
+  assert.equal(persisted.repository.dirty, false)
+  assert.equal(persisted.runtime.deviceID, 'emulator-1')
+  assert.equal(persisted.contractEvidence.passed, true)
+  assert.match(evidencePath, /android-[A-Za-z0-9-]+-evidence\.json$/)
 })
 
 test('Public runner evidence redacts credentials and payload identities', async () => {

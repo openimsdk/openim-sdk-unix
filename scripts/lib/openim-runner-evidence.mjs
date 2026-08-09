@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
@@ -145,6 +145,31 @@ function verifyRuntimeSummaryStructure(projectRoot, reportPath) {
   }
 }
 
+function repositoryState(projectRoot) {
+  try {
+    const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+    const dirty = execFileSync('git', ['status', '--porcelain'], {
+      cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim() !== ''
+    return { revision, dirty }
+  } catch {
+    return { revision: 'unknown', dirty: true }
+  }
+}
+
+function runtimeMetadata(platform, runtime = {}) {
+  return {
+    target: runtime.target ?? (platform === 'android' ? 'app-android' : platform === 'ios' ? 'app-ios-simulator' : 'app-harmony'),
+    deviceID: runtime.deviceID ?? 'unknown',
+    deviceKind: runtime.deviceKind ?? 'unknown',
+    osVersion: runtime.osVersion ?? 'unknown',
+    architecture: runtime.architecture ?? 'unknown',
+    buildConfiguration: runtime.buildConfiguration ?? 'Debug',
+  }
+}
+
 export function createAutomationEvidenceRecord({
   projectRoot,
   platform,
@@ -152,6 +177,10 @@ export function createAutomationEvidenceRecord({
   reportPath,
   fullRun = true,
   manifestOverride,
+  repositoryOverride,
+  runtime,
+  series,
+  runId = randomUUID(),
 }) {
   const manifest = manifestOverride ?? readDispositionManifest(projectRoot)
   const responseSchemas = manifestOverride == null ? readResponseSchemas(projectRoot) : undefined
@@ -169,10 +198,14 @@ export function createAutomationEvidenceRecord({
     })
   }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
+    runId,
     generatedAt: new Date().toISOString(),
     platform,
     fullRun,
+    series: series ?? { id: runId, sequence: 1, total: 1 },
+    repository: repositoryOverride ?? repositoryState(projectRoot),
+    runtime: runtimeMetadata(platform, runtime),
     sourceReport: {
       path: reportPath == null ? '' : relative(projectRoot, reportPath),
       headline: typeof report?.headline === 'string' ? report.headline : '',
@@ -193,6 +226,10 @@ export function writeLatestAutomationEvidence({
   startedAtMs = 0,
   fullRun = true,
   manifestOverride,
+  repositoryOverride,
+  runtime,
+  series,
+  runId,
 }) {
   const latest = findLatestAutomationReport(projectRoot, startedAtMs)
   if (latest == null) {
@@ -206,11 +243,19 @@ export function writeLatestAutomationEvidence({
     reportPath: latest.path,
     fullRun,
     manifestOverride,
+    repositoryOverride,
+    runtime,
+    series,
+    runId,
   })
-  const evidencePath = resolve(artifactDirectory(projectRoot), `${platform}-latest-evidence.json`)
+  const safeRunId = evidence.runId.replace(/[^A-Za-z0-9._-]/g, '-')
+  const evidencePath = resolve(artifactDirectory(projectRoot), `${platform}-${safeRunId}-evidence.json`)
+  const latestEvidencePath = resolve(artifactDirectory(projectRoot), `${platform}-latest-evidence.json`)
   mkdirSync(resolve(evidencePath, '..'), { recursive: true })
-  writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`)
-  return { evidence, evidencePath, reportPath: latest.path }
+  const encoded = `${JSON.stringify(evidence, null, 2)}\n`
+  writeFileSync(evidencePath, encoded)
+  writeFileSync(latestEvidencePath, encoded)
+  return { evidence, evidencePath, latestEvidencePath, reportPath: latest.path }
 }
 
 export function evidenceManifestSummary(projectRoot, evidencePath, evidence) {

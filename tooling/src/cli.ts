@@ -42,6 +42,7 @@ import {
   verifyPublicAutomationSummaryStructure,
 } from './automation-summary.js'
 import { verifyReleaseIntegrity } from './release-integrity.js'
+import { verifyRuntimeEvidenceSet, type RuntimePlatform } from './runtime-evidence.js'
 
 const toolingDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
 const root = resolve(toolingDirectory, '..')
@@ -87,6 +88,25 @@ function requiredArgument(name: string): string {
   const value = index >= 0 ? process.argv[index + 1] : undefined
   if (value == null || value === '') throw new Error(`Missing required argument ${name}`)
   return resolve(value)
+}
+
+function argumentValues(name: string): string[] {
+  const values: string[] = []
+  for (let index = 0; index < process.argv.length; index += 1) {
+    if (process.argv[index] === name) {
+      const value = process.argv[index + 1]
+      if (value == null || value === '') throw new Error(`Missing value after ${name}`)
+      values.push(value)
+    }
+  }
+  return values
+}
+
+function requiredRuntimePlatform(): RuntimePlatform {
+  const index = process.argv.indexOf('--expected-platform')
+  const value = index >= 0 ? process.argv[index + 1] : undefined
+  if (value === 'android' || value === 'ios' || value === 'harmony') return value
+  throw new Error(`Unknown or missing --expected-platform: ${value ?? 'missing'}`)
 }
 
 switch (command) {
@@ -154,6 +174,20 @@ switch (command) {
     const edition = repositoryEdition()
     const result = verifyReleaseIntegrity(root, edition, process.argv.includes('--release'))
     console.log(`${edition} SBOM, license, and secret scan verified: ${result.reportPath}`)
+    break
+  }
+  case 'verify:runtime-evidence': {
+    const evidencePaths = argumentValues('--evidence').map((path) => resolve(path))
+    if (evidencePaths.length === 0) throw new Error('At least one --evidence path is required')
+    const minimumIndex = process.argv.indexOf('--minimum-runs')
+    const minimumRuns = minimumIndex >= 0 ? Number(process.argv[minimumIndex + 1]) : 1
+    const result = verifyRuntimeEvidenceSet(root, evidencePaths, {
+      expectedPlatform: requiredRuntimePlatform(),
+      release: process.argv.includes('--release'),
+      minimumRuns,
+      requireArm64PhysicalRelease: process.argv.includes('--require-arm64-physical-release'),
+    })
+    console.log(`Runtime evidence verified for ${result.platform}: ${result.runIds.join(', ')}`)
     break
   }
   case 'native:import': {

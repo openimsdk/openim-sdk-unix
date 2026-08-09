@@ -91,15 +91,20 @@ jobs:
           git diff --exit-code
           npm run generate
           git diff --exit-code
-      - name: Require three clean runtime summaries
+      - name: Require three clean platform-bound runtime passes
         env:
-          SUMMARY_1: ${{ vars.OPENIM_PUBLIC_AUTOMATION_SUMMARY_1 }}
-          SUMMARY_2: ${{ vars.OPENIM_PUBLIC_AUTOMATION_SUMMARY_2 }}
-          SUMMARY_3: ${{ vars.OPENIM_PUBLIC_AUTOMATION_SUMMARY_3 }}
+          ANDROID_EVIDENCE_1: ${{ vars.OPENIM_PUBLIC_ANDROID_EVIDENCE_1 }}
+          ANDROID_EVIDENCE_2: ${{ vars.OPENIM_PUBLIC_ANDROID_EVIDENCE_2 }}
+          ANDROID_EVIDENCE_3: ${{ vars.OPENIM_PUBLIC_ANDROID_EVIDENCE_3 }}
+          IOS_EVIDENCE_1: ${{ vars.OPENIM_PUBLIC_IOS_EVIDENCE_1 }}
+          IOS_EVIDENCE_2: ${{ vars.OPENIM_PUBLIC_IOS_EVIDENCE_2 }}
+          IOS_EVIDENCE_3: ${{ vars.OPENIM_PUBLIC_IOS_EVIDENCE_3 }}
         run: |
-          test -n "$SUMMARY_1" -a -f "$SUMMARY_1"
-          test -n "$SUMMARY_2" -a -f "$SUMMARY_2"
-          test -n "$SUMMARY_3" -a -f "$SUMMARY_3"
-          npm run verify:automation-summary -- --summary "$SUMMARY_1"
-          npm run verify:automation-summary -- --summary "$SUMMARY_2"
-          npm run verify:automation-summary -- --summary "$SUMMARY_3"
+          test -n "$ANDROID_EVIDENCE_1" -a -f "$ANDROID_EVIDENCE_1"
+          test -n "$ANDROID_EVIDENCE_2" -a -f "$ANDROID_EVIDENCE_2"
+          test -n "$ANDROID_EVIDENCE_3" -a -f "$ANDROID_EVIDENCE_3"
+          test -n "$IOS_EVIDENCE_1" -a -f "$IOS_EVIDENCE_1"
+          test -n "$IOS_EVIDENCE_2" -a -f "$IOS_EVIDENCE_2"
+          test -n "$IOS_EVIDENCE_3" -a -f "$IOS_EVIDENCE_3"
+          npm run verify:runtime-evidence -- --release --expected-platform android --minimum-runs 3 --require-arm64-physical-release --evidence "$ANDROID_EVIDENCE_1" --evidence "$ANDROID_EVIDENCE_2" --evidence "$ANDROID_EVIDENCE_3"
+          npm run verify:runtime-evidence -- --release --expected-platform ios --minimum-runs 3 --evidence "$IOS_EVIDENCE_1" --evidence "$IOS_EVIDENCE_2" --evidence "$IOS_EVIDENCE_3"

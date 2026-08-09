@@ -176,6 +176,19 @@ terminateProjectJestProcesses('stale preflight process');
 
 const target = platform === 'android' ? 'app-android' : 'app-ios-simulator';
 const deviceID = readArgument('--device-id') || process.env.OPENIM_TEST_DEVICE_ID || '';
+const runtime = {
+  target,
+  deviceID,
+  deviceKind: process.env.OPENIM_TEST_DEVICE_KIND || (target.includes('simulator') ? 'simulator' : 'unknown'),
+  osVersion: process.env.OPENIM_TEST_OS_VERSION || 'unknown',
+  architecture: process.env.OPENIM_TEST_ARCHITECTURE || 'unknown',
+  buildConfiguration: process.env.OPENIM_TEST_BUILD_CONFIGURATION || 'Debug',
+};
+const series = {
+  id: process.env.OPENIM_AUTOMATION_SERIES_ID || `standalone-${runStartedAtMs}`,
+  sequence: Number(process.env.OPENIM_AUTOMATION_SERIES_SEQUENCE || 1),
+  total: Number(process.env.OPENIM_AUTOMATION_SERIES_TOTAL || 1),
+};
 const args = ['uniapp.test', target, '--project', projectRoot, '--vapor', requestedVapor ? 'true' : 'false'];
 if (requestedVapor) {
   args.push('--vapor_render_target', 'bytecode');
@@ -270,6 +283,12 @@ child.on('close', (code, signal) => {
       platform,
       startedAtMs: runStartedAtMs,
       fullRun,
+      runtime: {
+        ...runtime,
+        target,
+        deviceID,
+      },
+      series,
     });
     console.log(`[openim-runner] automation evidence: ${evidencePath}`);
     if (!evidence.contractEvidence.passed) {

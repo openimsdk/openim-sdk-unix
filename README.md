@@ -204,6 +204,21 @@ node scripts/run-openim-automation.mjs ios --device-id <simulator-uuid>
 
 测试会把账号配置临时注入 storage，执行 `pages/index/index.uvue` 的 API smoke 流程，并在 `test-results/openim-automation/` 保存 JSON、日志和截图。无论成功或失败，注入的 storage 都会清理。受控入口同时提供启动超时、总超时、心跳和进程组清理，避免残留 Jest 占用 9520/9521 端口。
 
+发布证据必须显式记录真实设备环境；`unknown` 元数据不会通过发布门禁。连续运行时为三次执行设置相同的 series ID，并依次设置 sequence 1、2、3：
+
+```bash
+OPENIM_TEST_DEVICE_KIND=physical \
+OPENIM_TEST_OS_VERSION=16 \
+OPENIM_TEST_ARCHITECTURE=arm64-v8a \
+OPENIM_TEST_BUILD_CONFIGURATION=Release \
+OPENIM_AUTOMATION_SERIES_ID=android-release-current-sha \
+OPENIM_AUTOMATION_SERIES_SEQUENCE=1 \
+OPENIM_AUTOMATION_SERIES_TOTAL=3 \
+node scripts/run-openim-automation.mjs android --device-id <device-id>
+```
+
+每次执行都会保留一份带唯一 runId 的不可变 evidence，同时更新 `<platform>-latest-evidence.json`。发布门禁校验三份 evidence 的平台、当前 Git SHA、clean 状态、连续序号、零失败/零跳过、结构/语义证据，并要求 Android 三次结果中至少一份来自 arm64 真机 Release 构建。
+
 ## 社区 :busts_in_silhouette:
 
 - 📚 [OpenIM Community](https://github.com/OpenIMSDK/community)
