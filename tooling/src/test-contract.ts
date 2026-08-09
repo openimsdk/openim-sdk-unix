@@ -1,5 +1,6 @@
 import ts from 'typescript'
 import type { ContractCallable, ContractDocument, ContractEvent, ContractType, EnterpriseDeltaDocument, EnterpriseTypeExtension } from './model.js'
+import { requireCallableTestProfile } from './test-profile.js'
 
 export type ContractValueSchema =
   | { kind: 'any' }
@@ -103,10 +104,6 @@ const p0EventNames = new Set([
   'onHangUp', 'onReceiveCustomSignaling',
 ])
 
-const lifecycleCallables = new Set(['initSDK', 'login', 'logout', 'unInitSDK', 'getLoginStatus', 'getLoginUserID'])
-const lifecycleMutationCallables = new Set(['initSDK', 'login', 'logout', 'unInitSDK'])
-const messageDeliveryCallables = new Set(['sendMessage', 'sendMessageNotOss'])
-const uploadCallables = new Set(['uploadFile', 'uploadLogs', 'cancelUpload'])
 const harmonyUnsupportedCallables = new Set(['updateFcmToken', 'updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
 
 const expectedEventsByCallable = new Map<string, string[]>([
@@ -300,28 +297,6 @@ function eventPlatformDisposition(
   return event.binding[platform] === 'unsupported-by-native-abi' ? 'platform-unsupported' : 'required'
 }
 
-function semanticProfile(callable: ContractCallable): string {
-  if (callable.role !== 'operation') return 'subscription-lifecycle'
-  if (lifecycleCallables.has(callable.name)) return 'lifecycle-state'
-  if (messageDeliveryCallables.has(callable.name)) return 'message-delivery-correlation'
-  if (/^create.*Message/.test(callable.name)) return 'message-content-correlation'
-  if (uploadCallables.has(callable.name)) return 'progress-terminal-correlation'
-  if (callable.name.startsWith('signaling')) return 'signaling-correlation'
-  if (/History|List|Search|Split|Page|Find/.test(callable.name)) return 'pagination-integrity'
-  if (/^(?:set|update|mark|delete|remove|add|accept|refuse|create|join|quit|dismiss|change|pin|revoke|typing|kick|invite)/.test(callable.name)) return 'mutation-observation'
-  return 'response-identity'
-}
-
-function sideEffectProbe(callable: ContractCallable): string {
-  if (callable.role !== 'operation') return 'registry-observation'
-  if (lifecycleMutationCallables.has(callable.name)) return 'state-transition'
-  if (messageDeliveryCallables.has(callable.name) || callable.name.startsWith('signaling')) return 'cross-account-event-observation'
-  if (callable.name === 'uploadFile' || callable.name === 'uploadLogs' || callable.name === 'cancelUpload') return 'progress-and-result-observation'
-  if (/^(?:set|update|mark|delete|remove|pin|revoke|change)/.test(callable.name)) return 'read-after-write'
-  if (/^(?:add|accept|refuse|createGroup|joinGroup|quitGroup|dismissGroup|kickGroupMember|inviteUserToGroup)/.test(callable.name)) return 'cross-account-event-observation'
-  return 'none'
-}
-
 function negativeProfiles(callable: ContractCallable, capability: string): string[] {
   if (callable.role === 'event-control') return ['forged-or-stale-subscription', 'callback-removal-during-dispatch']
   if (callable.role === 'event-subscription') return ['off-subscription', 'off-all-event-name', 'stale-epoch']
@@ -372,8 +347,7 @@ function buildDisposition(
     callables: callables.map((callable) => {
       const capability = capabilityByCallable.get(callable.name) ?? 'core'
       const unsupported = callable.binding.android?.kind === 'unsupported' && callable.binding.ios?.kind === 'unsupported'
-      const profile = semanticProfile(callable)
-      const probe = sideEffectProbe(callable)
+      const { semanticProfile: profile, sideEffectProbe: probe } = requireCallableTestProfile(callable)
       const expectedEvents = callable.role === 'event-subscription'
         ? [callable.name]
         : [...(expectedEventsByCallable.get(callable.name) ?? [])]

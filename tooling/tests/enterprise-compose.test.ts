@@ -36,6 +36,7 @@ function baseContract(): ContractDocument {
       signature: 'getLoginUserID():Promise<string>',
       completion: 'promise', responseCodec: 'raw-string', errorPolicy: 'frozen-native-rejection',
       rawString: true, role: 'operation',
+      testProfile: { semanticProfile: 'lifecycle-state', sideEffectProbe: 'none' },
       lowering: {
         kind: 'platform-driver', transport: 'async', operationID: 'empty', request: 'empty-object',
       },

@@ -42,6 +42,7 @@ import {
 } from './harmony-bindings.js'
 import { renderHarmonyMonomorphicHelpers } from './harmony-monomorphize.js'
 import { buildEnterpriseResponseSchemas, buildEnterpriseTestDisposition } from './test-contract.js'
+import { inferCallableTestProfile } from './test-profile.js'
 import {
   semanticHashForCallable,
   semanticHashForEvent,
@@ -293,6 +294,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   assert(harmonyByName.size === androidValues.length, 'Harmony façade export count differs from Android/iOS')
   const baseConstantByName = new Map(base.constants.map((value) => [value.name, value]))
   const baseCallableByName = new Map(base.callables.map((value) => [value.name, value]))
+  const existingPrivateCallableByName = new Map(existingDelta.callables.map((value) => [value.name, value]))
   const eventNames = extractStringUnion(interfaceSource, 'OpenIMSDKEventName')
   const eventNameSet = new Set(eventNames)
   const callables: ContractCallable[] = []
@@ -325,6 +327,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       continue
     }
     const isEvent = eventNameSet.has(android.name)
+    const role: ContractCallable['role'] = isEvent ? 'event-subscription' : 'operation'
     const callable: ContractCallable = {
       id: 0,
       name: android.name,
@@ -333,7 +336,8 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       responseCodec: isEvent ? 'event-handler' : codecFor(android.returnType),
       errorPolicy: android.returnType.startsWith('Promise<') ? 'frozen-native-rejection' : 'none',
       rawString: android.returnType === 'string' || android.returnType === 'Promise<string>',
-      role: isEvent ? 'event-subscription' : 'operation',
+      role,
+      testProfile: existingPrivateCallableByName.get(android.name)?.testProfile ?? inferCallableTestProfile({ name: android.name, role }),
       declaration: { android: android.declaration, ios: ios.declaration, harmony: harmony.declaration },
       binding: {
         android: bindingFor(android.declaration, eventNameSet, android.name),

@@ -19,14 +19,14 @@ function eventContract(): ContractDocument {
       {
         id: 2003, name: 'onConnecting', signature: 'onConnecting(handler:Handler):Subscription',
         completion: 'sync', responseCodec: 'void', errorPolicy: 'none', rawString: false,
-        role: 'event-subscription', declaration: { android: '', ios: '', harmony: "export function onConnecting(handler : Handler) : Subscription { return onVoidHarmonyEvent('onConnecting', handler) }" },
+        role: 'event-subscription', testProfile: { semanticProfile: 'subscription-lifecycle', sideEffectProbe: 'registry-observation' }, declaration: { android: '', ios: '', harmony: "export function onConnecting(handler : Handler) : Subscription { return onVoidHarmonyEvent('onConnecting', handler) }" },
         binding: { android: { kind: 'none', symbol: '' }, ios: { kind: 'none', symbol: '' }, harmony: { kind: 'none', symbol: '' } },
         signatureHash: '',
       },
       {
         id: 2004, name: 'onMsgDeleted', signature: 'onMsgDeleted(handler:Handler):Subscription',
         completion: 'sync', responseCodec: 'void', errorPolicy: 'none', rawString: false,
-        role: 'event-subscription', declaration: { android: '', ios: '', harmony: "export function onMsgDeleted(handler : Handler) : Subscription { return onVoidHarmonyEvent('onMsgDeleted', handler) }" },
+        role: 'event-subscription', testProfile: { semanticProfile: 'subscription-lifecycle', sideEffectProbe: 'registry-observation' }, declaration: { android: '', ios: '', harmony: "export function onMsgDeleted(handler : Handler) : Subscription { return onVoidHarmonyEvent('onMsgDeleted', handler) }" },
         binding: { android: { kind: 'none', symbol: '' }, ios: { kind: 'none', symbol: '' }, harmony: { kind: 'none', symbol: '' } },
         signatureHash: '',
       },

@@ -1579,967 +1579,967 @@
       "id": 2001,
       "name": "off",
       "signature": "off(subscription:OpenIMSDKEventSubscription):void",
-      "signatureHash": "2d4a28cdaf8d07e68af610b371879c3a11d9586268d2c76f95dc07fbd111e039"
+      "signatureHash": "2df0c5d007dd5bfc48ab1f2c14e0ca2a2b79fd6467747ee255cbdde9da6f54a1"
     },
     {
       "id": 2002,
       "name": "offAll",
       "signature": "offAll(eventName:OpenIMSDKEventName):void",
-      "signatureHash": "c41fddf03445e10ab6ced383671d96d3fe1fe81427d760a381a8a3c7371c7acc"
+      "signatureHash": "d88788a5c151d356b9167454f5f59dd4b5b91fd0edac224f5230ebe33627d8f0"
     },
     {
       "id": 2003,
       "name": "onConnecting",
       "signature": "onConnecting(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "9ff6889c61f796a383aea418319daa3c232f785d55064e09d589a2b2047c69f5"
+      "signatureHash": "6379b21b03568f94c5e0b718b44e45b9efd4ae322ce7a5bec7a13f948ff7caf0"
     },
     {
       "id": 2004,
       "name": "onConnectSuccess",
       "signature": "onConnectSuccess(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "344620f7806e9d341fadea4f3cf4339b35af7ffd098c5ea398ca9025589570b0"
+      "signatureHash": "3cc501553ffabdfefd4d8d1ff6788ebdc2871bc9361b61c95b6a754d06efa02b"
     },
     {
       "id": 2005,
       "name": "onConnectFailed",
       "signature": "onConnectFailed(handler:OpenIMErrorEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "8c841a95be728634963442216676da9278289c4dc2a8e5c00e087c0e50d84e08"
+      "signatureHash": "6be6ffdbe33aa5f6e29d2f792e32a2fcc5d638862a247f40888b25768ea679f3"
     },
     {
       "id": 2006,
       "name": "onKickedOffline",
       "signature": "onKickedOffline(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "e2bbca666f1178b222fefefe032b256eed2bcd8c9d5dd391b05d5994c0ddfe1b"
+      "signatureHash": "2f07413a395a7d132be0353e6811e41be8e6c27f5f29f7a8756a2261d4b5db3a"
     },
     {
       "id": 2007,
       "name": "onUserTokenExpired",
       "signature": "onUserTokenExpired(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "bc401371bc6ebcdb180b7b43b1fb8cc0d6b6b798b7595a12d7568176e957a460"
+      "signatureHash": "502dfeb80207518a7f51bf65105b405d464c03abb073835477f5afd33f65262f"
     },
     {
       "id": 2008,
       "name": "onUserTokenInvalid",
       "signature": "onUserTokenInvalid(handler:OpenIMErrorEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "43158030b0625985f785fa314828eaf7c5a1a530fceb82568e47aad5c1eac9d8"
+      "signatureHash": "b4792ec664f6e7b6537e97ee85fec7f95f146ad00ca61077cf046f4cae72f858"
     },
     {
       "id": 2009,
       "name": "onRecvNewMessage",
       "signature": "onRecvNewMessage(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "7fd9650d9a4950f7b4714b88d1aec2aba65b5788fd28fccf5b5df34f52b8b6be"
+      "signatureHash": "cb598fa221776e8e3108df526d34dd63fb8162ef63b6c1ca4d73aca0fa921a15"
     },
     {
       "id": 2010,
       "name": "onRecvOfflineNewMessage",
       "signature": "onRecvOfflineNewMessage(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "ac269d3b8a9668c2bba28ad79db40b798e4cfd8051545072d99161377f2aac23"
+      "signatureHash": "c2f789227a9a18f28de7577f40f3574af1050f6101a0745d3108945b1c9724f9"
     },
     {
       "id": 2011,
       "name": "onRecvOnlineOnlyMessage",
       "signature": "onRecvOnlineOnlyMessage(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "042447b8ae5779a8035933b982b3df034fc4a10c18c752e9c1d2d3cdc233ab1f"
+      "signatureHash": "28ae206024bf115b10cecbe7f8dd372b67a4f26b0b09a294fff762974c355bab"
     },
     {
       "id": 2012,
       "name": "onMsgDeleted",
       "signature": "onMsgDeleted(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "7ea33444e29a377e80ef883cd8dbc23236e73a6d6b1343d19d4ae07d289848db"
+      "signatureHash": "acab800c8da5f72651a09f13c404c3f7e23ea707fe48e0631d379f4a996cc63e"
     },
     {
       "id": 2013,
       "name": "onNewRecvMessageRevoked",
       "signature": "onNewRecvMessageRevoked(handler:OpenIMMessageRevokedEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "f5a3443fe7f7ef4610ae602a443a54cbf4857701c08d35abb8a432bca0fb205a"
+      "signatureHash": "c0d5d606b52276597d619bb26dbcf110d6154572758d14934ea3925fadcbb559"
     },
     {
       "id": 2014,
       "name": "onRecvC2CReadReceipt",
       "signature": "onRecvC2CReadReceipt(handler:OpenIMMessageReceiptListEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "321dae165b523372d5e92bc81d886e07dff023581800e98bb2ced9e71fddbd22"
+      "signatureHash": "c81b6eaf72e58a0c442520191ff8631b3d03c51b0eb5b41ad862a74c3b3346c7"
     },
     {
       "id": 2015,
       "name": "onRecvNewMessages",
       "signature": "onRecvNewMessages(handler:OpenIMMessageListEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "016a8b70d51f57c6bdc92c1ee1966b68a0178b72996a7f5cbf3af6954ac37755"
+      "signatureHash": "a5e6b667b13cd119b50711f84456c10b40141091be90d40e9f6e04d9385c78ed"
     },
     {
       "id": 2016,
       "name": "onRecvOfflineNewMessages",
       "signature": "onRecvOfflineNewMessages(handler:OpenIMMessageListEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "7238129caf85b957dd329de792964822ff6f1d0aba2e4a51f7c209d1a7b0eb86"
+      "signatureHash": "d54d89da65e3e0b12a915c8395051cb109ebd7a375dbf43475facde0ae46c455"
     },
     {
       "id": 2017,
       "name": "onConversationChanged",
       "signature": "onConversationChanged(handler:OpenIMConversationListEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "f2c4ccc97fb652b14474d8920c82bd8448746276271bc95bb113a1453de62bcd"
+      "signatureHash": "1a3b6522ae7b27ad6c16ad562138d66d84bca5b8cc8d1f2dc9577a54276bd316"
     },
     {
       "id": 2018,
       "name": "onConversationUserInputStatusChanged",
       "signature": "onConversationUserInputStatusChanged(handler:OpenIMConversationInputStatusEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "7f590cd87714cf7862a5add27f51d8e2b76205e5b4df6f4d71e04e03ae14d2f1"
+      "signatureHash": "8a2966a2afc97e4cfbdbcd084bbd17af54f8daab45682cf9ff33ee32dcbdf70e"
     },
     {
       "id": 2019,
       "name": "onNewConversation",
       "signature": "onNewConversation(handler:OpenIMConversationListEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "a08d67ce657dceda5fb8d81e9729c7514986d3fb3d5a4a0adfc79308a9919be5"
+      "signatureHash": "62fbc1dac9df4e7876cad6864430bd9ce64fb6c347d1501295addfb635286553"
     },
     {
       "id": 2020,
       "name": "onSyncServerFailed",
       "signature": "onSyncServerFailed(handler:OpenIMBooleanEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "9141181c7f4c8bf7efe014105f115f444b8c1712296a1b060e1666eca86182dd"
+      "signatureHash": "730a56228f1bc3873befc3d23988f06e611a08f31f2c69d111ac206b38ad8f94"
     },
     {
       "id": 2021,
       "name": "onSyncServerFinish",
       "signature": "onSyncServerFinish(handler:OpenIMBooleanEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "6a4e887567c4847e259c7a676b1330d45518cf40124d209ae600b1162502ccd3"
+      "signatureHash": "98a5a6562b5f75fec0a254c22c5104bb5ccac11d434956aff1e2a7b034e2b36e"
     },
     {
       "id": 2022,
       "name": "onSyncServerProgress",
       "signature": "onSyncServerProgress(handler:OpenIMNumberEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "ad09eea1ce279c30500eabe2754ed45225c20feaade3e4861042f8234ba996e7"
+      "signatureHash": "15cec3efa80332d192a3a70c26b20c6fe7a47d6fd5e2c6407937498c47fa0808"
     },
     {
       "id": 2023,
       "name": "onSyncServerStart",
       "signature": "onSyncServerStart(handler:OpenIMBooleanEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "dde29007c2b78f5b95ebbae498c0449c4a1d67b9a81920abb4b33043033a59c4"
+      "signatureHash": "f45ad5a2fc8c8ac3bb0887db5101d97195f243203bde589a11a97547bdc0f668"
     },
     {
       "id": 2024,
       "name": "onSendMessageProgress",
       "signature": "onSendMessageProgress(handler:OpenIMSendMessageProgressEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "d2419252ae164c2ec4005efc1d3c6e69270489e069afec2f936dddb05af107b9"
+      "signatureHash": "e2aa6754118e13098a7b9678f33410b0c163cfc760f6035fd14ffef37f4dfd42"
     },
     {
       "id": 2025,
       "name": "onUploadFileProgress",
       "signature": "onUploadFileProgress(handler:OpenIMUploadFileProgressEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "351b39e4ad049d8219f85fb92068af9af8d743899562d430138c8719aaf5d108"
+      "signatureHash": "aeb7c9890a841d30d1df9d27dd1968781f15c39877b8a9875051883d0a542982"
     },
     {
       "id": 2026,
       "name": "onUploadLogsProgress",
       "signature": "onUploadLogsProgress(handler:OpenIMUploadLogsProgressEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "c50f67b758a6b39a7d5ab16edbffab0bc843d926c5506bb17e7b7338f49c216e"
+      "signatureHash": "9bce29667aed98ac7a8c69a51dbdca812d9c590458d13f0edc68bdf0f96356fb"
     },
     {
       "id": 2027,
       "name": "onTotalUnreadMessageCountChanged",
       "signature": "onTotalUnreadMessageCountChanged(handler:OpenIMNumberEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "6364f74c348d542ee93f6e6631cf045f020cebee820d86608daf0652389fa71c"
+      "signatureHash": "36f55eb99c1b5c3dc7a682aea4c0d136aec324154c9aa6812944b0c0ad87e0dd"
     },
     {
       "id": 2028,
       "name": "onRecvCustomBusinessMessage",
       "signature": "onRecvCustomBusinessMessage(handler:OpenIMStringEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "880fa8adbb4f0a2e01ad0cc219297dda1943bc966f83b5b4fa73fd3c86ab19cc"
+      "signatureHash": "4c690babd523d5dacbc6d04c6d9f88b82e9fd7e5531ddf9712bc5930d61d1af0"
     },
     {
       "id": 2029,
       "name": "onBlackAdded",
       "signature": "onBlackAdded(handler:OpenIMBlackUserEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "8078b09095a54e336a840267c6491d579cc5a31333e39cca521a6e242f1a6d65"
+      "signatureHash": "c62fd9fbb0127d3e3bd788aa9c9d1823b46386415442be9d4d576e15e3950b3e"
     },
     {
       "id": 2030,
       "name": "onBlackDeleted",
       "signature": "onBlackDeleted(handler:OpenIMBlackUserEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "1fb6db05e0832e744af58a437cd7a8ad922cd783e36d33925ea9e869c52f87db"
+      "signatureHash": "01a0218fa86dddebe68dede732f577280e733f2d0242c9a5c7063dba30e19008"
     },
     {
       "id": 2031,
       "name": "onFriendAdded",
       "signature": "onFriendAdded(handler:OpenIMFriendEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "73f592602849d0140b32d9b927d33bb68412b10662e2ed581cc1638578a6e3e3"
+      "signatureHash": "5fb7a206bb26f92d17e767610ee42765405f2f92836fa100599a886091fc143e"
     },
     {
       "id": 2032,
       "name": "onFriendApplicationAccepted",
       "signature": "onFriendApplicationAccepted(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "d4f64defd1041a2572f33f66b16b9af3379022aa6e5483a7c8c961f9d879c013"
+      "signatureHash": "06f99faf5d13ac440af1587ec3830019f66e363356e6e60ca61f70c7ca9c6dd7"
     },
     {
       "id": 2033,
       "name": "onFriendApplicationAdded",
       "signature": "onFriendApplicationAdded(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "31be9c00fb25a5bfe208dfa9d16a17206fad4ab4d029f8b1624702cab3ad49e5"
+      "signatureHash": "dbed918b949aed2f0fb6c853dba5d590d97a72751b6eed87ecb24baca83d39c5"
     },
     {
       "id": 2034,
       "name": "onFriendApplicationDeleted",
       "signature": "onFriendApplicationDeleted(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "07a0360ecff8f3bac19dc06ee5e5cc18c84ca923cb313554577df1adc9c28ce4"
+      "signatureHash": "12f410937858eec8e25e2c2a8d96a6aec68cdd1574d1322a899b0406b89ab548"
     },
     {
       "id": 2035,
       "name": "onFriendApplicationRejected",
       "signature": "onFriendApplicationRejected(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "b834c466f8c0dbb18a17c7c4305edbb269fc2e84e8afce55f17d2fedbee1a47b"
+      "signatureHash": "17f8fb8070643b571d97818afa34510d7fd6231a3ec8c0a0ffe1d05c4e48d802"
     },
     {
       "id": 2036,
       "name": "onFriendDeleted",
       "signature": "onFriendDeleted(handler:OpenIMFriendEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "7709a69b6812a1004f7237937caff5fe213fa1ae5003660be6b5e5f983d4e47b"
+      "signatureHash": "7b4c36fdddf0f3da708edf6ffc3a9db93920dbe24672252161ef230c613f896e"
     },
     {
       "id": 2037,
       "name": "onFriendInfoChanged",
       "signature": "onFriendInfoChanged(handler:OpenIMFriendEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "b313647ddaf2e9749170935ef25e9af8400163fd826cfb92d2f8d930d8ea3511"
+      "signatureHash": "f44a8e3dcbcd7d4c36eebeb17a986cf2a6ed20e3b98c694af52643d056be1694"
     },
     {
       "id": 2038,
       "name": "onGroupApplicationAccepted",
       "signature": "onGroupApplicationAccepted(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "6db5f0e3b0ebe64b31458bd659df64e991652fb6192d5401715f3f6fe2469301"
+      "signatureHash": "e91afd62da203b130805187cb3e0ee7a316cc2db2b818af8a8eb80aee988ae6c"
     },
     {
       "id": 2039,
       "name": "onGroupApplicationAdded",
       "signature": "onGroupApplicationAdded(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "7ac268145555b5de891e29c8c37bb02a5df71b12984897dbd8a0cede50ac5516"
+      "signatureHash": "eb92df5396d0c8bc2dcc89d35c642105da110f94afde23785936746567bbbd23"
     },
     {
       "id": 2040,
       "name": "onGroupApplicationDeleted",
       "signature": "onGroupApplicationDeleted(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "06d726951b1c31fe0224ad79dc9fc94ff716414a158bec461929391f133762ea"
+      "signatureHash": "88de7cf717bc8eef404ac8e3bb9d83cd7359287c5cbdfc12d151f9e564131408"
     },
     {
       "id": 2041,
       "name": "onGroupApplicationRejected",
       "signature": "onGroupApplicationRejected(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "3f1865f6b02f981da5c6fe22ee258920bf153c738cabd4b233cf62fb1dd1312d"
+      "signatureHash": "2ca5c5eb11e0dbc82db94dfe47abf91f83056b17781f9857de99a4f6e36d6167"
     },
     {
       "id": 2042,
       "name": "onGroupDismissed",
       "signature": "onGroupDismissed(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "403493a9ec2bdb62b2eb157d7344ba33e274a03e423aad53e92ec799a3ff8f86"
+      "signatureHash": "c8d2047275330f4b5c4c0cdb269887daf04cbcc56b62d2d003900ad7eaf51643"
     },
     {
       "id": 2043,
       "name": "onGroupInfoChanged",
       "signature": "onGroupInfoChanged(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "18c2b07a211b1c33f448751113bbca64ab36592e236e63f847e3fe0a88f059d3"
+      "signatureHash": "2df8eac562287c65cc8262d67d76acffee2474673e8918fc33ee0becf1788a30"
     },
     {
       "id": 2044,
       "name": "onGroupMemberAdded",
       "signature": "onGroupMemberAdded(handler:OpenIMGroupMemberEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "b47cfced2e046826a5317a88bd6bb1dde6e9f2ccc9a7f016600d65739f6e06f0"
+      "signatureHash": "80d501e01d3dcd8820cdc18ca8a1165f12116353e54a2022eb613fd82d6cc66b"
     },
     {
       "id": 2045,
       "name": "onGroupMemberDeleted",
       "signature": "onGroupMemberDeleted(handler:OpenIMGroupMemberEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "5d22f52dba266ca38217cf92fc77413c1897a3dc873fea20addabadbc965ac56"
+      "signatureHash": "d60988a0cb4691164cc22c77d10c7c71a603273b5624a12a49597991a4ed42e6"
     },
     {
       "id": 2046,
       "name": "onGroupMemberInfoChanged",
       "signature": "onGroupMemberInfoChanged(handler:OpenIMGroupMemberEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "a33ef5a593c6b01169249330fc55e26e8cdbb0329de3a98685a5e2afcda589b8"
+      "signatureHash": "0a9aafa795e4e97ae4348241e5979fa222d1e5d48955296c6711c38e2280d395"
     },
     {
       "id": 2047,
       "name": "onJoinedGroupAdded",
       "signature": "onJoinedGroupAdded(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "16b4a9cbca74b4f49f8cabfbb826c641dfbb4785f9950553de8a9de92f271d18"
+      "signatureHash": "b4ad572330fe786665d515f82eae2e86f0d8cb7502dadad8fa257c1ee9ce53da"
     },
     {
       "id": 2048,
       "name": "onJoinedGroupDeleted",
       "signature": "onJoinedGroupDeleted(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "45428adc2b5ca721647499d75b79346a417deee1c1000cb5ec9c9ce25d8d5227"
+      "signatureHash": "3f507fae67e363cb95a66ad665a905f7241e220fd692bc8a364fed05ed0fb7a1"
     },
     {
       "id": 2049,
       "name": "onSelfInfoUpdated",
       "signature": "onSelfInfoUpdated(handler:OpenIMUserEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "811e742fae5c83bf0a6c3b203299478f3b5d4605da87345148dfda19f4b5c734"
+      "signatureHash": "1dfb5fdd2f280ecac650c1332b42ed6975833d9a1e4299a1e99aecdebac9fc9f"
     },
     {
       "id": 2050,
       "name": "onUserStatusChanged",
       "signature": "onUserStatusChanged(handler:OpenIMUserStatusListEventHandler):OpenIMSDKEventSubscription",
-      "signatureHash": "aaa0da0cc58e89585fa45c195b2195453e82e8dd32bd2f54e44f7d825238a724"
+      "signatureHash": "20f3e0b852164d19a2281a5f4c983016071bb76703b414ac7c806edd0fe553f0"
     },
     {
       "id": 2051,
       "name": "initSDK",
       "signature": "initSDK(config:OpenIMInitConfig,operationID?:string|null):Promise<boolean>",
-      "signatureHash": "49efc0199b43f8dc32c78b4c971158d8172606791461ee7603dbbc626d3330f9"
+      "signatureHash": "17d37c0bab961a0787a6ac6d325ea50b7b31e585810e2b65a25454a0a14db47b"
     },
     {
       "id": 2052,
       "name": "login",
       "signature": "login(userID:string,token:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "2decc814f34a0b0eb0ba1009f605b9b13e5f546cde1e5d77efad574e31ef9418"
+      "signatureHash": "6b7701a708a6a96c191ee5bdb87fd3f70fcd1ab08ae17d7b991bd9b7f3bc8d8f"
     },
     {
       "id": 2053,
       "name": "logout",
       "signature": "logout(operationID?:string|null):Promise<string>",
-      "signatureHash": "224b14cc1b124e0761834974205710c06add3bcf08e2ccb04fe572e54c753875"
+      "signatureHash": "c6dacc2be84df2c590235c1160374e7276ae2063e2e962ca07b0dfa6c28cf856"
     },
     {
       "id": 2054,
       "name": "getLoginStatus",
       "signature": "getLoginStatus(operationID?:string|null):Promise<OpenIMLoginStatus>",
-      "signatureHash": "6d9b5490cfb386121899549abe54d66ec398efe290b0fe1058b5acfa078251ee"
+      "signatureHash": "437a1ef72cbabc1068417ddca3e5f390bc48c72caca972d28a4e26e2aff5be35"
     },
     {
       "id": 2055,
       "name": "getLoginUserID",
       "signature": "getLoginUserID():Promise<string>",
-      "signatureHash": "5b66545e7ca2ac1a840c7d74c27a6ad83c905c8c37e6ce526ce9ca83cb09b0e5"
+      "signatureHash": "d02aedfdac5de47cd052819c5bcf0d8f8562c6056bab5c7700d24186291bdcc4"
     },
     {
       "id": 2056,
       "name": "getSdkVersion",
       "signature": "getSdkVersion():string",
-      "signatureHash": "4f86def6fec188202b11a11ae7e700018f6ab82e834bd349c774ca921fa33c5f"
+      "signatureHash": "439f76a399abc635f410acbf8b2696333e52a59537bcc4e828fa362cf66f003a"
     },
     {
       "id": 2057,
       "name": "getOpenIMDataPath",
       "signature": "getOpenIMDataPath():string",
-      "signatureHash": "28e09c50030caa482d3d8c297be77070790f7a1f1ee84d1623c8ec6b2dea83c0"
+      "signatureHash": "83f90ca0a70b68833295282061309803c9cf97f28554eb46cc308bfaa781c466"
     },
     {
       "id": 2058,
       "name": "unInitSDK",
       "signature": "unInitSDK(operationID?:string|null):void",
-      "signatureHash": "830fa50e6b406404621617279c3867a04e9a3d49ccd3379a98959f338e02921f"
+      "signatureHash": "1a7769dd6775745d7de695427d2d4e994389c9112182b108cbac738d1d4779c1"
     },
     {
       "id": 2059,
       "name": "getAllConversationList",
       "signature": "getAllConversationList(operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "c53f1085a26eade2abc9efbeb14a86050e1e7c267091f55c310d5004530020c0"
+      "signatureHash": "eab5f262692d8938d26edbdd117f7c9bcb6d2f42334f01eaeb495a8ad37a7b17"
     },
     {
       "id": 2060,
       "name": "getOneConversation",
       "signature": "getOneConversation(params:OpenIMGetOneConversationParams,operationID?:string|null):Promise<OpenIMConversationItem|null>",
-      "signatureHash": "e9691b276a445739dbde79d308e2100f2fc0d35e2ef119984f8cc409d4d4db3e"
+      "signatureHash": "1109a3a88073b470cee7f5dbad10260528b33cfd351b91acd3ec3c772a573527"
     },
     {
       "id": 2061,
       "name": "getAdvancedHistoryMessageList",
       "signature": "getAdvancedHistoryMessageList(params:OpenIMGetAdvancedHistoryMessageListParams,operationID?:string|null):Promise<OpenIMAdvancedHistoryMessageListResult|null>",
-      "signatureHash": "5b4d516741d549a0d5592d48b8ed639bc982fd83235216f0cded5818c40e6ce0"
+      "signatureHash": "9e669a739a3f290a78f58eaa4f70c1321e975fcc27d006d2aaed0a2733bd2b30"
     },
     {
       "id": 2062,
       "name": "getSpecifiedGroupsInfo",
       "signature": "getSpecifiedGroupsInfo(params:Array<string>,operationID?:string|null):Promise<OpenIMGroupListResult|null>",
-      "signatureHash": "c69c16fbe2b231e19e7b5750fcb7cc361f50221224a22e2c4937f76ffc7ce0f8"
+      "signatureHash": "673908e988dc61d35988c4e0d362015ed13516df8c268175c11e52dbaebb004d"
     },
     {
       "id": 2063,
       "name": "deleteConversationAndDeleteAllMsg",
       "signature": "deleteConversationAndDeleteAllMsg(conversationID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "cccb45440816f73bde8c80d713fe5e4e4d579b1e3e8cfffcc34e9f1c30874af7"
+      "signatureHash": "76b70a323bc271cd521b011f2b97286242de6c3608e5f7d08cb7a7aab89bd9ae"
     },
     {
       "id": 2064,
       "name": "markConversationMessageAsRead",
       "signature": "markConversationMessageAsRead(conversationID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "cb29ca3826fea955c94d3db824e5657ae65a7934accc563897f344732b174ee9"
+      "signatureHash": "ddc8f3b99dfa3b2b0109a920c05240b22dbad9748631608d06bbd548e0cdb411"
     },
     {
       "id": 2065,
       "name": "getGroupMemberList",
       "signature": "getGroupMemberList(params:OpenIMGetGroupMemberListParams,operationID?:string|null):Promise<OpenIMGroupMemberListResult|null>",
-      "signatureHash": "3557c1eae89ab43981a4b35e5fe82cd24b1acf6ee08b6405e3b797061244bda4"
+      "signatureHash": "0eb60fe607aae2a8bf3e0e86a826e45e42e6fc4819fa71bd7334a771c4f392df"
     },
     {
       "id": 2066,
       "name": "setMessageLocalEx",
       "signature": "setMessageLocalEx(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "dbafe75ca23cb4b6eff4a926c1e591417cf710ea40b95e1d0b70222e17d7442f"
+      "signatureHash": "60cc7328942cfc318027b039644632f704338313df75898efd1f93f378e2f883"
     },
     {
       "id": 2067,
       "name": "revokeMessage",
       "signature": "revokeMessage(params:OpenIMMessageKeyParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "78520224463de50e8406e15a293c381cdf18691ff1ac8210dcfe20bd76be2fdc"
+      "signatureHash": "67705aae15d3deb71a2c8fccd69e7ebdf94501654ee3d29ca7716bef2361b84a"
     },
     {
       "id": 2068,
       "name": "setConversation",
       "signature": "setConversation(params:OpenIMSetConversationParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "848b3d1c1c72130bb5839e09b9355bb11b4e5f1b4056e5d1b57eb6a1553f5c4a"
+      "signatureHash": "0f337b3cd59b01e3a8b2b59a31b93dfd366177eb83cb7ed844e15e61a65ae9bd"
     },
     {
       "id": 2069,
       "name": "setAppBackgroundStatus",
       "signature": "setAppBackgroundStatus(data:boolean,operationID?:string|null):Promise<string>",
-      "signatureHash": "d6bc3cf0d83dc6c86572987017016ff6278083eb3d1487c694e34839d5f50f05"
+      "signatureHash": "02c9c5f2f6bc49c691fab38572fb0cfa0570d51e0581b83dac022873dabd9568"
     },
     {
       "id": 2070,
       "name": "setAppBadge",
       "signature": "setAppBadge(appUnreadCount:number,operationID?:string|null):Promise<string>",
-      "signatureHash": "441cdf82ecf5ba59e198e31d1321b69fc085472770116ccd76922092cdf4ca6e"
+      "signatureHash": "5e99e4b0725e6e5cc5bec5112e035bf23c7a83cfad2e7820686f36914934ae0d"
     },
     {
       "id": 2071,
       "name": "networkStatusChanged",
       "signature": "networkStatusChanged(operationID?:string|null):Promise<string>",
-      "signatureHash": "951a77c918f1d6f010048de2bd55d62bf3dfd65a441777d8fd3370ac498eb861"
+      "signatureHash": "935770e453250d5579fcd7fee40892f944145eaba9fe5bfb3436f40e7e373b7f"
     },
     {
       "id": 2072,
       "name": "getSelfUserInfo",
       "signature": "getSelfUserInfo(operationID?:string|null):Promise<OpenIMUserInfo|null>",
-      "signatureHash": "35062d3f9cb787e5d65866a3ba74c6f8b03547000004c8f1fbffcd61655257fa"
+      "signatureHash": "1a372ef67a89431fcf2ba44be0f8b32245503b1e57628d08808bc1a2e7e56d60"
     },
     {
       "id": 2073,
       "name": "getUsersInfo",
       "signature": "getUsersInfo(data:Array<string>,operationID?:string|null):Promise<OpenIMUserListResult|null>",
-      "signatureHash": "3528123253183ac5a697bc8c55e31206fdd7f0edebbfcb67e35d17be1ab2946d"
+      "signatureHash": "2335679725285457f43cd7c4ca753654c7ddf7a81eae26460adc71742bdf5829"
     },
     {
       "id": 2074,
       "name": "setSelfInfo",
       "signature": "setSelfInfo(data:OpenIMSetSelfInfoParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "4553fda22d16e6004e0c3eb98021f122e88c0c2c396538277e2b8c4914d630ef"
+      "signatureHash": "6a5e3f96590ead30192e0df7d5e0171bb9ae68e1923d6c6496aec56083fb4558"
     },
     {
       "id": 2075,
       "name": "deleteMessageFromLocalStorage",
       "signature": "deleteMessageFromLocalStorage(params:OpenIMMessageKeyParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "157286602ff67a3a7fd4b9a84f0b243be77ad6b43b24a8f380989f767d913037"
+      "signatureHash": "dba5ceb2efcb2a33c7404b8e9d322f64bcda1e2329d4d9dabafc62c45939fe3f"
     },
     {
       "id": 2076,
       "name": "deleteMessage",
       "signature": "deleteMessage(params:OpenIMMessageKeyParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "bbd81c4704846f598159cc599fdc2d4f7f68158cb81263618830aa2e975df33f"
+      "signatureHash": "78c319447ad93987f8db2e6e2bd9097c02f06da55fadef4cb21200383241d234"
     },
     {
       "id": 2077,
       "name": "deleteAllMsgFromLocal",
       "signature": "deleteAllMsgFromLocal(operationID?:string|null):Promise<string>",
-      "signatureHash": "ff65ba0caeae8ef10007e2b9e2838616c2e3e079b4206b55d0ab3129dd557459"
+      "signatureHash": "19c216a05015b89e6977c26fdd7aa4765da0cb37ff8cc4b3019173be6743cdc0"
     },
     {
       "id": 2078,
       "name": "deleteAllMsgFromLocalAndSvr",
       "signature": "deleteAllMsgFromLocalAndSvr(operationID?:string|null):Promise<string>",
-      "signatureHash": "e8b3f081cb589487a4f7858dee861512c60ec072d8fcaa6d32eab65612cd0ace"
+      "signatureHash": "28dfd500c66d4daa7a4fed792292ef936ffcc804cb76003eca4541d93821bbcd"
     },
     {
       "id": 2079,
       "name": "insertSingleMessageToLocalStorage",
       "signature": "insertSingleMessageToLocalStorage(params:OpenIMInsertSingleMessageParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "5826844b0b5b72b4002f944de2e49bac662675606d1dfba9864e9a3ac226fe95"
+      "signatureHash": "9625b59db3cb0abae0103d6221e6e392ff02ab99f3d26669731fe36988f93088"
     },
     {
       "id": 2080,
       "name": "insertGroupMessageToLocalStorage",
       "signature": "insertGroupMessageToLocalStorage(params:OpenIMInsertGroupMessageParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "d36cc76828e573b37fc6ef12af056d8a935ef9b81cbd9eddd864181c52ad0228"
+      "signatureHash": "4de757ef93ce32916e567b089abf72b9077c12a878325ec078b33055f7d7a3ad"
     },
     {
       "id": 2081,
       "name": "changeInputStates",
       "signature": "changeInputStates(params:OpenIMInputStateParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "8df87efc7fcf3e8bd693821b67f74f3242f5b351564654fde53b9c11227318ab"
+      "signatureHash": "77c643a3d9840d3e53c195e87193efc2d5c63d9756e4fdc17cc61874322d7090"
     },
     {
       "id": 2082,
       "name": "clearConversationAndDeleteAllMsg",
       "signature": "clearConversationAndDeleteAllMsg(conversationID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "5930baefe7498e14a1cbcac12b3f4c91dc1863e03e90629370cafb099cc510a2"
+      "signatureHash": "3b36ebe4330de0a76b40a9d8b41618a7b0aca09e77a7326fadf1825458c58f0c"
     },
     {
       "id": 2083,
       "name": "hideConversation",
       "signature": "hideConversation(conversationID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "8d6310da74699b346b469db93d1bb8e7902fa063b31e6a1d9fcefde5dd44090e"
+      "signatureHash": "ea435d74b61ca1ae34ce9d300e4acdb06cfd9c87897f327533643b554617acdc"
     },
     {
       "id": 2084,
       "name": "hideAllConversations",
       "signature": "hideAllConversations(operationID?:string|null):Promise<string>",
-      "signatureHash": "d26f25978e7297f049946a0ca4f999edd366b36ab0fa117fd35d578872fc0c3d"
+      "signatureHash": "12fee6b9877d523c99daada4d179d6c6867242521f4a2e17729f50b49b72d2dc"
     },
     {
       "id": 2085,
       "name": "markAllConversationMessageAsRead",
       "signature": "markAllConversationMessageAsRead(operationID?:string|null):Promise<string>",
-      "signatureHash": "c87042d5326b2497db9faf5bc7e16f4069f14ece76c7f8ab565d5ef60241a9c6"
+      "signatureHash": "cb151cfc0786a8684b440ae1aeb4411b1f062b2efa2a6396f6d2c48179ad3b87"
     },
     {
       "id": 2086,
       "name": "searchConversation",
       "signature": "searchConversation(searchParam:string,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "d8ee233be8e2742d877dfcc65f038f410f16c5643a8e4480a06fbc2b4461cdec"
+      "signatureHash": "9916caea795169cc358744400aba3e979e62dadb0b4f38054a060f27e166f65d"
     },
     {
       "id": 2087,
       "name": "getConversationListSplit",
       "signature": "getConversationListSplit(params:OpenIMPageParams,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "7635bb4c619fed59d443e49e1c2ada29c83b1c9ac863a96ea02df60dc1dbb1a7"
+      "signatureHash": "f5038bd9bc237e7954e958906d62c42cd1a1e0187096da24431701b5d79ab082"
     },
     {
       "id": 2088,
       "name": "getConversationIDBySessionType",
       "signature": "getConversationIDBySessionType(params:OpenIMGetOneConversationParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "a6d8602637f79187add36e3181e80af04b3a53aca73a48e8868cdf10306a5661"
+      "signatureHash": "0de4ea8e9cc65ac65bf2a8627889fba39bb185f384e2ece643f7abd78b493693"
     },
     {
       "id": 2089,
       "name": "getMultipleConversation",
       "signature": "getMultipleConversation(data:Array<string>,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
-      "signatureHash": "0face4b13172cc0551c9be730a2996ebb36a5685f8876bd69cd7d6f3aba1d770"
+      "signatureHash": "e4dcea27ea8f6aa929fae7fa7305d6b9d85ab4a3d106559185e50377a45858a3"
     },
     {
       "id": 2090,
       "name": "deleteConversation",
       "signature": "deleteConversation(conversationID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "8c8d4e5a15ebc7bc1829a8e24ccf6f99458aa76b9a82c80300340f7e4348caa0"
+      "signatureHash": "ca1a75e0b2faa7b77ee4317b7a44fe99357268086b78626281dd8bfb064b9091"
     },
     {
       "id": 2091,
       "name": "setConversationDraft",
       "signature": "setConversationDraft(params:OpenIMSetConversationDraftParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "00d0272663414b87ac9ccef19407e872ee433446b16fa24a6e8045d7c050d738"
+      "signatureHash": "1b1fb581d1c7513b23baf353aa6fcdd431dd182e0b8564a61e1e2cbc216f9b47"
     },
     {
       "id": 2092,
       "name": "getTotalUnreadMsgCount",
       "signature": "getTotalUnreadMsgCount(operationID?:string|null):Promise<number|null>",
-      "signatureHash": "0c4c69aeb45c873710a2af27fc85e235def73369d93d01ccfdd583a4664b0a8e"
+      "signatureHash": "53b8461bbfa131758c7dd7c61368b5c024059b8424c408890a9675ebdc93f14a"
     },
     {
       "id": 2093,
       "name": "searchLocalMessages",
       "signature": "searchLocalMessages(params:OpenIMSearchLocalMessagesParams,operationID?:string|null):Promise<OpenIMSearchMessageResult|null>",
-      "signatureHash": "6fc0123a349095db69b61f0fa4a49541ceec520a422848fd7894b5c4122d1021"
+      "signatureHash": "d2e19438a86d7163f6fd58f070addf1ca2670a1f8c30611b641c1f2039c73ca9"
     },
     {
       "id": 2094,
       "name": "addFriend",
       "signature": "addFriend(params:OpenIMAddFriendParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "d22421be36860891324a3fea4e5e0913c14df162c5d022c6b00df29e19f6f1a2"
+      "signatureHash": "d3c3c21a991edebf8896d536749eb4568b1e3ff99b61539a967eab7aeb338bb3"
     },
     {
       "id": 2095,
       "name": "searchFriends",
       "signature": "searchFriends(params:OpenIMSearchFriendsParams,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
-      "signatureHash": "31d1505fc0896f5ba104f3d4df57e0a3bd0ec2fd7f6cc8b37f547a9cad7c0cc8"
+      "signatureHash": "1b53678a459b98173d4eefd9ab19f70dbe8bd9698162be5a297780a5b5e12370"
     },
     {
       "id": 2096,
       "name": "getSpecifiedFriendsInfo",
       "signature": "getSpecifiedFriendsInfo(params:OpenIMGetSpecifiedFriendsInfoParams,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
-      "signatureHash": "9aab1cdd84cee7609a1133be654a12459403db775e2a1a618773f744dc894c24"
+      "signatureHash": "a088ba0a0eebf3c5c8e7631fda1ebf7e329c4b234818aeb2ac6dda920290b715"
     },
     {
       "id": 2097,
       "name": "getFriendApplicationListAsRecipient",
       "signature": "getFriendApplicationListAsRecipient(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMFriendApplicationListResult|null>",
-      "signatureHash": "a801c7e0d0015048005580a30ec01802d40c36b31924d8883fbf45c0948d0882"
+      "signatureHash": "26734ef79c4e558a1f98348b711c36b832c11172f8d0618e6cc8ee9925be506e"
     },
     {
       "id": 2098,
       "name": "getFriendApplicationListAsApplicant",
       "signature": "getFriendApplicationListAsApplicant(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMFriendApplicationListResult|null>",
-      "signatureHash": "b75211240bba01529a22b5b46c70de63145cc8a373242705b84a56387af62686"
+      "signatureHash": "16517715af93f1af25553aa8ad83a196d78734dcd2241567a4eb4408100492e7"
     },
     {
       "id": 2099,
       "name": "getFriendApplicationUnhandledCount",
       "signature": "getFriendApplicationUnhandledCount(params:OpenIMPageParams,operationID?:string|null):Promise<number|null>",
-      "signatureHash": "8858997f185072442d82d00640746b430c9d923cb563282afa93e3f4e4e10191"
+      "signatureHash": "86197da08f433091e804e5b8c3778fc73b4d95d930736d3a1485f1cea4a9156d"
     },
     {
       "id": 2100,
       "name": "getFriendList",
       "signature": "getFriendList(filterBlack?:boolean|null,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
-      "signatureHash": "cfabcdae2c3df67d6db26e86e2c6fa61c694b5f5f83db99b6b44a5bbfff5e0f4"
+      "signatureHash": "39c3fc118d30676d8b2490d0261c0ed8789f0a8b575b656efae0c2adc3f22463"
     },
     {
       "id": 2101,
       "name": "getFriendListPage",
       "signature": "getFriendListPage(params:OpenIMPageParams,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
-      "signatureHash": "441d80b431c3fe1bb4d3fb01b4d5a5465977208294298d8c6c46b058a0a96dfa"
+      "signatureHash": "16e5a5a5a7e6c76a943d9b1d94149075c498bf27d6be754da1df66f38a5b5096"
     },
     {
       "id": 2102,
       "name": "updateFriends",
       "signature": "updateFriends(params:OpenIMUpdateFriendsParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "b7973412092c20be2a2c81dc883f71e91c4d2b8cd2fb971aee7f239ec62f7cd0"
+      "signatureHash": "4fa5ab5bc9810b7d5b0d63235189a0fa6ceb963aba104d2de0757820b3811ee7"
     },
     {
       "id": 2103,
       "name": "checkFriend",
       "signature": "checkFriend(data:Array<string>,operationID?:string|null):Promise<OpenIMCheckFriendResult|null>",
-      "signatureHash": "fa2881d1fb35ea059062120324f79eb5c0175caec27848609e4ba44aaa94d07f"
+      "signatureHash": "b552c59d68a4a28124ef3b0621d1a56c7f667fae153e11b552120c2ce05218c7"
     },
     {
       "id": 2104,
       "name": "acceptFriendApplication",
       "signature": "acceptFriendApplication(params:OpenIMFriendApplicationHandleParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "3f808cba05686c2764b645695ddb29b8ec9be718b43e263f30cedc2132ee1819"
+      "signatureHash": "ecfd0190df324eb113f7a76c54fce7bf4ee8ab0572b17b5ce6f738c5bbc940e2"
     },
     {
       "id": 2105,
       "name": "refuseFriendApplication",
       "signature": "refuseFriendApplication(params:OpenIMFriendApplicationHandleParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "d4bde9b9f49cfc9dc2bf68c3630dcc63b4a2b1c9e3c3c39a5ac50711abc26623"
+      "signatureHash": "1f4271d84680c0b26ff0e00b3a440ed7df078510dd13d4fa4d5b41ff73e21b83"
     },
     {
       "id": 2106,
       "name": "deleteFriend",
       "signature": "deleteFriend(userID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "1a83aae958085cf2ff36c0d612173127de1a7999c2c5abaf022a66652081341c"
+      "signatureHash": "7da46b9729e17992f2298f5dda3dfdd8ad4eb94f583531ce60da4d313f04c0d5"
     },
     {
       "id": 2107,
       "name": "addBlack",
       "signature": "addBlack(params:OpenIMAddBlackParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "2459986d16c30577f40ba2f8ab3f2692a20e5eabda6133c490af25250e2cb8d2"
+      "signatureHash": "3263e7cede293d3f40e1e30353b33730fef31842e5eaadacef012262b176f00d"
     },
     {
       "id": 2108,
       "name": "removeBlack",
       "signature": "removeBlack(userID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "9ade58b7d9e6354a6c5338b1b1666d3bff571bfbebde37e269f013e6c7d97843"
+      "signatureHash": "b5dc31e24cc7936cf763b68765eda28eead6851ee1529572ceaf1e19cf27916a"
     },
     {
       "id": 2109,
       "name": "getBlackList",
       "signature": "getBlackList(operationID?:string|null):Promise<OpenIMBlackListResult|null>",
-      "signatureHash": "9544a680cb5484195aa62e65d765938ba03abb39abc0f2444a9deff4cfe0b1db"
+      "signatureHash": "e4e25a3a67c0ab3ec324f4e96e1ab75a2c21a9916fa12af85f9c6add5d20f228"
     },
     {
       "id": 2110,
       "name": "inviteUserToGroup",
       "signature": "inviteUserToGroup(params:OpenIMGroupInviteParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "e4a71c68e18fefad2ec6fd7db6253cff0b6dc9e0e35560353e7d94e71a2ca00d"
+      "signatureHash": "c16edb9cf003c923f59b778b8c8e95747674e6a6c5f317089615acaade50ca74"
     },
     {
       "id": 2111,
       "name": "kickGroupMember",
       "signature": "kickGroupMember(params:OpenIMGroupInviteParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "641034300213e47ac6cff08b7a0a08d8a4a76c07a1b47c3b7ab33e476e37e947"
+      "signatureHash": "ab0c3ff78b50d9ea2329ed136980d299705fe66fdd74e07265292ef1ba98b9e3"
     },
     {
       "id": 2112,
       "name": "isJoinGroup",
       "signature": "isJoinGroup(groupID:string,operationID?:string|null):Promise<boolean>",
-      "signatureHash": "1b062d9330d1bd7c870eeaa0800a9e8b25393929d83b680cf07044dfc0ba6a31"
+      "signatureHash": "a11f260440f0c4fdaef5227b393730743dc9245eb867b20376045715491abf5e"
     },
     {
       "id": 2113,
       "name": "getSpecifiedGroupMembersInfo",
       "signature": "getSpecifiedGroupMembersInfo(params:OpenIMGroupUserListParams,operationID?:string|null):Promise<OpenIMGroupMemberListResult|null>",
-      "signatureHash": "3172ef4ccb7376b09b6dbf8fbf0e041a25ff80ed481c865b5c48051692a3506f"
+      "signatureHash": "c0c9760f45f8a4615eb8142fc6c0398d77b1f2117605adc67b4b51c24dc9c667"
     },
     {
       "id": 2114,
       "name": "getUsersInGroup",
       "signature": "getUsersInGroup(params:OpenIMGroupUserListParams,operationID?:string|null):Promise<Array<string>|null>",
-      "signatureHash": "03b7913575b18e9e5926c2a98ad8388cb4bb575f917a934f7cabb3890c97f559"
+      "signatureHash": "0dd130de086026ac917047ff754d3b9fc99125fa8777bcc6dd04ea6864fd2e2c"
     },
     {
       "id": 2115,
       "name": "searchGroupMembers",
       "signature": "searchGroupMembers(params:OpenIMSearchGroupMembersParams,operationID?:string|null):Promise<OpenIMGroupMemberListResult|null>",
-      "signatureHash": "4af3b6c76850d2fcab5a683b45fdb488ecdce87c96c8fdc7cd5a6df4b1ea8eda"
+      "signatureHash": "8292bf8590d401c4c8dda4a5884f80d1e8fe3ac4ea2e6e6254546e10633a0ece"
     },
     {
       "id": 2116,
       "name": "getJoinedGroupList",
       "signature": "getJoinedGroupList(operationID?:string|null):Promise<OpenIMGroupListResult|null>",
-      "signatureHash": "fbe0740bfbcf9633597d1bd57413497dfa8642b1453690fc5b04970a58165337"
+      "signatureHash": "6184743dab7de7bf6a0aa8c6558c839fb1a4d4b5765ae0f61ae5eaa5d23fd225"
     },
     {
       "id": 2117,
       "name": "getJoinedGroupListPage",
       "signature": "getJoinedGroupListPage(params:OpenIMPageParams,operationID?:string|null):Promise<OpenIMGroupListResult|null>",
-      "signatureHash": "2d673412a0279ab9bfe75cdeee22e2f461eb436c727635217cd9609b35f4fd41"
+      "signatureHash": "2e39ab5c58e12d749e419fcae13d80a261f50ad271df089f4253b14a0e9f9a26"
     },
     {
       "id": 2118,
       "name": "createGroup",
       "signature": "createGroup(params:OpenIMCreateGroupParams,operationID?:string|null):Promise<OpenIMGroupItem|null>",
-      "signatureHash": "f80d885d6e6ac6870e2aad68826e2c78b56745208470f4718f732cd0685119c5"
+      "signatureHash": "15ad419faf0ca37d291629170f058f09cc247444fa41d276167abba194bdf14c"
     },
     {
       "id": 2119,
       "name": "setGroupInfo",
       "signature": "setGroupInfo(params:OpenIMSetGroupInfoParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "8b4e4ab7b920f6b66effe3f37ef415e6c47b411990fc8485a3b5821c95084b14"
+      "signatureHash": "457497565e4554bc8c1fb906f351ae825ec25c0ba3b9a305867cdbcb2733e6e7"
     },
     {
       "id": 2120,
       "name": "setGroupMemberInfo",
       "signature": "setGroupMemberInfo(params:OpenIMSetGroupMemberInfoParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "2f09e395414076759b00380f44615f8853eb834ed145e53215528eb508604bd5"
+      "signatureHash": "c4414503ecc4a97b1a6bfec8f0ab8dccdda0e81bfcfa3d530f665389167978b4"
     },
     {
       "id": 2121,
       "name": "joinGroup",
       "signature": "joinGroup(params:OpenIMJoinGroupParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "86809ce95115076c1635e6bbe99fdb5ec3ebc3ceba9fcf601e5948b6b46d0217"
+      "signatureHash": "92fb651d5e5e4d285813be6a8d16e2159c775aed1a7919f62ad096b55f34aac1"
     },
     {
       "id": 2122,
       "name": "searchGroups",
       "signature": "searchGroups(params:OpenIMSearchGroupsParams,operationID?:string|null):Promise<OpenIMGroupListResult|null>",
-      "signatureHash": "010b73aafbece8d9c6fa591357bbdb7dabbcd4f37f50ab4632815b43e897ca58"
+      "signatureHash": "3f40ba274797c82a3a4322ddadf4b0898033be316b88fadf9f23ab5672cb83eb"
     },
     {
       "id": 2123,
       "name": "quitGroup",
       "signature": "quitGroup(groupID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "b0a8f4b66825f9cac70570762c97cd0160c69a8e08ec69a3aecc74adf23439be"
+      "signatureHash": "cfd460b6bb7947893801cc74c2382f98705ca88a5a9ad029c162f6a22d003987"
     },
     {
       "id": 2124,
       "name": "dismissGroup",
       "signature": "dismissGroup(groupID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "d3487574de8a5bd5f967597ec95b566b9e3cc30e30b65a677639c2af0f9ec2c7"
+      "signatureHash": "d30f94844d2af91b024f2fe3be2b47736088d0ab42e9d6f55d661f3aae06d29e"
     },
     {
       "id": 2125,
       "name": "changeGroupMute",
       "signature": "changeGroupMute(params:OpenIMChangeGroupMuteParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "5692d617f4315b791c3fbe47241eb796aea038e155813dfd7c1f6f703e55160a"
+      "signatureHash": "d0b9b15ff25841d4525578cecc2e6094863878ed754fab3a3827af5e4e1ad2ef"
     },
     {
       "id": 2126,
       "name": "changeGroupMemberMute",
       "signature": "changeGroupMemberMute(params:OpenIMChangeGroupMemberMuteParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "bfddcf7cf66d9b44200f3a69854fc3a3e0100298bfa344d10b099ad3efd42b38"
+      "signatureHash": "db5a9e8521e3c18cd681a2b0063a7ab71f6f933f60276ae1909c51fe7f83a661"
     },
     {
       "id": 2127,
       "name": "transferGroupOwner",
       "signature": "transferGroupOwner(params:OpenIMTransferGroupOwnerParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "43dd1d69a456aef1cac7769b660cfa8ef229b39902b60a1292b89a39856fa806"
+      "signatureHash": "ca3c5e0b9a48ef1c2d98600e6ff896ebc9a0c1205f2edd8ef141353da6c667c5"
     },
     {
       "id": 2128,
       "name": "getGroupApplicationListAsApplicant",
       "signature": "getGroupApplicationListAsApplicant(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMGroupApplicationListResult|null>",
-      "signatureHash": "8c270204f8419ca7b57df2eac1f4e541ae5c9e371099845e3bf90b6cbaa66513"
+      "signatureHash": "a70cfa4d8ca86e471c9a5e99148d4043379722b424c95c36351002e9516bc6f7"
     },
     {
       "id": 2129,
       "name": "getGroupApplicationListAsRecipient",
       "signature": "getGroupApplicationListAsRecipient(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMGroupApplicationListResult|null>",
-      "signatureHash": "37370e7b32d98c8b9e6743d8ee71f457e444312787efe8aafb0a0421eec81214"
+      "signatureHash": "000d0d9824ccfedc20d5b0f5fd3e4e172d7a529ea0fd368c000e430e274731eb"
     },
     {
       "id": 2130,
       "name": "getGroupApplicationUnhandledCount",
       "signature": "getGroupApplicationUnhandledCount(params:OpenIMPageParams,operationID?:string|null):Promise<number|null>",
-      "signatureHash": "87755654d1bf0c5622c9c1f3396317611ccb0c8f303f1bba08c80168bfaeedab"
+      "signatureHash": "bcc324db72b965ec2f632fa6d2c0ad86c1f31e18a201ab76b7f30a5e361ab467"
     },
     {
       "id": 2131,
       "name": "acceptGroupApplication",
       "signature": "acceptGroupApplication(params:OpenIMGroupApplicationHandleParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "7d2a2d02f9bee30146bdb1608a85efaa389be46da96948619713b7ada62086d6"
+      "signatureHash": "1099c562b0fabd39fa4e5d583a2bcdf888e30029d98b22103e838cf1a4909738"
     },
     {
       "id": 2132,
       "name": "refuseGroupApplication",
       "signature": "refuseGroupApplication(params:OpenIMGroupApplicationHandleParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "25aa06c2f63ed9a386a169fc0a55855739ddf4656294806baa4423baafe588f4"
+      "signatureHash": "7404f044ce17c0efa2dcaab62cf6e4b4e16040f00da6756ea55f56995a743494"
     },
     {
       "id": 2133,
       "name": "findMessageList",
       "signature": "findMessageList(params:Array<OpenIMFindMessageParams>,operationID?:string|null):Promise<OpenIMFindMessageResult|null>",
-      "signatureHash": "c7507d3bf4f8f601a4309adb2ae8c1da7be2fc92a9c965f44b5dc269ba328b1f"
+      "signatureHash": "a936c538694402dece04cd5893bfb5c992f32ddf93f206a578692590b6f297e9"
     },
     {
       "id": 2134,
       "name": "updateFcmToken",
       "signature": "updateFcmToken(params:OpenIMUpdateFcmTokenParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "6142901250c3e13b4be797aff632adc7abbc31493e2bdd5d974de495920d2464"
+      "signatureHash": "f9e03edd926518739e7eb5230250b4a08eea63838bfa00ff3431f4a11a634ae4"
     },
     {
       "id": 2135,
       "name": "subscribeUsersStatus",
       "signature": "subscribeUsersStatus(data:Array<string>,operationID?:string|null):Promise<string>",
-      "signatureHash": "62f3d886ed98bf971a05975ced14f9602e30e70d5aaf39583f8ad2709d2c3278"
+      "signatureHash": "d156f227f1dd0368a589f9c578aa40bac80098f9dbe908374cd5f1f56f4ec467"
     },
     {
       "id": 2136,
       "name": "unsubscribeUsersStatus",
       "signature": "unsubscribeUsersStatus(data:Array<string>,operationID?:string|null):Promise<string>",
-      "signatureHash": "8c1195d95ce0c2e8d6c5bd2bca7aff90a0d978e35312f7b7a9b5242d0f2d8772"
+      "signatureHash": "31d985e8893bb6f106e4d9750ea83bbe0e16df9a2e7f997552ace06e41446f85"
     },
     {
       "id": 2137,
       "name": "getUserStatus",
       "signature": "getUserStatus(data:Array<string>,operationID?:string|null):Promise<OpenIMUserStatusListResult|null>",
-      "signatureHash": "68dc44422c2209cc3ad7c0467ea8a18a7c5c14cb7ccdc816c73a723ec023eb0e"
+      "signatureHash": "9a8bcfbf07d5cc6de1710e09e0a4520339e0fe1ada39f734f40aa2c9a4168f4d"
     },
     {
       "id": 2138,
       "name": "getSubscribeUsersStatus",
       "signature": "getSubscribeUsersStatus(operationID?:string|null):Promise<OpenIMUserStatusListResult|null>",
-      "signatureHash": "a566bf947b03f0df4609a066498543118778f9b8418eac0380e85ece7afa2386"
+      "signatureHash": "3fc1f34037291d2a7540ca1842c4bf06f32d75609d052cade4a65f89a3afb6f3"
     },
     {
       "id": 2139,
       "name": "createTextMessage",
       "signature": "createTextMessage(text:string,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "a54c3cd959353ff43b007ab40585a57737b5faa2ab85b4e60811bdb0b7ea48da"
+      "signatureHash": "b1ba8f14b72ce676fbaea3535542022ec8129cf85aa7e7b05059b274bf8cd23d"
     },
     {
       "id": 2140,
       "name": "createImageMessageFromFullPath",
       "signature": "createImageMessageFromFullPath(imageFullPath:string,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "eec0962edecf8da86e687392092b5d8f8e2267684bdcc88165dbf15a2865f1a6"
+      "signatureHash": "fc651d1cfe119f600df2fbfdf0fc555f4637a99a0d70e7c1ef78eb0f1ad5d716"
     },
     {
       "id": 2141,
       "name": "createImageMessageByURL",
       "signature": "createImageMessageByURL(params:OpenIMPictureElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "94b888e3715dceeef8c1449e6bba7515801124906c049e9d51afc69673833da3"
+      "signatureHash": "b382b4f20e9cb88d625a0254ab8ac5c0e5e6e9ee8cfb280d52c63bff0cdee5e7"
     },
     {
       "id": 2142,
       "name": "createCustomMessage",
       "signature": "createCustomMessage(params:OpenIMCreateCustomMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "6f457208ccd4c5e511482d7ab7e256a9b4460fc377f067c2e8e76f5e80e7bbdc"
+      "signatureHash": "25e0cd49cfe08c3a15e06c519cdc37cb531a7fce5b7c1c14f6e72538b37eb2e5"
     },
     {
       "id": 2143,
       "name": "createQuoteMessage",
       "signature": "createQuoteMessage(params:OpenIMCreateQuoteMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "7a69364964f01e47d852f3d177e35647e540aac3c1764fb0b5f417856f5e89a8"
+      "signatureHash": "8697f0bae564c42fcc5ee956754d48cfade9fc0e90081ef629c4677a1bec9aa8"
     },
     {
       "id": 2144,
       "name": "createAdvancedQuoteMessage",
       "signature": "createAdvancedQuoteMessage(params:OpenIMCreateAdvancedQuoteMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "b0424fd04e2494312a3bad614a0160619c9d2068e65291d9a69d8169323602b9"
+      "signatureHash": "a7d4258f0a8e2267b1222692ab0ee90f143a5ab8b8a841065192468f3c92fb83"
     },
     {
       "id": 2145,
       "name": "createAdvancedTextMessage",
       "signature": "createAdvancedTextMessage(params:OpenIMCreateAdvancedTextMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "b7ef4e0de6604eca0d2e93093239eac357d8e2f8ffa293adcfff484cac594c0f"
+      "signatureHash": "c1f136241d44f830c1282deaabde920e9f0e1630b56d703da215463661f9a8b9"
     },
     {
       "id": 2146,
       "name": "createTextAtMessage",
       "signature": "createTextAtMessage(params:OpenIMCreateTextAtMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "ae5177237bd54816f163671658da607c53f3fc9aa14c3d360cb52c6e61054251"
+      "signatureHash": "91aa64e221d3b170131efaf14f9d06b2d53845937f901ccf9fffdb040039a9bd"
     },
     {
       "id": 2147,
       "name": "createSoundMessageFromFullPath",
       "signature": "createSoundMessageFromFullPath(params:OpenIMCreateSoundMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "16ceaa24c2ee28a3a19e7f6aaa1e128cad433926dfef66174b586d611b9d5017"
+      "signatureHash": "646de06734dad7e7362caab81a93470e3faa6733d4ab533415c1e631c5fc8455"
     },
     {
       "id": 2148,
       "name": "createSoundMessageByURL",
       "signature": "createSoundMessageByURL(params:OpenIMSoundElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "057ebfbae199b0ec4b4650add469f3d9bb1177124102fbeba75da1d04e98982f"
+      "signatureHash": "3a5507ccef8199906a4b5e8e0e62a5e45859ccc0229c6a275750570c639afa6d"
     },
     {
       "id": 2149,
       "name": "createVideoMessageFromFullPath",
       "signature": "createVideoMessageFromFullPath(params:OpenIMCreateVideoMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "6f98de5db2703a6f41c8eac5f61d8d01559e3b0f551a67895dd9cf38aa8a10af"
+      "signatureHash": "413135192e58d8077e5ac31c56bf9745ccb0f42ad70c91237428853d1e186044"
     },
     {
       "id": 2150,
       "name": "createVideoMessageByURL",
       "signature": "createVideoMessageByURL(params:OpenIMVideoElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "3b82260d3dba4d6518e361419177d1046eb920f69dc05784e6529d735d3212a7"
+      "signatureHash": "6a30697576213bb47c8394e6ce8e33b7a28cfada67828733b4d9f5b5fb03214a"
     },
     {
       "id": 2151,
       "name": "createFileMessageFromFullPath",
       "signature": "createFileMessageFromFullPath(params:OpenIMCreateFileMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "1fbfd9b7df9c1ea9969bb9fbd8bbef65c19c42523450338eb95c6a148f341aff"
+      "signatureHash": "5952dc2c51f6e285b8347b999091366a47057ba128bede867963cfaa42de1876"
     },
     {
       "id": 2152,
       "name": "createFileMessageByURL",
       "signature": "createFileMessageByURL(params:OpenIMFileElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "9c8648327dba19b777577f5c4bfd88fb216f10ba69cdc9ac4b12d99601f3a904"
+      "signatureHash": "f382e6d26fece67fe23686afbeb9cfe67ae619022111e389e1749a37ee7a97d9"
     },
     {
       "id": 2153,
       "name": "createMergerMessage",
       "signature": "createMergerMessage(params:OpenIMCreateMergerMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "ae6367878ca0201db3a3daf401c63bb364e86bdb41469f8a70e2823af5cc7171"
+      "signatureHash": "8a3ce41bf2f1063fa8982fc19877932708f17b7d3e52892f8e6d552023df25fb"
     },
     {
       "id": 2154,
       "name": "createForwardMessage",
       "signature": "createForwardMessage(message:OpenIMMessageItem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "a3f353befd538dca0f5bce03327347b6e8a603e37706090f32dd2269f31b6188"
+      "signatureHash": "ae81f7f45361f12f83944ed90586a6d6bab32ccccde328054fa99eba81dfa996"
     },
     {
       "id": 2155,
       "name": "createFaceMessage",
       "signature": "createFaceMessage(params:OpenIMCreateFaceMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "ed3b8fcd56b16220c04b3cc9613d64467ce116250f551e3672b4d82ef016807b"
+      "signatureHash": "2f43755fc2ecd48d5b1292c1a98a223bf366195d496461415e28f20901b5dc58"
     },
     {
       "id": 2156,
       "name": "createLocationMessage",
       "signature": "createLocationMessage(params:OpenIMCreateLocationMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "845aa8eab9807dd69c99566c0173ce4fe2de6eb5c3480177d6e4f7d2873aae72"
+      "signatureHash": "1ea72eca37a2fe724ef1e30f69183604be2481467c09d582482985be1aef7c63"
     },
     {
       "id": 2157,
       "name": "createCardMessage",
       "signature": "createCardMessage(card:OpenIMCardElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
-      "signatureHash": "1c300e8137dfa2e1a656767881890d08684a8f56c63d23b667cdee68764339ea"
+      "signatureHash": "1079cfc16223358541bfb9d17beaa80ce10662b29a26219cc5406c6ff2cd9a74"
     },
     {
       "id": 2158,
       "name": "sendMessage",
       "signature": "sendMessage(options:OpenIMSendMessageOptions):Promise<OpenIMMessageItem>",
-      "signatureHash": "68f107e51576d2f7af60af9c82ad78f87bd2c11c84885649779977c62748d257"
+      "signatureHash": "ba3beda7ea300382d56b132a0f95f5c54a41058706f5e36b08cc521e14e9573b"
     },
     {
       "id": 2159,
       "name": "sendMessageNotOss",
       "signature": "sendMessageNotOss(options:OpenIMSendMessageOptions):Promise<OpenIMMessageItem>",
-      "signatureHash": "b35f016543590fa3f470357c50cb8664d7841a322c48a63e39894b800bd9dfd5"
+      "signatureHash": "93523eba569b4261f3078a8230f90517145c5bb3b7204d7b857ef125d9210688"
     },
     {
       "id": 2160,
       "name": "uploadFile",
       "signature": "uploadFile(params:OpenIMUploadFileParams,operationID?:string|null):Promise<OpenIMUploadFileResult|null>",
-      "signatureHash": "11a83a943540d88079d86b454d88fad5dfdbc19f1e9bcb67d95ed4180b4deb11"
+      "signatureHash": "1350dc6ebb63466357d1a48fca4552ebdc3a4c832e7e8469ec3a9eab94898d4f"
     },
     {
       "id": 2161,
       "name": "uploadLogs",
       "signature": "uploadLogs(params:OpenIMUploadLogsParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "28383cfe8a091fedd1c74f6d3da742f00fd807b743c4cd673ea0443c0bdf195c"
+      "signatureHash": "256479d965cb34cdba7a0d24e7455998835aabaa149f5a92ee542f2ab6418603"
     }
   ],
   "events": [
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "9b762763efd3390c55cf4db16529c4f214a527032b00037b8a0fa43b45e74483"
+  "contractHash": "02f9c715bd446b331e98f2ee5b0ec219c2d26e3b2c535780c155f3916595e8cc"
 }

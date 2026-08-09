@@ -33,6 +33,7 @@ function callable(id: number, name: string, signature = `${name}():void`): Contr
     errorPolicy: 'none',
     rawString: false,
     role: 'operation',
+    testProfile: { semanticProfile: 'response-identity', sideEffectProbe: 'none' },
     declaration: {
       android: `export function ${signature} {}`,
       ios: `export function ${signature} {}`,
@@ -231,6 +232,14 @@ test('public contract import defaults to a temporary read-only preview', () => {
   const preview = previewPublicContractImport(publicProjection)
 
   assert.equal(preview.invariantViolations.length, 0)
+  const current = JSON.parse(before.toString('utf8')) as ContractDocument
+  for (const callable of current.callables) {
+    assert.deepEqual(
+      preview.normalizedCandidate.callables.find((value) => value.name === callable.name)?.testProfile,
+      callable.testProfile,
+      `contract import changed the reviewed test profile for ${callable.name}`,
+    )
+  }
   assert.equal(readFileSync(contractPath).equals(before), true)
   assert.equal(statSync(contractPath).mtimeMs, beforeModified)
 })

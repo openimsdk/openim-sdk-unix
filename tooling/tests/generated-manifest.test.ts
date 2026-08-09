@@ -39,6 +39,7 @@ test('generated manifest covers every generated output with its content hash', (
 
 test('forward generation authority excludes the facade migration importer', () => {
   assert.ok(PUBLIC_GENERATOR_AUTHORITY_INPUTS.includes('tooling/src/template-authority.ts'))
+  assert.ok(PUBLIC_GENERATOR_AUTHORITY_INPUTS.includes('tooling/src/test-profile.ts'))
   assert.equal(PUBLIC_GENERATOR_AUTHORITY_INPUTS.includes('tooling/src/import-contract.ts' as never), false)
 })
 

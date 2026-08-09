@@ -119,6 +119,10 @@ export interface ContractCallable {
   errorPolicy: string
   rawString: boolean
   role: 'operation' | 'event-subscription' | 'event-control'
+  testProfile: {
+    semanticProfile: string
+    sideEffectProbe: string
+  }
   declaration?: Partial<SourceByPlatform>
   lowering?: CallableLowering
   binding: Record<Platform, NativeBinding | undefined>

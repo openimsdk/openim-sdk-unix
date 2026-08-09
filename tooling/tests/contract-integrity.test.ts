@@ -46,6 +46,17 @@ test('semantic verification covers callable lowering and event decoders in IR v2
   assert.throws(() => assertContractSemanticHashes(changedEvent), /Semantic hash mismatch for event/)
 })
 
+test('callable test profiles participate in the semantic hash', () => {
+  const normalized = withComputedSemanticHashes(contract)
+  const changed = structuredClone(normalized)
+  const login = changed.callables.find((value) => value.name === 'login') as typeof changed.callables[number] & {
+    testProfile: { semanticProfile: string; sideEffectProbe: string }
+  }
+  assert.ok(login)
+  login.testProfile = { semanticProfile: 'forged-semantic', sideEffectProbe: 'forged-side-effect' }
+  assert.throws(() => assertContractSemanticHashes(changed), /Semantic hash mismatch for callable login/)
+})
+
 test('surface snapshots compute semantic hashes instead of trusting stored values', () => {
   const normalized = withComputedSemanticHashes(contract)
   const forged = structuredClone(normalized)

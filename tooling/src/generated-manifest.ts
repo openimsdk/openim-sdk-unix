@@ -28,6 +28,7 @@ export const PUBLIC_GENERATOR_AUTHORITY_INPUTS = [
   'tooling/src/source.ts',
   'tooling/src/template-authority.ts',
   'tooling/src/test-contract.ts',
+  'tooling/src/test-profile.ts',
 ] as const
 
 export interface GeneratedManifestArtifact {

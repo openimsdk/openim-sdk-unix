@@ -25,12 +25,39 @@ test('classifies every public callable and event without gaps', () => {
   assert.equal(disposition.callables.some((item) => item.semanticProfile.length === 0 || item.sideEffectProbe.length === 0), false)
   assert.equal(disposition.callables.some((item) => item.validationAxes.length === 0 || item.negativeProfiles.length === 0), false)
   assert.equal(disposition.callables.some((item) => item.cleanupAction.length === 0), false)
+  assert.equal(contract.callables.some((item) => {
+    const profile = (item as unknown as { testProfile?: { semanticProfile?: string; sideEffectProbe?: string } }).testProfile
+    return profile == null || profile.semanticProfile == null || profile.semanticProfile.length === 0 || profile.sideEffectProbe == null || profile.sideEffectProbe.length === 0
+  }), false)
   assert.equal(disposition.events.some((item) => item.deliveryDisposition == null || item.payloadProfile == null), false)
   assert.equal(disposition.events.some((item) => item.platforms.android == null || item.platforms.ios == null), false)
   assert.equal(disposition.events.some((item) => item.eventSchema.root !== `events.${item.eventName}.arguments`), false)
   assert.equal(disposition.events.some((item) => item.semanticProfile.length === 0 || item.sideEffectProbe.length === 0), false)
   assert.equal(disposition.events.some((item) => item.validationAxes.length === 0 || item.negativeProfiles.length === 0), false)
   assert.equal(disposition.events.some((item) => item.cleanupAction !== 'off(subscription)'), false)
+})
+
+test('case manifest reads callable profiles from Contract IR instead of name heuristics', () => {
+  const modified = structuredClone(contract)
+  const login = modified.callables.find((item) => item.name === 'login') as typeof modified.callables[number] & {
+    testProfile: { semanticProfile: string; sideEffectProbe: string }
+  }
+  assert.ok(login)
+  login.testProfile = { semanticProfile: 'contract-owned-semantic', sideEffectProbe: 'contract-owned-side-effect' }
+  const item = buildPublicTestDisposition(modified).callables.find((value) => value.apiName === 'login')
+  assert.equal(item?.semanticProfile, 'contract-owned-semantic')
+  assert.equal(item?.sideEffectProbe, 'contract-owned-side-effect')
+})
+
+test('case manifest rejects a callable whose reviewed profile is missing', () => {
+  const modified = structuredClone(contract)
+  const login = modified.callables.find((item) => item.name === 'login')
+  assert.ok(login)
+  delete (login as unknown as { testProfile?: unknown }).testProfile
+  assert.throws(
+    () => buildPublicTestDisposition(modified),
+    /Callable login is missing testProfile\.semanticProfile/,
+  )
 })
 
 test('case manifest assigns concrete semantic and side-effect probes to P0 flows', () => {

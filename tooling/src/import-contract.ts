@@ -32,6 +32,7 @@ import {
   writePublicStableIDRegistry,
 } from './contract-integrity.js'
 import { INDEX_MARKERS, makeIndexTemplate } from './template-authority.js'
+import { inferCallableTestProfile } from './test-profile.js'
 
 const EXPECTED_PUBLIC = { constants: 109, types: 160, callables: 161, events: 48 } as const
 
@@ -200,12 +201,14 @@ export function importPublicContract(root: string): ContractDocument {
   const eventCallableNames = new Set([...eventNames, 'off', 'offAll'])
   const callableIDs = reconcileStableIDs(stableIDs, 'callables', callablePairs.map(([android]) => android.name))
   stableIDs = callableIDs.registry
+  const existingCallableByName = new Map(existingContract.callables.map((value) => [value.name, value]))
   const callables: ContractCallable[] = callablePairs.map(([android, ios], index) => {
     if (android.signature !== ios.signature) {
       throw new Error(`Callable ${android.name} differs by platform:\n${android.signature}\n${ios.signature}`)
     }
     const isEvent = eventNameSet.has(android.name)
-    const role = isEvent ? 'event-subscription' : android.name === 'off' || android.name === 'offAll' ? 'event-control' : 'operation'
+    const role: ContractCallable['role'] = isEvent ? 'event-subscription' : android.name === 'off' || android.name === 'offAll' ? 'event-control' : 'operation'
+    const identity = { name: android.name, role }
     return {
       id: callableIDs.entries[index]!.id,
       name: android.name,
@@ -215,6 +218,7 @@ export function importPublicContract(root: string): ContractDocument {
       errorPolicy: android.returnType.startsWith('Promise<') ? 'frozen-native-rejection' : 'none',
       rawString: android.returnType === 'string' || android.returnType === 'Promise<string>',
       role,
+      testProfile: existingCallableByName.get(android.name)?.testProfile ?? inferCallableTestProfile(identity),
       declaration: { android: android.declaration, ios: ios.declaration },
       binding: {
         android: bindingFor(android.declaration, eventNameSet, android.name),

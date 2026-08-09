@@ -661,6 +661,7 @@ test('shared compiler models Enterprise aliases and path-dispatched creators', (
       errorPolicy: 'frozen-native-rejection',
       rawString: false,
       role: 'operation',
+      testProfile: { semanticProfile: 'response-identity', sideEffectProbe: 'none' },
       lowering: {
         kind: 'callable-alias',
         target: 'createSoundMessageFromFullPath',
@@ -682,6 +683,7 @@ test('shared compiler models Enterprise aliases and path-dispatched creators', (
       errorPolicy: 'frozen-native-rejection',
       rawString: false,
       role: 'operation',
+      testProfile: { semanticProfile: 'message-content-correlation', sideEffectProbe: 'none' },
       lowering: {
         kind: 'platform-driver',
         transport: 'async',

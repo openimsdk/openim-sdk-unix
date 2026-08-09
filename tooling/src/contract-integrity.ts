@@ -70,6 +70,7 @@ export function semanticHashForCallable(value: ContractCallable): string {
     errorPolicy: value.errorPolicy,
     rawString: value.rawString,
     role: value.role,
+    testProfile: value.testProfile,
     declaration,
     ...(value.lowering == null ? {} : { lowering: value.lowering }),
     binding: stableBinding(value.binding),
