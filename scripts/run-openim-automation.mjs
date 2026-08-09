@@ -7,6 +7,7 @@ import {
   evidenceFailureMessage,
   writeLatestAutomationEvidence,
 } from './lib/openim-runner-evidence.mjs';
+import { runUnderAutomationRunnerLock } from './lib/automation-runner-lock.mjs';
 
 const projectRoot = resolve(new URL('..', import.meta.url).pathname);
 const platform = process.argv[2] || '';
@@ -24,6 +25,16 @@ function readArgument(name) {
 function fail(message) {
   console.error(`[openim-runner] ${message}`);
   process.exit(1);
+}
+
+let delegatedExitStatus;
+try {
+  delegatedExitStatus = runUnderAutomationRunnerLock({ projectRoot });
+} catch (error) {
+  fail(error.message);
+}
+if (delegatedExitStatus != null) {
+  process.exit(delegatedExitStatus);
 }
 
 function findProjectJestPIDs() {

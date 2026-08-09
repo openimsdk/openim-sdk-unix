@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import test from 'node:test'
 
 const modulePath = new URL('../../scripts/lib/openim-runner-evidence.mjs', import.meta.url)
+const lockModulePath = new URL('../../scripts/lib/automation-runner-lock.mjs', import.meta.url)
 const runnerPath = new URL('../../scripts/run-openim-automation.mjs', import.meta.url)
 
 test('Public runner makes contract evidence part of the process success gate', () => {
@@ -16,6 +17,76 @@ test('Public runner makes contract evidence part of the process success gate', (
   assert.match(source, /deviceID,/)
   assert.match(source, /!evidence\.contractEvidence\.passed/)
   assert.match(source, /passed && evidenceFailure\.length === 0/)
+  assert.match(source, /runUnderAutomationRunnerLock\(\{ projectRoot \}\)/)
+  assert.ok(source.indexOf('runUnderAutomationRunnerLock({ projectRoot })') < source.indexOf('assertManifestWebSocket();'))
+})
+
+test('Public runner delegates once through a kept non-blocking macOS lockf lock', async () => {
+  const { automationRunnerLockPath, runUnderAutomationRunnerLock } = await import(lockModulePath.href)
+  const root = projectRoot()
+  const calls: Array<{ command: string, args: string[], options: Record<string, unknown> }> = []
+  const status = runUnderAutomationRunnerLock({
+    projectRoot: root,
+    argv: ['/node', '/project/scripts/run-openim-automation.mjs', 'android', '--device-id', 'device-1'],
+    env: { SAFE_VALUE: 'kept' },
+    execPath: '/node',
+    osPlatform: 'darwin',
+    lockfPath: '/usr/bin/lockf',
+    spawnSyncImpl: (command: string, args: string[], options: Record<string, unknown>) => {
+      calls.push({ command, args, options })
+      return { status: 0, signal: null }
+    },
+  })
+  const lockPath = automationRunnerLockPath(root)
+  const [call] = calls
+
+  assert.equal(status, 0)
+  assert.equal(calls.length, 1)
+  assert.ok(call)
+  assert.equal(call.command, '/usr/bin/lockf')
+  assert.deepEqual(call.args, [
+    '-k', '-t', '0', lockPath, '/node',
+    '/project/scripts/run-openim-automation.mjs', 'android', '--device-id', 'device-1',
+  ])
+  assert.deepEqual(call.options, {
+    cwd: root,
+    env: { SAFE_VALUE: 'kept', OPENIM_AUTOMATION_RUNNER_LOCK_PATH: lockPath },
+    stdio: 'inherit',
+  })
+})
+
+test('Public runner executes inside lockf without recursively delegating', async () => {
+  const { automationRunnerLockPath, runUnderAutomationRunnerLock } = await import(lockModulePath.href)
+  const root = projectRoot()
+  const lockPath = automationRunnerLockPath(root)
+  let spawned = false
+
+  const status = runUnderAutomationRunnerLock({
+    projectRoot: root,
+    env: { OPENIM_AUTOMATION_RUNNER_LOCK_PATH: lockPath },
+    spawnSyncImpl: () => {
+      spawned = true
+      return { status: 0, signal: null }
+    },
+  })
+
+  assert.equal(status, null)
+  assert.equal(spawned, false)
+})
+
+test('Public runner reports lockf contention without entering the runner', async () => {
+  const { runUnderAutomationRunnerLock } = await import(lockModulePath.href)
+  const root = projectRoot()
+
+  assert.throws(
+    () => runUnderAutomationRunnerLock({
+      projectRoot: root,
+      osPlatform: 'darwin',
+      lockfPath: '/usr/bin/lockf',
+      spawnSyncImpl: () => ({ status: 75, signal: null }),
+    }),
+    /another automation runner holds the project lock/,
+  )
 })
 
 function manifest() {
