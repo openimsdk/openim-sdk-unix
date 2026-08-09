@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { ReleaseEdition } from './policy.js'
 
@@ -158,12 +158,25 @@ function jsonPointerValue(document: unknown, pointer: string): unknown {
   return value
 }
 
+export function nativeComponentAuthorityPaths(root: string, edition: ReleaseEdition): string[] {
+  const paths = [join(root, 'tooling/release/native-components.json')]
+  if (edition === 'enterprise') {
+    const delta = join(root, 'contracts/enterprise/release-components.json')
+    if (!existsSync(delta)) throw new Error('Enterprise SBOM is missing its native component delta authority')
+    paths.push(delta)
+  }
+  return paths
+}
+
 function nativeComponents(root: string, edition: ReleaseEdition): ReleaseComponent[] {
-  const authority = readJSON<NativeComponentDocument>(join(root, 'tooling/release/native-components.json'))
-  if (authority.schemaVersion !== 1) throw new Error('Native component authority schema changed')
+  const authorities = nativeComponentAuthorityPaths(root, edition).map((path) => readJSON<NativeComponentDocument>(path))
+  for (const authority of authorities) {
+    if (authority.schemaVersion !== 1) throw new Error('Native component authority schema changed')
+  }
+  const authorityComponents = authorities.flatMap((authority) => authority.components)
   const platforms = new Set<string>()
   const ids = new Set<string>()
-  for (const component of authority.components) {
+  for (const component of authorityComponents) {
     if (ids.has(component.id)) throw new Error(`Native component ID is duplicated: ${component.id}`)
     ids.add(component.id)
     if (component.editions.length === 0 || component.editions.some((value) => value !== 'public' && value !== 'enterprise')) {
@@ -173,7 +186,7 @@ function nativeComponents(root: string, edition: ReleaseEdition): ReleaseCompone
       throw new Error(`Native component ${component.id} hash authority must be repository-relative`)
     }
   }
-  const components = authority.components
+  const components = authorityComponents
     .filter((component) => component.editions.includes(edition))
     .map((component) => {
       const document = readJSON<unknown>(join(root, component.hashSource.document))

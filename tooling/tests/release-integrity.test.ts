@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import {
   buildReleaseIntegrityReport,
+  nativeComponentAuthorityPaths,
   releaseIntegrityFindings,
   scanReleaseSecrets,
   verifyComponentLicenses,
@@ -12,6 +14,22 @@ import {
 } from '../src/release-integrity.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+
+test('native component authority composes Public base with an Enterprise-owned delta', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'openim-release-components-'))
+  mkdirSync(join(fixture, 'tooling/release'), { recursive: true })
+  mkdirSync(join(fixture, 'contracts/enterprise'), { recursive: true })
+  writeFileSync(join(fixture, 'tooling/release/native-components.json'), '{}')
+  writeFileSync(join(fixture, 'contracts/enterprise/release-components.json'), '{}')
+
+  assert.deepEqual(nativeComponentAuthorityPaths(fixture, 'public'), [
+    join(fixture, 'tooling/release/native-components.json'),
+  ])
+  assert.deepEqual(nativeComponentAuthorityPaths(fixture, 'enterprise'), [
+    join(fixture, 'tooling/release/native-components.json'),
+    join(fixture, 'contracts/enterprise/release-components.json'),
+  ])
+})
 
 test('Public release integrity report is deterministic and inventories every locked dependency', () => {
   const first = buildReleaseIntegrityReport(root, 'public', {
