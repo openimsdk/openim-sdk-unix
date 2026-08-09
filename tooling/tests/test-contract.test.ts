@@ -166,6 +166,40 @@ test('Harmony dispatcher gaps remain executable capability negatives', () => {
   assert.equal(callable?.negativeProfiles.includes('platform-unsupported'), false)
 })
 
+test('fixture-backed push launch remains a positive capability path', () => {
+  const template = structuredClone(contract.callables.find((item) => item.name === 'updateFcmToken'))
+  assert.ok(template)
+  template.name = 'signalingGetInvitationInfoStartApp'
+  template.signature = 'signalingGetInvitationInfoStartApp(params?:OpenIMSignalingGetInvitationInfoStartAppParams|null,operationID?:string|null):Promise<OpenIMSignalingGetInvitationInfoStartAppResult|null>'
+  template.binding.harmony = { kind: 'native', symbol: 'signalingGetInvitationInfoStartApp' }
+  const delta: EnterpriseDeltaDocument = {
+    schemaVersion: 2,
+    edition: 'enterprise-delta',
+    origin: {
+      kind: 'imported-facade',
+      repository: 'test',
+      revision: 'test',
+      publicBaseRevision: 'test',
+      importedPublicBaseContractHash: '0'.repeat(64),
+      interfacePath: 'test',
+      facadePaths: { android: 'test', ios: 'test', harmony: 'test' },
+    },
+    expectedTotal: { constants: 0, types: 0, callables: 1, events: 0 },
+    expectedDelta: { constants: 0, types: 0, callables: 1, events: 0, typeExtensions: 0 },
+    approvedBaseCallableOverrides: [],
+    constants: [],
+    types: [],
+    typeExtensions: [],
+    callables: [template],
+    events: [],
+  }
+
+  const callable = buildEnterpriseTestDisposition(contract, delta).callables.find((item) => item.apiName === 'signalingGetInvitationInfoStartApp')
+  assert.equal(callable?.disposition, 'capability-gated')
+  assert.deepEqual(callable?.platforms, { android: 'required', ios: 'required', harmony: 'required' })
+  assert.deepEqual(callable?.negativeProfiles, ['missing-push-payload', 'expired-invitation'])
+})
+
 test('every callable and event response root has a closed concrete schema graph', () => {
   const document = buildPublicResponseSchemas(contract)
   const reachable = new Set<string>()

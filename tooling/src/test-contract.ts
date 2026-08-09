@@ -83,6 +83,10 @@ const capabilityByCallable = new Map<string, string>([
   ['signalingGetInvitationInfoStartApp', 'push-launch'],
 ])
 
+const fixtureBackedCapabilityCallables = new Set([
+  'signalingGetInvitationInfoStartApp',
+])
+
 const p0CallableNames = new Set([
   'initSDK', 'login', 'logout', 'unInitSDK', 'getLoginStatus', 'getLoginUserID',
   'getSelfUserInfo', 'setSelfInfo', 'getUsersInfo', 'subscribeUsersStatus', 'unsubscribeUsersStatus',
@@ -286,7 +290,7 @@ function callablePlatformDisposition(
   if (platform === 'harmony' && harmonyUnsupportedCallables.has(callable.name)) return 'platform-unsupported'
   if (platform === 'harmony' && harmonyDispatcherMissingCallables.has(callable.name)) return 'capability-negative'
   if (callable.binding[platform]?.kind === 'unsupported') return 'platform-unsupported'
-  if (capability !== 'core') return 'capability-negative'
+  if (capability !== 'core' && !fixtureBackedCapabilityCallables.has(callable.name)) return 'capability-negative'
   return 'required'
 }
 
