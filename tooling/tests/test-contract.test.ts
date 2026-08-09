@@ -114,6 +114,24 @@ test('case manifest makes edition boundaries and cancelled subscriptions explici
   assert.deepEqual(event?.validationAxes, ['delivery', 'structure', 'semantic', 'ordering', 'epoch'])
 })
 
+test('platform-unsupported surfaces allow their executable negative profile', () => {
+  const modified = structuredClone(contract)
+  const login = modified.callables.find((item) => item.name === 'login')
+  const recvMessage = modified.events.find((item) => item.name === 'onRecvNewMessage')
+  assert.ok(login)
+  assert.ok(recvMessage)
+  login.binding.android = { kind: 'unsupported', symbol: 'test-unsupported' }
+  recvMessage.binding.android = 'unsupported-by-native-abi'
+
+  const manifest = buildPublicTestDisposition(modified)
+  const callable = manifest.callables.find((item) => item.apiName === 'login')
+  const event = manifest.events.find((item) => item.eventName === 'onRecvNewMessage')
+  assert.equal(callable?.platforms.android, 'platform-unsupported')
+  assert.ok(callable?.negativeProfiles.includes('platform-unsupported'))
+  assert.equal(event?.platforms.android, 'platform-unsupported')
+  assert.ok(event?.negativeProfiles.includes('platform-unsupported'))
+})
+
 test('every callable and event response root has a closed concrete schema graph', () => {
   const document = buildPublicResponseSchemas(contract)
   const reachable = new Set<string>()

@@ -308,6 +308,15 @@ function negativeProfiles(callable: ContractCallable, capability: string): strin
   return ['uninitialized', 'invalid-input']
 }
 
+function executableNegativeProfiles(
+  profiles: string[],
+  platforms: { android: PlatformTestDisposition; ios: PlatformTestDisposition; harmony: PlatformTestDisposition },
+): string[] {
+  return Object.values(platforms).includes('platform-unsupported')
+    ? [...new Set([...profiles, 'platform-unsupported'])]
+    : profiles
+}
+
 function cleanupAction(callable: ContractCallable, probe: string): string {
   if (callable.role === 'event-subscription') return 'off(subscription)'
   if (callable.role === 'event-control') return 'none'
@@ -351,6 +360,11 @@ function buildDisposition(
       const expectedEvents = callable.role === 'event-subscription'
         ? [callable.name]
         : [...(expectedEventsByCallable.get(callable.name) ?? [])]
+      const platforms = {
+        android: callablePlatformDisposition(edition, callable, capability, 'android'),
+        ios: callablePlatformDisposition(edition, callable, capability, 'ios'),
+        harmony: callablePlatformDisposition(edition, callable, capability, 'harmony'),
+      }
       return {
         caseId: `api/${callable.name}`,
         apiName: callable.name,
@@ -358,38 +372,35 @@ function buildDisposition(
         disposition: unsupported ? 'platform-unsupported' : capability !== 'core' ? 'capability-gated' : 'required',
         capability,
         responseCodec: callable.responseCodec,
-        platforms: {
-          android: callablePlatformDisposition(edition, callable, capability, 'android'),
-          ios: callablePlatformDisposition(edition, callable, capability, 'ios'),
-          harmony: callablePlatformDisposition(edition, callable, capability, 'harmony'),
-        },
+        platforms,
         responseSchema: { document: responseSchemaDocument, root: `callables.${callable.name}.schema` },
         semanticProfile: profile,
         sideEffectProbe: probe,
         expectedEvents,
-        negativeProfiles: negativeProfiles(callable, capability),
+        negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms),
         cleanupAction: cleanupAction(callable, probe),
         validationAxes: callableValidationAxes(callable, probe, expectedEvents),
       }
     }),
     events: events.map((event) => {
       const unsupported = event.binding.android === 'unsupported-by-native-abi' && event.binding.ios === 'unsupported-by-native-abi'
+      const platforms = {
+        android: eventPlatformDisposition(edition, event, 'android'),
+        ios: eventPlatformDisposition(edition, event, 'ios'),
+        harmony: eventPlatformDisposition(edition, event, 'harmony'),
+      }
       return {
         caseId: `event/${event.name}`,
         eventName: event.name,
         priority: p0EventNames.has(event.name) ? 'P0' : 'P1',
         deliveryDisposition: unsupported ? 'platform-unsupported' : p0EventNames.has(event.name) ? 'required' : 'passive-only',
         payloadProfile: responseSchemas.events[event.name]!.payloadProfile,
-        platforms: {
-          android: eventPlatformDisposition(edition, event, 'android'),
-          ios: eventPlatformDisposition(edition, event, 'ios'),
-          harmony: eventPlatformDisposition(edition, event, 'harmony'),
-        },
+        platforms,
         eventSchema: { document: responseSchemaDocument, root: `events.${event.name}.arguments` },
         semanticProfile: event.rawPayload ? 'opaque-event-correlation' : 'typed-event-correlation',
         sideEffectProbe: 'emitted-event-observation',
         expectedEvents: [event.name],
-        negativeProfiles: ['off-subscription', 'off-all-event-name', 'stale-epoch'],
+        negativeProfiles: executableNegativeProfiles(['off-subscription', 'off-all-event-name', 'stale-epoch'], platforms),
         cleanupAction: 'off(subscription)',
         validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch'],
       }
