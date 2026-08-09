@@ -104,7 +104,8 @@ const p0EventNames = new Set([
   'onHangUp', 'onReceiveCustomSignaling',
 ])
 
-const harmonyUnsupportedCallables = new Set(['updateFcmToken', 'updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
+const harmonyUnsupportedCallables = new Set(['updateFcmToken'])
+const harmonyDispatcherMissingCallables = new Set(['updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
 
 const expectedEventsByCallable = new Map<string, string[]>([
   ['login', ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish']],
@@ -283,6 +284,7 @@ function callablePlatformDisposition(
 ): PlatformTestDisposition {
   if (edition === 'public' && platform === 'harmony') return 'not-in-edition'
   if (platform === 'harmony' && harmonyUnsupportedCallables.has(callable.name)) return 'platform-unsupported'
+  if (platform === 'harmony' && harmonyDispatcherMissingCallables.has(callable.name)) return 'capability-negative'
   if (callable.binding[platform]?.kind === 'unsupported') return 'platform-unsupported'
   if (capability !== 'core') return 'capability-negative'
   return 'required'
@@ -311,10 +313,14 @@ function negativeProfiles(callable: ContractCallable, capability: string): strin
 function executableNegativeProfiles(
   profiles: string[],
   platforms: { android: PlatformTestDisposition; ios: PlatformTestDisposition; harmony: PlatformTestDisposition },
+  callableName?: string,
 ): string[] {
-  return Object.values(platforms).includes('platform-unsupported')
-    ? [...new Set([...profiles, 'platform-unsupported'])]
-    : profiles
+  const executable = new Set(profiles)
+  if (Object.values(platforms).includes('platform-unsupported')) executable.add('platform-unsupported')
+  if (callableName != null && platforms.harmony === 'capability-negative' && harmonyDispatcherMissingCallables.has(callableName)) {
+    executable.add('native-function-not-found-10007')
+  }
+  return [...executable]
 }
 
 function cleanupAction(callable: ContractCallable, probe: string): string {
@@ -377,7 +383,7 @@ function buildDisposition(
         semanticProfile: profile,
         sideEffectProbe: probe,
         expectedEvents,
-        negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms),
+        negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms, callable.name),
         cleanupAction: cleanupAction(callable, probe),
         validationAxes: callableValidationAxes(callable, probe, expectedEvents),
       }

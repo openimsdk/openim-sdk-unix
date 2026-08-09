@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import type { ContractDocument } from '../src/model.js'
-import { buildPublicResponseSchemas, buildPublicTestDisposition, validateContractValue, type ContractValueSchema } from '../src/test-contract.js'
+import type { ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
+import { buildEnterpriseTestDisposition, buildPublicResponseSchemas, buildPublicTestDisposition, validateContractValue, type ContractValueSchema } from '../src/test-contract.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
@@ -130,6 +130,40 @@ test('platform-unsupported surfaces allow their executable negative profile', ()
   assert.ok(callable?.negativeProfiles.includes('platform-unsupported'))
   assert.equal(event?.platforms.android, 'platform-unsupported')
   assert.ok(event?.negativeProfiles.includes('platform-unsupported'))
+})
+
+test('Harmony dispatcher gaps remain executable capability negatives', () => {
+  const template = structuredClone(contract.callables.find((item) => item.name === 'updateFcmToken'))
+  assert.ok(template)
+  template.name = 'updateToken'
+  template.signature = 'updateToken(params:OpenIMUpdateTokenParams,operationID?:string|null):Promise<string>'
+  template.binding.harmony = { kind: 'native', symbol: 'updateToken' }
+  const delta: EnterpriseDeltaDocument = {
+    schemaVersion: 2,
+    edition: 'enterprise-delta',
+    origin: {
+      kind: 'imported-facade',
+      repository: 'test',
+      revision: 'test',
+      publicBaseRevision: 'test',
+      importedPublicBaseContractHash: '0'.repeat(64),
+      interfacePath: 'test',
+      facadePaths: { android: 'test', ios: 'test', harmony: 'test' },
+    },
+    expectedTotal: { constants: 0, types: 0, callables: 1, events: 0 },
+    expectedDelta: { constants: 0, types: 0, callables: 1, events: 0, typeExtensions: 0 },
+    approvedBaseCallableOverrides: [],
+    constants: [],
+    types: [],
+    typeExtensions: [],
+    callables: [template],
+    events: [],
+  }
+
+  const callable = buildEnterpriseTestDisposition(contract, delta).callables.find((item) => item.apiName === 'updateToken')
+  assert.equal(callable?.platforms.harmony, 'capability-negative')
+  assert.ok(callable?.negativeProfiles.includes('native-function-not-found-10007'))
+  assert.equal(callable?.negativeProfiles.includes('platform-unsupported'), false)
 })
 
 test('every callable and event response root has a closed concrete schema graph', () => {
