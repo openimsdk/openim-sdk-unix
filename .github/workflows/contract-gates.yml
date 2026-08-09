@@ -40,6 +40,7 @@ jobs:
       - run: npm run verify
       - run: npm run verify:generated
       - run: npm run verify:policy
+      - run: npm run verify:release-integrity
       - run: npm audit --omit=dev
 
   native-nightly:
@@ -75,6 +76,13 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Generate clean SBOM and verify licenses and secrets
+        run: npm run verify:release-integrity -- --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openim-release-integrity
+          path: test-results/release/*-release-integrity.json
+          if-no-files-found: error
       - name: Refuse edition-scoped compatibility and native artifact debt
         run: npm run verify:release-policy
       - name: Prove deterministic regeneration twice

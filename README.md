@@ -53,6 +53,8 @@ uni_modules/unix-openim-sdk
 
 发布门禁会分别校验 Public 与 Enterprise 的兼容债务。Public 发布还要求上述 Maven AAR 的 SHA-256 与锁定源码产物一致、Pod XCFramework 的解包 inventory SHA-256 与锁定源码产物一致；在 `toolchain.lock.json` 记录完整等价证据前，`npm run verify:release-policy` 会明确阻断发布。
 
+`npm run verify:release-integrity` 会从 `package-lock.json`、插件元数据和受控原生组件清单生成 CycloneDX 1.6 SBOM，同时执行 SPDX license allowlist 与 Git 跟踪文本 secret scan，报告写入 `test-results/release/`。发布流水线使用 `--release` 额外要求 `dirty=false` 并上传该报告。
+
 由于本插件依赖原生 SDK，请使用自定义基座或正式打包产物验证原生能力。标准基座可以用于页面编译和渲染验证，但无法实际调用依赖原生 SDK 的能力。
 
 ## 使用 🚀

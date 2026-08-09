@@ -41,10 +41,15 @@ import {
   verifyEnterpriseAutomationSummaryStructure,
   verifyPublicAutomationSummaryStructure,
 } from './automation-summary.js'
+import { verifyReleaseIntegrity } from './release-integrity.js'
 
 const toolingDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
 const root = resolve(toolingDirectory, '..')
 const command = process.argv[2] ?? 'verify'
+
+function repositoryEdition(): ReleaseEdition {
+  return existsSync(resolve(root, 'contracts/enterprise/delta.json')) ? 'enterprise' : 'public'
+}
 
 function requestedPlatforms(): CompilePlatform[] {
   const index = process.argv.indexOf('--platform')
@@ -138,11 +143,17 @@ switch (command) {
     break
   }
   case 'verify:release-policy': {
-    const edition: ReleaseEdition = existsSync(resolve(root, 'contracts/enterprise/delta.json')) ? 'enterprise' : 'public'
+    const edition = repositoryEdition()
     verifyUTSPolicy(root)
     verifyCompatibilityLedger(root, true, undefined, edition)
     verifyReleaseNativeArtifacts(root, edition)
     console.log(`${edition} release compatibility and native artifact policy verified.`)
+    break
+  }
+  case 'verify:release-integrity': {
+    const edition = repositoryEdition()
+    const result = verifyReleaseIntegrity(root, edition, process.argv.includes('--release'))
+    console.log(`${edition} SBOM, license, and secret scan verified: ${result.reportPath}`)
     break
   }
   case 'native:import': {
