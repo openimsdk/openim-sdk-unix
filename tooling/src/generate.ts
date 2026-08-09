@@ -483,12 +483,13 @@ export function generateInterface(contract: ContractDocument): string {
 
 export function generateAutomationProfileRegistry(disposition: TestDispositionDocument): string {
   const entries = disposition.callables.map((item) => (
-    `\t{ apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}' }`
+    `\t{ apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}', validationAxes: [${item.validationAxes.map((axis) => `'${axis}'`).join(', ')}] }`
   )).join(',\n')
   return generatedSource(`export type OpenIMAutomationProfileEntry = {
 \tapiName : string
 \tsemanticProfile : string
 \tsideEffectProbe : string
+\tvalidationAxes : Array<string>
 }
 
 export const openIMAutomationContractEdition = '${disposition.edition}'

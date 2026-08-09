@@ -71,15 +71,17 @@ test('generated interface declares every public constant and callable', () => {
 
 test('generated automation profile registry matches every callable disposition', () => {
   const disposition = JSON.parse(readFileSync(resolve(root, 'contracts/base/test-disposition.json'), 'utf8')) as {
-    callables: Array<{ apiName: string; semanticProfile: string; sideEffectProbe: string }>
+    callables: Array<{ apiName: string; semanticProfile: string; sideEffectProbe: string; validationAxes: string[] }>
   }
   const output = buildGeneratedOutputs(root).find((item) => item.path === resolve(root, 'pages/index/openim-automation-profiles.uts'))
   assert.ok(output, 'automation profile registry must be a generated output')
   for (const item of disposition.callables) {
+    const axes = item.validationAxes.map((axis) => `'${axis}'`).join(', ')
     assert.match(
       output.content,
-      new RegExp(`apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}'`),
+      new RegExp(`apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}', validationAxes: \\[${axes}\\]`),
     )
   }
+  assert.match(output.content, /validationAxes : Array<string>/)
   assert.equal((output.content.match(/apiName:/g) ?? []).length, disposition.callables.length)
 })
