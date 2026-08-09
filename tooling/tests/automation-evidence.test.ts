@@ -1201,3 +1201,48 @@ test('an unobserved passive-only event does not satisfy or fail required runtime
   assert.equal(result.passedEvents, 0)
   assert.equal(result.issues.some((item: { caseId: string }) => item.caseId === 'event/onRecvNewMessage'), false)
 })
+
+test('passive-only unsupported events require executable negative cases', () => {
+  const unsupportedManifest = manifest()
+  unsupportedManifest.events[0] = {
+    ...unsupportedManifest.events[0]!,
+    deliveryDisposition: 'passive-only',
+    platforms: { android: 'required', ios: 'required', harmony: 'platform-unsupported' },
+  }
+  const eventOnlyManifest = {
+    ...unsupportedManifest,
+    counts: { callables: 0, events: 1 },
+    callables: [],
+  }
+  const verified = validateAutomationEvidence({
+    manifest: eventOnlyManifest,
+    report: {
+      cases: [{
+        apiName: 'onRecvNewMessage',
+        ok: true,
+        skipped: false,
+        invoked: true,
+        resolved: false,
+        negativeValidated: true,
+        negativeProfile: 'platform-unsupported',
+        errCode: -1,
+      }],
+      events: [],
+    },
+    platform: 'harmony',
+    fullRun: true,
+  })
+  assert.equal(verified.checkedEvents, 1)
+  assert.equal(verified.passedEvents, 1)
+  assert.deepEqual(verified.issues, [])
+
+  const missing = validateAutomationEvidence({
+    manifest: eventOnlyManifest,
+    report: { cases: [], events: [] },
+    platform: 'harmony',
+    fullRun: true,
+  })
+  assert.equal(missing.checkedEvents, 1)
+  assert.equal(missing.passedEvents, 0)
+  assert.deepEqual(missing.issues.map((issue) => issue.rule), ['missing-negative-evidence'])
+})

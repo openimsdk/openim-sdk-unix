@@ -571,11 +571,14 @@ function validateAutomationEvidence(input) {
     if (disposition === 'not-in-edition') {
       continue
     }
-    const candidates = reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
+    const requiresNegativeEvidence = disposition === 'platform-unsupported' || disposition === 'capability-negative'
+    const candidates = requiresNegativeEvidence
+      ? reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName)
+      : reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
     if (!fullRun && candidates.length === 0) {
       continue
     }
-    if (contractEvent.deliveryDisposition === 'passive-only' && candidates.length === 0) {
+    if (!requiresNegativeEvidence && contractEvent.deliveryDisposition === 'passive-only' && candidates.length === 0) {
       continue
     }
     checkedEvents += 1
