@@ -386,6 +386,222 @@ test('callable semantic and side-effect PASS requires matching structured profil
   assert.deepEqual(valid.issues, [])
 })
 
+test('approved known issues waive only the declared callable axes for an exact platform/code match', () => {
+  const knownIssueManifest = {
+    schemaVersion: 2,
+    edition: 'enterprise',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/setMessageLocalContent',
+      apiName: 'setMessageLocalContent',
+      platforms: { android: 'required', ios: 'required', harmony: 'required' },
+      semanticProfile: 'mutation-observation',
+      sideEffectProbe: 'read-after-write',
+      validationAxes: ['completion', 'structure', 'semantic', 'side-effect'],
+      approvedKnownIssue: {
+        harmony: {
+          code: 'harmony-set-message-local-content-uncertified',
+          waivedAxes: ['semantic', 'side-effect'],
+        },
+      },
+    }],
+    events: [],
+  }
+
+  const exactMatch = validateAutomationEvidence({
+    manifest: knownIssueManifest,
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'setMessageLocalContent',
+        ok: false,
+        invoked: true,
+        resolved: true,
+        knownIssue: true,
+        compatibilityDisposition: 'approved-known-issue',
+        knownIssueCode: 'harmony-set-message-local-content-uncertified',
+        responseEvidence: true,
+        responseDetail: 'resolved acknowledgement',
+      }],
+      events: [],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: { setMessageLocalContent: { codec: 'string', schema: { kind: 'string' } } },
+      schemas: {},
+    },
+  })
+  assert.equal(exactMatch.passed, true)
+  assert.deepEqual(exactMatch.issues, [])
+
+  const wrongCode = validateAutomationEvidence({
+    manifest: knownIssueManifest,
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'setMessageLocalContent',
+        ok: false,
+        invoked: true,
+        resolved: true,
+        knownIssue: true,
+        compatibilityDisposition: 'approved-known-issue',
+        knownIssueCode: 'some-other-issue',
+        responseEvidence: true,
+        responseDetail: 'resolved acknowledgement',
+      }],
+      events: [],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: { setMessageLocalContent: { codec: 'string', schema: { kind: 'string' } } },
+      schemas: {},
+    },
+  })
+  assert.equal(wrongCode.passed, false)
+  assert.deepEqual(
+    wrongCode.issues.map((issue) => issue.axis),
+    ['completion', 'structure', 'semantic', 'side-effect'],
+  )
+
+  const undeclared = validateAutomationEvidence({
+    manifest: {
+      ...knownIssueManifest,
+      callables: [{
+        ...knownIssueManifest.callables[0],
+        approvedKnownIssue: undefined,
+      }],
+    },
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'setMessageLocalContent',
+        ok: false,
+        invoked: true,
+        resolved: true,
+        knownIssue: true,
+        compatibilityDisposition: 'approved-known-issue',
+        knownIssueCode: 'harmony-set-message-local-content-uncertified',
+        responseEvidence: true,
+        responseDetail: 'resolved acknowledgement',
+      }],
+      events: [],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: { setMessageLocalContent: { codec: 'string', schema: { kind: 'string' } } },
+      schemas: {},
+    },
+  })
+  assert.equal(undeclared.passed, false)
+  assert.deepEqual(
+    undeclared.issues.map((issue) => issue.axis),
+    ['completion', 'structure', 'semantic', 'side-effect'],
+  )
+})
+
+test('approved known issues do not waive undeclared callable axes', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'enterprise',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/unInitSDK',
+        apiName: 'unInitSDK',
+        platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        responseCodec: 'void',
+        responseSchema: { root: 'callables.unInitSDK.schema' },
+        semanticProfile: 'mutation-observation',
+        sideEffectProbe: 'none',
+        validationAxes: ['completion', 'structure', 'semantic'],
+        approvedKnownIssue: {
+          harmony: {
+            code: 'harmony-uninit-sdk-sigsegv',
+            waivedAxes: ['semantic'],
+          },
+        },
+      }],
+      events: [],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: { unInitSDK: { codec: 'void', schema: { kind: 'void' } } },
+      schemas: {},
+    },
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'unInitSDK',
+        ok: false,
+        invoked: true,
+        resolved: true,
+        knownIssue: true,
+        compatibilityDisposition: 'approved-known-issue',
+        knownIssueCode: 'harmony-uninit-sdk-sigsegv',
+        responseEvidence: false,
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, false)
+  assert.deepEqual(result.issues.map((issue) => issue.axis), ['structure'])
+})
+
+test('approved known-issue waivers cannot borrow non-waived evidence from another execution', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'enterprise',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/setMessageLocalContent',
+        apiName: 'setMessageLocalContent',
+        platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        semanticProfile: 'mutation-observation',
+        sideEffectProbe: 'read-after-write',
+        validationAxes: ['completion', 'structure', 'semantic', 'side-effect'],
+        approvedKnownIssue: {
+          harmony: {
+            code: 'harmony-set-message-local-content-uncertified',
+            waivedAxes: ['semantic', 'side-effect'],
+          },
+        },
+      }],
+      events: [],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: { setMessageLocalContent: { codec: 'string', schema: { kind: 'string' } } },
+      schemas: {},
+    },
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'setMessageLocalContent',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        responseDetail: 'unrelated successful execution',
+      }, {
+        apiName: 'setMessageLocalContent',
+        ok: false,
+        invoked: true,
+        resolved: true,
+        knownIssue: true,
+        compatibilityDisposition: 'approved-known-issue',
+        knownIssueCode: 'harmony-set-message-local-content-uncertified',
+        responseEvidence: false,
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, false)
+  assert.deepEqual(result.issues.map((issue) => issue.axis), ['structure'])
+})
+
 test('identifier-free progress requires an exclusive start-to-terminal operation window', () => {
   const uploadManifest = {
     schemaVersion: 2,

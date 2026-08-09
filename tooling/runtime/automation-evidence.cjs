@@ -161,13 +161,13 @@ function validateSchemaValue(document, schema, value, path = '$', referenceStack
   return issues
 }
 
-function callableStructureResult(candidates, apiName, responseSchemas) {
+function callableStructureResult(candidates, apiName, responseSchemas, acceptsEvidence = isSuccessfulEvidence) {
   const callableSchemas = isRecord(responseSchemas.callables) ? responseSchemas.callables : {}
   const response = callableSchemas[apiName]
   if (!isRecord(response) || !isRecord(response.schema)) {
     return { passed: false, issues: [schemaIssue('$', 'response-schema', apiName, 'missing schema')] }
   }
-  const recorded = candidates.filter((item) => isSuccessfulEvidence(item) && item.responseEvidence === true)
+  const recorded = candidates.filter((item) => acceptsEvidence(item) && item.responseEvidence === true)
   if (recorded.length === 0) return { passed: false, issues: [] }
   const issues = recorded.flatMap((item) => validateSchemaValue(
     responseSchemas,
@@ -266,6 +266,37 @@ function axisPassed(candidates, axis, kind, contractCase = null) {
     }
     return item[flag] === true && (kind === 'event' || isSuccessfulEvidence(item))
   })
+}
+
+function approvedKnownIssueForPlatform(contractCase, platform) {
+  if (!isRecord(contractCase) || !isRecord(contractCase.approvedKnownIssue)) return null
+  const declared = contractCase.approvedKnownIssue[platform]
+  if (!isRecord(declared) || typeof declared.code !== 'string' || declared.code.length === 0 || !Array.isArray(declared.waivedAxes)) return null
+  const waivedAxes = declared.waivedAxes
+    .filter((axis) => typeof axis === 'string' && axis.length > 0)
+  if (waivedAxes.length === 0) return null
+  return { code: declared.code, waivedAxes }
+}
+
+function approvedKnownIssueMatches(item, contractCase, platform) {
+  const declared = approvedKnownIssueForPlatform(contractCase, platform)
+  if (declared == null || !isRecord(item)) return false
+  return item.knownIssue === true
+    && item.compatibilityDisposition === 'approved-known-issue'
+    && item.apiName === contractCase.apiName
+    && item.knownIssueCode === declared.code
+}
+
+function axisWaivedByApprovedKnownIssue(candidates, contractCase, platform, axis) {
+  const declared = approvedKnownIssueForPlatform(contractCase, platform)
+  if (declared == null || !declared.waivedAxes.includes(axis)) return false
+  return candidates.some((item) => approvedKnownIssueMatches(item, contractCase, platform))
+}
+
+function completionPassedByApprovedKnownIssue(candidates, contractCase, platform) {
+  return candidates.some((item) => approvedKnownIssueMatches(item, contractCase, platform)
+    && item.invoked === true
+    && item.resolved === true)
 }
 
 function eventCorrelationIdentityField(eventName) {
@@ -430,22 +461,35 @@ function validateAutomationEvidence(input) {
       }
     } else if (disposition === 'required') {
       const axes = Array.isArray(contractCase.validationAxes) ? contractCase.validationAxes : []
+      const approvedKnownIssueCandidates = candidates.filter((item) => approvedKnownIssueMatches(item, contractCase, platform))
+      const evidenceCandidates = approvedKnownIssueCandidates.length > 0 ? approvedKnownIssueCandidates : candidates
       for (const axis of axes) {
+        if (axisWaivedByApprovedKnownIssue(evidenceCandidates, contractCase, platform, axis)) {
+          continue
+        }
+        if (axis === 'completion' && completionPassedByApprovedKnownIssue(evidenceCandidates, contractCase, platform)) {
+          continue
+        }
         if (axis === 'structure' && isRecord(input.responseSchemas)) {
-          const structure = callableStructureResult(candidates, contractCase.apiName, input.responseSchemas)
+          const structure = callableStructureResult(
+            evidenceCandidates,
+            contractCase.apiName,
+            input.responseSchemas,
+            (item) => isSuccessfulEvidence(item) || approvedKnownIssueMatches(item, contractCase, platform),
+          )
           if (!structure.passed) {
             const schemaDetail = structure.issues.slice(0, 3).map((item) => `${item.path} ${item.rule}: expected ${item.expected}, got ${item.actual}`).join('; ')
             issues.push(issue(
               String(contractCase.caseId),
               'structure',
-              structure.issues.length === 0 ? (candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated') : 'response-schema-invalid',
+              structure.issues.length === 0 ? (evidenceCandidates.length === 0 ? 'missing-evidence' : 'axis-not-validated') : 'response-schema-invalid',
               schemaDetail.length > 0 ? `${contractCase.apiName} response failed generated schema: ${schemaDetail}` : `${contractCase.apiName} has no explicit response evidence on ${platform}`,
             ))
           }
           continue
         }
         if (axis === 'event') {
-          const correlation = callableEventCorrelationResult(candidates, contractCase)
+          const correlation = callableEventCorrelationResult(evidenceCandidates, contractCase)
           if (!correlation.passed) {
             const reasons = []
             if (correlation.undeclared) reasons.push('manifest expectedEvents is empty')
@@ -460,7 +504,7 @@ function validateAutomationEvidence(input) {
           }
           continue
         }
-        if (!axisPassed(candidates, axis, 'callable', contractCase)) {
+        if (!axisPassed(evidenceCandidates, axis, 'callable', contractCase)) {
           const expectedProfile = axis === 'semantic'
             ? contractCase.semanticProfile
             : axis === 'side-effect'
@@ -469,7 +513,7 @@ function validateAutomationEvidence(input) {
           issues.push(issue(
             String(contractCase.caseId),
             String(axis),
-            candidates.length === 0 ? 'missing-evidence' : expectedProfile ? 'profile-assertion-invalid' : 'axis-not-validated',
+            evidenceCandidates.length === 0 ? 'missing-evidence' : expectedProfile ? 'profile-assertion-invalid' : 'axis-not-validated',
             expectedProfile
               ? `${contractCase.apiName} has no passing ${String(axis)} assertion for generated profile ${String(expectedProfile)} on ${platform}`
               : `${contractCase.apiName} has no passing ${String(axis)} evidence on ${platform}`,

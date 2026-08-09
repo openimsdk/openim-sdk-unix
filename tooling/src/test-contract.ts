@@ -29,6 +29,10 @@ export type EventDeliveryDisposition = 'required' | 'passive-only' | 'platform-u
 export type PlatformTestDisposition = 'required' | 'capability-negative' | 'platform-unsupported' | 'not-in-edition'
 export type CallableValidationAxis = 'completion' | 'structure' | 'semantic' | 'side-effect' | 'event'
 export type EventValidationAxis = 'delivery' | 'structure' | 'semantic' | 'ordering' | 'epoch'
+export interface ApprovedKnownIssueDisposition {
+  code: string
+  waivedAxes: CallableValidationAxis[]
+}
 
 export interface TestDispositionDocument {
   schemaVersion: 2
@@ -49,6 +53,7 @@ export interface TestDispositionDocument {
     negativeProfiles: string[]
     cleanupAction: string
     validationAxes: CallableValidationAxis[]
+    approvedKnownIssue?: Partial<Record<'android' | 'ios' | 'harmony', ApprovedKnownIssueDisposition>>
   }>
   events: Array<{
     caseId: string
