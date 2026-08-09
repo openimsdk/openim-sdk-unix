@@ -442,6 +442,26 @@ function schemaLabel(schema: ContractValueSchema): string {
   return schema.kind
 }
 
+function schemaMatchesActualKind(
+  document: ResponseSchemaDocument,
+  schema: ContractValueSchema,
+  value: unknown,
+  referenceStack: string[] = [],
+): boolean {
+  if (schema.kind === 'any') return true
+  if (schema.kind === 'void') return value === undefined || value === null
+  if (schema.kind === 'string' || schema.kind === 'boolean') return typeof value === schema.kind
+  if (schema.kind === 'number') return typeof value === 'number'
+  if (schema.kind === 'null') return value === null
+  if (schema.kind === 'literal') return typeof value === typeof schema.value
+  if (schema.kind === 'array') return Array.isArray(value)
+  if (schema.kind === 'object') return value != null && typeof value === 'object' && !Array.isArray(value)
+  if (schema.kind === 'union') return schema.options.some((option) => schemaMatchesActualKind(document, option, value, referenceStack))
+  const target = document.schemas[schema.name]
+  if (target == null || referenceStack.includes(schema.name)) return true
+  return schemaMatchesActualKind(document, target, value, [...referenceStack, schema.name])
+}
+
 export function validateContractValue(
   document: ResponseSchemaDocument,
   schema: ContractValueSchema,
@@ -462,9 +482,14 @@ export function validateContractValue(
     return validateContractValue(document, target, value, path, [...referenceStack, schema.name])
   }
   if (schema.kind === 'union') {
-    const attempts = schema.options.map((option) => validateContractValue(document, option, value, path, referenceStack))
-    const ranked = attempts
-      .map((issues, index) => ({
+    const attempts = schema.options.map((option, index) => ({
+      issues: validateContractValue(document, option, value, path, referenceStack),
+      index,
+      matchesActualKind: schemaMatchesActualKind(document, option, value, referenceStack),
+    }))
+    const matchingAttempts = attempts.filter((attempt) => attempt.matchesActualKind)
+    const ranked = (matchingAttempts.length === 0 ? attempts : matchingAttempts)
+      .map(({ issues, index }) => ({
         issues,
         index,
         errors: issues.filter((issue) => issue.severity === 'error').length,

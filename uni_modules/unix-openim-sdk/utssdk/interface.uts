@@ -740,7 +740,7 @@ export type OpenIMGroupApplicationItem = {
   createTime : number
   status : number
   creatorUserID : string
-  groupType : number
+  groupType ?: number | null
   memberCount : number
   userID : string
   nickname : string

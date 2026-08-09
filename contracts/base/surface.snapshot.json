@@ -1301,7 +1301,7 @@
     {
       "id": 1106,
       "name": "OpenIMGroupApplicationItem",
-      "signatureHash": "01cd8ba797e399c4d7bce0c524b4f040b64372bf7984a20afa634153d7fbb2b2"
+      "signatureHash": "7b33f7fe84a3f268f96ea23446c4ca9334624827f7c1607de708fd3ad6ed4e86"
     },
     {
       "id": 1107,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "ed768cb82542bd31d9a33c529bf033a21a6ef9adbfe45d550eab011b5e89824f"
+  "contractHash": "d8434f5c10fa21465a46b852314b3f4863b5e6cf7e4e3743d2e802682ba67eac"
 }

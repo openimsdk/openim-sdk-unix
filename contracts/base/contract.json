@@ -1416,8 +1416,8 @@
     {
       "id": 1106,
       "name": "OpenIMGroupApplicationItem",
-      "declaration": "export type OpenIMGroupApplicationItem = {\n  groupID : string\n  groupName : string\n  notification : string\n  introduction : string\n  groupFaceURL : string\n  ownerUserID : string\n  createTime : number\n  status : number\n  creatorUserID : string\n  groupType : number\n  memberCount : number\n  userID : string\n  nickname : string\n  userFaceURL : string\n  handleResult : number\n  reqMsg : string\n  handledMsg : string\n  reqTime : number\n  joinSource : number\n  inviterUserID : string\n  handleUserID : string\n  handledTime : number\n  ex : string\n  attachedInfo : string\n}",
-      "signatureHash": "01cd8ba797e399c4d7bce0c524b4f040b64372bf7984a20afa634153d7fbb2b2"
+      "declaration": "export type OpenIMGroupApplicationItem = {\n  groupID : string\n  groupName : string\n  notification : string\n  introduction : string\n  groupFaceURL : string\n  ownerUserID : string\n  createTime : number\n  status : number\n  creatorUserID : string\n  groupType ?: number | null\n  memberCount : number\n  userID : string\n  nickname : string\n  userFaceURL : string\n  handleResult : number\n  reqMsg : string\n  handledMsg : string\n  reqTime : number\n  joinSource : number\n  inviterUserID : string\n  handleUserID : string\n  handledTime : number\n  ex : string\n  attachedInfo : string\n}",
+      "signatureHash": "7b33f7fe84a3f268f96ea23446c4ca9334624827f7c1607de708fd3ad6ed4e86"
     },
     {
       "id": 1107,

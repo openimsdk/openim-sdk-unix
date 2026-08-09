@@ -5363,9 +5363,17 @@
           }
         },
         "groupType": {
-          "required": true,
+          "required": false,
           "schema": {
-            "kind": "number"
+            "kind": "union",
+            "options": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "null"
+              }
+            ]
           }
         },
         "memberCount": {

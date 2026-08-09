@@ -251,6 +251,18 @@ test('requires message isRead to remain a boolean', () => {
   assert.ok(validateContractValue(document, schema, { ...message, isRead: 0 }).some((issue) => issue.path === '$.isRead' && issue.rule === 'type'))
 })
 
+test('allows locked Core group applications to omit or null groupType', () => {
+  const document = buildPublicResponseSchemas(contract)
+  const schema = document.schemas.OpenIMGroupApplicationItem
+  assert.ok(schema?.kind === 'object')
+  const groupType = schema.fields.groupType
+  assert.equal(groupType?.required, false)
+  assert.deepEqual(groupType?.schema, {
+    kind: 'union',
+    options: [{ kind: 'number' }, { kind: 'null' }],
+  })
+})
+
 test('reports additive response fields as contract drift instead of structural failure', () => {
   const document = buildPublicResponseSchemas(contract)
   const schema = document.schemas.OpenIMAdvancedHistoryMessageListResult
@@ -271,5 +283,30 @@ test('preserves additive response drift from the selected union branch', () => {
   }
   const issues = validateContractValue(document, schema, { value: 'ok', futureField: true })
   assert.equal(issues.some((issue) => issue.severity === 'error'), false)
+  assert.ok(issues.some((issue) => issue.path === '$.futureField' && issue.severity === 'contract-drift'))
+})
+
+test('selects an object reference union branch by runtime kind before ranking its issues', () => {
+  const document = structuredClone(buildPublicResponseSchemas(contract))
+  document.schemas.TestUnionObject = {
+    kind: 'object',
+    fields: {
+      label: { required: true, schema: { kind: 'string' } },
+      count: { required: true, schema: { kind: 'number' } },
+    },
+  }
+  const schema: ContractValueSchema = {
+    kind: 'union',
+    options: [
+      { kind: 'null' },
+      { kind: 'reference', name: 'TestUnionObject' },
+    ],
+  }
+
+  const issues = validateContractValue(document, schema, { label: 1, count: 'two', futureField: true })
+
+  assert.equal(issues.some((issue) => issue.path === '$' && issue.expected === 'null'), false)
+  assert.ok(issues.some((issue) => issue.path === '$.label' && issue.rule === 'type'))
+  assert.ok(issues.some((issue) => issue.path === '$.count' && issue.rule === 'finite-number'))
   assert.ok(issues.some((issue) => issue.path === '$.futureField' && issue.severity === 'contract-drift'))
 })
