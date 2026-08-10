@@ -321,8 +321,11 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
       "private static state: OpenIMHarmonyDriverState = 'idle'",
       'class OpenIMHarmonyNativeError',
       'private static normalizeNativeError(',
-      'reason.errCode',
-      'reason.errMsg',
+      'interface OpenIMHarmonyNativePayload {',
+      'private static parseNativePayload(value: Object | null): OpenIMHarmonyNativePayload | null',
+      'const reasonObject: OpenIMHarmonyNativePayload | null',
+      'reasonObject.errCode',
+      'reasonObject.errMsg',
       'private static canBindNativeEvents(): boolean',
       'OpenIMHarmonyDriver.isStartingEvent(eventCode)',
       'OpenIMHarmonyDriver.canDispatchEvent(bindingEpoch, eventCode)',
@@ -352,6 +355,11 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
       'OpenIMHarmonyDriver.finishShutdown(stoppingEpoch)',
     ],
     'Enterprise Harmony raw JSON event seam',
+  )
+  assertExcludes(
+    harmonySource,
+    ['parseJSONObject', 'readNativeValue('],
+    'Enterprise Harmony typed native payload seam',
   )
   assertExcludes(
     harmonySource,
