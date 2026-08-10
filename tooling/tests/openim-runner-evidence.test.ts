@@ -216,6 +216,32 @@ test('Public runner evidence recursively redacts encoded event payloads', async 
   assert.doesNotMatch(evidence.redactedReport.cases[0].eventCorrelations[0].eventPayloadDetail, /client-message-sensitive/)
 })
 
+test('Public runner evidence preserves composite group-member correlation after redaction', async () => {
+  const { createAutomationEvidenceRecord } = await import(modulePath.href)
+  const root = projectRoot()
+  const evidence = createAutomationEvidenceRecord({
+    projectRoot: root,
+    platform: 'harmony',
+    report: {
+      cases: [{
+        eventCorrelations: [{
+          eventName: 'onGroupMemberAdded',
+          payloadIdentity: 'group-sensitive:user-sensitive',
+          eventPayloadDetail: JSON.stringify({ groupID: 'group-sensitive', userID: 'user-sensitive' }),
+        }],
+      }],
+      events: [],
+    },
+    reportPath: resolve(root, 'test-results/openim-automation/openim-automation-1.json'),
+    manifestOverride: manifest(),
+  })
+  const correlation = evidence.redactedReport.cases[0].eventCorrelations[0]
+  const payload = JSON.parse(correlation.eventPayloadDetail)
+
+  assert.equal(correlation.payloadIdentity, `${payload.groupID}:${payload.userID}`)
+  assert.doesNotMatch(JSON.stringify(evidence.redactedReport), /group-sensitive|user-sensitive/)
+})
+
 test('Public runner evidence rejects missing semantic proof', async () => {
   const { createAutomationEvidenceRecord, evidenceFailureMessage } = await import(modulePath.href)
   const root = projectRoot()

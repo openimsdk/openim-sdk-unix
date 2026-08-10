@@ -63,7 +63,15 @@ export function redactAutomationValue(value, key = '') {
     return value.map((item) => redactAutomationValue(item, key))
   }
   if (value != null && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([entryKey, entryValue]) => [entryKey, redactAutomationValue(entryValue, entryKey)]))
+    const redacted = Object.fromEntries(Object.entries(value).map(([entryKey, entryValue]) => [entryKey, redactAutomationValue(entryValue, entryKey)]))
+    if ((value.eventName === 'onGroupMemberAdded' || value.eventName === 'onGroupMemberDeleted')
+      && typeof value.payloadIdentity === 'string') {
+      const separator = value.payloadIdentity.indexOf(':')
+      if (separator > 0 && separator < value.payloadIdentity.length - 1) {
+        redacted.payloadIdentity = `${stableRedaction(value.payloadIdentity.slice(0, separator))}:${stableRedaction(value.payloadIdentity.slice(separator + 1))}`
+      }
+    }
+    return redacted
   }
   if (typeof value === 'string') {
     return redactString(key, value)
