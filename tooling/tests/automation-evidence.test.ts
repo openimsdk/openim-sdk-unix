@@ -1246,6 +1246,35 @@ test('an unobserved passive-only event does not satisfy or fail required runtime
   assert.equal(result.issues.some((item: { caseId: string }) => item.caseId === 'event/onRecvNewMessage'), false)
 })
 
+test('a zero-count passive-only event record remains unobserved', () => {
+  const passiveManifest = manifest()
+  passiveManifest.events[0] = {
+    ...passiveManifest.events[0]!,
+    deliveryDisposition: 'passive-only',
+  }
+  const result = validateAutomationEvidence({
+    manifest: passiveManifest,
+    report: {
+      cases: [],
+      events: [{
+        name: 'onRecvNewMessage',
+        count: 0,
+        deliveryValidated: false,
+        structureValidated: false,
+        semanticValidated: false,
+        orderingValidated: false,
+        epochValidated: false,
+      }],
+    },
+    platform: 'android',
+    fullRun: true,
+  })
+
+  assert.equal(result.checkedEvents, 0)
+  assert.equal(result.passedEvents, 0)
+  assert.equal(result.issues.some((item: { caseId: string }) => item.caseId === 'event/onRecvNewMessage'), false)
+})
+
 test('passive-only unsupported events require executable negative cases', () => {
   const unsupportedManifest = manifest()
   unsupportedManifest.events[0] = {

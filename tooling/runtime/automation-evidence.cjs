@@ -41,6 +41,10 @@ function eventEvidenceName(item) {
   return typeof item.name === 'string' ? item.name : ''
 }
 
+function eventEvidenceObserved(item) {
+  return typeof item.count === 'number' && Number.isFinite(item.count) && item.count > 0
+}
+
 function parseRecordedValue(detail, codec) {
   if (typeof detail !== 'string') {
     return detail
@@ -587,7 +591,9 @@ function validateAutomationEvidence(input) {
     if (!fullRun && candidates.length === 0) {
       continue
     }
-    if (!requiresNegativeEvidence && contractEvent.deliveryDisposition === 'passive-only' && candidates.length === 0) {
+    if (!requiresNegativeEvidence
+      && contractEvent.deliveryDisposition === 'passive-only'
+      && candidates.every((item) => !eventEvidenceObserved(item))) {
       continue
     }
     checkedEvents += 1
