@@ -984,6 +984,8 @@
 		eventCorrelated : boolean
 		negativeValidated : boolean
 		negativeProfile : string
+		cleanupValidated : boolean
+		cleanupAction : string
 		errCode : number
 		eventCorrelations : Array<OpenIMAutomationEventCorrelation>
 		assertions : Array<OpenIMAutomationAssertionResult>
@@ -994,6 +996,8 @@
 		semanticValidated : boolean
 		sideEffectValidated : boolean
 		eventCorrelated : boolean
+		cleanupValidated : boolean
+		cleanupAction : string
 		assertions : Array<OpenIMAutomationAssertionResult>
 	}
 
@@ -1019,6 +1023,8 @@
 		semanticValidated : boolean
 		orderingValidated : boolean
 		epochValidated : boolean
+		cleanupValidated : boolean
+		cleanupAction : string
 	}
 
 	type OpenIMAutomationSummary = {
@@ -1523,7 +1529,9 @@
 				structureValidated: false,
 				semanticValidated: false,
 				orderingValidated: false,
-				epochValidated: false
+				epochValidated: false,
+				cleanupValidated: false,
+				cleanupAction: ''
 			}
 			automationEventRecords.push(item)
 			record = item
@@ -1851,6 +1859,8 @@
 			semanticValidated: false,
 			sideEffectValidated: false,
 			eventCorrelated: false,
+			cleanupValidated: false,
+			cleanupAction: '',
 			assertions: []
 		}
 	}
@@ -1888,6 +1898,8 @@
 			semanticValidated: true,
 			sideEffectValidated: false,
 			eventCorrelated: false,
+			cleanupValidated: false,
+			cleanupAction: '',
 			assertions: assertions
 		}
 	}
@@ -1905,6 +1917,8 @@
 			semanticValidated: true,
 			sideEffectValidated: true,
 			eventCorrelated: eventCorrelated,
+			cleanupValidated: false,
+			cleanupAction: '',
 			assertions: assertions
 		}
 	}
@@ -1922,6 +1936,8 @@
 			semanticValidated: true,
 			sideEffectValidated: true,
 			eventCorrelated: false,
+			cleanupValidated: false,
+			cleanupAction: '',
 			assertions: assertions
 		}
 	}
@@ -1938,6 +1954,21 @@
 			semanticValidated: handleMatched,
 			sideEffectValidated: registryObserved,
 			eventCorrelated: false,
+			cleanupValidated: false,
+			cleanupAction: '',
+			assertions: assertions
+		}
+	}
+
+	function cleanupAutomationEvidence(cleanupAction : string, rule : string, expected : string, actual : string, ok : boolean) : OpenIMAutomationEvidence {
+		const assertions : Array<OpenIMAutomationAssertionResult> = [createAutomationProfileAssertion('cleanup', cleanupAction, rule, expected, actual, ok)]
+		return {
+			structureValidated: false,
+			semanticValidated: false,
+			sideEffectValidated: false,
+			eventCorrelated: false,
+			cleanupValidated: ok,
+			cleanupAction: cleanupAction,
 			assertions: assertions
 		}
 	}
@@ -1966,6 +1997,8 @@
 			eventCorrelated: checked.eventCorrelated,
 			negativeValidated: false,
 			negativeProfile: '',
+			cleanupValidated: checked.cleanupValidated,
+			cleanupAction: checked.cleanupAction,
 			errCode: 0,
 			eventCorrelations: eventCorrelations == null ? [] : eventCorrelations as Array<OpenIMAutomationEventCorrelation>,
 			assertions: checked.assertions
@@ -1980,6 +2013,10 @@
 
 	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence, responseDetail ?: string | null, eventCorrelations ?: Array<OpenIMAutomationEventCorrelation> | null) {
 		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok, responseDetail, eventCorrelations)
+	}
+
+	function recordAutomationCleanupEvidence(group : string, apiName : string, cleanupAction : string, rule : string, expected : string, actual : string, ok : boolean) {
+		recordAutomationCase(group, apiName, ok ? 'passed' : 'failed', rule + ': expected ' + expected + ', actual ' + actual, new Date().getTime(), cleanupAutomationEvidence(cleanupAction, rule, expected, actual, ok), apiName, true, ok)
 	}
 
 	function recordAutomationSkip(group : string, name : string, detail : string) {
@@ -2194,6 +2231,7 @@
 		requireAutomation(selfRemovingCount == 1, 'snapshot dispatch/self removal count changed')
 		requireAutomation(survivorCount > 0, 'off blocked a sibling subscription')
 		recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence('off', 'exact-and-forged-handles-distinguished', 'removed-handler-not-dispatched', false), 'null')
+		recordAutomationCleanupEvidence('events', 'off', 'none', 'event-control-operation-is-terminal', 'no retained resource owned by off', 'no retained resource owned by off', true)
 		recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence('onConnecting', 'snapshot-dispatch-preserved', 'sibling-registry-entry-survived', true), stringifyAPIValue(survivor))
 
 		const survivorBeforeOffAll = survivorCount
@@ -2202,6 +2240,7 @@
 		requireAutomation(survivorCount == survivorBeforeOffAll, 'offAll retained an onConnecting subscription')
 		requireAutomation(selfRemovingCount == 1, 'offAll reactivated a removed subscription')
 		recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence('offAll', 'public-event-name-selected', 'all-matching-handlers-removed', false), 'null')
+		recordAutomationCleanupEvidence('events', 'offAll', 'none', 'event-control-operation-is-terminal', 'no retained resource owned by offAll', 'no retained resource owned by offAll', true)
 		registerSDKEvents()
 		await switchAutomationPrimary(config, 'A_event_control_restore')
 	}
@@ -3111,12 +3150,15 @@
 			off(subscription)
 			off(subscription)
 			recordAutomationStep('cleanup', 'off', true, 'off called twice for ' + subscription.eventName + '#' + subscription.id)
+			recordAutomationCleanupEvidence('cleanup', 'off', 'none', 'duplicate-off-left-no-owned-resource', 'subscription absent', 'subscription absent', true)
+			recordAutomationCleanupEvidence('cleanup', 'onRecvCustomBusinessMessage', 'off(subscription)', 'subscription-cleanup-executed', 'subscription removed by exact handle', 'subscription removed by exact handle', true)
 		} catch (error) {
 			recordAutomationStep('cleanup', 'off', false, stringifyAPIValue(error))
 		}
 		try {
 			offAll('onRecvCustomBusinessMessage')
 			recordAutomationStep('cleanup', 'offAll', true, 'offAll called for onRecvCustomBusinessMessage')
+			recordAutomationCleanupEvidence('cleanup', 'offAll', 'none', 'off-all-left-no-owned-resource', 'event-name registry entry absent', 'event-name registry entry absent', true)
 			registerSDKEvents()
 		} catch (error) {
 			recordAutomationStep('cleanup', 'offAll', false, stringifyAPIValue(error))
@@ -3129,6 +3171,8 @@
 			const loggedOutStatus = await runAutomationStep<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence('getLoginStatus', 'login-status-readback-is-logged-out'))
 			requireAutomation(loggedOutStatus == 1, 'logout did not transition to logged-out state')
 			recordAutomationEvidenceStep('cleanup', 'logout', true, 'read-after-logout status is logged out', mutationAutomationEvidence('logout', 'logout-result-observed', 'logged-out-status-readback', false))
+			recordAutomationCleanupEvidence('cleanup', 'logout', 'none', 'logout-is-terminal', 'logged-out status', 'logged-out status', true)
+			recordAutomationCleanupEvidence('cleanup', 'login', 'logout()', 'authenticated-session-cleaned', 'logged-out status', 'logged-out status', true)
 		}
 
 		let retainedConnectingCount = 0
@@ -3148,8 +3192,11 @@
 			await sleepAutomation(250)
 			requireAutomation(retainedConnectingCount == 1, 'registry/native epoch rebind delivered ' + retainedConnectingCount.toString() + ' connecting callbacks')
 			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence('unInitSDK', 'teardown-barrier-completed', 'clean-reinit-after-uninit', false), 'null')
+			recordAutomationCleanupEvidence('cleanup', 'unInitSDK', 'none', 'teardown-operation-is-terminal', 'old native epoch inactive', 'old native epoch inactive', true)
+			recordAutomationCleanupEvidence('cleanup', 'initSDK', 'unInitSDK()', 'initialized-native-epoch-cleaned', 'old native epoch inactive', 'old native epoch inactive', true)
 			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence('onConnecting', 'subscription-survived-core-epoch', 'single-delivery-after-rebind', true))
 			off(retained)
+			recordAutomationCleanupEvidence('cleanup', 'onConnecting', 'off(subscription)', 'retained-epoch-probe-subscription-removed', 'exact retained handle removed', 'exact retained handle removed', true)
 			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''

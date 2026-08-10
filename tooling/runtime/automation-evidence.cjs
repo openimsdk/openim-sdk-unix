@@ -15,6 +15,8 @@ const eventAxisFlags = {
   epoch: 'epochValidated',
 }
 
+const nonWaivableValidationAxes = new Set(['negative', 'cleanup'])
+
 function isRecord(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
@@ -236,19 +238,21 @@ function eventStructureResult(candidates, eventName, responseSchemas) {
   return { passed: issues.length === 0, issues }
 }
 
-function profileAssertionPassed(candidates, axis, profile) {
+function itemAssertionPassed(item, axis, profile) {
   if (typeof profile !== 'string' || profile.length === 0) return false
-  return candidates.some((item) => {
-    if (!isSuccessfulEvidence(item) || !Array.isArray(item.assertions)) return false
-    return item.assertions.some((assertion) => isRecord(assertion)
-      && assertion.axis === axis
-      && assertion.profile === profile
-      && typeof assertion.rule === 'string'
-      && assertion.rule.length > 0
-      && typeof assertion.expected === 'string'
-      && typeof assertion.actual === 'string'
-      && assertion.ok === true)
-  })
+  if (!isRecord(item) || !Array.isArray(item.assertions)) return false
+  return item.assertions.some((assertion) => isRecord(assertion)
+    && assertion.axis === axis
+    && assertion.profile === profile
+    && typeof assertion.rule === 'string'
+    && assertion.rule.length > 0
+    && typeof assertion.expected === 'string'
+    && typeof assertion.actual === 'string'
+    && assertion.ok === true)
+}
+
+function profileAssertionPassed(candidates, axis, profile) {
+  return candidates.some((item) => isSuccessfulEvidence(item) && itemAssertionPassed(item, axis, profile))
 }
 
 function axisPassed(candidates, axis, kind, contractCase = null) {
@@ -302,6 +306,7 @@ function approvedKnownIssueMatches(item, contractCase, platform) {
 }
 
 function axisWaivedByApprovedKnownIssue(candidates, contractCase, platform, axis) {
+  if (nonWaivableValidationAxes.has(axis)) return false
   const declared = approvedKnownIssueForPlatform(contractCase, platform)
   if (declared == null || !declared.waivedAxes.includes(axis)) return false
   return candidates.some((item) => approvedKnownIssueMatches(item, contractCase, platform))
@@ -314,6 +319,7 @@ function completionPassedByApprovedKnownIssue(candidates, contractCase, platform
 }
 
 function approvedEventKnownIssueWaiver(reportCases, manifest, contractEvent, platform, axis) {
+  if (nonWaivableValidationAxes.has(axis)) return null
   const declared = approvedKnownIssueForPlatform(contractEvent, platform)
   if (declared == null
     || !declared.waivedAxes.includes(axis)
@@ -332,6 +338,7 @@ function approvedEventKnownIssueWaiver(reportCases, manifest, contractEvent, pla
 }
 
 function callableKnownIssueWaiver(contractCase, platform, axis) {
+  if (nonWaivableValidationAxes.has(axis)) return null
   const declared = approvedKnownIssueForPlatform(contractCase, platform)
   if (declared == null || !declared.waivedAxes.includes(axis)) return null
   return {
@@ -468,23 +475,70 @@ function callableEventCorrelationResult(candidates, contractCase) {
   return { passed: missing.length === 0 && invalid.length === 0 && coherentWindow, missing, invalid, undeclared: false }
 }
 
-function negativeEvidencePassed(candidates, disposition, contractCase) {
+function negativeProfileEvidencePassed(candidates, profile) {
   return candidates.some((item) => {
-    if (!isSuccessfulEvidence(item) || item.invoked !== true || item.resolved !== false || item.negativeValidated !== true) {
-      return false
-    }
-    const profile = typeof item.negativeProfile === 'string' ? item.negativeProfile : ''
-    if (profile.length === 0) {
-      return false
-    }
-    if (disposition === 'platform-unsupported' && profile !== 'platform-unsupported') {
-      return false
-    }
-    if (Array.isArray(contractCase.negativeProfiles) && contractCase.negativeProfiles.length > 0 && !contractCase.negativeProfiles.includes(profile)) {
-      return false
-    }
-    return typeof item.errCode === 'number' && Number.isFinite(item.errCode)
+    if (!isSuccessfulEvidence(item)
+      || item.invoked !== true
+      || item.negativeValidated !== true
+      || item.negativeProfile !== profile) return false
+    if (item.resolved === false) return typeof item.errCode === 'number' && Number.isFinite(item.errCode)
+    return item.resolved === true && itemAssertionPassed(item, 'negative', profile)
   })
+}
+
+function negativeEvidencePassed(candidates, disposition, contractCase) {
+  const declaredProfiles = Array.isArray(contractCase.negativeProfiles)
+    ? contractCase.negativeProfiles.filter((profile) => typeof profile === 'string' && profile.length > 0)
+    : []
+  if (disposition === 'platform-unsupported') {
+    return declaredProfiles.includes('platform-unsupported')
+      && negativeProfileEvidencePassed(candidates, 'platform-unsupported')
+  }
+  return declaredProfiles.some((profile) => negativeProfileEvidencePassed(candidates, profile))
+}
+
+function requiredNegativeEvidenceResult(candidates, contractCase) {
+  const profiles = Array.isArray(contractCase.negativeProfiles)
+    ? [...new Set(contractCase.negativeProfiles.filter((profile) => typeof profile === 'string' && profile.length > 0))]
+    : []
+  if (profiles.length === 0) return { passed: false, missing: [], undeclared: true }
+  const missing = profiles.filter((profile) => !negativeProfileEvidencePassed(candidates, profile))
+  return { passed: missing.length === 0, missing, undeclared: false }
+}
+
+function cleanupEvidencePassed(candidates, contractCase) {
+  const action = typeof contractCase.cleanupAction === 'string' ? contractCase.cleanupAction : ''
+  if (action.length === 0) return false
+  return candidates.some((item) => isSuccessfulEvidence(item)
+    && item.invoked === true
+    && item.resolved === true
+    && item.cleanupValidated === true
+    && item.cleanupAction === action
+    && itemAssertionPassed(item, 'cleanup', action))
+}
+
+function knownIssueDeclarationIssues(contractCase, platform, kind) {
+  if (!isRecord(contractCase.approvedKnownIssue)
+    || !Object.prototype.hasOwnProperty.call(contractCase.approvedKnownIssue, platform)) return []
+  const declared = contractCase.approvedKnownIssue[platform]
+  if (!isRecord(declared)
+    || typeof declared.code !== 'string'
+    || declared.code.length === 0
+    || !Array.isArray(declared.waivedAxes)
+    || declared.waivedAxes.length === 0) {
+    return [issue(String(contractCase.caseId), 'known-issue', 'malformed-known-issue-waiver', `${kind} known-issue waiver on ${platform} must declare a code and at least one waived axis`)]
+  }
+  const requiredAxes = Array.isArray(contractCase.validationAxes) ? contractCase.validationAxes : []
+  const invalidAxes = declared.waivedAxes.filter((axis) => typeof axis !== 'string'
+    || !requiredAxes.includes(axis)
+    || nonWaivableValidationAxes.has(axis))
+  if (invalidAxes.length === 0) return []
+  return [issue(
+    String(contractCase.caseId),
+    'known-issue',
+    'invalid-known-issue-waiver-axis',
+    `${kind} known-issue waiver on ${platform} cannot waive undeclared, negative, or cleanup axes: ${invalidAxes.map(String).join(', ')}`,
+  )]
 }
 
 function issue(caseId, axis, rule, detail) {
@@ -535,6 +589,7 @@ function validateAutomationEvidence(input) {
     checkedCallables += 1
     const before = issues.length
     const waiversBefore = knownIssueWaivers.length
+    issues.push(...knownIssueDeclarationIssues(contractCase, platform, 'callable'))
     if (disposition === 'capability-negative' || disposition === 'platform-unsupported') {
       if (!negativeEvidencePassed(candidates, disposition, contractCase)) {
         issues.push(issue(
@@ -549,6 +604,31 @@ function validateAutomationEvidence(input) {
       const approvedKnownIssueCandidates = candidates.filter((item) => approvedKnownIssueMatches(item, contractCase, platform))
       const evidenceCandidates = approvedKnownIssueCandidates.length > 0 ? approvedKnownIssueCandidates : candidates
       for (const axis of axes) {
+        if (axis === 'negative') {
+          const negative = requiredNegativeEvidenceResult(candidates, contractCase)
+          if (!negative.passed) {
+            issues.push(issue(
+              String(contractCase.caseId),
+              'negative',
+              negative.undeclared ? 'negative-profiles-undeclared' : 'missing-negative-profile-evidence',
+              negative.undeclared
+                ? `${contractCase.apiName} has no declared negative profiles`
+                : `${contractCase.apiName} has no passing evidence for negative profiles: ${negative.missing.join(', ')}`,
+            ))
+          }
+          continue
+        }
+        if (axis === 'cleanup') {
+          if (!cleanupEvidencePassed(candidates, contractCase)) {
+            issues.push(issue(
+              String(contractCase.caseId),
+              'cleanup',
+              'missing-cleanup-evidence',
+              `${contractCase.apiName} has no passing cleanup evidence for generated action ${String(contractCase.cleanupAction)}`,
+            ))
+          }
+          continue
+        }
         if (axisWaivedByApprovedKnownIssue(evidenceCandidates, contractCase, platform, axis)) {
           knownIssueWaivers.push(callableKnownIssueWaiver(contractCase, platform, axis))
           continue
@@ -626,10 +706,11 @@ function validateAutomationEvidence(input) {
       continue
     }
     const requiresNegativeEvidence = disposition === 'platform-unsupported' || disposition === 'capability-negative'
-    const candidates = requiresNegativeEvidence
-      ? reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName)
-      : reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
-    if (!fullRun && candidates.length === 0) {
+    const caseCandidates = reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName)
+    const eventCandidates = reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
+    const candidates = requiresNegativeEvidence ? caseCandidates : eventCandidates
+    const allCandidates = [...eventCandidates, ...caseCandidates]
+    if (!fullRun && allCandidates.length === 0) {
       continue
     }
     if (!requiresNegativeEvidence
@@ -640,6 +721,7 @@ function validateAutomationEvidence(input) {
     checkedEvents += 1
     const before = issues.length
     const waiversBefore = knownIssueWaivers.length
+    issues.push(...knownIssueDeclarationIssues(contractEvent, platform, 'event'))
     if (disposition === 'platform-unsupported') {
       if (!negativeEvidencePassed(candidates, disposition, contractEvent)) {
         issues.push(issue(
@@ -652,6 +734,31 @@ function validateAutomationEvidence(input) {
     } else if (disposition === 'required') {
       const axes = Array.isArray(contractEvent.validationAxes) ? contractEvent.validationAxes : []
       for (const axis of axes) {
+        if (axis === 'negative') {
+          const negative = requiredNegativeEvidenceResult(caseCandidates, contractEvent)
+          if (!negative.passed) {
+            issues.push(issue(
+              String(contractEvent.caseId),
+              'negative',
+              negative.undeclared ? 'negative-profiles-undeclared' : 'missing-negative-profile-evidence',
+              negative.undeclared
+                ? `${contractEvent.eventName} has no declared negative profiles`
+                : `${contractEvent.eventName} has no passing evidence for negative profiles: ${negative.missing.join(', ')}`,
+            ))
+          }
+          continue
+        }
+        if (axis === 'cleanup') {
+          if (!cleanupEvidencePassed(allCandidates, contractEvent)) {
+            issues.push(issue(
+              String(contractEvent.caseId),
+              'cleanup',
+              'missing-cleanup-evidence',
+              `${contractEvent.eventName} has no passing cleanup evidence for generated action ${String(contractEvent.cleanupAction)}`,
+            ))
+          }
+          continue
+        }
         if (axis === 'structure' && isRecord(input.responseSchemas)) {
           const structure = eventStructureResult(candidates, contractEvent.eventName, input.responseSchemas)
           if (!structure.passed) {

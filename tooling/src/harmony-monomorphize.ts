@@ -66,7 +66,7 @@ function mappedName(type: string): string {
 
 function renderWrap(type: string): string {
   const name = wrapName(type)
-  return `function ${name}(promise : Promise<${type}>, method : string) : Promise<${type}> {\n  return new Promise<${type}>((resolve, reject) => {\n    promise.then((value : ${type}) => {\n      resolve(value)\n    }).catch((reason : ESObject | null) => {\n      rejectNativeError(reject, -1, readErrorMessage(reason, method))\n    })\n  })\n}`
+  return `function ${name}(promise : Promise<${type}>, method : string) : Promise<${type}> {\n  return new Promise<${type}>((resolve, reject) => {\n    promise.then((value : ${type}) => {\n      resolve(value)\n    }).catch((reason : ESObject | null) => {\n      if (reason instanceof UniError) {\n        reject(reason)\n        return\n      }\n      rejectNativeError(reject, -1, readErrorMessage(reason, method))\n    })\n  })\n}`
 }
 
 function renderReject(type: string): string {

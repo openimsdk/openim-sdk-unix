@@ -649,6 +649,33 @@ test('typed response decoders reject parser failures instead of leaving Promises
   }
 })
 
+test('scalar response decoders reject partial, non-finite, and ambiguous values', () => {
+  const numericPattern = /^[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?$/
+  for (const value of ['0', '-12', '+12', '12.', '.5', '-0.25', '6.02e23', '1E-9']) {
+    assert.equal(numericPattern.test(value), true, `${value} should be a complete numeric response`)
+    assert.equal(Number.isFinite(parseFloat(value)), true)
+  }
+  for (const value of ['12junk', 'NaN', 'Infinity', '-Infinity', '1e999', ' 12', '12 ', '.', '+']) {
+    assert.equal(
+      numericPattern.test(value) && Number.isFinite(parseFloat(value)),
+      false,
+      `${value} should be rejected`,
+    )
+  }
+
+  for (const platform of ['android', 'ios'] as const) {
+    const source = generateIndex(root, contract, platform)
+    assert.match(source, /function isValidNativeNumberValue\(data : string\) : boolean/)
+    assert.match(source, /\^\[-\+\]\?\(\?:\[0-9\]\+\(\?:\\\.\[0-9\]\*\)\?\|\\\.\[0-9\]\+\)\(\?:\[eE\]\[-\+\]\?\[0-9\]\+\)\?\$/)
+    assert.match(source, /isFinite\(parseFloat\(data\)\)/)
+    assert.match(source, /function isValidNativeBooleanValue\(data : string\) : boolean \{ return data == 'true' \|\| data == 'false' \}/)
+    assert.match(source, /function resolveNumberNative\([^\n]+isValidNativeNumberValue\(data\) == false[^\n]+returned invalid number response/)
+    assert.match(source, /function resolveBooleanNative\([^\n]+isValidNativeBooleanValue\(data\) == false[^\n]+returned invalid boolean response/)
+    assert.doesNotMatch(source, /throw new Error\('(?:Invalid|Non-finite) native (?:number|boolean) response:/)
+    assert.doesNotMatch(source, /return data\.length > 0 \? parseFloat\(data\) : null/)
+  }
+})
+
 test('shared compiler models Enterprise aliases and path-dispatched creators', () => {
   const extended = structuredClone(contract)
   extended.callables.push(

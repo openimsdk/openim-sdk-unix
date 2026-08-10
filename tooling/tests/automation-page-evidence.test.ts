@@ -27,6 +27,7 @@ test('runtime cases carry explicit contract evidence instead of deriving validat
     'semanticValidated',
     'sideEffectValidated',
     'eventCorrelated',
+    'cleanupValidated',
   ]) {
     assert.match(page, new RegExp(`${field} : boolean`))
   }
@@ -70,6 +71,33 @@ test('callable semantic and side-effect evidence carries generated profile asser
   assert.doesNotMatch(subscription, /'registry-observation'/)
   assert.doesNotMatch(page, /function (?:automationNameContainsAny|automationNameStartsWithAny|readAutomationSemanticProfile|readAutomationSideEffectProbe)\(/)
   assert.match(functionSource('recordAutomationCase'), /assertions: checked\.assertions/)
+})
+
+test('cleanup evidence is explicit, action-bound, and recorded only at executed cleanup sites', () => {
+  assert.match(page, /cleanupAction : string/)
+  const evidence = functionSource('cleanupAutomationEvidence')
+  assert.match(evidence, /createAutomationProfileAssertion\('cleanup', cleanupAction, rule/)
+  assert.match(evidence, /cleanupValidated: ok/)
+  assert.match(evidence, /cleanupAction: cleanupAction/)
+
+  const recorder = functionSource('recordAutomationCleanupEvidence')
+  assert.match(recorder, /cleanupAutomationEvidence\(cleanupAction, rule, expected, actual, ok\)/)
+  assert.match(functionSource('recordAutomationCase'), /cleanupValidated: checked\.cleanupValidated/)
+  assert.match(functionSource('recordAutomationCase'), /cleanupAction: checked\.cleanupAction/)
+
+  const cleanup = functionSource('runAutomationCleanupBeforeSummary')
+  for (const exactRecord of [
+    "'off', 'none'",
+    "'offAll', 'none'",
+    "'logout', 'none'",
+    "'login', 'logout()'",
+    "'unInitSDK', 'none'",
+    "'initSDK', 'unInitSDK()'",
+    "'onConnecting', 'off(subscription)'",
+  ]) {
+    assert.match(cleanup, new RegExp(`recordAutomationCleanupEvidence\\('cleanup', ${exactRecord.replace(/[()]/g, '\\$&')}`))
+  }
+  assert.doesNotMatch(page, /cleanupValidated:\s*true/)
 })
 
 test('write-only app mutations are required and carry server acknowledgement evidence', () => {

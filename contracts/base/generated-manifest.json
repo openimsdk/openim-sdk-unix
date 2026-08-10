@@ -10,13 +10,13 @@
     },
     {
       "path": "sdk-src/uts/app-android/index.template.uts",
-      "sha256": "a4ad0987b262089c3fd3af9210d3a49dd89cd251e65d10e5beb5d93fbae85e81",
-      "bytes": 23200
+      "sha256": "5b65bf7cc3e3980ee3f5183e3b20e71a1ed04f8131cbe4b0a5a19eed15c18e69",
+      "bytes": 23541
     },
     {
       "path": "sdk-src/uts/app-ios/index.template.uts",
-      "sha256": "830dcb8ca6142ce3187ab3efc7d4744fffd9a0c64bfdddb90e7e7c1edc289f06",
-      "bytes": 23848
+      "sha256": "96953a84fd7564ce1a561cadd3259e2bd50a9fbb0019e59715afb85e23367e8b",
+      "bytes": 24189
     },
     {
       "path": "sdk-src/uts/app-android/events.prelude.uts",
@@ -70,8 +70,8 @@
     },
     {
       "path": "tooling/src/test-contract.ts",
-      "sha256": "1b20dd8a13cf5a8bb0538d35c8a34400330cacd58595c41bb45fbacb3dc68a6c",
-      "bytes": 28171
+      "sha256": "4020010882cfdd18e26371eb43a3758c297fc15552e37f491a93124b089b145e",
+      "bytes": 28514
     },
     {
       "path": "tooling/src/test-profile.ts",
@@ -82,8 +82,8 @@
   "outputs": [
     {
       "path": "pages/index/openim-automation-profiles.uts",
-      "sha256": "6ad68c9f4c0907295394465161ef66ac139847d98c1457c64f767921a346d410",
-      "bytes": 29474
+      "sha256": "975d36ab8f4ae8abf659b8a9ec51b569d5aa84c85ced6b175c610b3365422140",
+      "bytes": 33177
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/interface.uts",
@@ -92,13 +92,13 @@
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/index.uts",
-      "sha256": "c401af70ae8d83da898e6aad531a9937e1cb7d6c85d0f1754524e471f2f8e8cc",
-      "bytes": 88339
+      "sha256": "f8709b6de64f743b9f2278749afdf4d2f36aabd2b66d26e880c958f38a17effe",
+      "bytes": 88680
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts",
-      "sha256": "3620102091f8f3faeba319f1bcdc046aeb9cbcb6764e7e0a98f4aa98b5c537dd",
-      "bytes": 89765
+      "sha256": "8c5fa16ec4b4e10360836876ee90998c1456a3f9acf5cf480598fae0c29b413b",
+      "bytes": 90106
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/events.uts",
@@ -152,8 +152,8 @@
     },
     {
       "path": "contracts/base/test-disposition.json",
-      "sha256": "fe48e257d2e1ec7df41a8fee30c3e2db581e6cca2f63dca74a6d802e37f82ace",
-      "bytes": 187471
+      "sha256": "20331f164ac0eaad8e41d3295d20fe73ae5d46dc42bc518d15638c46302d95fe",
+      "bytes": 195622
     }
   ]
 }

@@ -27,17 +27,19 @@ export interface ResponseSchemaDocument {
 export type TestDisposition = 'required' | 'capability-gated' | 'platform-unsupported' | 'negative-only' | 'diagnostic-only'
 export type EventDeliveryDisposition = 'required' | 'passive-only' | 'platform-unsupported'
 export type PlatformTestDisposition = 'required' | 'capability-negative' | 'platform-unsupported' | 'not-in-edition'
-export type CallableValidationAxis = 'completion' | 'structure' | 'semantic' | 'side-effect' | 'event'
-export type EventValidationAxis = 'delivery' | 'structure' | 'semantic' | 'ordering' | 'epoch'
+export type CallableValidationAxis = 'completion' | 'structure' | 'semantic' | 'side-effect' | 'event' | 'negative' | 'cleanup'
+export type EventValidationAxis = 'delivery' | 'structure' | 'semantic' | 'ordering' | 'epoch' | 'negative' | 'cleanup'
+export type WaivableCallableValidationAxis = Exclude<CallableValidationAxis, 'negative' | 'cleanup'>
+export type WaivableEventValidationAxis = Exclude<EventValidationAxis, 'negative' | 'cleanup'>
 export interface ApprovedKnownIssueDisposition {
   code: string
-  waivedAxes: CallableValidationAxis[]
+  waivedAxes: WaivableCallableValidationAxis[]
 }
 
 export interface ApprovedEventKnownIssueDisposition {
   code: string
   evidenceApiName: string
-  waivedAxes: EventValidationAxis[]
+  waivedAxes: WaivableEventValidationAxis[]
 }
 
 export interface TestDispositionDocument {
@@ -363,12 +365,13 @@ function cleanupAction(callable: ContractCallable, probe: string): string {
 function callableValidationAxes(callable: ContractCallable, probe: string, expectedEvents: string[]): CallableValidationAxis[] {
   const axes: CallableValidationAxis[] = ['completion']
   if (callable.role === 'event-control') {
-    axes.push('semantic', 'side-effect')
+    axes.push('semantic', 'side-effect', 'negative', 'cleanup')
     return axes
   }
   axes.push('structure', 'semantic')
   if (probe !== 'none') axes.push('side-effect')
   if (expectedEvents.length > 0 && callable.role === 'operation') axes.push('event')
+  axes.push('negative', 'cleanup')
   return axes
 }
 
@@ -452,7 +455,7 @@ function buildDisposition(
         expectedEvents: [event.name],
         negativeProfiles: executableNegativeProfiles(['off-subscription', 'off-all-event-name', 'stale-epoch'], platforms),
         cleanupAction: 'off(subscription)',
-        validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch'],
+        validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch', 'negative', 'cleanup'],
       }
     }),
   }

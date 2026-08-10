@@ -24,6 +24,7 @@ test('classifies every public callable and event without gaps', () => {
   assert.equal(disposition.callables.some((item) => item.responseSchema.root !== `callables.${item.apiName}.schema`), false)
   assert.equal(disposition.callables.some((item) => item.semanticProfile.length === 0 || item.sideEffectProbe.length === 0), false)
   assert.equal(disposition.callables.some((item) => item.validationAxes.length === 0 || item.negativeProfiles.length === 0), false)
+  assert.equal(disposition.callables.some((item) => !item.validationAxes.includes('negative') || !item.validationAxes.includes('cleanup')), false)
   assert.equal(disposition.callables.some((item) => item.cleanupAction.length === 0), false)
   assert.equal(contract.callables.some((item) => {
     const profile = (item as unknown as { testProfile?: { semanticProfile?: string; sideEffectProbe?: string } }).testProfile
@@ -34,6 +35,7 @@ test('classifies every public callable and event without gaps', () => {
   assert.equal(disposition.events.some((item) => item.eventSchema.root !== `events.${item.eventName}.arguments`), false)
   assert.equal(disposition.events.some((item) => item.semanticProfile.length === 0 || item.sideEffectProbe.length === 0), false)
   assert.equal(disposition.events.some((item) => item.validationAxes.length === 0 || item.negativeProfiles.length === 0), false)
+  assert.equal(disposition.events.some((item) => !item.validationAxes.includes('negative') || !item.validationAxes.includes('cleanup')), false)
   assert.equal(disposition.events.some((item) => item.cleanupAction !== 'off(subscription)'), false)
 })
 
@@ -63,7 +65,7 @@ test('case manifest rejects a callable whose reviewed profile is missing', () =>
 test('case manifest assigns concrete semantic and side-effect probes to P0 flows', () => {
   const manifest = buildPublicTestDisposition(contract)
   const byAPI = new Map(manifest.callables.map((item) => [item.apiName, item]))
-  assert.deepEqual(byAPI.get('getAdvancedHistoryMessageList')?.validationAxes, ['completion', 'structure', 'semantic'])
+  assert.deepEqual(byAPI.get('getAdvancedHistoryMessageList')?.validationAxes, ['completion', 'structure', 'semantic', 'negative', 'cleanup'])
   assert.equal(byAPI.get('getAdvancedHistoryMessageList')?.semanticProfile, 'pagination-integrity')
   assert.equal(byAPI.get('sendMessage')?.semanticProfile, 'message-delivery-correlation')
   assert.equal(byAPI.get('sendMessage')?.sideEffectProbe, 'cross-account-event-observation')
@@ -76,10 +78,10 @@ test('case manifest assigns concrete semantic and side-effect probes to P0 flows
   assert.equal(byAPI.get('offAll')?.sideEffectProbe, 'registry-observation')
   assert.equal(byAPI.get('getLoginStatus')?.sideEffectProbe, 'none')
   assert.equal(byAPI.get('getLoginUserID')?.sideEffectProbe, 'none')
-  assert.deepEqual(byAPI.get('getLoginStatus')?.validationAxes, ['completion', 'structure', 'semantic'])
+  assert.deepEqual(byAPI.get('getLoginStatus')?.validationAxes, ['completion', 'structure', 'semantic', 'negative', 'cleanup'])
   assert.deepEqual(
     byAPI.get('onConnecting')?.validationAxes,
-    ['completion', 'structure', 'semantic', 'side-effect'],
+    ['completion', 'structure', 'semantic', 'side-effect', 'negative', 'cleanup'],
     'event subscriptions validate the returned registry handle; event delivery is verified by the event case',
   )
 
@@ -122,7 +124,7 @@ test('case manifest makes edition boundaries and cancelled subscriptions explici
   const event = manifest.events.find((item) => item.eventName === 'onRecvNewMessage')
   assert.deepEqual(event?.expectedEvents, ['onRecvNewMessage'])
   assert.deepEqual(event?.negativeProfiles, ['off-subscription', 'off-all-event-name', 'stale-epoch'])
-  assert.deepEqual(event?.validationAxes, ['delivery', 'structure', 'semantic', 'ordering', 'epoch'])
+  assert.deepEqual(event?.validationAxes, ['delivery', 'structure', 'semantic', 'ordering', 'epoch', 'negative', 'cleanup'])
 })
 
 test('platform-unsupported surfaces allow their executable negative profile', () => {

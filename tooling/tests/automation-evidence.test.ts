@@ -28,6 +28,8 @@ function manifest() {
         semanticProfile: 'message-delivery-correlation',
         sideEffectProbe: 'cross-account-event-observation',
         expectedEvents: ['onSendMessageProgress', 'onRecvNewMessage'],
+        negativeProfiles: ['uninitialized', 'invalid-input'],
+        cleanupAction: 'fixture-cleanup',
         validationAxes: ['completion', 'structure', 'semantic', 'side-effect', 'event'],
       },
       {
@@ -36,6 +38,8 @@ function manifest() {
         priority: 'P2',
         capability: 'speech',
         platforms: { android: 'capability-negative', ios: 'capability-negative', harmony: 'capability-negative' },
+        negativeProfiles: ['feature-disabled-1080', 'invalid-input'],
+        cleanupAction: 'none',
         validationAxes: ['completion', 'structure', 'semantic'],
       },
       {
@@ -43,6 +47,8 @@ function manifest() {
         apiName: 'updateFcmToken',
         priority: 'P1',
         platforms: { android: 'required', ios: 'required', harmony: 'platform-unsupported' },
+        negativeProfiles: ['uninitialized', 'invalid-input', 'platform-unsupported'],
+        cleanupAction: 'none',
         validationAxes: ['completion', 'structure', 'semantic'],
       },
     ],
@@ -53,6 +59,8 @@ function manifest() {
         priority: 'P0',
         deliveryDisposition: 'required',
         platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        negativeProfiles: ['off-subscription', 'off-all-event-name', 'stale-epoch', 'platform-unsupported'],
+        cleanupAction: 'off(subscription)',
         validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch'],
       },
     ],
@@ -750,6 +758,65 @@ test('approved known issues do not waive undeclared callable axes', () => {
   assert.deepEqual(result.issues.map((issue) => issue.axis), ['structure'])
 })
 
+test('approved known issues cannot waive negative or cleanup validation', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'enterprise',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/setMessageLocalContent',
+        apiName: 'setMessageLocalContent',
+        platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        validationAxes: ['completion', 'negative', 'cleanup'],
+        negativeProfiles: ['invalid-input'],
+        cleanupAction: 'restore-via-read-before-write',
+        approvedKnownIssue: {
+          harmony: {
+            code: 'harmony-set-message-local-content-uncertified',
+            waivedAxes: ['cleanup'],
+          },
+        },
+      }],
+      events: [],
+    },
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'setMessageLocalContent',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        cleanupValidated: true,
+        cleanupAction: 'restore-via-read-before-write',
+        assertions: [{
+          axis: 'cleanup',
+          profile: 'restore-via-read-before-write',
+          rule: 'original-content-restored',
+          expected: 'original content',
+          actual: 'original content',
+          ok: true,
+        }],
+      }, {
+        apiName: 'setMessageLocalContent',
+        ok: true,
+        invoked: true,
+        resolved: false,
+        negativeValidated: true,
+        negativeProfile: 'invalid-input',
+        errCode: 10002,
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, false)
+  assert.deepEqual(result.issues.map((item) => [item.axis, item.rule]), [
+    ['known-issue', 'invalid-known-issue-waiver-axis'],
+  ])
+  assert.deepEqual(result.knownIssueWaivers, [])
+})
+
 test('event known-issue waivers require an exact source issue and preserve non-waived axes', () => {
   const eventManifest = {
     schemaVersion: 2,
@@ -1268,6 +1335,227 @@ test('capability and unsupported dispositions require executable negative eviden
   })
   assert.equal(verified.passed, true)
   assert.deepEqual(verified.issues, [])
+})
+
+test('required callables fail when positive axes pass but negative or cleanup evidence is missing', () => {
+  const requiredManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 1, events: 0 },
+    callables: [{
+      caseId: 'api/getLoginStatus',
+      apiName: 'getLoginStatus',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      semanticProfile: 'response-domain',
+      sideEffectProbe: 'none',
+      expectedEvents: [],
+      negativeProfiles: ['uninitialized', 'invalid-input'],
+      cleanupAction: 'none',
+      validationAxes: ['completion', 'structure', 'semantic', 'negative', 'cleanup'],
+    }],
+    events: [],
+  }
+  const positiveCase = {
+    apiName: 'getLoginStatus',
+    ok: true,
+    invoked: true,
+    resolved: true,
+    responseEvidence: true,
+    responseDetail: '1',
+    structureValidated: true,
+    semanticValidated: true,
+    assertions: [{
+      axis: 'semantic',
+      profile: 'response-domain',
+      rule: 'known-login-status',
+      expected: 'known status',
+      actual: '1',
+      ok: true,
+    }],
+  }
+  const input = {
+    manifest: requiredManifest,
+    platform: 'android',
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: { getLoginStatus: { codec: 'number', schema: { kind: 'number' } } },
+      schemas: {},
+    },
+  }
+
+  const missing = validateAutomationEvidence({
+    ...input,
+    report: { cases: [positiveCase], events: [] },
+  })
+  assert.equal(missing.passed, false)
+  assert.deepEqual(missing.issues.map((item) => [item.axis, item.rule]), [
+    ['negative', 'missing-negative-profile-evidence'],
+    ['cleanup', 'missing-cleanup-evidence'],
+  ])
+
+  const complete = validateAutomationEvidence({
+    ...input,
+    report: {
+      cases: [
+        {
+          ...positiveCase,
+          cleanupValidated: true,
+          cleanupAction: 'none',
+          assertions: [
+            ...positiveCase.assertions,
+            { axis: 'cleanup', profile: 'none', rule: 'no-cleanup-required', expected: 'none', actual: 'none', ok: true },
+          ],
+        },
+        ...['uninitialized', 'invalid-input'].map((negativeProfile, index) => ({
+          apiName: 'getLoginStatus',
+          ok: true,
+          invoked: true,
+          resolved: false,
+          negativeValidated: true,
+          negativeProfile,
+          errCode: 10000 + index,
+        })),
+      ],
+      events: [],
+    },
+  })
+  assert.equal(complete.passed, true)
+  assert.deepEqual(complete.issues, [])
+})
+
+test('cleanup evidence must come from a successful executed and resolved case', () => {
+  const cleanupAssertion = {
+    axis: 'cleanup',
+    profile: 'none',
+    rule: 'no-cleanup-required',
+    expected: 'none',
+    actual: 'none',
+    ok: true,
+  }
+  const baseCase = {
+    apiName: 'getLoginStatus',
+    ok: true,
+    invoked: true,
+    resolved: true,
+    cleanupValidated: true,
+    cleanupAction: 'none',
+    assertions: [cleanupAssertion],
+  }
+  const validate = (caseEvidence: Record<string, unknown>) => validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'public',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/getLoginStatus',
+        apiName: 'getLoginStatus',
+        platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+        cleanupAction: 'none',
+        validationAxes: ['cleanup'],
+      }],
+      events: [],
+    },
+    platform: 'android',
+    report: { cases: [caseEvidence], events: [] },
+  })
+
+  assert.equal(validate({ ...baseCase, ok: false }).passed, false)
+  assert.equal(validate({ ...baseCase, skipped: true }).passed, false)
+  assert.equal(validate({ ...baseCase, invoked: false }).passed, false)
+  assert.equal(validate({ ...baseCase, resolved: false }).passed, false)
+  assert.equal(validate(baseCase).passed, true)
+})
+
+test('required events validate every declared negative profile and their exact cleanup action', () => {
+  const requiredManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 0, events: 1 },
+    callables: [],
+    events: [{
+      caseId: 'event/onRecvNewMessage',
+      eventName: 'onRecvNewMessage',
+      deliveryDisposition: 'required',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      negativeProfiles: ['off-subscription', 'stale-epoch'],
+      cleanupAction: 'off(subscription)',
+      validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch', 'negative', 'cleanup'],
+    }],
+  }
+  const positiveEvent = {
+    name: 'onRecvNewMessage',
+    count: 1,
+    deliveryValidated: true,
+    structureValidated: true,
+    semanticValidated: true,
+    orderingValidated: true,
+    epochValidated: true,
+  }
+  const validate = (cases: Array<Record<string, unknown>>, event: Record<string, unknown> = positiveEvent) => validateAutomationEvidence({
+    manifest: requiredManifest,
+    platform: 'android',
+    report: { cases, events: [event] },
+  })
+
+  const missing = validate([])
+  assert.equal(missing.passed, false)
+  assert.deepEqual(missing.issues.map((item) => [item.axis, item.rule]), [
+    ['negative', 'missing-negative-profile-evidence'],
+    ['cleanup', 'missing-cleanup-evidence'],
+  ])
+
+  const negativeCases = [
+    {
+      apiName: 'onRecvNewMessage',
+      ok: true,
+      invoked: true,
+      resolved: true,
+      negativeValidated: true,
+      negativeProfile: 'off-subscription',
+      assertions: [{
+        axis: 'negative',
+        profile: 'off-subscription',
+        rule: 'callback-not-delivered',
+        expected: '0 deliveries',
+        actual: '0 deliveries',
+        ok: true,
+      }],
+    },
+    {
+      apiName: 'onRecvNewMessage',
+      ok: true,
+      invoked: true,
+      resolved: true,
+      negativeValidated: true,
+      negativeProfile: 'stale-epoch',
+      assertions: [{
+        axis: 'negative',
+        profile: 'stale-epoch',
+        rule: 'old-epoch-dropped',
+        expected: '0 deliveries',
+        actual: '0 deliveries',
+        ok: true,
+      }],
+    },
+  ]
+  const complete = validate([...negativeCases, {
+    apiName: 'onRecvNewMessage',
+    ok: true,
+    invoked: true,
+    resolved: true,
+    cleanupValidated: true,
+    cleanupAction: 'off(subscription)',
+    assertions: [{
+      axis: 'cleanup',
+      profile: 'off(subscription)',
+      rule: 'subscription-removed',
+      expected: 'absent',
+      actual: 'absent',
+      ok: true,
+    }],
+  }])
+  assert.equal(complete.passed, true)
+  assert.deepEqual(complete.issues, [])
 })
 
 test('event PASS requires every generated event axis', () => {

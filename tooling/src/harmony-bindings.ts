@@ -68,10 +68,6 @@ const HARMONY_LOCAL_OR_UNSUPPORTED_OPERATIONS = new Set([
   'getLoginUserID',
   'getOpenIMDataPath',
   'updateFcmToken',
-  'updateToken',
-  'translateText',
-  'getArchivedConversationList',
-  'translateMessage',
 ])
 
 const HARMONY_SPECIAL_METHODS = new Set([
@@ -114,16 +110,16 @@ export function harmonyTypedMethods(privateRoot: string): HarmonyTypedMethod[] {
       declaration: match[0].trim(),
     })
   }
-  assert(methods.length === 142, `Expected 142 typed Harmony Promise methods, got ${methods.length}`)
+  assert(methods.length === 146, `Expected 146 typed Harmony Promise methods from the locked Licensed HAR, got ${methods.length}`)
   return methods
 }
 
 export function harmonyContractMethodBindings(privateRoot: string): HarmonyContractMethodBinding[] {
   const base = JSON.parse(readFileSync(join(privateRoot, 'contracts/base/contract.json'), 'utf8')) as {
-    callables: Array<{ id: number; name: string; role: string }>
+    callables: Array<{ id: number; name: string; role: string; binding?: { harmony?: { kind: string } } }>
   }
   const delta = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8')) as {
-    callables: Array<{ id: number; name: string; role: string }>
+    callables: Array<{ id: number; name: string; role: string; binding?: { harmony?: { kind: string } } }>
   }
   const nativeMethods = new Set(harmonyTypedMethods(privateRoot).map((method) => method.name))
   const bindings: HarmonyContractMethodBinding[] = []
@@ -131,7 +127,9 @@ export function harmonyContractMethodBindings(privateRoot: string): HarmonyContr
   for (const callable of [...base.callables, ...delta.callables]) {
     if (callable.role !== 'operation') continue
     const methodName = HARMONY_METHOD_ALIASES[callable.name] ?? callable.name
-    if (nativeMethods.has(methodName)) {
+    if (callable.binding?.harmony?.kind === 'unsupported') {
+      continue
+    } else if (nativeMethods.has(methodName)) {
       bindings.push({ callableID: callable.id, callableName: callable.name, methodName })
     } else if (!HARMONY_LOCAL_OR_UNSUPPORTED_OPERATIONS.has(callable.name)) {
       missing.push(`${callable.id}/${callable.name}->${methodName}`)
@@ -277,9 +275,11 @@ export function renderHarmonyDriverBindings(privateRoot: string): string {
   const source = readFileSync(driverPath, 'utf8')
   const methods = harmonyTypedMethods(privateRoot)
   const bindings = harmonyContractMethodBindings(privateRoot)
+  const boundMethodNames = new Set(bindings.map((binding) => binding.methodName))
+  const generatedMethods = methods.filter((method) => boundMethodNames.has(method.name))
   const manualImports = manualHarImports(source)
   const generatedImports = new Set<string>()
-  for (const method of methods) {
+  for (const method of generatedMethods) {
     if (method.requestType != null && !manualImports.has(method.requestType)) generatedImports.add(method.requestType)
     if (!manualImports.has(method.responseType)) generatedImports.add(method.responseType)
   }
@@ -288,7 +288,7 @@ export function renderHarmonyDriverBindings(privateRoot: string): string {
     ? ''
     : `import {\n${importNames.map((name) => `  ${name}`).join(',\n')}\n} from '@openimsdk/imsdk'\n`
   const withImports = replaceRegion(source, IMPORT_START, IMPORT_END, importBlock)
-  return replaceRegion(withImports, OPERATIONS_START, OPERATIONS_END, renderOperations(methods, bindings, harPackageVersion(privateRoot)))
+  return replaceRegion(withImports, OPERATIONS_START, OPERATIONS_END, renderOperations(generatedMethods, bindings, harPackageVersion(privateRoot)))
 }
 
 export function renderHarmonyOperationCodes(privateRoot: string): string {
