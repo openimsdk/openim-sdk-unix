@@ -450,6 +450,50 @@ test('cross-account social correlation uses the declared event identity field ex
     assert.equal(validate(eventName, JSON.stringify({ [identityField]: 'identity-20' })).passed, true)
     assert.equal(validate(eventName, JSON.stringify({ [identityField]: 'other', ex: 'identity-20' })).passed, false)
   }
+
+  assert.equal(
+    validate('onGroupMemberAdded', JSON.stringify({ groupID: 'group-20', userID: 'user-20' })).passed,
+    false,
+  )
+  const composite = (eventPayloadDetail: string) => validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'enterprise',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/acceptGroupApplication',
+        apiName: 'acceptGroupApplication',
+        platforms: { android: 'required', ios: 'required', harmony: 'required' },
+        expectedEvents: ['onGroupMemberAdded'],
+        validationAxes: ['event'],
+      }],
+      events: [],
+    },
+    platform: 'harmony',
+    report: {
+      cases: [{
+        apiName: 'acceptGroupApplication',
+        ok: true,
+        eventCorrelations: [{
+          operationApiName: 'acceptGroupApplication',
+          eventName: 'onGroupMemberAdded',
+          operationSequence: 30,
+          eventSequence: 32,
+          operationEpoch: 7,
+          eventEpoch: 8,
+          payloadMatched: true,
+          correlationKind: 'cross-account-payload-identity',
+          operationTerminalSequence: 31,
+          exclusiveOperation: true,
+          payloadIdentity: 'group-20:user-20',
+          eventPayloadDetail,
+        }],
+      }],
+      events: [],
+    },
+  })
+  assert.equal(composite(JSON.stringify({ groupID: 'group-20', userID: 'user-20' })).passed, true)
+  assert.equal(composite(JSON.stringify({ groupID: 'group-20', userID: 'user-other' })).passed, false)
 })
 
 test('cross-account signaling correlation validates the exact room or custom payload identity', () => {

@@ -317,6 +317,17 @@ function eventCorrelationIdentityField(eventName) {
   return ''
 }
 
+function eventCorrelationPayloadMatches(eventName, recorded, payloadIdentity) {
+  if (!isRecord(recorded)) return false
+  if (eventName === 'onGroupMemberAdded' || eventName === 'onGroupMemberDeleted') {
+    const groupID = typeof recorded.groupID === 'string' ? recorded.groupID : ''
+    const userID = typeof recorded.userID === 'string' ? recorded.userID : ''
+    if (groupID.length > 0 && userID.length > 0 && `${groupID}:${userID}` === payloadIdentity) return true
+  }
+  const identityField = eventCorrelationIdentityField(eventName)
+  return identityField.length > 0 && recorded[identityField] === payloadIdentity
+}
+
 function validCallableEventCorrelation(value, apiName, eventName) {
   if (!isRecord(value)) return false
   if (value.operationApiName !== apiName || value.eventName !== eventName || value.payloadMatched !== true) return false
@@ -337,8 +348,7 @@ function validCallableEventCorrelation(value, apiName, eventName) {
     if (typeof value.eventPayloadDetail !== 'string' || !Number.isFinite(value.operationTerminalSequence)) return false
     if (value.operationTerminalSequence <= value.operationSequence) return false
     const recorded = normalizeRecordedValue(parseRecordedValue(value.eventPayloadDetail, 'any'), 'uts-typed-json-v1')
-    const identityField = eventCorrelationIdentityField(eventName)
-    return identityField.length > 0 && isRecord(recorded) && recorded[identityField] === value.payloadIdentity
+    return eventCorrelationPayloadMatches(eventName, recorded, value.payloadIdentity)
   }
   if (value.correlationKind === 'exclusive-operation-window') {
     return value.exclusiveOperation === true
@@ -366,8 +376,7 @@ function validCallableEventCorrelation(value, apiName, eventName) {
     if (isRecord(recorded.invitation)) {
       return recorded.invitation.roomID === value.payloadIdentity
     }
-    const identityField = eventCorrelationIdentityField(eventName)
-    return identityField.length > 0 && recorded[identityField] === value.payloadIdentity
+    return eventCorrelationPayloadMatches(eventName, recorded, value.payloadIdentity)
   }
   return false
 }
