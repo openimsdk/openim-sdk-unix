@@ -150,6 +150,14 @@ export function runtimeEvidenceFindings(
       findings.push(`${label}: contract evidence did not pass`)
     } else if (!Array.isArray(value.contractEvidence.issues) || value.contractEvidence.issues.length !== 0) {
       findings.push(`${label}: contract evidence contains issues`)
+    } else if (options.release === true) {
+      if (value.contractEvidence.strictPassed !== true) {
+        findings.push(`${label}: contract evidence is not a strict pass`)
+      }
+      if (Array.isArray(value.contractEvidence.knownIssueWaivers)
+        && value.contractEvidence.knownIssueWaivers.length > 0) {
+        findings.push(`${label}: contract evidence contains approved known-issue waivers`)
+      }
     }
     if (!isRecord(value.responseStructureEvidence) || value.responseStructureEvidence.passed !== true) {
       findings.push(`${label}: response structure evidence did not pass`)

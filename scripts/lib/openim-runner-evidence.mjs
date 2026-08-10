@@ -270,11 +270,15 @@ export function evidenceManifestSummary(projectRoot, evidencePath, evidence) {
   return {
     path: relative(projectRoot, evidencePath),
     passed: evidence.contractEvidence.passed === true,
+    strictPassed: evidence.contractEvidence.strictPassed === true,
     responseStructurePassed: evidence.responseStructureEvidence?.passed === true,
     checkedCallables: evidence.contractEvidence.checkedCallables,
     passedCallables: evidence.contractEvidence.passedCallables,
+    acceptedCallables: evidence.contractEvidence.acceptedCallables,
     checkedEvents: evidence.contractEvidence.checkedEvents,
     passedEvents: evidence.contractEvidence.passedEvents,
+    acceptedEvents: evidence.contractEvidence.acceptedEvents,
+    knownIssueWaiverCount: Array.isArray(evidence.contractEvidence.knownIssueWaivers) ? evidence.contractEvidence.knownIssueWaivers.length : 0,
     issueCount: Array.isArray(evidence.contractEvidence.issues) ? evidence.contractEvidence.issues.length : 0,
     issueSummary: formatAutomationEvidenceIssues(evidence.contractEvidence),
   }

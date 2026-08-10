@@ -8,6 +8,8 @@ const { validateAutomationEvidence } = require('../runtime/automation-evidence.c
     passed: boolean
     checkedEvents: number
     passedEvents: number
+    acceptedEvents: number
+    knownIssueWaivers: Array<{ caseId: string; axis: string; code: string; evidenceApiName: string }>
     issues: Array<{ caseId: string; axis: string; rule: string }>
   }
 }
@@ -746,6 +748,91 @@ test('approved known issues do not waive undeclared callable axes', () => {
 
   assert.equal(result.passed, false)
   assert.deepEqual(result.issues.map((issue) => issue.axis), ['structure'])
+})
+
+test('event known-issue waivers require an exact source issue and preserve non-waived axes', () => {
+  const eventManifest = {
+    schemaVersion: 2,
+    edition: 'enterprise',
+    counts: { callables: 1, events: 1 },
+    callables: [{
+      caseId: 'api/unInitSDK',
+      apiName: 'unInitSDK',
+      platforms: { android: 'required', ios: 'required', harmony: 'required' },
+      validationAxes: ['completion'],
+      approvedKnownIssue: {
+        harmony: {
+          code: 'harmony-uninit-sdk-sigsegv',
+          waivedAxes: ['completion'],
+        },
+      },
+    }],
+    events: [{
+      caseId: 'event/onRecvNewMessage',
+      eventName: 'onRecvNewMessage',
+      deliveryDisposition: 'required',
+      platforms: { android: 'required', ios: 'required', harmony: 'required' },
+      validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch'],
+      approvedKnownIssue: {
+        harmony: {
+          code: 'harmony-uninit-sdk-sigsegv',
+          evidenceApiName: 'unInitSDK',
+          waivedAxes: ['epoch'],
+        },
+      },
+    }],
+  }
+  const eventEvidence = {
+    name: 'onRecvNewMessage',
+    count: 1,
+    deliveryValidated: true,
+    structureValidated: true,
+    semanticValidated: true,
+    orderingValidated: true,
+    epochValidated: false,
+  }
+  const sourceIssue = {
+    apiName: 'unInitSDK',
+    knownIssue: true,
+    compatibilityDisposition: 'approved-known-issue',
+    knownIssueCode: 'harmony-uninit-sdk-sigsegv',
+  }
+  const validate = (caseEvidence: Record<string, unknown>, event = eventEvidence) => validateAutomationEvidence({
+    manifest: eventManifest,
+    platform: 'harmony',
+    fullRun: false,
+    report: { cases: [caseEvidence], events: [event] },
+  })
+
+  const exact = validate(sourceIssue)
+  assert.equal(exact.passed, true)
+  assert.equal(exact.checkedEvents, 1)
+  assert.equal(exact.passedEvents, 0)
+  assert.equal(exact.acceptedEvents, 1)
+  assert.deepEqual(exact.issues, [])
+  assert.deepEqual(exact.knownIssueWaivers.filter((item) => item.caseId.startsWith('event/')), [{
+    caseId: 'event/onRecvNewMessage',
+    axis: 'epoch',
+    code: 'harmony-uninit-sdk-sigsegv',
+    evidenceApiName: 'unInitSDK',
+  }])
+
+  const wrongSource = validate({ ...sourceIssue, apiName: 'logout' })
+  assert.equal(wrongSource.passed, false)
+  assert.deepEqual(wrongSource.issues.map((item) => item.axis), ['epoch'])
+  assert.deepEqual(wrongSource.knownIssueWaivers, [])
+
+  const wrongCode = validate({ ...sourceIssue, knownIssueCode: 'different-issue' })
+  assert.equal(wrongCode.passed, false)
+  assert.deepEqual(wrongCode.issues.filter((item) => item.caseId.startsWith('event/')).map((item) => item.axis), ['epoch'])
+
+  const missingSemantic = validate(sourceIssue, { ...eventEvidence, semanticValidated: false })
+  assert.equal(missingSemantic.passed, false)
+  assert.deepEqual(missingSemantic.issues.map((item) => item.axis), ['semantic'])
+  assert.deepEqual(
+    missingSemantic.knownIssueWaivers.filter((item) => item.caseId.startsWith('event/')).map((item) => item.axis),
+    ['epoch'],
+  )
 })
 
 test('approved known-issue waivers cannot borrow non-waived evidence from another execution', () => {

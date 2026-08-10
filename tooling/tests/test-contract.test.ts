@@ -208,7 +208,8 @@ test('Enterprise Harmony known issues are manifest-scoped and axis-specific', ()
     callables: [resetConversationUnread, setMessageLocalContent],
     events: [],
   }
-  const enterprise = new Map(buildEnterpriseTestDisposition(contract, delta).callables.map((item) => [item.apiName, item]))
+  const enterpriseDisposition = buildEnterpriseTestDisposition(contract, delta)
+  const enterprise = new Map(enterpriseDisposition.callables.map((item) => [item.apiName, item]))
 
   assert.deepEqual(enterprise.get('unInitSDK')?.approvedKnownIssue, {
     harmony: {
@@ -228,7 +229,11 @@ test('Enterprise Harmony known issues are manifest-scoped and axis-specific', ()
       waivedAxes: ['semantic', 'side-effect'],
     },
   })
+  assert.equal(enterpriseDisposition.events.every((item) => item.approvedKnownIssue?.harmony?.code === 'harmony-uninit-sdk-sigsegv'), true)
+  assert.equal(enterpriseDisposition.events.every((item) => item.approvedKnownIssue?.harmony?.evidenceApiName === 'unInitSDK'), true)
+  assert.equal(enterpriseDisposition.events.every((item) => item.approvedKnownIssue?.harmony?.waivedAxes.join(',') === 'epoch'), true)
   assert.equal(buildPublicTestDisposition(contract).callables.some((item) => item.approvedKnownIssue != null), false)
+  assert.equal(buildPublicTestDisposition(contract).events.some((item) => item.approvedKnownIssue != null), false)
 })
 
 test('fixture-backed push launch remains a positive capability path', () => {

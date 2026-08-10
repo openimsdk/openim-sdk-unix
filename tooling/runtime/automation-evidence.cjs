@@ -285,7 +285,11 @@ function approvedKnownIssueForPlatform(contractCase, platform) {
   const waivedAxes = declared.waivedAxes
     .filter((axis) => typeof axis === 'string' && axis.length > 0)
   if (waivedAxes.length === 0) return null
-  return { code: declared.code, waivedAxes }
+  return {
+    code: declared.code,
+    waivedAxes,
+    evidenceApiName: typeof declared.evidenceApiName === 'string' ? declared.evidenceApiName : '',
+  }
 }
 
 function approvedKnownIssueMatches(item, contractCase, platform) {
@@ -307,6 +311,35 @@ function completionPassedByApprovedKnownIssue(candidates, contractCase, platform
   return candidates.some((item) => approvedKnownIssueMatches(item, contractCase, platform)
     && item.invoked === true
     && item.resolved === true)
+}
+
+function approvedEventKnownIssueWaiver(reportCases, manifest, contractEvent, platform, axis) {
+  const declared = approvedKnownIssueForPlatform(contractEvent, platform)
+  if (declared == null
+    || !declared.waivedAxes.includes(axis)
+    || declared.evidenceApiName.length === 0
+    || !Array.isArray(manifest.callables)) return null
+  const sourceContract = manifest.callables.find((item) => isRecord(item) && item.apiName === declared.evidenceApiName)
+  const sourceDeclared = approvedKnownIssueForPlatform(sourceContract, platform)
+  if (sourceDeclared == null || sourceDeclared.code !== declared.code) return null
+  if (!reportCases.some((item) => approvedKnownIssueMatches(item, sourceContract, platform))) return null
+  return {
+    caseId: String(contractEvent.caseId),
+    axis: String(axis),
+    code: declared.code,
+    evidenceApiName: declared.evidenceApiName,
+  }
+}
+
+function callableKnownIssueWaiver(contractCase, platform, axis) {
+  const declared = approvedKnownIssueForPlatform(contractCase, platform)
+  if (declared == null || !declared.waivedAxes.includes(axis)) return null
+  return {
+    caseId: String(contractCase.caseId),
+    axis: String(axis),
+    code: declared.code,
+    evidenceApiName: contractCase.apiName,
+  }
 }
 
 function eventCorrelationIdentityField(eventName) {
@@ -479,10 +512,13 @@ function validateAutomationEvidence(input) {
   const reportCases = Array.isArray(report.cases) ? report.cases.filter(isRecord) : []
   const reportEvents = Array.isArray(report.events) ? report.events.filter(isRecord) : []
   const issues = []
+  const knownIssueWaivers = []
   let checkedCallables = 0
   let passedCallables = 0
+  let acceptedCallables = 0
   let checkedEvents = 0
   let passedEvents = 0
+  let acceptedEvents = 0
 
   for (const contractCase of manifest.callables) {
     if (!isRecord(contractCase) || typeof contractCase.apiName !== 'string') {
@@ -498,6 +534,7 @@ function validateAutomationEvidence(input) {
     }
     checkedCallables += 1
     const before = issues.length
+    const waiversBefore = knownIssueWaivers.length
     if (disposition === 'capability-negative' || disposition === 'platform-unsupported') {
       if (!negativeEvidencePassed(candidates, disposition, contractCase)) {
         issues.push(issue(
@@ -513,6 +550,7 @@ function validateAutomationEvidence(input) {
       const evidenceCandidates = approvedKnownIssueCandidates.length > 0 ? approvedKnownIssueCandidates : candidates
       for (const axis of axes) {
         if (axisWaivedByApprovedKnownIssue(evidenceCandidates, contractCase, platform, axis)) {
+          knownIssueWaivers.push(callableKnownIssueWaiver(contractCase, platform, axis))
           continue
         }
         if (axis === 'completion' && completionPassedByApprovedKnownIssue(evidenceCandidates, contractCase, platform)) {
@@ -572,6 +610,9 @@ function validateAutomationEvidence(input) {
       issues.push(issue(String(contractCase.caseId), 'disposition', 'unknown-platform-disposition', String(disposition)))
     }
     if (issues.length === before) {
+      acceptedCallables += 1
+    }
+    if (issues.length === before && knownIssueWaivers.length === waiversBefore) {
       passedCallables += 1
     }
   }
@@ -598,6 +639,7 @@ function validateAutomationEvidence(input) {
     }
     checkedEvents += 1
     const before = issues.length
+    const waiversBefore = knownIssueWaivers.length
     if (disposition === 'platform-unsupported') {
       if (!negativeEvidencePassed(candidates, disposition, contractEvent)) {
         issues.push(issue(
@@ -613,23 +655,33 @@ function validateAutomationEvidence(input) {
         if (axis === 'structure' && isRecord(input.responseSchemas)) {
           const structure = eventStructureResult(candidates, contractEvent.eventName, input.responseSchemas)
           if (!structure.passed) {
-            const schemaDetail = structure.issues.slice(0, 3).map((item) => `${item.path} ${item.rule}: expected ${item.expected}, got ${item.actual}`).join('; ')
-            issues.push(issue(
-              String(contractEvent.caseId),
-              'structure',
-              structure.issues.length === 0 ? (candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated') : 'event-schema-invalid',
-              schemaDetail.length > 0 ? `${contractEvent.eventName} payload failed generated schema: ${schemaDetail}` : `${contractEvent.eventName} has no explicit payload evidence on ${platform}`,
-            ))
+            const waiver = approvedEventKnownIssueWaiver(reportCases, manifest, contractEvent, platform, axis)
+            if (waiver != null) {
+              knownIssueWaivers.push(waiver)
+            } else {
+              const schemaDetail = structure.issues.slice(0, 3).map((item) => `${item.path} ${item.rule}: expected ${item.expected}, got ${item.actual}`).join('; ')
+              issues.push(issue(
+                String(contractEvent.caseId),
+                'structure',
+                structure.issues.length === 0 ? (candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated') : 'event-schema-invalid',
+                schemaDetail.length > 0 ? `${contractEvent.eventName} payload failed generated schema: ${schemaDetail}` : `${contractEvent.eventName} has no explicit payload evidence on ${platform}`,
+              ))
+            }
           }
           continue
         }
         if (!axisPassed(candidates, axis, 'event')) {
-          issues.push(issue(
-            String(contractEvent.caseId),
-            String(axis),
-            candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated',
-            `${contractEvent.eventName} has no passing ${String(axis)} evidence on ${platform}`,
-          ))
+          const waiver = approvedEventKnownIssueWaiver(reportCases, manifest, contractEvent, platform, axis)
+          if (waiver != null) {
+            knownIssueWaivers.push(waiver)
+          } else {
+            issues.push(issue(
+              String(contractEvent.caseId),
+              String(axis),
+              candidates.length === 0 ? 'missing-evidence' : 'axis-not-validated',
+              `${contractEvent.eventName} has no passing ${String(axis)} evidence on ${platform}`,
+            ))
+          }
         }
       }
     } else if (disposition === 'capability-negative') {
@@ -640,6 +692,9 @@ function validateAutomationEvidence(input) {
       issues.push(issue(String(contractEvent.caseId), 'disposition', 'unknown-platform-disposition', String(disposition)))
     }
     if (issues.length === before) {
+      acceptedEvents += 1
+    }
+    if (issues.length === before && knownIssueWaivers.length === waiversBefore) {
       passedEvents += 1
     }
   }
@@ -651,9 +706,13 @@ function validateAutomationEvidence(input) {
     fullRun,
     checkedCallables,
     passedCallables,
+    acceptedCallables,
     checkedEvents,
     passedEvents,
+    acceptedEvents,
     passed: issues.length === 0,
+    strictPassed: issues.length === 0 && knownIssueWaivers.length === 0,
+    knownIssueWaivers,
     issues,
   }
 }

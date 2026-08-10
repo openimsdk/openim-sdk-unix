@@ -32,7 +32,7 @@ function evidence(overrides: Partial<RuntimeEvidence> = {}): RuntimeEvidence {
       failed: 0,
       skipped: 0,
     },
-    contractEvidence: { passed: true, issues: [] },
+    contractEvidence: { passed: true, strictPassed: true, knownIssueWaivers: [], issues: [] },
     responseStructureEvidence: { passed: true, detail: 'verified' },
     redactedReport: {},
     ...overrides,
@@ -44,6 +44,35 @@ test('release runtime evidence binds a full clean run to its platform and reposi
     [evidence()],
     { expectedPlatform: 'android', expectedRevision: revision, release: true },
   ), [])
+})
+
+test('release runtime evidence rejects approved known-issue waivers without erasing compatibility evidence', () => {
+  const waived = evidence({
+    contractEvidence: {
+      passed: true,
+      strictPassed: false,
+      issues: [],
+      knownIssueWaivers: [{
+        caseId: 'event/onRecvNewMessage',
+        axis: 'epoch',
+        code: 'harmony-uninit-sdk-sigsegv',
+        evidenceApiName: 'unInitSDK',
+      }],
+    },
+  })
+
+  assert.deepEqual(runtimeEvidenceFindings(
+    [waived],
+    { expectedPlatform: 'android', expectedRevision: revision },
+  ), [])
+  assert.ok(runtimeEvidenceFindings(
+    [waived],
+    { expectedPlatform: 'android', expectedRevision: revision, release: true },
+  ).some((item) => item.includes('approved known-issue waivers')))
+  assert.ok(runtimeEvidenceFindings(
+    [waived],
+    { expectedPlatform: 'android', expectedRevision: revision, release: true },
+  ).some((item) => item.includes('not a strict pass')))
 })
 
 test('release runtime evidence rejects skipped work, dirty sources, and platform substitution', () => {
