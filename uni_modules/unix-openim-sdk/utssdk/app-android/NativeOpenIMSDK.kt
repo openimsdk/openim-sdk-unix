@@ -32,6 +32,14 @@ private fun readOpenIMUploadCancellationID(data: String): String {
   }
 }
 
+private fun readOpenIMClientMsgID(message: String): String {
+  return try {
+    JSONObject(message).optString("clientMsgID")
+  } catch (_: Throwable) {
+    ""
+  }
+}
+
 class OpenIMBaseCallback(
   private val resolve: OpenIMResolveString,
   private val reject: OpenIMReject
@@ -48,7 +56,7 @@ class OpenIMBaseCallback(
 }
 
 class OpenIMSendMessageCallback(
-  private val operationID: String,
+  private val clientMsgID: String,
   private val resolve: OpenIMResolveString,
   private val reject: OpenIMReject,
   private val emit: OpenIMNativeEvent?
@@ -65,7 +73,7 @@ class OpenIMSendMessageCallback(
 
   override fun onProgress(progress: Long) {
     val payload = JSONObject()
-      .put("operationID", operationID)
+      .put("clientMsgID", clientMsgID)
       .put("progress", progress)
     OpenIMDriverRuntime.progress(ticket) {
       emit?.invoke("onSendMessageProgress", payload.toString(), 0, "")
@@ -817,11 +825,11 @@ object NativeOpenIMSDK {
   }
 
   fun sendMessage(operationID: String, message: String, recvID: String, groupID: String, offlinePushInfo: String, isOnlineOnly: Boolean, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.sendMessage(OpenIMSendMessageCallback(operationID, resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
+    Open_im_sdk.sendMessage(OpenIMSendMessageCallback(readOpenIMClientMsgID(message), resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
   }
 
   fun sendMessageNotOss(operationID: String, message: String, recvID: String, groupID: String, offlinePushInfo: String, isOnlineOnly: Boolean, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.sendMessageNotOss(OpenIMSendMessageCallback(operationID, resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
+    Open_im_sdk.sendMessageNotOss(OpenIMSendMessageCallback(readOpenIMClientMsgID(message), resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
   }
 
   fun createTextMessage(operationID: String, text: String): String {

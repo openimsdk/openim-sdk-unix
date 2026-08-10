@@ -856,7 +856,7 @@
     {
       "id": 1017,
       "name": "OpenIMSendMessageProgressEvent",
-      "signatureHash": "a6336c2b4c4bab1b9a6858ae09f953be60e86aeffd3942ece9feff12534d2174"
+      "signatureHash": "54f0625244e81275e8a24272a0fac424ecac74448eaed729455eacfad5357abc"
     },
     {
       "id": 1018,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "3840837e63949a5f4aa733afbce233eab33bf9de6b5a88e703d366b30648dbd8"
+  "contractHash": "d50e8875fa1787ab9821d823bdd98f57e546d30304d1eb572c1d42fbe1b7c76d"
 }

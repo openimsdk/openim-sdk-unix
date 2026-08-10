@@ -14,6 +14,12 @@ private func readOpenIMUploadCancellationID(_ uploadData: String) -> String {
     return cancelID.isEmpty ? (request["uuid"] as? String ?? "") : cancelID
 }
 
+private func readOpenIMClientMsgID(_ message: String) -> String {
+    guard let data = message.data(using: .utf8),
+          let value = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return "" }
+    return value["clientMsgID"] as? String ?? ""
+}
+
 class OpenIMBaseCallback: NSObject, Open_im_sdk_callbackBaseProtocol {
     private let resolve: OpenIMResolveString
     private let reject: OpenIMReject
@@ -35,14 +41,14 @@ class OpenIMBaseCallback: NSObject, Open_im_sdk_callbackBaseProtocol {
 }
 
 class OpenIMSendMessageCallback: NSObject, Open_im_sdk_callbackSendMsgCallBackProtocol {
-    private let operationID: String
+    private let clientMsgID: String
     private let resolve: OpenIMResolveString
     private let reject: OpenIMReject
     private let emit: OpenIMNativeEvent?
     private let ticket: OpenIMDriverTicket
 
-    init(operationID: String, resolve: @escaping OpenIMResolveString, reject: @escaping OpenIMReject, emit: OpenIMNativeEvent?) {
-        self.operationID = operationID
+    init(clientMsgID: String, resolve: @escaping OpenIMResolveString, reject: @escaping OpenIMReject, emit: OpenIMNativeEvent?) {
+        self.clientMsgID = clientMsgID
         self.resolve = resolve
         self.reject = reject
         self.emit = emit
@@ -59,7 +65,7 @@ class OpenIMSendMessageCallback: NSObject, Open_im_sdk_callbackSendMsgCallBackPr
 
     func onProgress(_ progress: Int) {
         let payload: [String: Any] = [
-            "operationID": operationID,
+            "clientMsgID": clientMsgID,
             "progress": NSNumber(value: progress)
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
@@ -916,12 +922,12 @@ class NativeOpenIMSDK {
     }
 
     static func sendMessage(_ operationID: String, _ message: String, _ recvID: String, _ groupID: String, _ offlinePushInfo: String, _ isOnlineOnly: Bool, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
-        let callback = OpenIMSendMessageCallback(operationID: operationID, resolve: resolve, reject: reject, emit: NativeOpenIMSDK.nativeEventEmit)
+        let callback = OpenIMSendMessageCallback(clientMsgID: readOpenIMClientMsgID(message), resolve: resolve, reject: reject, emit: NativeOpenIMSDK.nativeEventEmit)
         Open_im_sdkSendMessage(callback, operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
     }
 
     static func sendMessageNotOss(_ operationID: String, _ message: String, _ recvID: String, _ groupID: String, _ offlinePushInfo: String, _ isOnlineOnly: Bool, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
-        let callback = OpenIMSendMessageCallback(operationID: operationID, resolve: resolve, reject: reject, emit: NativeOpenIMSDK.nativeEventEmit)
+        let callback = OpenIMSendMessageCallback(clientMsgID: readOpenIMClientMsgID(message), resolve: resolve, reject: reject, emit: NativeOpenIMSDK.nativeEventEmit)
         Open_im_sdkSendMessageNotOss(callback, operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
     }
 

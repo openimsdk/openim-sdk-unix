@@ -188,7 +188,6 @@ test('callable event correlations retain operation order, epoch, and payload mat
   assert.match(functionSource('buildAutomationEventCorrelations'), /correlationKind: correlationKind/)
   assert.match(functionSource('buildAutomationEventCorrelations'), /payloadIdentity: payloadIdentity/)
   assert.match(functionSource('buildAutomationEventCorrelations'), /eventPayloadDetail: occurrence\.payloadText/)
-  assert.match(functionSource('readAutomationEventPayloadIdentity'), /parsed\['operationID'\]/)
   assert.match(functionSource('readAutomationEventPayloadIdentity'), /parsed\['clientMsgID'\]/)
   assert.doesNotMatch(functionSource('buildAutomationEventCorrelations'), /payloadText\.indexOf/)
   assert.match(functionSource('completeAutomationOperation'), /resultIdentity/)

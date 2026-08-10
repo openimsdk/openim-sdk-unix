@@ -824,18 +824,10 @@
     "OpenIMSendMessageProgressEvent": {
       "kind": "object",
       "fields": {
-        "operationID": {
-          "required": false,
+        "clientMsgID": {
+          "required": true,
           "schema": {
-            "kind": "union",
-            "options": [
-              {
-                "kind": "string"
-              },
-              {
-                "kind": "null"
-              }
-            ]
+            "kind": "string"
           }
         },
         "progress": {

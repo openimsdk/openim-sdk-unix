@@ -84,7 +84,7 @@ export type OpenIMUploadLogsProgressEvent = {
 }
 
 export type OpenIMSendMessageProgressEvent = {
-  operationID ?: string | null
+  clientMsgID : string
   progress : number
 }
 

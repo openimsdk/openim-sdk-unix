@@ -350,7 +350,7 @@ function callableKnownIssueWaiver(contractCase, platform, axis) {
 }
 
 function eventCorrelationIdentityField(eventName) {
-  if (eventName === 'onSendMessageProgress') return 'operationID'
+  if (eventName === 'onSendMessageProgress') return 'clientMsgID'
   if (eventName === 'onRecvNewMessage') return 'clientMsgID'
   if (eventName === 'onFriendApplicationAdded' || eventName === 'onFriendApplicationRejected') return 'fromUserID'
   if (eventName === 'onFriendAdded') return 'userID'

@@ -230,9 +230,10 @@ export function parseNativeUploadLogsProgressEventCommon(data : string, helpers 
 export function parseNativeSendMessageProgressEventCommon(data : string, helpers : NativeParserHelpers) : OpenIMSendMessageProgressEvent | null {
   const raw = helpers.parseNativeAny(data)
   if (raw instanceof UTSJSONObject) {
-    const result : OpenIMSendMessageProgressEvent = { progress: helpers.readNumberParam(raw, 'progress') }
-    if (hasNativeKey(raw, 'operationID')) { result.operationID = helpers.readStringParam(raw, 'operationID') }
-    return result
+    return {
+      clientMsgID: helpers.readStringParam(raw, 'clientMsgID'),
+      progress: helpers.readNumberParam(raw, 'progress')
+    }
   }
   return null
 }

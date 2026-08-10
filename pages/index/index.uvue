@@ -1450,8 +1450,8 @@
 			const parsed = JSON.parseObject<UTSJSONObject>(payloadText)
 			if (parsed == null) { return '' }
 			if (eventName == 'onSendMessageProgress') {
-				const operationID = parsed['operationID']
-				return operationID == null ? '' : operationID as string
+				const clientMsgID = parsed['clientMsgID']
+				return clientMsgID == null ? '' : clientMsgID as string
 			}
 			if (eventName == 'onRecvNewMessage') {
 				const clientMsgID = parsed['clientMsgID']
@@ -2512,13 +2512,15 @@
 		await switchAutomationPrimary(config, 'A_message_send')
 		const message = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessage from unixsdk public automation', 'uvue_auto_create_send_text'), cacheRequiredAutomationMessage)
 		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text', message: message as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
-		beginAutomationOperation('sendMessage', sendOptions.operationID)
+		const sendClientMsgID = message != null && message.clientMsgID != null ? message.clientMsgID as string : ''
+		beginAutomationOperation('sendMessage', sendClientMsgID)
 		const sent = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
 		const sentClientMsgID = sent.clientMsgID != null ? sent.clientMsgID as string : ''
 		completeAutomationOperation('sendMessage', sentClientMsgID)
 		const notOssMessage = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessageNotOss from unixsdk public automation', 'uvue_auto_create_send_not_oss_text'), cacheRequiredAutomationMessage)
 		const notOssOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text_not_oss', message: notOssMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
-		beginAutomationOperation('sendMessageNotOss', notOssOptions.operationID)
+		const notOssClientMsgID = notOssMessage != null && notOssMessage.clientMsgID != null ? notOssMessage.clientMsgID as string : ''
+		beginAutomationOperation('sendMessageNotOss', notOssClientMsgID)
 		const sentNotOss = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessageNotOss', sendMessageNotOss(notOssOptions), cacheSentAutomationMessage)
 		const sentNotOssClientMsgID = sentNotOss.clientMsgID != null ? sentNotOss.clientMsgID as string : ''
 		completeAutomationOperation('sendMessageNotOss', sentNotOssClientMsgID)

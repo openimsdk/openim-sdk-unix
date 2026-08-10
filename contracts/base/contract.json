@@ -882,8 +882,8 @@
     {
       "id": 1017,
       "name": "OpenIMSendMessageProgressEvent",
-      "declaration": "export type OpenIMSendMessageProgressEvent = {\n  operationID ?: string | null\n  progress : number\n}",
-      "signatureHash": "a6336c2b4c4bab1b9a6858ae09f953be60e86aeffd3942ece9feff12534d2174"
+      "declaration": "export type OpenIMSendMessageProgressEvent = {\n  clientMsgID : string\n  progress : number\n}",
+      "signatureHash": "54f0625244e81275e8a24272a0fac424ecac74448eaed729455eacfad5357abc"
     },
     {
       "id": 1018,

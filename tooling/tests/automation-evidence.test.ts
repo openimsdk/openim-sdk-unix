@@ -160,8 +160,8 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
               eventEpoch: 2,
               payloadMatched: true,
               correlationKind: 'payload-identity',
-              payloadIdentity: 'operation-4',
-              eventPayloadDetail: JSON.stringify({ operationID: 'operation-4', progress: 50 }),
+              payloadIdentity: 'message-4',
+              eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-4', progress: 50 }),
               operationTerminalSequence: 7,
               exclusiveOperation: false,
             },
@@ -266,8 +266,8 @@ test('callable event evidence covers every generated event in operation order an
     ...baseCorrelation,
     eventName: 'onSendMessageProgress',
     eventSequence: 11,
-    payloadIdentity: 'operation-10',
-    eventPayloadDetail: JSON.stringify({ operationID: 'operation-10', progress: 50 }),
+    payloadIdentity: 'message-10',
+    eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10', progress: 50 }),
     ...overrides,
   })
   const receiveCorrelation = (overrides: Record<string, unknown> = {}) => ({
@@ -384,7 +384,7 @@ test('cross-account message delivery accepts exact peer identity after operation
           operationTerminalSequence: 12,
           exclusiveOperation: true,
           payloadIdentity: '',
-          eventPayloadDetail: JSON.stringify({ operationID: null, progress: 100 }),
+          eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10', progress: 100 }),
         }, {
           operationApiName: 'sendMessage',
           eventName: 'onRecvNewMessage',
