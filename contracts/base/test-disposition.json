@@ -2665,18 +2665,19 @@
         "document": "contracts/base/response-schemas.json",
         "root": "callables.clearConversationAndDeleteAllMsg.schema"
       },
-      "semanticProfile": "response-identity",
-      "sideEffectProbe": "none",
+      "semanticProfile": "mutation-observation",
+      "sideEffectProbe": "read-after-write",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
         "invalid-input"
       ],
-      "cleanupAction": "none",
+      "cleanupAction": "restore-via-read-before-write",
       "validationAxes": [
         "completion",
         "structure",
-        "semantic"
+        "semantic",
+        "side-effect"
       ]
     },
     {
@@ -2695,18 +2696,19 @@
         "document": "contracts/base/response-schemas.json",
         "root": "callables.hideConversation.schema"
       },
-      "semanticProfile": "response-identity",
-      "sideEffectProbe": "none",
+      "semanticProfile": "mutation-observation",
+      "sideEffectProbe": "read-after-write",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
         "invalid-input"
       ],
-      "cleanupAction": "none",
+      "cleanupAction": "restore-via-read-before-write",
       "validationAxes": [
         "completion",
         "structure",
-        "semantic"
+        "semantic",
+        "side-effect"
       ]
     },
     {
@@ -2725,18 +2727,19 @@
         "document": "contracts/base/response-schemas.json",
         "root": "callables.hideAllConversations.schema"
       },
-      "semanticProfile": "response-identity",
-      "sideEffectProbe": "none",
+      "semanticProfile": "mutation-observation",
+      "sideEffectProbe": "read-after-write",
       "expectedEvents": [],
       "negativeProfiles": [
         "uninitialized",
         "invalid-input"
       ],
-      "cleanupAction": "none",
+      "cleanupAction": "restore-via-read-before-write",
       "validationAxes": [
         "completion",
         "structure",
-        "semantic"
+        "semantic",
+        "side-effect"
       ]
     },
     {

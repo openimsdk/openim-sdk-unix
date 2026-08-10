@@ -100,6 +100,17 @@ test('write-only app mutations require a server acknowledgement probe', () => {
   }
 })
 
+test('conversation visibility mutations require observable state changes', () => {
+  const manifest = buildPublicTestDisposition(contract)
+  const byAPI = new Map(manifest.callables.map((item) => [item.apiName, item]))
+
+  for (const apiName of ['clearConversationAndDeleteAllMsg', 'hideConversation', 'hideAllConversations']) {
+    assert.equal(byAPI.get(apiName)?.semanticProfile, 'mutation-observation')
+    assert.equal(byAPI.get(apiName)?.sideEffectProbe, 'read-after-write')
+    assert.ok(byAPI.get(apiName)?.validationAxes.includes('side-effect'))
+  }
+})
+
 test('case manifest makes edition boundaries and cancelled subscriptions explicit', () => {
   const manifest = buildPublicTestDisposition(contract)
   const login = manifest.callables.find((item) => item.apiName === 'login')

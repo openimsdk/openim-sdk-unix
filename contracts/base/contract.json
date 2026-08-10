@@ -4556,10 +4556,10 @@
           "symbol": "clearConversationAndDeleteAllMsg"
         }
       },
-      "signatureHash": "3b36ebe4330de0a76b40a9d8b41618a7b0aca09e77a7326fadf1825458c58f0c",
+      "signatureHash": "248ec901ee1c1b91d37ac22e7baa4c5562eb51747132e67760b47c63953dabf0",
       "testProfile": {
-        "semanticProfile": "response-identity",
-        "sideEffectProbe": "none"
+        "semanticProfile": "mutation-observation",
+        "sideEffectProbe": "read-after-write"
       }
     },
     {
@@ -4600,10 +4600,10 @@
           "symbol": "hideConversation"
         }
       },
-      "signatureHash": "ea435d74b61ca1ae34ce9d300e4acdb06cfd9c87897f327533643b554617acdc",
+      "signatureHash": "bda461bdeddee291c0418c855552317b0bf125a2adb6fa5d2d2d72cfb6c4bc8c",
       "testProfile": {
-        "semanticProfile": "response-identity",
-        "sideEffectProbe": "none"
+        "semanticProfile": "mutation-observation",
+        "sideEffectProbe": "read-after-write"
       }
     },
     {
@@ -4634,10 +4634,10 @@
           "symbol": "hideAllConversations"
         }
       },
-      "signatureHash": "12fee6b9877d523c99daada4d179d6c6867242521f4a2e17729f50b49b72d2dc",
+      "signatureHash": "c21c0c7db0dcf1b2d19ea15b3ab721429b126c8085bc5096ba609c01fd90440b",
       "testProfile": {
-        "semanticProfile": "response-identity",
-        "sideEffectProbe": "none"
+        "semanticProfile": "mutation-observation",
+        "sideEffectProbe": "read-after-write"
       }
     },
     {

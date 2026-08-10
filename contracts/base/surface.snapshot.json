@@ -2065,19 +2065,19 @@
       "id": 2082,
       "name": "clearConversationAndDeleteAllMsg",
       "signature": "clearConversationAndDeleteAllMsg(conversationID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "3b36ebe4330de0a76b40a9d8b41618a7b0aca09e77a7326fadf1825458c58f0c"
+      "signatureHash": "248ec901ee1c1b91d37ac22e7baa4c5562eb51747132e67760b47c63953dabf0"
     },
     {
       "id": 2083,
       "name": "hideConversation",
       "signature": "hideConversation(conversationID:string,operationID?:string|null):Promise<string>",
-      "signatureHash": "ea435d74b61ca1ae34ce9d300e4acdb06cfd9c87897f327533643b554617acdc"
+      "signatureHash": "bda461bdeddee291c0418c855552317b0bf125a2adb6fa5d2d2d72cfb6c4bc8c"
     },
     {
       "id": 2084,
       "name": "hideAllConversations",
       "signature": "hideAllConversations(operationID?:string|null):Promise<string>",
-      "signatureHash": "12fee6b9877d523c99daada4d179d6c6867242521f4a2e17729f50b49b72d2dc"
+      "signatureHash": "c21c0c7db0dcf1b2d19ea15b3ab721429b126c8085bc5096ba609c01fd90440b"
     },
     {
       "id": 2085,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "dbd14551ea0e1fbcb8f65e70f86d640de748d3735f096fa772fdff7d7352f2a2"
+  "contractHash": "3840837e63949a5f4aa733afbce233eab33bf9de6b5a88e703d366b30648dbd8"
 }
