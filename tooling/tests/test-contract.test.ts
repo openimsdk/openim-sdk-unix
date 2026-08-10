@@ -49,6 +49,14 @@ test('case manifest reads callable profiles from Contract IR instead of name heu
   const item = buildPublicTestDisposition(modified).callables.find((value) => value.apiName === 'login')
   assert.equal(item?.semanticProfile, 'contract-owned-semantic')
   assert.equal(item?.sideEffectProbe, 'contract-owned-side-effect')
+
+  const stateProbe = modified.callables.find((value) => value.name === 'getLoginStatus') as typeof modified.callables[number] & {
+    testProfile: { semanticProfile: string; sideEffectProbe: string }
+  }
+  assert.ok(stateProbe)
+  stateProbe.testProfile = { semanticProfile: 'contract-owned-state', sideEffectProbe: 'cross-account-state-observation' }
+  const stateItem = buildPublicTestDisposition(modified).callables.find((value) => value.apiName === 'getLoginStatus')
+  assert.equal(stateItem?.cleanupAction, 'restore-via-inverse-mutation')
 })
 
 test('case manifest rejects a callable whose reviewed profile is missing', () => {

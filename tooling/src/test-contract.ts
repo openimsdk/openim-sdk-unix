@@ -359,6 +359,7 @@ function cleanupAction(callable: ContractCallable, probe: string): string {
   if (callable.name === 'uploadFile' || callable.name === 'uploadLogs') return 'cancelUpload(cancelID)'
   if (probe === 'read-after-write') return 'restore-via-read-before-write'
   if (probe === 'cross-account-event-observation') return 'fixture-cleanup'
+  if (probe === 'cross-account-state-observation') return 'restore-via-inverse-mutation'
   return 'none'
 }
 
