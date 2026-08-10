@@ -211,12 +211,7 @@ test('Enterprise Harmony known issues are manifest-scoped and axis-specific', ()
   const enterpriseDisposition = buildEnterpriseTestDisposition(contract, delta)
   const enterprise = new Map(enterpriseDisposition.callables.map((item) => [item.apiName, item]))
 
-  assert.deepEqual(enterprise.get('unInitSDK')?.approvedKnownIssue, {
-    harmony: {
-      code: 'harmony-uninit-sdk-sigsegv',
-      waivedAxes: ['completion', 'structure', 'semantic', 'side-effect'],
-    },
-  })
+  assert.equal(enterprise.get('unInitSDK')?.approvedKnownIssue, undefined)
   assert.deepEqual(enterprise.get('resetConversationUnread')?.approvedKnownIssue, {
     harmony: {
       code: 'harmony-reset-conversation-unread-mismatch',
@@ -229,9 +224,7 @@ test('Enterprise Harmony known issues are manifest-scoped and axis-specific', ()
       waivedAxes: ['semantic', 'side-effect'],
     },
   })
-  assert.equal(enterpriseDisposition.events.every((item) => item.approvedKnownIssue?.harmony?.code === 'harmony-uninit-sdk-sigsegv'), true)
-  assert.equal(enterpriseDisposition.events.every((item) => item.approvedKnownIssue?.harmony?.evidenceApiName === 'unInitSDK'), true)
-  assert.equal(enterpriseDisposition.events.every((item) => item.approvedKnownIssue?.harmony?.waivedAxes.join(',') === 'epoch'), true)
+  assert.equal(enterpriseDisposition.events.some((item) => item.approvedKnownIssue != null), false)
   assert.equal(buildPublicTestDisposition(contract).callables.some((item) => item.approvedKnownIssue != null), false)
   assert.equal(buildPublicTestDisposition(contract).events.some((item) => item.approvedKnownIssue != null), false)
 })

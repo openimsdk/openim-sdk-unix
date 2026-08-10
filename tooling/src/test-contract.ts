@@ -123,10 +123,6 @@ const p0EventNames = new Set([
 const harmonyUnsupportedCallables = new Set(['updateFcmToken'])
 const harmonyDispatcherMissingCallables = new Set(['updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
 const enterpriseHarmonyApprovedKnownIssues = new Map<string, ApprovedKnownIssueDisposition>([
-  ['unInitSDK', {
-    code: 'harmony-uninit-sdk-sigsegv',
-    waivedAxes: ['completion', 'structure', 'semantic', 'side-effect'],
-  }],
   ['resetConversationUnread', {
     code: 'harmony-reset-conversation-unread-mismatch',
     waivedAxes: ['semantic'],
@@ -136,12 +132,6 @@ const enterpriseHarmonyApprovedKnownIssues = new Map<string, ApprovedKnownIssueD
     waivedAxes: ['semantic', 'side-effect'],
   }],
 ])
-
-const enterpriseHarmonyEventEpochKnownIssue: ApprovedEventKnownIssueDisposition = {
-  code: 'harmony-uninit-sdk-sigsegv',
-  evidenceApiName: 'unInitSDK',
-  waivedAxes: ['epoch'],
-}
 
 const expectedEventsByCallable = new Map<string, string[]>([
   ['login', ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish']],
@@ -449,15 +439,6 @@ function buildDisposition(
         ios: eventPlatformDisposition(edition, event, 'ios'),
         harmony: eventPlatformDisposition(edition, event, 'harmony'),
       }
-      const approvedKnownIssue = edition === 'enterprise' && platforms.harmony === 'required'
-        ? enterpriseHarmonyEventEpochKnownIssue
-        : undefined
-      if (approvedKnownIssue != null) {
-        assert(
-          approvedKnownIssue.waivedAxes.every((axis) => ['delivery', 'structure', 'semantic', 'ordering', 'epoch'].includes(axis)),
-          `${event.name} approved known issue waives an axis that is not required by its contract`,
-        )
-      }
       return {
         caseId: `event/${event.name}`,
         eventName: event.name,
@@ -472,15 +453,6 @@ function buildDisposition(
         negativeProfiles: executableNegativeProfiles(['off-subscription', 'off-all-event-name', 'stale-epoch'], platforms),
         cleanupAction: 'off(subscription)',
         validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch'],
-        ...(approvedKnownIssue == null ? {} : {
-          approvedKnownIssue: {
-            harmony: {
-              code: approvedKnownIssue.code,
-              evidenceApiName: approvedKnownIssue.evidenceApiName,
-              waivedAxes: [...approvedKnownIssue.waivedAxes],
-            },
-          },
-        }),
       }
     }),
   }
