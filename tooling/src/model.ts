@@ -144,6 +144,8 @@ export interface ContractCallable {
   testProfile: {
     semanticProfile: string
     sideEffectProbe: string
+    expectedEvents?: string[]
+    eventIdentityPaths?: Record<string, string>
   }
   declaration?: Partial<SourceByPlatform>
   lowering?: CallableLowering
@@ -248,6 +250,12 @@ export interface EnterpriseDeltaDocument {
   editionExtensions?: {
     localOperations: string[]
     syntheticEvents: string[]
+    typedResponseParsers?: Record<string, string>
+    testKnownIssues?: Record<string, {
+      code: string
+      waivedAxes: string[]
+    }>
+    eventPrelude?: Partial<Record<'android' | 'ios', string>>
     lifecycleEffects: Array<{
       callable: string
       successHook: DriverSuccessHook

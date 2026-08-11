@@ -52,7 +52,7 @@ function eventContract(): ContractDocument {
       repository: 'private', revision: 'test', interfacePath: 'interface.uts',
       facadePaths: { android: 'android', ios: 'ios', harmony: 'harmony' },
     },
-    expected: { constants: 0, types: 0, callables: 3, events: 3 },
+    expected: { constants: 0, types: 0, callables: 4, events: 4 },
     constants: [],
     types: [],
     callables: [
@@ -77,6 +77,13 @@ function eventContract(): ContractDocument {
         binding: { android: { kind: 'none', symbol: '' }, ios: { kind: 'none', symbol: '' }, harmony: { kind: 'none', symbol: '' } },
         signatureHash: '',
       },
+      {
+        id: 2006, name: 'onEditionStateChanged', signature: 'onEditionStateChanged(handler:Handler):Subscription',
+        completion: 'sync', responseCodec: 'void', errorPolicy: 'none', rawString: false,
+        role: 'event-subscription', testProfile: { semanticProfile: 'subscription-lifecycle', sideEffectProbe: 'registry-observation' }, declaration: { android: '', ios: '', harmony: '' },
+        binding: { android: { kind: 'facade-alias', symbol: 'registerEditionState' }, ios: { kind: 'facade-alias', symbol: 'registerEditionState' }, harmony: { kind: 'facade-alias', symbol: 'registerEditionState' } },
+        signatureHash: '',
+      },
     ],
     events: [
       {
@@ -93,6 +100,11 @@ function eventContract(): ContractDocument {
         id: 3003, name: 'onConnectFailed', callable: 'onConnectFailed', handlerType: 'Handler',
         decoder: { kind: 'native-error' }, rawPayload: false,
         binding: { android: 'bound', ios: 'bound', harmony: 'bound' }, signatureHash: '',
+      },
+      {
+        id: 3004, name: 'onEditionStateChanged', callable: 'onEditionStateChanged', handlerType: 'Handler',
+        decoder: { kind: 'parser', symbol: 'parseEditionState' }, rawPayload: false,
+        binding: { android: 'projected', ios: 'projected', harmony: 'projected' }, signatureHash: '',
       },
     ],
   }
@@ -113,6 +125,7 @@ test('Harmony PlatformDriver derives native events from ABI inventory rather tha
   assert.match(source, /activeEventSink\('onMsgDeleted'/)
   assert.match(source, /activeEventSink\('onConnecting', payloadJSON, 0, ''\)/)
   assert.match(source, /activeEventSink\('onConnectFailed', payloadJSON, readDriverEventErrorCode\(payloadJSON\), readDriverEventErrorMessage\(payloadJSON\)\)/)
+  assert.doesNotMatch(source, /EventOnEditionStateChanged/)
   assert.doesNotMatch(source, /onVoidHarmonyEvent/)
 })
 

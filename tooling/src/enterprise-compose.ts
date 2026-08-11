@@ -171,29 +171,12 @@ export function composeHarmonyDeclaration(callable: ContractCallable, declaratio
     return declaration.replace(/,\s*harmonyEventCode\('[^']+'\)/g, '')
   }
   if (callable.role !== 'operation') return declaration
-  let result = declaration
+  const result = declaration
     .replace(/OpenIMHarmonyDriver\.callAsync\(\d+/g, `callHarmonyDriverAsync(${callable.id}`)
     .replace(/callHarmonyDriverAsync\(400\d{3}/g, `callHarmonyDriverAsync(${callable.id}`)
-    .replace(/(invokeHarmonyEmpty\()('(?:[^'\\]|\\.)*')/g, `$1${callable.id}, $2`)
-    .replace(/(invokeHarmonyMapped<[^\n]+?>\()('(?:[^'\\]|\\.)*')/g, `$1${callable.id}, $2`)
-  if (callable.name === 'deleteConversation') {
-    result = `export const deleteConversation = function (conversationID : string, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'deleteConversationAndDeleteAllMsg', makeConversationIDReq(conversationID), operationID) }`
-  }
-  if (callable.name === 'updateFriends') {
-    result = `export const updateFriends = function (params : OpenIMUpdateFriendsParams, operationID ?: string | null) : Promise<string> { return updateFriendsSequential(${callable.id}, params, operationID) }`
-  }
-  if (callable.name === 'setAppBackgroundStatus') {
-    result = `export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'setAppBackgroundStatus', { isBackground: data } as ESObject, operationID) }`
-  }
-  if (callable.name === 'setAppBadge') {
-    result = `export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'setAppBadge', { appUnreadCount: appUnreadCount } as ESObject, operationID) }`
-  }
-  if (callable.name === 'networkStatusChanged') {
-    result = `export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'networkStatusChanged', {} as ESObject, operationID) }`
-  }
-  if (callable.name === 'cancelUpload') {
-    result = `export const cancelUpload = function (params : OpenIMCancelUploadParams, operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(${callable.id}, 'cancelUpload', { cancelID: params.cancelID } as ESObject, operationID) }`
-  }
+    .replace(/(invokeHarmonyEmpty\()\s*(?:\d+\s*,\s*)?('(?:[^'\\]|\\.)*')/g, `$1${callable.id}, $2`)
+    .replace(/(invokeHarmonyMapped<[^\n]+?>\()\s*(?:\d+\s*,\s*)?('(?:[^'\\]|\\.)*')/g, `$1${callable.id}, $2`)
+    .replace(/(updateFriendsSequential\()\s*\d+\s*,/g, `$1${callable.id},`)
   assert(!/400\d{3}/.test(result), `Harmony callable retained a legacy operation ID: ${callable.name}`)
   return result
 }
@@ -516,6 +499,7 @@ function buildEnterpriseAppleAndroidCoreOutputs(
   publicRoot: string,
   privateRoot: string,
   contract: ContractDocument,
+  delta: EnterpriseDeltaDocument,
 ): GeneratedOutput[] {
   return [
     {
@@ -528,6 +512,7 @@ function buildEnterpriseAppleAndroidCoreOutputs(
         readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.android), 'utf8'),
         contract,
         'android',
+        delta.editionExtensions?.typedResponseParsers,
       ),
     },
     {
@@ -536,15 +521,16 @@ function buildEnterpriseAppleAndroidCoreOutputs(
         readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.ios), 'utf8'),
         contract,
         'ios',
+        delta.editionExtensions?.typedResponseParsers,
       ),
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'),
-      content: generateEvents(privateRoot, contract, 'android'),
+      content: generateEvents(privateRoot, contract, 'android', delta.editionExtensions?.eventPrelude?.android),
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts'),
-      content: generateEvents(privateRoot, contract, 'ios'),
+      content: generateEvents(privateRoot, contract, 'ios', delta.editionExtensions?.eventPrelude?.ios),
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMDriverRuntime.kt'),
@@ -599,7 +585,7 @@ export function buildEnterpriseAppleAndroidGeneratedOutputs(
 ): GeneratedOutput[] {
   const context = buildEnterpriseGenerationContext(publicRoot, privateRoot)
   return normalizeOutputs([
-    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, context.contract),
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, context.contract, context.delta),
     ...buildEnterpriseSharedContractOutputs(privateRoot, context),
   ])
 }
@@ -611,6 +597,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
     readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.harmony), 'utf8'),
     contract,
     'harmony',
+    context.delta.editionExtensions?.typedResponseParsers,
   )
   const harmony = monomorphizeHarmonySource(harmonyRaw)
   const harmonyDriver = renderHarmonyDriverBindings(privateRoot)
@@ -627,7 +614,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
       path: join(privateRoot, 'pages/index/openim-automation-profiles.uts'),
       content: generateAutomationProfileRegistry(testDisposition),
     },
-    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, contract),
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, contract, context.delta),
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/index.uts'),
       content: harmony.source,

@@ -16,12 +16,6 @@ function active(values: Array<{ id: number; name: string }>): StableIDEntry[] {
 }
 
 export function buildEnterpriseStableIDRegistry(delta: EnterpriseDeltaDocument): EnterpriseStableIDRegistry {
-  const callableEntries = active(delta.callables.map(({ id, name }) => ({ id, name })))
-  const offAll = callableEntries.find((entry) => entry.id === 200001 && entry.name === 'offAll')
-  if (offAll != null) {
-    offAll.status = 'retired'
-    offAll.replacement = 'public:callables:2002/offAll'
-  }
   return {
     schemaVersion: 1,
     edition: 'enterprise-delta',
@@ -29,7 +23,7 @@ export function buildEnterpriseStableIDRegistry(delta: EnterpriseDeltaDocument):
       constants: active(delta.constants),
       types: active(delta.types),
       typeExtensions: active(delta.typeExtensions.map((value) => ({ id: value.id, name: value.target }))),
-      callables: callableEntries,
+      callables: active(delta.callables),
       events: active(delta.events),
     },
   }

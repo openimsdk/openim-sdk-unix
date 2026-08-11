@@ -125,31 +125,27 @@ function driverFieldsRequestPrelude(fields: DriverRequestField[], platform: 'and
 }
 
 export const DRIVER_TYPED_RESPONSE_PARSERS: Readonly<Record<string, string>> = {
-  'typed:OpenIMAtAllTagResult|null': 'parseAtAllTagResult',
-  'typed:OpenIMCreateConversationGroupResult|null': 'parseCreateConversationGroupResult',
-  'typed:OpenIMFetchSurroundingMessagesResult|null': 'parseFetchSurroundingMessagesResult',
-  'typed:OpenIMFullSyncResult|null': 'parseFullSyncResult',
-  'typed:OpenIMGetBlacksResult|null': 'parseGetBlacksResult',
-  'typed:OpenIMGetConversationGroupByConversationIDResult|null': 'parseConversationGroupByConversationIDResult',
-  'typed:OpenIMGetConversationGroupInfoWithConversationsResult|null': 'parseConversationGroupInfoWithConversationsResult',
-  'typed:OpenIMGetConversationGroupsResult|null': 'parseConversationGroupsResult',
-  'typed:OpenIMGetGroupMessageReaderListResult|null': 'parseGroupMessageReaderListResult',
-  'typed:OpenIMGetInputStatesResult|null': 'parseInputStatesResult',
-  'typed:OpenIMGetConversationPinnedMsgResult|null': 'parseConversationPinnedMsgResult',
-  'typed:OpenIMModifyMessageResult|null': 'parseModifyMessageResult',
-  'typed:OpenIMSignalingAcceptResult|null': 'parseSignalingAcceptResult',
-  'typed:OpenIMSignalingGetInvitationInfoStartAppResult|null': 'parseSignalingInvitationInfoStartAppResult',
-  'typed:OpenIMSignalingGetRoomByGroupIDResult|null': 'parseSignalingRoomResult',
-  'typed:OpenIMSignalingGetTokenByRoomIDResult|null': 'parseSignalingTokenResult',
-  'typed:OpenIMSignalingInviteResult|null': 'parseSignalingInviteResult',
-  'typed:OpenIMSpeechToTextCapabilitiesResult|null': 'parseSpeechToTextCapabilitiesResult',
-  'typed:OpenIMSpeechToTextResult|null': 'parseSpeechToTextResult',
-  'typed:OpenIMTranslateTextResult|null': 'parseTranslateTextResult',
-  'typed:OpenIMUpdateConversationGroupResult|null': 'parseUpdateConversationGroupResult',
   'typed:OpenIMLoginStatus': 'parseNativeLoginStatus',
   'typed:OpenIMMessageItem|null': 'parseNativeMessage',
   'typed:OpenIMSearchMessageResult|null': 'parseNativeSearchMessageResult',
   'typed:OpenIMUploadFileResult|null': 'parseNativeUploadFileResult',
+}
+
+export function responseParserRegistry(
+  editionParsers: Readonly<Record<string, string>> = {},
+): Readonly<Record<string, string>> {
+  const result: Record<string, string> = { ...DRIVER_TYPED_RESPONSE_PARSERS }
+  for (const [codec, parser] of Object.entries(editionParsers)) {
+    if (!/^typed:[A-Za-z_$][\w$]*(?:<[^>]+>)?(?:\|null)?$/.test(codec)) {
+      throw new Error(`Invalid edition response codec: ${codec}`)
+    }
+    if (!/^[A-Za-z_$][\w$]*$/.test(parser)) throw new Error(`Invalid edition response parser: ${parser}`)
+    if (result[codec] != null && result[codec] !== parser) {
+      throw new Error(`Edition response parser overrides Public authority: ${codec}`)
+    }
+    result[codec] = parser
+  }
+  return result
 }
 
 const DRIVER_PROMISE_RESPONSE_RESOLVERS: Readonly<Record<string, string>> = {
@@ -174,11 +170,14 @@ const DRIVER_PROMISE_RESPONSE_RESOLVERS: Readonly<Record<string, string>> = {
   'typed:OpenIMUserStatusListResult|null': 'resolveUserStatusListNative',
 }
 
-function driverResolveExpression(callable: ContractCallable): string {
+function driverResolveExpression(
+  callable: ContractCallable,
+  responseParsers: Readonly<Record<string, string>>,
+): string {
   if (callable.responseCodec === 'typed:OpenIMMessageItem') {
     return `(data : string) => { resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
   }
-  const parser = DRIVER_TYPED_RESPONSE_PARSERS[callable.responseCodec]
+  const parser = responseParsers[callable.responseCodec]
   if (parser != null) {
     return `(data : string) => { try { resolve(${parser}(data)) } catch (error) { rejectNativeError(reject, -1, '${callable.name} returned unparseable response: ' + stringifyJSON(error)) } }`
   }
@@ -217,21 +216,28 @@ function successCallback(callable: ContractCallable, continuation: string): stri
   return `(data : string) => { ${successHookStatement(callable, hook)};${next} }`
 }
 
-function driverResolveExpressionWithHook(callable: ContractCallable): string {
+function driverResolveExpressionWithHook(
+  callable: ContractCallable,
+  responseParsers: Readonly<Record<string, string>>,
+): string {
   const lowering = callable.lowering
   const hook = lowering?.kind === 'platform-driver' ? lowering.successHook : undefined
-  if (hook == null) return driverResolveExpression(callable)
+  if (hook == null) return driverResolveExpression(callable, responseParsers)
   if (callable.responseCodec === 'typed:OpenIMMessageItem') {
     return `(data : string) => { ${successHookStatement(callable, hook)}; resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
   }
-  const parser = DRIVER_TYPED_RESPONSE_PARSERS[callable.responseCodec]
+  const parser = responseParsers[callable.responseCodec]
   if (parser != null) {
     return `(data : string) => { ${successHookStatement(callable, hook)}; try { resolve(${parser}(data)) } catch (error) { rejectNativeError(reject, -1, '${callable.name} returned unparseable response: ' + stringifyJSON(error)) } }`
   }
   throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
 }
 
-function renderLoweredCallable(callable: ContractCallable, platform: Platform): string {
+function renderLoweredCallable(
+  callable: ContractCallable,
+  platform: Platform,
+  responseParsers: Readonly<Record<string, string>>,
+): string {
   const lowering = callable.lowering
   if (lowering == null) throw new Error(`Missing callable lowering: ${callable.name}`)
   const { parameters, returnType } = callableSignatureParts(callable)
@@ -346,14 +352,18 @@ function renderLoweredCallable(callable: ContractCallable, platform: Platform): 
     const success = resolveCallback === 'resolve(data)' ? 'resolve' : resolveCallback
     return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}(${apiName}(resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${success}, reject) }) }`
   }
-  const resolveExpression = driverResolveExpressionWithHook(callable)
+  const resolveExpression = driverResolveExpressionWithHook(callable, responseParsers)
   return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
 }
 
-function platformDeclaration(callable: ContractCallable, platform: Platform): string {
+function platformDeclaration(
+  callable: ContractCallable,
+  platform: Platform,
+  responseParsers: Readonly<Record<string, string>>,
+): string {
   if (callable.lowering != null) {
     const universal = callable.lowering.kind === 'local-promise' || callable.lowering.kind === 'synthetic-event-subscription'
-    if (platform !== 'harmony' || universal) return renderLoweredCallable(callable, platform)
+    if (platform !== 'harmony' || universal) return renderLoweredCallable(callable, platform, responseParsers)
   }
   const declaration = callable.declaration?.[platform]
   if (!declaration) throw new Error(`Missing ${platform} declaration for ${callable.name}`)
@@ -366,17 +376,19 @@ export function generateIndexFromTemplate(
   template: string,
   contract: ContractDocument,
   platform: Platform,
+  editionResponseParsers: Readonly<Record<string, string>> = {},
 ): string {
+  const responseParsers = responseParserRegistry(editionResponseParsers)
   const constants = contract.constants
     .map((value) => `export const ${value.name} : ${value.type} = ${value.value}`)
     .join('\n')
   const eventCallables = contract.callables
     .filter((value) => value.role !== 'operation')
-    .map((value) => platformDeclaration(value, platform))
+    .map((value) => platformDeclaration(value, platform, responseParsers))
     .join('\n\n')
   const operations = contract.callables
     .filter((value) => value.role === 'operation')
-    .map((value) => platformDeclaration(value, platform))
+    .map((value) => platformDeclaration(value, platform, responseParsers))
     .join('\n')
   return generatedSource(template
     .replace(INDEX_MARKERS.constants, constants)
@@ -497,14 +509,20 @@ function generateOffCase(event: ContractEvent): string {
 `
 }
 
-export function generateEvents(root: string, contract: ContractDocument, platform: 'android' | 'ios'): string {
+export function generateEvents(
+  root: string,
+  contract: ContractDocument,
+  platform: 'android' | 'ios',
+  editionPrelude = '',
+): string {
   const prelude = readFileSync(join(root, `sdk-src/uts/app-${platform}/events.prelude.uts`), 'utf8').trim()
+  const extension = editionPrelude.trim()
   const state = contract.events.map(generateEventState).join('\n')
   const removals = contract.events.map(generateEventRemoval).join('\n\n')
   const registrations = contract.events.map(generateEventRegistration).join('\n\n')
   const dispatchCases = contract.events.map((event) => generateDispatchCase(event, platform)).join('\n')
   const offCases = contract.events.map(generateOffCase).join('\n')
-  return generatedSource(`${prelude}
+  return generatedSource(`${prelude}${extension.length === 0 ? '' : `\n${extension}`}
 
 ${state}
 let nextEventHandlerID : number = 1
@@ -517,6 +535,10 @@ ${dispatchCases}
       console.error('[unix-openim-sdk] ignored unknown native event: ' + eventName)
       break
   }
+}
+
+export function emitProjectedSDKEvent(eventName : OpenIMSDKEventName, payload : string, errCode : number, errMsg : string) {
+  emitSDKEvent(eventName, payload, errCode, errMsg)
 }
 
 function bindNativeEvents() {

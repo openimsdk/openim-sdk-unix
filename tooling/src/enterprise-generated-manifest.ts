@@ -21,6 +21,7 @@ export const ENTERPRISE_APPLE_ANDROID_GENERATED_MANIFEST_PATH = 'contracts/enter
 export const ENTERPRISE_GENERATOR_AUTHORITY_INPUTS = [
   'contracts/base/contract.json',
   'contracts/enterprise/delta.json',
+  'contracts/enterprise/harmony-bindings.json',
   'contracts/enterprise/native-abi/harmony.json',
   'sdk-src/uts/app-android/index.enterprise.template.uts',
   'sdk-src/uts/app-ios/index.enterprise.template.uts',
@@ -51,6 +52,7 @@ export const ENTERPRISE_APPLE_ANDROID_GENERATOR_AUTHORITY_INPUTS = ENTERPRISE_GE
   (path) => path === 'sdk-src/uts/app-harmony/facade-projection.json'
     || (!path.includes('app-harmony')
     && !path.includes('harmony-')
+    && path !== 'contracts/enterprise/harmony-bindings.json'
     && path !== 'contracts/enterprise/native-abi/harmony.json'
     && path !== 'sdk-src/native/harmony/OpenIMHarmonyDriver.ets'
     && path !== 'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har'),

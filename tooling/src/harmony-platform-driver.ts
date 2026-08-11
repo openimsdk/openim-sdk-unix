@@ -18,7 +18,7 @@ export function renderHarmonyPlatformDriver(
   const events = contract.events.flatMap((event) => {
     const callable = callables.get(event.callable)
     assert(callable != null, `Harmony event callable is missing: ${event.callable}`)
-    if (event.binding.harmony === 'unsupported-by-native-abi') {
+    if (event.binding.harmony === 'unsupported-by-native-abi' || event.binding.harmony === 'projected') {
       return []
     }
     assert(event.name.startsWith('on'), `Harmony public event does not follow the on* naming convention: ${event.name}`)

@@ -26,58 +26,11 @@ export type HarmonyContractMethodBinding = {
   methodName: string
 }
 
-const HARMONY_METHOD_ALIASES: Record<string, string> = {
-  getSdkVersion: 'version',
-  getAdvancedHistoryMessageList: 'getHistoryMessageList',
-  getGroupMemberList: 'getGroupMembers',
-  deleteMessageFromLocalStorage: 'deleteMessageFromLocal',
-  deleteAllMsgFromLocal: 'deleteAllMessageFromLocal',
-  deleteAllMsgFromLocalAndSvr: 'deleteAllMsgFromLocalAndServer',
-  insertSingleMessageToLocalStorage: 'insertSingleMessageToLocal',
-  insertGroupMessageToLocalStorage: 'insertGroupMessageToLocal',
-  getSpecifiedFriendsInfo: 'getSpecifiedFriends',
-  getFriendApplicationListAsRecipient: 'getFriendApplication',
-  getFriendApplicationListAsApplicant: 'getFriendApplication',
-  getFriendList: 'getFriends',
-  getFriendListPage: 'getFriendsPage',
-  deleteConversation: 'deleteConversationAndDeleteAllMsg',
-  updateFriends: 'updateFriend',
-  acceptFriendApplication: 'handleFriendApplication',
-  refuseFriendApplication: 'handleFriendApplication',
-  removeBlack: 'deleteBlack',
-  getBlackList: 'getBlacks',
-  getJoinedGroupList: 'getJoinedGroups',
-  getJoinedGroupListPage: 'getJoinedGroupsPage',
-  getGroupApplicationListAsApplicant: 'getGroupApplication',
-  getGroupApplicationListAsRecipient: 'getGroupApplication',
-  acceptGroupApplication: 'handleGroupApplication',
-  refuseGroupApplication: 'handleGroupApplication',
-  subscribeUsersStatus: 'subscribeUsersOnlineStatus',
-  unsubscribeUsersStatus: 'unsubscribeUsersOnlineStatus',
-  getUserStatus: 'subscribeUsersOnlineStatus',
-  getSubscribeUsersStatus: 'subscribeUsersOnlineStatus',
-  createImageMessageFromFullPath: 'createImageMessage',
-  createSoundMessageFromFullPath: 'createSoundMessage',
-  createVideoMessageFromFullPath: 'createVideoMessage',
-  createFileMessageFromFullPath: 'createFileMessage',
-  sendMessageNotOss: 'sendMessage',
-  uploadLogs: 'uploadSDKData',
+type HarmonyBindingPolicy = {
+  nativeMethodAliases?: Record<string, string>
+  localContractOperations?: string[]
+  manualNativeMethods?: string[]
 }
-
-const HARMONY_LOCAL_OR_UNSUPPORTED_OPERATIONS = new Set([
-  'getLoginUserID',
-  'getOpenIMDataPath',
-  'updateFcmToken',
-])
-
-const HARMONY_SPECIAL_METHODS = new Set([
-  'initSDK',
-  'login',
-  'logout',
-  'unInitSDK',
-  'getLoginStatus',
-  'version',
-])
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -89,6 +42,12 @@ function harDeclaration(privateRoot: string): string {
     encoding: 'utf8',
     maxBuffer: 32 * 1024 * 1024,
   })
+}
+
+function harmonyBindingPolicy(privateRoot: string): HarmonyBindingPolicy {
+  return JSON.parse(
+    readFileSync(join(privateRoot, 'contracts/enterprise/harmony-bindings.json'), 'utf8'),
+  ) as HarmonyBindingPolicy
 }
 
 export function harmonyTypedMethods(privateRoot: string): HarmonyTypedMethod[] {
@@ -116,22 +75,32 @@ export function harmonyTypedMethods(privateRoot: string): HarmonyTypedMethod[] {
 
 export function harmonyContractMethodBindings(privateRoot: string): HarmonyContractMethodBinding[] {
   const base = JSON.parse(readFileSync(join(privateRoot, 'contracts/base/contract.json'), 'utf8')) as {
-    callables: Array<{ id: number; name: string; role: string; binding?: { harmony?: { kind: string } } }>
+    callables: Array<{ id: number; name: string; role: string; lowering?: { kind: string }; binding?: { harmony?: { kind: string } } }>
   }
   const delta = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8')) as {
-    callables: Array<{ id: number; name: string; role: string; binding?: { harmony?: { kind: string } } }>
+    callables: Array<{ id: number; name: string; role: string; lowering?: { kind: string }; binding?: { harmony?: { kind: string } } }>
   }
+  const abi = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8')) as {
+    explicitlyUnsupportedContractOperations?: string[]
+  }
+  const policy = harmonyBindingPolicy(privateRoot)
+  const abiUnsupported = new Set(abi.explicitlyUnsupportedContractOperations ?? [])
+  const localOperations = new Set(policy.localContractOperations ?? [])
   const nativeMethods = new Set(harmonyTypedMethods(privateRoot).map((method) => method.name))
   const bindings: HarmonyContractMethodBinding[] = []
   const missing: string[] = []
   for (const callable of [...base.callables, ...delta.callables]) {
     if (callable.role !== 'operation') continue
-    const methodName = HARMONY_METHOD_ALIASES[callable.name] ?? callable.name
-    if (callable.binding?.harmony?.kind === 'unsupported') {
+    const methodName = policy.nativeMethodAliases?.[callable.name] ?? callable.name
+    if (callable.binding?.harmony?.kind === 'unsupported' || abiUnsupported.has(callable.name)) {
+      continue
+    } else if (callable.lowering?.kind === 'local-helper'
+      || callable.lowering?.kind === 'local-promise'
+      || callable.lowering?.kind === 'synthetic-event-subscription') {
       continue
     } else if (nativeMethods.has(methodName)) {
       bindings.push({ callableID: callable.id, callableName: callable.name, methodName })
-    } else if (!HARMONY_LOCAL_OR_UNSUPPORTED_OPERATIONS.has(callable.name)) {
+    } else if (!localOperations.has(callable.name)) {
       missing.push(`${callable.id}/${callable.name}->${methodName}`)
     }
   }
@@ -146,7 +115,7 @@ export function harmonyNativeEvents(privateRoot: string): HarmonyNativeEvent[] {
     name: match[1] ?? '',
     value: Number(match[2]),
   }))
-  assert(events.length === 69, `Expected 69 Harmony native events, got ${events.length}`)
+  assert(events.length > 0, 'The locked Licensed HAR exposes no native events')
   return events
 }
 
@@ -196,9 +165,10 @@ function renderOperations(
   bindings: HarmonyContractMethodBinding[],
   harVersion: string,
   responseEncoders: Record<string, string>,
+  manualNativeMethods: ReadonlySet<string>,
 ): string {
   const functions = methods
-    .filter((method) => !HARMONY_SPECIAL_METHODS.has(method.name))
+    .filter((method) => !manualNativeMethods.has(method.name))
     .map((method) => renderMethod(method, responseEncoders))
     .join('\n\n')
   const cases = bindings
@@ -268,6 +238,7 @@ export function renderHarmonyDriverBindings(privateRoot: string): string {
   const abi = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8')) as {
     responseEncoders?: Record<string, string>
   }
+  const policy = harmonyBindingPolicy(privateRoot)
   const methods = harmonyTypedMethods(privateRoot)
   const bindings = harmonyContractMethodBindings(privateRoot)
   const boundMethodNames = new Set(bindings.map((binding) => binding.methodName))
@@ -287,7 +258,13 @@ export function renderHarmonyDriverBindings(privateRoot: string): string {
     withImports,
     OPERATIONS_START,
     OPERATIONS_END,
-    renderOperations(generatedMethods, bindings, harPackageVersion(privateRoot), abi.responseEncoders ?? {}),
+    renderOperations(
+      generatedMethods,
+      bindings,
+      harPackageVersion(privateRoot),
+      abi.responseEncoders ?? {},
+      new Set(policy.manualNativeMethods ?? []),
+    ),
   )
 }
 

@@ -17,7 +17,7 @@
   "publicNative": {
     "source": {
       "repository": "https://github.com/openimsdk/openim-sdk-core",
-      "revision": "3422edca94f0178d8151397620e65b26e1665bc1",
+      "revision": "d6e0b549db904d0327d76ef7c9c283203879a095",
       "branch": "v3.8.3-patch",
       "rootEnvironmentVariable": "OPENIM_PUBLIC_CORE_DIR",
       "siblingDirectories": [
@@ -27,25 +27,26 @@
     },
     "android": {
       "sourcePath": "open_im_sdk.aar",
-      "sha256": "a0b9ab0beb9d7c4b851c678f19ea072c7ca6b629aaa14a5e1dc93fc641d3e2e0",
+      "sha256": "99f2a26556d07778f13bb44a4d70a0aea0e53110533787d3716703696d9e82e4",
       "localOverridePath": "uni_modules/unix-openim-sdk/utssdk/app-android/libs/open_im_sdk.aar",
-      "externalCoordinate": "io.openim:core-sdk:3.8.3-patch14.1@aar",
-      "externalAbiStatus": "release-blocked-until-proven-identical"
+      "externalCoordinate": "io.openim:core-sdk:3.8.3-patch15@aar",
+      "externalAbiStatus": "proven-identical",
+      "externalArtifactSha256": "99f2a26556d07778f13bb44a4d70a0aea0e53110533787d3716703696d9e82e4"
     },
     "ios": {
       "sourcePath": "build/OpenIMCore.xcframework.zip",
-      "zipSha256": "f3307833843fd7182bc6485e8ef3391efb9f915ac4f297e79471f48c9db3a75f",
-      "extractedInventorySha256": "842500ed71345c5d009b5ce865eadb1fd209d09b24318005623e5f5883813f19",
+      "zipSha256": "ed7c0cb9aea60e5604b6004c5eb0cf4686c062216f9b44b35be74a3ab83c98f1",
+      "extractedInventorySha256": "61d9b73c39bb69d2442e4c4452c0e3ce81043623ab3b8c50704a85b1d4c8f722",
       "localOverridePath": "uni_modules/unix-openim-sdk/utssdk/app-ios/Frameworks/OpenIMCore.xcframework",
-      "localOverrideInventorySha256": "bedc19e3ffb142502cfdaad5ddfa641539248b2c906cd3932622e7e8245d9602",
+      "localOverrideInventorySha256": "61d9b73c39bb69d2442e4c4452c0e3ce81043623ab3b8c50704a85b1d4c8f722",
       "externalPod": "OpenIMSDKCore",
-      "externalVersion": "3.8.3-hotfix.14-dynamic",
-      "externalAbiStatus": "release-blocked-until-proven-identical"
+      "externalVersion": "3.8.3-hotfix.15-dynamic.1",
+      "externalAbiStatus": "proven-identical",
+      "externalInventorySha256": "61d9b73c39bb69d2442e4c4452c0e3ce81043623ab3b8c50704a85b1d4c8f722"
     }
   },
   "minimumPlatforms": {
     "androidApi": 21,
-    "ios": "12.0",
-    "harmonyApi": 24
+    "ios": "14.0"
   }
 }

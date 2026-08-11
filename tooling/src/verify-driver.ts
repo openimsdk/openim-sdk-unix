@@ -399,26 +399,22 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     'Enterprise iOS teardown barrier',
   )
 
-  const listenerNames = [
-    'AdvancedMsg',
-    'Conversation',
-    'ConversationGroup',
-    'CustomBusiness',
-    'Friend',
-    'Group',
-    'MessageKvInfo',
-    'Signaling',
-    'DataMigration',
-    'User',
-  ]
+  const androidListenerNames = new Set(
+    [...androidFacade.matchAll(/\bset([A-Za-z][A-Za-z0-9]*)Listener\(/g)].map((match) => match[1] ?? ''),
+  )
+  const iosListenerNames = new Set(
+    [...iosFacade.matchAll(/Open_im_sdkSet([A-Za-z][A-Za-z0-9]*)Listener\(/g)].map((match) => match[1] ?? ''),
+  )
+  assert(androidListenerNames.size > 0, 'Enterprise Android listener inventory is empty')
+  assert(iosListenerNames.size > 0, 'Enterprise iOS listener inventory is empty')
   assertExcludes(
     androidFacade,
-    listenerNames.map((name) => `set${name}Listener(null)`),
+    [...androidListenerNames].map((name) => `set${name}Listener(null)`),
     'Enterprise Android listener teardown',
   )
   assertExcludes(
     iosFacade,
-    listenerNames.map((name) => `Set${name}Listener(nil)`),
+    [...iosListenerNames].map((name) => `Set${name}Listener(nil)`),
     'Enterprise iOS listener teardown',
   )
   assert(androidFacade.includes('UTS-COMPAT-NATIVE-LISTENER-001'), 'Enterprise Android listener workaround is not documented')

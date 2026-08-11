@@ -372,7 +372,17 @@ function eventCorrelationPayloadMatches(eventName, recorded, payloadIdentity) {
   return identityField.length > 0 && recorded[identityField] === payloadIdentity
 }
 
-function validCallableEventCorrelation(value, apiName, eventName) {
+function valueAtPath(value, path) {
+  if (!isRecord(value) || typeof path !== 'string' || path.length === 0) return undefined
+  let current = value
+  for (const segment of path.split('.')) {
+    if (!isRecord(current) || !Object.hasOwn(current, segment)) return undefined
+    current = current[segment]
+  }
+  return current
+}
+
+function validCallableEventCorrelation(value, apiName, eventName, identityPath) {
   if (!isRecord(value)) return false
   if (value.operationApiName !== apiName || value.eventName !== eventName || value.payloadMatched !== true) return false
   if (!Number.isFinite(value.operationSequence) || !Number.isFinite(value.eventSequence)) return false
@@ -414,11 +424,8 @@ function validCallableEventCorrelation(value, apiName, eventName) {
     }
     recorded = normalizeRecordedValue(recorded, 'uts-typed-json-v1')
     if (!isRecord(recorded)) return false
-    if (eventName === 'onReceiveCustomSignaling') {
-      return recorded.customInfo === value.payloadIdentity
-    }
-    if (isRecord(recorded.invitation)) {
-      return recorded.invitation.roomID === value.payloadIdentity
+    if (typeof identityPath === 'string' && identityPath.length > 0) {
+      return valueAtPath(recorded, identityPath) === value.payloadIdentity
     }
     return eventCorrelationPayloadMatches(eventName, recorded, value.payloadIdentity)
   }
@@ -439,23 +446,42 @@ function callableEventCorrelationResult(candidates, contractCase) {
   const missing = []
   const invalid = []
   for (const eventName of expectedEvents) {
+    const identityPath = isRecord(contractCase.eventIdentityPaths)
+      ? contractCase.eventIdentityPaths[eventName]
+      : undefined
     const matching = correlations.filter((item) => isRecord(item) && item.eventName === eventName)
     if (matching.length === 0) {
       missing.push(eventName)
-    } else if (!matching.some((item) => validCallableEventCorrelation(item, contractCase.apiName, eventName))) {
+    } else if (!matching.some((item) => validCallableEventCorrelation(item, contractCase.apiName, eventName, identityPath))) {
       invalid.push(eventName)
     }
   }
   let coherentWindow = false
   if (missing.length === 0 && invalid.length === 0) {
     const firstEvent = expectedEvents[0]
-    const startingPoints = correlations.filter((item) => validCallableEventCorrelation(item, contractCase.apiName, firstEvent))
+    const firstIdentityPath = isRecord(contractCase.eventIdentityPaths)
+      ? contractCase.eventIdentityPaths[firstEvent]
+      : undefined
+    const startingPoints = correlations.filter((item) => validCallableEventCorrelation(
+      item,
+      contractCase.apiName,
+      firstEvent,
+      firstIdentityPath,
+    ))
     for (const startingPoint of startingPoints) {
       let previousSequence = startingPoint.eventSequence
       let coherent = true
       for (let index = 1; index < expectedEvents.length; index += 1) {
         const eventName = expectedEvents[index]
-        const match = correlations.find((item) => validCallableEventCorrelation(item, contractCase.apiName, eventName)
+        const identityPath = isRecord(contractCase.eventIdentityPaths)
+          ? contractCase.eventIdentityPaths[eventName]
+          : undefined
+        const match = correlations.find((item) => validCallableEventCorrelation(
+          item,
+          contractCase.apiName,
+          eventName,
+          identityPath,
+        )
           && item.operationSequence === startingPoint.operationSequence
           && item.operationEpoch === startingPoint.operationEpoch
           && item.eventSequence > previousSequence)

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import type { ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
+import type { ContractCallable, ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
+import { preserveEnterpriseCallableAuthority } from '../src/enterprise-contract.js'
 import {
   callableOverrideHash,
   composeEnterpriseContract,
@@ -8,13 +9,15 @@ import {
   mergePublicTemplateHelpers,
   type EnterpriseHarmonyFacadeProjection,
 } from '../src/enterprise-compose.js'
-import { generateIndexFromTemplate } from '../src/generate.js'
+import { generateEvents, generateIndexFromTemplate } from '../src/generate.js'
 import {
   demonomorphizeHarmonySource,
   monomorphizeHarmonySource,
   type HarmonyMonomorphicManifest,
 } from '../src/harmony-monomorphize.js'
 import { normalizeContractText, sha256 } from '../src/source.js'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 function baseContract(): ContractDocument {
   return {
@@ -246,6 +249,14 @@ test('edition extensions lower local promises, synthetic events, and lifecycle h
   assert.match(harmonySource, /return registerLocalStateChanged\(handler\)/)
 })
 
+test('edition-owned event prelude is appended without changing the Public prelude authority', () => {
+  const marker = "import { EditionHandler } from '../interface.uts'\nfunction parseEditionEvent(payload : string) : string { return payload }"
+  const generated = generateEvents(resolve('.'), baseContract(), 'android', marker)
+  assert.match(generated, /import \{ EditionHandler \} from '\.\.\/interface\.uts'/)
+  assert.match(generated, /function parseEditionEvent\(payload : string\)/)
+  assert.equal(readFileSync(resolve('sdk-src/uts/app-android/events.prelude.uts'), 'utf8').includes('EditionHandler'), false)
+})
+
 test('Harmony event subscriptions and offAll are projected through the public-name registry', () => {
   const eventCallable = {
     id: 2003,
@@ -264,37 +275,114 @@ test('Harmony event subscriptions and offAll are projected through the public-na
   )
 })
 
-test('Harmony local operation wrappers lower to the PlatformDriver seam', () => {
+test('Harmony edition projections receive contract-owned operation IDs without method-name policy', () => {
   const cases = [
     {
-      id: 2069,
-      name: 'setAppBackgroundStatus',
-      declaration: "export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.setAppBackgroundStatus(data, normalizeOperationID(operationID)), 'setAppBackgroundStatus') }",
-      expected: "invokeHarmonyEmpty(2069, 'setAppBackgroundStatus', { isBackground: data } as ESObject, operationID)",
+      id: 8101,
+      name: 'editionEmptyOperation',
+      declaration: "export const editionEmptyOperation = function (operationID ?: string | null) : Promise<string> { return invokeHarmonyEmpty(400901, 'nativeEmptyOperation', {} as ESObject, operationID) }",
+      expected: "invokeHarmonyEmpty(8101, 'nativeEmptyOperation', {} as ESObject, operationID)",
     },
     {
-      id: 2070,
-      name: 'setAppBadge',
-      declaration: "export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.setAppBadge(appUnreadCount, normalizeOperationID(operationID)), 'setAppBadge') }",
-      expected: "invokeHarmonyEmpty(2070, 'setAppBadge', { appUnreadCount: appUnreadCount } as ESObject, operationID)",
+      id: 8102,
+      name: 'editionMappedOperation',
+      declaration: "export const editionMappedOperation = function (operationID ?: string | null) : Promise<string> { return invokeHarmonyMapped<string>(400902, 'nativeMappedOperation', {} as ESObject, operationID, mapEditionResult) }",
+      expected: "invokeHarmonyMapped<string>(8102, 'nativeMappedOperation', {} as ESObject, operationID, mapEditionResult)",
     },
     {
-      id: 2071,
-      name: 'networkStatusChanged',
-      declaration: "export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.networkStatusChanged(normalizeOperationID(operationID)), 'networkStatusChanged') }",
-      expected: "invokeHarmonyEmpty(2071, 'networkStatusChanged', {} as ESObject, operationID)",
-    },
-    {
-      id: 200034,
-      name: 'cancelUpload',
-      declaration: "export const cancelUpload = function (params : OpenIMCancelUploadParams, operationID ?: string | null) : Promise<string> { return wrapHarmonyPromise<string>(OpenIMHarmonyDriver.cancelUpload(params.cancelID, normalizeOperationID(operationID)), 'cancelUpload') }",
-      expected: "invokeHarmonyEmpty(200034, 'cancelUpload', { cancelID: params.cancelID } as ESObject, operationID)",
+      id: 8103,
+      name: 'editionSequentialOperation',
+      declaration: "export const editionSequentialOperation = function (params : EditionParams, operationID ?: string | null) : Promise<string> { return updateFriendsSequential(400903, params, operationID) }",
+      expected: 'updateFriendsSequential(8103, params, operationID)',
     },
   ]
   for (const value of cases) {
     const callable = { id: value.id, name: value.name, role: 'operation' } as ContractDocument['callables'][number]
     const declaration = composeHarmonyDeclaration(callable, value.declaration)
     assert.match(declaration, new RegExp(value.expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-    assert.doesNotMatch(declaration, /OpenIMHarmonyDriver/)
+    assert.doesNotMatch(declaration, /4009\d{2}/)
+  }
+})
+
+test('generated event registries expose an edition-neutral synthetic event emitter', () => {
+  const source = readFileSync(
+    resolve(import.meta.dirname, '../../uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'),
+    'utf8',
+  )
+  assert.match(source, /export function emitProjectedSDKEvent\(eventName : OpenIMSDKEventName, payload : string, errCode : number, errMsg : string\)/)
+})
+
+test('Enterprise facade import preserves structured callable authority without private names', () => {
+  const existing: ContractCallable = {
+    id: 9001,
+    name: 'enterpriseOperation',
+    signature: 'enterpriseOperation(params:Params,operationID?:string|null):Promise<string>',
+    completion: 'promise',
+    responseCodec: 'raw-string',
+    errorPolicy: 'frozen-native-rejection',
+    rawString: true,
+    role: 'operation',
+    testProfile: { semanticProfile: 'response-identity', sideEffectProbe: 'none' },
+    lowering: {
+      kind: 'platform-driver', transport: 'async', operationID: 'parameter', request: 'empty-object',
+    },
+    binding: {
+      android: { kind: 'native', symbol: 'enterpriseOperation' },
+      ios: { kind: 'native', symbol: 'enterpriseOperation' },
+      harmony: { kind: 'unsupported', symbol: 'unsupported-by-native-abi' },
+    },
+    signatureHash: 'old',
+  }
+  const extracted: ContractCallable = {
+    ...existing,
+    id: 0,
+    testProfile: { semanticProfile: 'extracted-semantic', sideEffectProbe: 'extracted-side-effect' },
+    declaration: { android: 'generated', ios: 'generated', harmony: 'generated' },
+    binding: {
+      android: { kind: 'facade-alias', symbol: 'resolveStringNative' },
+      ios: { kind: 'facade-alias', symbol: 'resolveStringNative' },
+      harmony: { kind: 'native', symbol: 'enterpriseOperation' },
+    },
+    signatureHash: 'extracted',
+  }
+  const result = preserveEnterpriseCallableAuthority(existing, extracted)
+  assert.equal(result.declaration, undefined)
+  assert.deepEqual(result.lowering, existing.lowering)
+  assert.deepEqual(result.binding.android, existing.binding.android)
+  assert.deepEqual(result.binding.ios, existing.binding.ios)
+  assert.deepEqual(result.binding.harmony, extracted.binding.harmony)
+  assert.deepEqual(result.testProfile, existing.testProfile)
+  assert.notEqual(result.signatureHash, 'old')
+  assert.notEqual(result.signatureHash, 'extracted')
+})
+
+test('Enterprise facade import keeps local and synthetic bindings under edition authority', () => {
+  for (const lowering of [
+    { kind: 'local-promise', symbol: 'readLocal' },
+    { kind: 'synthetic-event-subscription', symbol: 'registerLocal' },
+  ] as const) {
+    const existing = {
+      id: 9002,
+      name: 'editionCallable',
+      signature: 'editionCallable():Promise<string>',
+      completion: 'promise', responseCodec: 'raw-string', errorPolicy: 'frozen-native-rejection',
+      rawString: true, role: 'operation', lowering,
+      binding: {
+        android: { kind: 'facade-alias', symbol: 'editionAndroid' },
+        ios: { kind: 'facade-alias', symbol: 'editionIOS' },
+        harmony: { kind: 'facade-alias', symbol: 'editionHarmony' },
+      },
+      signatureHash: 'old',
+    } as ContractCallable
+    const extracted = {
+      ...existing,
+      declaration: { android: 'generated', ios: 'generated', harmony: 'generated' },
+      binding: {
+        android: { kind: 'none', symbol: '' },
+        ios: { kind: 'none', symbol: '' },
+        harmony: { kind: 'none', symbol: '' },
+      },
+    } as ContractCallable
+    assert.deepEqual(preserveEnterpriseCallableAuthority(existing, extracted).binding, existing.binding)
   }
 })
