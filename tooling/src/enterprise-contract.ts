@@ -77,6 +77,10 @@ export function canonicalCapabilityNames(values: Iterable<string>): string[] {
   return [...new Set(values)].sort()
 }
 
+export function countHarmonyBoundEvents(events: Array<{ binding: string }>): number {
+  return events.filter((event) => event.binding === 'bound').length
+}
+
 export function preserveEnterpriseCallableAuthority(
   existing: ContractCallable,
   extracted: ContractCallable,
@@ -582,7 +586,7 @@ export function verifyEnterpriseDelta(
   }
   assert(harmonyABI.eventCount === 69, 'Harmony HAR event enum count changed')
   assert(
-    harmonyABI.supportedContractEventCount === delta.expectedTotal.events - expectedUnsupportedEvents.length,
+    harmonyABI.supportedContractEventCount === countHarmonyBoundEvents(harmonyProjection.events),
     'Harmony supported contract event count changed',
   )
   assert(harmonyABI.methodCount > 100, 'Harmony HAR method inventory is unexpectedly small')
