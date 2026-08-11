@@ -82,6 +82,17 @@ export interface DriverNativeInvocation {
   deferIOSResolution?: boolean
 }
 
+export type DriverSuccessHookArgument =
+  | { kind: 'parameter'; name: string }
+  | { kind: 'result' }
+  | { kind: 'literal'; value: string | number | boolean | null }
+
+export interface DriverSuccessHook {
+  symbol: string
+  when: 'always' | 'boolean-true'
+  arguments: DriverSuccessHookArgument[]
+}
+
 export type CallableLowering =
   | {
     kind: 'event-control'
@@ -92,8 +103,18 @@ export type CallableLowering =
     symbol: string
   }
   | {
+    kind: 'local-promise'
+    symbol: string
+    arguments: string[]
+  }
+  | {
     kind: 'event-subscription'
     eventName: string
+  }
+  | {
+    kind: 'synthetic-event-subscription'
+    eventName: string
+    registerSymbol: string
   }
   | {
     kind: 'callable-alias'
@@ -108,6 +129,7 @@ export type CallableLowering =
     nativeInvocation?: DriverNativeInvocation
     precondition?: 'logged-in-create'
     bindEvents?: boolean
+    successHook?: DriverSuccessHook
   }
 
 export interface ContractCallable {
@@ -223,6 +245,14 @@ export interface EnterpriseDeltaDocument {
     enterpriseHash: string
     reason: string
   }>
+  editionExtensions?: {
+    localOperations: string[]
+    syntheticEvents: string[]
+    lifecycleEffects: Array<{
+      callable: string
+      successHook: DriverSuccessHook
+    }>
+  }
   constants: ContractConstant[]
   types: ContractType[]
   typeExtensions: EnterpriseTypeExtension[]

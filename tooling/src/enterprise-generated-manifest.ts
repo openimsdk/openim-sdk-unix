@@ -8,10 +8,15 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { buildEnterpriseGeneratedOutputs, generateEnterprise } from './enterprise-compose.js'
+import {
+  buildEnterpriseAppleAndroidGeneratedOutputs,
+  buildEnterpriseGeneratedOutputs,
+  generateEnterprise,
+} from './enterprise-compose.js'
 import { sha256 } from './source.js'
 
 export const ENTERPRISE_GENERATED_MANIFEST_PATH = 'contracts/enterprise/generated-manifest.json'
+export const ENTERPRISE_APPLE_ANDROID_GENERATED_MANIFEST_PATH = 'contracts/enterprise/generated-apple-android-manifest.json'
 
 export const ENTERPRISE_GENERATOR_AUTHORITY_INPUTS = [
   'contracts/base/contract.json',
@@ -42,6 +47,15 @@ export const ENTERPRISE_GENERATOR_AUTHORITY_INPUTS = [
   'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har',
 ] as const
 
+export const ENTERPRISE_APPLE_ANDROID_GENERATOR_AUTHORITY_INPUTS = ENTERPRISE_GENERATOR_AUTHORITY_INPUTS.filter(
+  (path) => path === 'sdk-src/uts/app-harmony/facade-projection.json'
+    || (!path.includes('app-harmony')
+    && !path.includes('harmony-')
+    && path !== 'contracts/enterprise/native-abi/harmony.json'
+    && path !== 'sdk-src/native/harmony/OpenIMHarmonyDriver.ets'
+    && path !== 'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har'),
+)
+
 export type EnterpriseAuthority = 'public' | 'private'
 
 export interface EnterpriseGeneratedManifestInput {
@@ -61,6 +75,15 @@ export interface EnterpriseGeneratedManifest {
   schemaVersion: 2
   edition: 'enterprise'
   generator: 'tooling/src/enterprise-compose.ts#buildEnterpriseGeneratedOutputs'
+  inputs: EnterpriseGeneratedManifestInput[]
+  outputs: EnterpriseGeneratedManifestOutput[]
+}
+
+export interface EnterpriseAppleAndroidGeneratedManifest {
+  schemaVersion: 1
+  edition: 'enterprise'
+  scope: 'apple-android'
+  generator: 'tooling/src/enterprise-compose.ts#buildEnterpriseAppleAndroidGeneratedOutputs'
   inputs: EnterpriseGeneratedManifestInput[]
   outputs: EnterpriseGeneratedManifestOutput[]
 }
@@ -153,6 +176,72 @@ export function writeEnterpriseGeneratedManifest(
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`)
   return manifest
+}
+
+export function buildEnterpriseAppleAndroidGeneratedManifest(
+  publicRoot: string,
+  privateRoot: string,
+): EnterpriseAppleAndroidGeneratedManifest {
+  const inputs = ENTERPRISE_APPLE_ANDROID_GENERATOR_AUTHORITY_INPUTS.map((path): EnterpriseGeneratedManifestInput => {
+    const authority = authorityForInput(path)
+    const bytes = readFileSync(projectPath(authorityRoot(publicRoot, privateRoot, authority), path))
+    return { authority, path, sha256: sha256(bytes), bytes: bytes.byteLength }
+  })
+  const paths = new Set<string>()
+  const outputs = buildEnterpriseAppleAndroidGeneratedOutputs(publicRoot, privateRoot).map((output) => {
+    const path = relativeProjectPath(privateRoot, output.path)
+    assert(!path.includes('/app-harmony/'), `Enterprise apple-android generation included Harmony output: ${path}`)
+    assert(!paths.has(path), `Duplicate Enterprise apple-android generated output: ${path}`)
+    paths.add(path)
+    const bytes = Buffer.from(output.content)
+    return { path, sha256: sha256(bytes), bytes: bytes.byteLength }
+  })
+  return {
+    schemaVersion: 1,
+    edition: 'enterprise',
+    scope: 'apple-android',
+    generator: 'tooling/src/enterprise-compose.ts#buildEnterpriseAppleAndroidGeneratedOutputs',
+    inputs,
+    outputs,
+  }
+}
+
+export function writeEnterpriseAppleAndroidGeneratedManifest(
+  publicRoot: string,
+  privateRoot: string,
+): EnterpriseAppleAndroidGeneratedManifest {
+  const manifest = buildEnterpriseAppleAndroidGeneratedManifest(publicRoot, privateRoot)
+  const path = projectPath(privateRoot, ENTERPRISE_APPLE_ANDROID_GENERATED_MANIFEST_PATH)
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`)
+  return manifest
+}
+
+export function readEnterpriseAppleAndroidGeneratedManifest(privateRoot: string): EnterpriseAppleAndroidGeneratedManifest {
+  const manifest = JSON.parse(
+    readFileSync(projectPath(privateRoot, ENTERPRISE_APPLE_ANDROID_GENERATED_MANIFEST_PATH), 'utf8'),
+  ) as EnterpriseAppleAndroidGeneratedManifest
+  assert(manifest.schemaVersion === 1, 'Unsupported Enterprise apple-android generated manifest schema')
+  assert(manifest.edition === 'enterprise' && manifest.scope === 'apple-android', 'Enterprise apple-android manifest identity changed')
+  assert(
+    manifest.generator === 'tooling/src/enterprise-compose.ts#buildEnterpriseAppleAndroidGeneratedOutputs',
+    'Unknown Enterprise apple-android generated manifest producer',
+  )
+  return manifest
+}
+
+export function assertEnterpriseAppleAndroidGeneratedManifestCurrent(
+  publicRoot: string,
+  privateRoot: string,
+): EnterpriseAppleAndroidGeneratedManifest {
+  const actual = readEnterpriseAppleAndroidGeneratedManifest(privateRoot)
+  const expected = buildEnterpriseAppleAndroidGeneratedManifest(publicRoot, privateRoot)
+  assert(JSON.stringify(actual) === JSON.stringify(expected), 'Enterprise apple-android generated manifest is stale or incomplete')
+  for (const output of actual.outputs) {
+    const bytes = readFileSync(projectPath(privateRoot, output.path))
+    assert(bytes.byteLength === output.bytes && sha256(bytes) === output.sha256, `Enterprise apple-android output is stale: ${output.path}`)
+  }
+  return actual
 }
 
 export function readEnterpriseGeneratedManifest(privateRoot: string): EnterpriseGeneratedManifest {

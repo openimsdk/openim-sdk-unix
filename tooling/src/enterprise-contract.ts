@@ -66,25 +66,6 @@ const APPROVED_BASE_TYPE_OVERRIDES = [{
   name: 'GetLoginUserID',
   enterpriseDeclaration: 'export type GetLoginUserID = (operationID ?: string | null) => Promise<string>',
 }] as const
-const HARMONY_UNSUPPORTED_EVENTS = [
-  'onRecvMessageExtensionsAdded',
-  'onRecvMessageExtensionsChanged',
-  'onRecvMessageExtensionsDeleted',
-  'onGroupApplicationBadgeCountChanged',
-  'onStreamChange',
-  'onMessageKvInfoChanged',
-  'onMigrationStart',
-  'onMigrationProgress',
-  'onMigrationFailed',
-  'onMigrationFinished',
-] as const
-const HARMONY_UNSUPPORTED_OPERATIONS = [
-  'updateFcmToken',
-  'updateToken',
-  'translateText',
-  'getArchivedConversationList',
-  'translateMessage',
-] as const
 const HARMONY_NATIVE_EVENT_ALIASES = {
   onMsgDeleted: 'EventOnMessageDeleted',
   onSendMessageProgress: 'EventOnSendMsgProgress',
@@ -187,7 +168,16 @@ function harmonyBinding(declaration: string, name: string, eventNames: Set<strin
   return { kind: 'none', symbol: '' }
 }
 
-function importHarmonyABI(privateRoot: string): void {
+function importHarmonyABI(
+  privateRoot: string,
+  contractEventCount: number,
+  unsupportedEvents: string[],
+  unsupportedOperations: string[],
+): void {
+  const inventoryPath = join(privateRoot, 'contracts/enterprise/native-abi/harmony.json')
+  const existingInventory = JSON.parse(readFileSync(inventoryPath, 'utf8')) as {
+    responseEncoders?: Record<string, string>
+  }
   const harPath = join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har')
   const declaration = execFileSync('tar', [
     '-xOzf',
@@ -220,10 +210,11 @@ function importHarmonyABI(privateRoot: string): void {
       methods,
       typedMethodCount: typedMethodBindings.length,
       typedMethodBindings,
-      supportedContractEventCount: 70,
+      supportedContractEventCount: contractEventCount - unsupportedEvents.length,
       nativeEventAliases: HARMONY_NATIVE_EVENT_ALIASES,
-      explicitlyUnsupportedContractEvents: [...HARMONY_UNSUPPORTED_EVENTS],
-      explicitlyUnsupportedContractOperations: [...HARMONY_UNSUPPORTED_OPERATIONS],
+      explicitlyUnsupportedContractEvents: unsupportedEvents,
+      explicitlyUnsupportedContractOperations: unsupportedOperations,
+      responseEncoders: existingInventory.responseEncoders ?? {},
     }, null, 2),
   )
 }
@@ -354,7 +345,10 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   for (let index = 0; index < callables.length; index += 1) callables[index]!.id = callableIDs.ids[index]!
 
   const baseEventNames = new Set(base.events.map((value) => value.name))
-  const unsupported = new Set<string>(HARMONY_UNSUPPORTED_EVENTS)
+  const explicitUnsupported = harmonyValues
+    .filter((value) => eventNameSet.has(value.name) && value.declaration.includes('unsupportedHarmonyEvent('))
+    .map((value) => value.name)
+  const unsupported = new Set<string>(explicitUnsupported)
   const events: ContractEvent[] = eventNames
     .filter((name) => !baseEventNames.has(name))
     .map((name) => {
@@ -395,13 +389,9 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   stableIDs = eventIDs.registry
   for (let index = 0; index < events.length; index += 1) events[index]!.id = eventIDs.ids[index]!
 
-  const explicitUnsupported = harmonyValues
-    .filter((value) => value.declaration.includes('unsupportedHarmonyEvent('))
+  const explicitUnsupportedOperations = harmonyValues
+    .filter((value) => value.isCallable && !eventNameSet.has(value.name) && value.declaration.includes('rejectUnsupported'))
     .map((value) => value.name)
-  assert(
-    JSON.stringify(explicitUnsupported) === JSON.stringify(HARMONY_UNSUPPORTED_EVENTS),
-    `Harmony unsupported event inventory changed: ${explicitUnsupported.join(', ')}`,
-  )
   assert(!harmonyIndex.text.includes('noopUnsubscribe'), 'Harmony must not silently noop an event subscription')
   const actualTotal = {
     constants: privateConstantCount,
@@ -444,7 +434,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
   writeEnterpriseStableIDRegistry(privateRoot, stableIDs)
   writeText(join(privateRoot, 'contracts/enterprise/response-schemas.json'), JSON.stringify(buildEnterpriseResponseSchemas(base, delta), null, 2))
   writeText(join(privateRoot, 'contracts/enterprise/test-disposition.json'), JSON.stringify(buildEnterpriseTestDisposition(base, delta), null, 2))
-  importHarmonyABI(privateRoot)
+  importHarmonyABI(privateRoot, eventNames.length, explicitUnsupported, explicitUnsupportedOperations)
   return delta
 }
 
@@ -510,7 +500,19 @@ export function verifyEnterpriseDelta(
   const unsupported = delta.events
     .filter((event) => event.binding.harmony === 'unsupported-by-native-abi')
     .map((event) => event.name)
-  assert(JSON.stringify(unsupported) === JSON.stringify(HARMONY_UNSUPPORTED_EVENTS), 'Enterprise unsupported event list changed')
+  const harmonyProjection = JSON.parse(
+    readFileSync(join(privateRoot, 'contracts/enterprise/harmony-facade-projection.json'), 'utf8'),
+  ) as {
+    callables: Array<{ name: string; binding?: string }>
+    events: Array<{ name: string; binding: string }>
+  }
+  const expectedUnsupportedEvents = harmonyProjection.events
+    .filter((event) => event.binding === 'unsupported-by-native-abi')
+    .map((event) => event.name)
+  const expectedUnsupportedOperations = harmonyProjection.callables
+    .filter((callable) => callable.binding === 'unsupported-by-native-abi')
+    .map((callable) => callable.name)
+  assert(JSON.stringify(unsupported) === JSON.stringify(expectedUnsupportedEvents), 'Enterprise unsupported event projection drifted')
   const responseSchemas = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/response-schemas.json'), 'utf8'))
   const expectedResponseSchemas = buildEnterpriseResponseSchemas(base, delta)
   assert(JSON.stringify(responseSchemas) === JSON.stringify(expectedResponseSchemas), 'Enterprise response schema registry is stale')
@@ -553,9 +555,15 @@ export function verifyEnterpriseDelta(
     hbuilderx: { version: string }
   }
   assert(harmonyABI.eventCount === 69, 'Harmony HAR event enum count changed')
-  assert(harmonyABI.supportedContractEventCount === 70, 'Harmony supported contract event count changed')
+  assert(
+    harmonyABI.supportedContractEventCount === delta.expectedTotal.events - expectedUnsupportedEvents.length,
+    'Harmony supported contract event count changed',
+  )
   assert(harmonyABI.methodCount > 100, 'Harmony HAR method inventory is unexpectedly small')
-  assert(harmonyABI.typedMethodCount === 142, 'Harmony typed Promise method inventory changed')
+  assert(
+    harmonyABI.typedMethodCount === harmonyTypedMethods(privateRoot).length,
+    'Harmony typed Promise method inventory differs from the locked HAR',
+  )
   assert(certification.toolchain.hbuilderxVersion === toolchain.hbuilderx.version, 'Harmony clean-build toolchain certification is stale')
   assert(certification.nativeABI.harSha256 === harmonyABI.artifactSha256, 'Harmony clean-build HAR certification is stale')
   assert(
@@ -567,11 +575,11 @@ export function verifyEnterpriseDelta(
     assert(run.explicitSuccess && !run.failureMarker && run.shellExitCode === 0, 'Harmony clean run did not certify success')
   }
   assert(
-    JSON.stringify(harmonyABI.explicitlyUnsupportedContractEvents) === JSON.stringify(HARMONY_UNSUPPORTED_EVENTS),
+    JSON.stringify(harmonyABI.explicitlyUnsupportedContractEvents) === JSON.stringify(expectedUnsupportedEvents),
     'Harmony ABI unsupported event list changed',
   )
   assert(
-    JSON.stringify(harmonyABI.explicitlyUnsupportedContractOperations) === JSON.stringify(HARMONY_UNSUPPORTED_OPERATIONS),
+    JSON.stringify(harmonyABI.explicitlyUnsupportedContractOperations) === JSON.stringify(expectedUnsupportedOperations),
     'Harmony ABI unsupported operation list changed',
   )
   const harPath = join(privateRoot, harmonyABI.artifactPath)
@@ -644,16 +652,18 @@ export function verifyEnterpriseDelta(
   assert(!/harmonySDK\.(?:on|off|offAll)\s*(?:<[^>]+>)?\s*\(/.test(harmonySource), 'Harmony UTS bypasses the ETS event seam')
   assert(!/harmonySDK\.invoke\s*(?:<[^>]+>)?\s*\(/.test(harmonySource), 'Harmony UTS bypasses the typed operation switch')
   assert(!/harmonySDK\.[A-Za-z_$][\w$]*\s*\(/.test(harmonySource), 'Harmony UTS directly calls the HAR instead of the ETS Driver')
-  for (const eventName of HARMONY_UNSUPPORTED_EVENTS) {
+  for (const eventName of expectedUnsupportedEvents) {
     assert(
       harmonySource.includes(`unsupportedHarmonyEvent('${eventName}')`),
       `Harmony unsupported event is not diagnostic: ${eventName}`,
     )
   }
-  assert(
-    harmonySource.includes("rejectHarmonyPromise__string_473287f8('updateFcmToken', 'is not exposed by the Harmony HAR')"),
-    'Harmony updateFcmToken must reject explicitly while absent from the native ABI',
-  )
+  for (const callableName of expectedUnsupportedOperations) {
+    assert(
+      harmonySource.includes(`'${callableName}', 'is not exposed by the Harmony HAR'`),
+      `Harmony unsupported operation is not diagnostic: ${callableName}`,
+    )
+  }
   verifyEnterpriseDriverInvariants(publicRoot, privateRoot)
 }
 
@@ -684,5 +694,3 @@ export function bootstrapEnterpriseDrivers(publicRoot: string, privateRoot: stri
   ]
   for (const file of files) writeText(file.target, readFileSync(file.source, 'utf8'))
 }
-
-export { HARMONY_UNSUPPORTED_EVENTS }

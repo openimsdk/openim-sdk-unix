@@ -1,5 +1,5 @@
 import Foundation
-import OpenIMCore
+@_implementationOnly import OpenIMCore
 
 typealias OpenIMResolveString = (String) -> Void
 typealias OpenIMReject = (NSNumber, String) -> Void
@@ -281,6 +281,10 @@ class NativeOpenIMSDK {
     private static var sdkInitialized: Bool = false
     private static var sessionEpoch: Int64 = -1
     private static var listenersBoundEpoch: Int64 = -1
+
+    static func splitJSONObjectArray(_ data: String) -> String? {
+        return OpenIMNativeJSONBridge.frameJSONObjectArray(data)
+    }
 
     static func uploadFile(_ operationID: String, _ uploadData: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)

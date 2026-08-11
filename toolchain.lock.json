@@ -7,7 +7,7 @@
       "HBuilderX-Alpha.app/Contents/MacOS/cli",
       "HBuilderX.app/Contents/MacOS/cli"
     ],
-    "cliSha256": "2e0621390eb18bbaa40878dc06a363968326352357ed30af4728b01ffcc61302",
+    "cliSha256": "a22292b1d595c50dd764196233ebff8cedad74af783896876c17880279b69977",
     "utsPluginVersion": "5.23.2026072314.2329",
     "utsPluginManifestRelativeToCLI": "../HBuilderX/plugins/uniapp-uts-v1/package.json",
     "utsPluginManifestSha256": "b3241db7c84445e9d12322663a087dc60aa37dda5af407c5d9253ce3d31b9985",

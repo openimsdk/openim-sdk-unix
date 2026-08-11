@@ -134,6 +134,10 @@ export function readNumberParam(value : any | null, key : string) : number {
 }
 
 export function readBooleanParam(value : any | null, key : string) : boolean {
+  if (value instanceof UTSJSONObject) {
+    const parsed = value.getBoolean(key)
+    if (parsed != null) { return parsed as boolean }
+  }
   const raw = readNativeValue(value, key)
   if (raw != null) {
     if (typeof raw == 'boolean') {
@@ -156,7 +160,22 @@ function parseNativeAny(data : string) : any | null {
 }
 
 function parseNativeJSONObjectListData(data : string) : Array<UTSJSONObject> | null {
-  return JSON.parseArray<UTSJSONObject>(data)
+  const framed = NativeOpenIMSDK.splitJSONObjectArray(data)
+  if (framed == null) { return null }
+  const framedText = framed as string
+  if (framedText.length == 0) { return [] }
+  const result : Array<UTSJSONObject> = []
+  const itemJSONList = framedText.split('\n')
+  let valid = true
+  itemJSONList.forEach((itemJSON : string) => {
+    const value = JSON.parseObject(itemJSON)
+    if (value != null) {
+      result.push(value)
+    } else {
+      valid = false
+    }
+  })
+  return valid ? result : null
 }
 
 export function stringifyOpenIMPicture(value : OpenIMPicture | null) : string {
@@ -536,8 +555,7 @@ function isRequiredStringField(value : UTSJSONObject, key : string) : boolean {
 }
 
 function isRequiredBooleanField(value : UTSJSONObject, key : string) : boolean {
-  const raw = readNativeValue(value, key)
-  return raw != null && typeof raw == 'boolean'
+  return value.getBoolean(key) != null
 }
 
 function isOptionalNumberField(value : UTSJSONObject, key : string) : boolean {
