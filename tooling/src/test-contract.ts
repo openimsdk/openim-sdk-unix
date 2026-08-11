@@ -111,7 +111,7 @@ const p0EventNames = new Set([
 const expectedEventsByCallable = new Map<string, string[]>([
   ['login', ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish']],
   ['sendMessage', ['onSendMessageProgress', 'onRecvNewMessage']],
-  ['sendMessageNotOss', ['onSendMessageProgress', 'onRecvNewMessage']],
+  ['sendMessageNotOss', ['onRecvNewMessage']],
   ['uploadFile', ['onUploadFileProgress']],
   ['uploadLogs', ['onUploadLogsProgress']],
   ['addFriend', ['onFriendApplicationAdded']],

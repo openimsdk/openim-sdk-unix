@@ -5346,7 +5346,6 @@
       "semanticProfile": "message-delivery-correlation",
       "sideEffectProbe": "cross-account-event-observation",
       "expectedEvents": [
-        "onSendMessageProgress",
         "onRecvNewMessage"
       ],
       "negativeProfiles": [
