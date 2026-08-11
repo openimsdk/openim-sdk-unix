@@ -120,13 +120,17 @@ export function harmonyContractMethodBindings(privateRoot: string): HarmonyContr
   const delta = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8')) as {
     callables: Array<{ id: number; name: string; role: string; lowering?: { kind: string }; binding?: { harmony?: { kind: string } } }>
   }
+  const abi = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8')) as {
+    explicitlyUnsupportedContractOperations?: string[]
+  }
+  const abiUnsupported = new Set(abi.explicitlyUnsupportedContractOperations ?? [])
   const nativeMethods = new Set(harmonyTypedMethods(privateRoot).map((method) => method.name))
   const bindings: HarmonyContractMethodBinding[] = []
   const missing: string[] = []
   for (const callable of [...base.callables, ...delta.callables]) {
     if (callable.role !== 'operation') continue
     const methodName = HARMONY_METHOD_ALIASES[callable.name] ?? callable.name
-    if (callable.binding?.harmony?.kind === 'unsupported') {
+    if (callable.binding?.harmony?.kind === 'unsupported' || abiUnsupported.has(callable.name)) {
       continue
     } else if (callable.lowering?.kind === 'local-helper'
       || callable.lowering?.kind === 'local-promise'
