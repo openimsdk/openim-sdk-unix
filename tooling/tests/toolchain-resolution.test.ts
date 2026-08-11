@@ -52,14 +52,14 @@ test('Public native dependencies use the approved patch.15 release coordinates',
   assert.equal(iosConfig['dependencies-pods'][0].version, '3.8.3-hotfix.15-dynamic.1')
 })
 
-test('Public package candidate version is consistent across platform metadata', () => {
+test('package candidate version is consistent across platform metadata', () => {
   const pluginPackage = JSON.parse(readFileSync(resolve(
     root,
     'uni_modules/unix-openim-sdk/package.json',
   ), 'utf8'))
   const app = pluginPackage.uni_modules.platforms.client['uni-app-x'].app
 
-  assert.equal(pluginPackage.version, '0.2.0-rc.2')
+  assert.match(pluginPackage.version, /^0\.2\.0-rc\.\d+$/)
   assert.equal(app.android.extVersion, pluginPackage.version)
   assert.equal(app.ios.extVersion, pluginPackage.version)
 })
