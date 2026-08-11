@@ -403,7 +403,7 @@ export function verifyEnterpriseDriverInvariants(publicRoot: string, privateRoot
     [...androidFacade.matchAll(/\bset([A-Za-z][A-Za-z0-9]*)Listener\(/g)].map((match) => match[1] ?? ''),
   )
   const iosListenerNames = new Set(
-    [...iosFacade.matchAll(/\bSet([A-Za-z][A-Za-z0-9]*)Listener\(/g)].map((match) => match[1] ?? ''),
+    [...iosFacade.matchAll(/Open_im_sdkSet([A-Za-z][A-Za-z0-9]*)Listener\(/g)].map((match) => match[1] ?? ''),
   )
   assert(androidListenerNames.size > 0, 'Enterprise Android listener inventory is empty')
   assert(iosListenerNames.size > 0, 'Enterprise iOS listener inventory is empty')
