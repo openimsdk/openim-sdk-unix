@@ -365,7 +365,7 @@ function buildDisposition(
       const { semanticProfile: profile, sideEffectProbe: probe } = requireCallableTestProfile(callable)
       const expectedEvents = callable.role === 'event-subscription'
         ? [callable.name]
-        : [...(expectedEventsByCallable.get(callable.name) ?? [])]
+        : [...(callable.testProfile.expectedEvents ?? expectedEventsByCallable.get(callable.name) ?? [])]
       const platforms = {
         android: callablePlatformDisposition(edition, callable, capability, 'android'),
         ios: callablePlatformDisposition(edition, callable, capability, 'ios'),
@@ -438,7 +438,21 @@ export function buildPublicTestDisposition(contract: ContractDocument): TestDisp
 }
 
 export function buildEnterpriseTestDisposition(base: ContractDocument, delta: EnterpriseDeltaDocument): TestDispositionDocument {
-  const callables = [...base.callables, ...delta.callables]
+  const overrides = new Map(delta.approvedBaseCallableOverrides.map((value) => [value.name, value]))
+  const callables = [
+    ...base.callables.map((callable) => {
+      const override = overrides.get(callable.name)
+      if (override == null) return callable
+      return {
+        ...callable,
+        signature: override.enterpriseSignature,
+        ...(override.declaration == null ? {} : { declaration: override.declaration }),
+        ...(override.lowering == null ? {} : { lowering: override.lowering }),
+        binding: override.binding ?? callable.binding,
+      }
+    }),
+    ...delta.callables,
+  ]
   const events = [...base.events, ...delta.events]
   const schemas = buildEnterpriseResponseSchemas(base, delta)
   return buildDisposition('enterprise', callables, events, schemas)
