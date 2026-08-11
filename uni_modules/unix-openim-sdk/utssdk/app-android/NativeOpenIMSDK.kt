@@ -717,8 +717,25 @@ object NativeOpenIMSDK {
     Open_im_sdk.getUsersInGroup(OpenIMBaseCallback(resolve, reject), operationID, groupID, userIDList)
   }
 
+  private fun buildSearchGroupMembersPayload(rawParams: String): String {
+    val raw = try {
+      JSONObject(rawParams)
+    } catch (_: Exception) {
+      return rawParams
+    }
+    val payload = JSONObject(raw.toString())
+    if (!raw.has("offset") || raw.isNull("offset")) {
+      payload.put("offset", 0)
+    }
+    if (!raw.has("count") || raw.isNull("count") || raw.optInt("count", 0) <= 0) {
+      payload.put("count", 100)
+    }
+    return payload.toString()
+  }
+
   fun searchGroupMembers(operationID: String, options: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.searchGroupMembers(OpenIMBaseCallback(resolve, reject), operationID, options)
+    val payload = buildSearchGroupMembersPayload(options)
+    Open_im_sdk.searchGroupMembers(OpenIMBaseCallback(resolve, reject), operationID, payload)
   }
 
   fun getJoinedGroupList(operationID: String, resolve: OpenIMResolveString, reject: OpenIMReject) {

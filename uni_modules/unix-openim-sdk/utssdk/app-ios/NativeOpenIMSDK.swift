@@ -793,9 +793,32 @@ class NativeOpenIMSDK {
         Open_im_sdkGetUsersInGroup(callback, operationID, groupID, userIDList)
     }
 
+    private static func buildSearchGroupMembersPayload(_ rawParams: String) -> String {
+        guard let data = rawParams.data(using: .utf8),
+              let rawObject = try? JSONSerialization.jsonObject(with: data),
+              let raw = rawObject as? [String: Any] else {
+            return rawParams
+        }
+        var payload = raw
+        if raw["offset"] == nil || raw["offset"] is NSNull {
+            payload["offset"] = 0
+        }
+        let count = raw["count"] as? NSNumber
+        if raw["count"] == nil || raw["count"] is NSNull || count == nil || (count?.intValue ?? 0) <= 0 {
+            payload["count"] = 100
+        }
+        guard JSONSerialization.isValidJSONObject(payload),
+              let payloadData = try? JSONSerialization.data(withJSONObject: payload),
+              let payloadString = String(data: payloadData, encoding: .utf8) else {
+            return rawParams
+        }
+        return payloadString
+    }
+
     static func searchGroupMembers(_ operationID: String, _ searchParam: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
+        let payload = buildSearchGroupMembersPayload(searchParam)
         let callback = OpenIMBaseCallback(resolve: resolve, reject: reject)
-        Open_im_sdkSearchGroupMembers(callback, operationID, searchParam)
+        Open_im_sdkSearchGroupMembers(callback, operationID, payload)
     }
 
     static func getJoinedGroupList(_ operationID: String, _ resolve: @escaping OpenIMResolveString, _ reject: @escaping OpenIMReject) {
