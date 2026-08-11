@@ -47,14 +47,13 @@ Public surface 已冻结并由 `contracts/base/surface.snapshot.json` 校验：
 
 - HBuilderX：`5.23.2026080313-alpha`
 - CLI SHA-256：`a22292b1d595c50dd764196233ebff8cedad74af783896876c17880279b69977`（与团队当前分发的 Alpha 应用包一致）
-- CLI SHA256：`2e0621390eb18bbaa40878dc06a363968326352357ed30af4728b01ffcc61302`
 - 内置 UTS plugin：`5.23.2026072314.2329`
 - Public Core revision：`3422edca94f0178d8151397620e65b26e1665bc1`，branch `v3.8.3-patch`
 - Android AAR SHA256：`a0b9ab0beb9d7c4b851c678f19ea072c7ca6b629aaa14a5e1dc93fc641d3e2e0`
 - iOS XCFramework zip SHA256：`f3307833843fd7182bc6485e8ef3391efb9f915ac4f297e79471f48c9db3a75f`
 - iOS extracted inventory SHA256：`842500ed71345c5d009b5ce865eadb1fd209d09b24318005623e5f5883813f19`
 
-本地 native source 默认读取 `/Volumes/workspace/work/openim-sdk-core`，可用 `OPENIM_PUBLIC_CORE_DIR` 覆盖。`npm run verify` 会同时校验 source artifact 和插件内 local override 的 hash。
+本地 native source 通过 `OPENIM_PUBLIC_CORE_DIR` 指定；未设置时只解析 `toolchain.lock.json` 中声明的已验证同级目录。`npm run verify` 会同时校验 source artifact 和插件内 local override 的 hash。
 
 插件元数据已上调到锁定工具链：HBuilderX `>=5.23.2026080313-alpha`、uni-app-x `^5.23`。这只是最低版本表达；发布认证仍只承认上面的精确构建。
 

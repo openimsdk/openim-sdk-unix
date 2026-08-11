@@ -186,6 +186,48 @@ test('Harmony native ABI gaps are explicit unsupported dispositions', () => {
   assert.ok(callable?.negativeProfiles.includes('platform-unsupported'))
 })
 
+test('Enterprise test projection applies approved base bindings and edition-owned expected events', () => {
+  const baseCallable = structuredClone(contract.callables.find((item) => item.name === 'updateFcmToken'))
+  const signaling = structuredClone(contract.callables.find((item) => item.name === 'sendMessage'))
+  assert.ok(baseCallable)
+  assert.ok(signaling)
+  signaling.name = 'editionOperation'
+  signaling.signature = 'editionOperation():Promise<string>'
+  signaling.testProfile = {
+    semanticProfile: 'signaling-correlation',
+    sideEffectProbe: 'cross-account-event-observation',
+    expectedEvents: ['onEditionEvent'],
+  }
+  const delta: EnterpriseDeltaDocument = {
+    schemaVersion: 2,
+    edition: 'enterprise-delta',
+    origin: {
+      kind: 'imported-facade', repository: 'test', revision: 'test', publicBaseRevision: 'test',
+      importedPublicBaseContractHash: '0'.repeat(64), interfacePath: 'test',
+      facadePaths: { android: 'test', ios: 'test', harmony: 'test' },
+    },
+    expectedTotal: { constants: 0, types: 0, callables: 0, events: 0 },
+    expectedDelta: { constants: 0, types: 0, callables: 0, events: 0, typeExtensions: 0 },
+    approvedBaseCallableOverrides: [{
+      name: baseCallable.name,
+      baseSignature: baseCallable.signature,
+      enterpriseSignature: baseCallable.signature,
+      reason: 'licensed ABI omits the operation',
+      binding: {
+        ...baseCallable.binding,
+        harmony: { kind: 'unsupported', symbol: 'unsupported-by-native-abi' },
+      },
+    }],
+    constants: [], types: [], typeExtensions: [], callables: [signaling], events: [],
+  }
+
+  const projected = buildEnterpriseTestDisposition(contract, delta)
+  const byName = new Map(projected.callables.map((item) => [item.apiName, item]))
+  assert.equal(byName.get(baseCallable.name)?.platforms.harmony, 'platform-unsupported')
+  assert.deepEqual(byName.get('editionOperation')?.expectedEvents, ['onEditionEvent'])
+  assert.ok(byName.get('editionOperation')?.validationAxes.includes('event'))
+})
+
 test('Enterprise Harmony known issues are manifest-scoped and axis-specific', () => {
   const resetConversationUnread = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))
   const setMessageLocalContent = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))

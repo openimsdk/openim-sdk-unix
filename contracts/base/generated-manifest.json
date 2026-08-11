@@ -50,8 +50,8 @@
     },
     {
       "path": "tooling/src/model.ts",
-      "sha256": "413577eb624f8ad1ed23dd7e6f78d5459ad2bb639cf39a922c8b8787831eb920",
-      "bytes": 6309
+      "sha256": "2a77b61ceee53b478178d6533a28d80c424d95f7dc0440da1151fa7aad03bf37",
+      "bytes": 6339
     },
     {
       "path": "tooling/src/platform-driver.ts",
@@ -70,8 +70,8 @@
     },
     {
       "path": "tooling/src/test-contract.ts",
-      "sha256": "58a582cc954ecd733c320154df5bf7756b16d221a612306d787ebf12e88db9f3",
-      "bytes": 26862
+      "sha256": "1fcf12aaadc2568551ddf2afaac3335286390e1c501264ab4ce579c1043432b1",
+      "bytes": 27453
     },
     {
       "path": "tooling/src/test-profile.ts",
