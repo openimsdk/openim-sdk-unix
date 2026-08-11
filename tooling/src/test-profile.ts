@@ -21,7 +21,6 @@ export function inferCallableTestProfile(
   else if (messageDeliveryCallables.has(callable.name)) semanticProfile = 'message-delivery-correlation'
   else if (/^create.*Message/.test(callable.name)) semanticProfile = 'message-content-correlation'
   else if (uploadCallables.has(callable.name)) semanticProfile = 'progress-terminal-correlation'
-  else if (callable.name.startsWith('signaling')) semanticProfile = 'signaling-correlation'
   else if (/History|List|Search|Split|Page|Find/.test(callable.name)) semanticProfile = 'pagination-integrity'
   else if (/^(?:set|update|mark|delete|remove|add|accept|refuse|create|join|quit|dismiss|change|pin|revoke|typing|kick|invite)/.test(callable.name)) semanticProfile = 'mutation-observation'
   else semanticProfile = 'response-identity'
@@ -29,7 +28,7 @@ export function inferCallableTestProfile(
   let sideEffectProbe: string
   if (callable.role !== 'operation') sideEffectProbe = 'registry-observation'
   else if (lifecycleMutationCallables.has(callable.name)) sideEffectProbe = 'state-transition'
-  else if (messageDeliveryCallables.has(callable.name) || callable.name.startsWith('signaling')) sideEffectProbe = 'cross-account-event-observation'
+  else if (messageDeliveryCallables.has(callable.name)) sideEffectProbe = 'cross-account-event-observation'
   else if (uploadCallables.has(callable.name)) sideEffectProbe = 'progress-and-result-observation'
   else if (/^(?:set|update|mark|delete|remove|pin|revoke|change)/.test(callable.name)) sideEffectProbe = 'read-after-write'
   else if (/^(?:add|accept|refuse|createGroup|joinGroup|quitGroup|dismissGroup|kickGroupMember|inviteUserToGroup)/.test(callable.name)) sideEffectProbe = 'cross-account-event-observation'

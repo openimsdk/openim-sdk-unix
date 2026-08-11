@@ -8,6 +8,7 @@ import {
   mergePublicTemplateHelpers,
   type EnterpriseHarmonyFacadeProjection,
 } from '../src/enterprise-compose.js'
+import { generateIndexFromTemplate } from '../src/generate.js'
 import {
   demonomorphizeHarmonySource,
   monomorphizeHarmonySource,
@@ -100,6 +101,7 @@ test('Enterprise composition applies explicit overrides and additive type extens
     callables: [{
       name: 'getLoginUserID',
       declaration: 'export const getLoginUserID = function (operationID ?: string | null) : Promise<string> { return Promise.resolve(operationID ?? \'\') }',
+      binding: 'unsupported-by-native-abi',
     }],
     events: [],
   }
@@ -113,6 +115,10 @@ test('Enterprise composition applies explicit overrides and additive type extens
   assert.equal(result.callables[0]?.lowering?.operationID, 'parameter')
   assert.equal(result.callables[0]?.declaration?.android, undefined)
   assert.equal(result.callables[0]?.declaration?.harmony, harmony.callables[0]?.declaration)
+  assert.deepEqual(result.callables[0]?.binding.harmony, {
+    kind: 'unsupported',
+    symbol: 'unsupported-by-native-abi',
+  })
 })
 
 test('Harmony monomorphization is a pure reproducible projection', () => {
@@ -146,6 +152,98 @@ test('Enterprise imported helpers are not duplicated from the Public template', 
   const result = mergePublicTemplateHelpers(publicTemplate, enterpriseTemplate)
   assert.equal(result.match(/parseNativeStringListValue/g)?.length, 1)
   assert.equal(result.includes('function parseNativeStringListValue'), false)
+})
+
+test('edition extensions lower local promises, synthetic events, and lifecycle hooks without business names in Public tooling', () => {
+  const base = baseContract()
+  const baseCallable = base.callables[0]!
+  baseCallable.signature = 'getLoginUserID(userID:string):Promise<string>'
+  baseCallable.lowering = {
+    kind: 'platform-driver',
+    transport: 'async',
+    operationID: 'empty',
+    request: 'empty-object',
+  }
+  const delta = {
+    schemaVersion: 2,
+    edition: 'enterprise-delta',
+    origin: {
+      kind: 'imported-facade', repository: 'private', revision: 'private', publicBaseRevision: 'base',
+      importedPublicBaseContractHash: '0'.repeat(64), interfacePath: 'interface.uts',
+      facadePaths: { android: 'android', ios: 'ios', harmony: 'harmony' },
+    },
+    expectedTotal: { constants: 0, types: 2, callables: 3, events: 1 },
+    expectedDelta: { constants: 0, types: 0, callables: 2, events: 1, typeExtensions: 0 },
+    approvedBaseCallableOverrides: [], approvedBaseTypeOverrides: [],
+    constants: [], types: [], typeExtensions: [],
+    editionExtensions: {
+      localOperations: ['readLocalState'],
+      syntheticEvents: ['onLocalStateChanged'],
+      lifecycleEffects: [{
+        callable: 'getLoginUserID',
+        successHook: {
+          symbol: 'recordLocalState',
+          when: 'always',
+          arguments: [{ kind: 'parameter', name: 'userID' }, { kind: 'result' }],
+        },
+      }],
+    },
+    callables: [
+      {
+        id: 3001, name: 'readLocalState', signature: 'readLocalState():Promise<string>', completion: 'promise',
+        responseCodec: 'raw-string', errorPolicy: 'none', rawString: false, role: 'operation',
+        testProfile: { semanticProfile: 'local-state', sideEffectProbe: 'none' },
+        lowering: { kind: 'local-promise', symbol: 'readLocalStateLocal', arguments: [] },
+        binding: {
+          android: { kind: 'facade-alias', symbol: 'readLocalStateLocal' },
+          ios: { kind: 'facade-alias', symbol: 'readLocalStateLocal' },
+          harmony: { kind: 'facade-alias', symbol: 'readLocalStateLocal' },
+        },
+        signatureHash: '',
+      },
+      {
+        id: 3002, name: 'onLocalStateChanged', signature: 'onLocalStateChanged(handler:LocalHandler):OpenIMSDKEventSubscription',
+        completion: 'sync', responseCodec: 'event-handler', errorPolicy: 'none', rawString: false,
+        role: 'event-subscription', testProfile: { semanticProfile: 'event-listener', sideEffectProbe: 'none' },
+        lowering: {
+          kind: 'synthetic-event-subscription', eventName: 'onLocalStateChanged', registerSymbol: 'registerLocalStateChanged',
+        },
+        binding: {
+          android: { kind: 'facade-alias', symbol: 'registerLocalStateChanged' },
+          ios: { kind: 'facade-alias', symbol: 'registerLocalStateChanged' },
+          harmony: { kind: 'facade-alias', symbol: 'registerLocalStateChanged' },
+        },
+        signatureHash: '',
+      },
+    ],
+    events: [{
+      id: 4001, name: 'onLocalStateChanged', callable: 'onLocalStateChanged', handlerType: 'LocalHandler',
+      decoder: { kind: 'parser', symbol: 'parseLocalState' }, rawPayload: false,
+      binding: { android: 'projected', ios: 'projected', harmony: 'projected' }, signatureHash: '',
+    }],
+  } as unknown as EnterpriseDeltaDocument
+  const harmony = {
+    schemaVersion: 1,
+    edition: 'enterprise-harmony-facade',
+    origin: { sourcePath: 'legacy', sourceSha256: '0'.repeat(64) },
+    constants: [],
+    callables: [
+      { name: 'getLoginUserID', declaration: 'export const getLoginUserID = function (userID : string) : Promise<string> { return Promise.resolve(userID).then((data : string) : string => { recordLocalState(userID, data); return data }) }' },
+      { name: 'readLocalState', declaration: 'legacy local declaration' },
+      { name: 'onLocalStateChanged', declaration: 'legacy synthetic declaration' },
+    ],
+    events: [{ name: 'onLocalStateChanged', dispatchArguments: '', binding: 'projected' }],
+  } as EnterpriseHarmonyFacadeProjection
+
+  const contract = composeEnterpriseContract(base, delta, harmony)
+  const template = '// <openim-generated:constants>\n// <openim-generated:event-callables>\n// <openim-generated:operations>\n'
+  const android = generateIndexFromTemplate(template, contract, 'android')
+  const harmonySource = generateIndexFromTemplate(template, contract, 'harmony')
+  assert.match(android, /return readLocalStateLocal\(\)/)
+  assert.match(android, /@UTSJS\.keepAlive[\s\S]*return registerLocalStateChanged\(handler\)/)
+  assert.match(android, /recordLocalState\(userID, data\)/)
+  assert.match(harmonySource, /return readLocalStateLocal\(\)/)
+  assert.match(harmonySource, /return registerLocalStateChanged\(handler\)/)
 })
 
 test('Harmony event subscriptions and offAll are projected through the public-name registry', () => {

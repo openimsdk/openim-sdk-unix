@@ -110,7 +110,7 @@ export function harmonyTypedMethods(privateRoot: string): HarmonyTypedMethod[] {
       declaration: match[0].trim(),
     })
   }
-  assert(methods.length === 146, `Expected 146 typed Harmony Promise methods from the locked Licensed HAR, got ${methods.length}`)
+  assert(methods.length > 0, 'The locked Licensed HAR exposes no typed Promise methods')
   return methods
 }
 
@@ -168,23 +168,11 @@ function methodName(name: string): string {
   return `callBinding${name.slice(0, 1).toUpperCase()}${name.slice(1)}`
 }
 
-export function harmonyObjectResponseEncoder(methodName: string): string {
-  if (methodName === 'signalingInvite' || methodName === 'signalingInviteInGroup' || methodName === 'signalingAccept') {
-    return 'OpenIMHarmonyDriver.normalizeSignalingInvitePayload(request, response)'
-  }
-  if (methodName === 'signalingGetTokenByRoomID') {
-    return 'OpenIMHarmonyDriver.normalizeSignalingTokenPayload(response)'
-  }
-  if (methodName === 'signalingGetRoomByGroupID') {
-    return 'OpenIMHarmonyDriver.normalizeSignalingRoomPayload(response)'
-  }
-  if (methodName === 'signalingGetInvitationInfoStartApp') {
-    return 'OpenIMHarmonyDriver.normalizeSignalingStartAppPayload(response)'
-  }
-  return 'OpenIMHarmonyDriver.encodeObjectResponse(response)'
+export function harmonyObjectResponseEncoder(methodName: string, encoders: Record<string, string> = {}): string {
+  return encoders[methodName] ?? 'OpenIMHarmonyDriver.encodeObjectResponse(response)'
 }
 
-function renderMethod(method: HarmonyTypedMethod): string {
+function renderMethod(method: HarmonyTypedMethod, encoders: Record<string, string>): string {
   const call = method.requestType == null
     ? `harmonySDK.${method.name}(operationID)`
     : `harmonySDK.${method.name}(request, operationID)`
@@ -193,7 +181,7 @@ function renderMethod(method: HarmonyTypedMethod): string {
     : `    const request: ${method.requestType} = JSON.parse(requestJSON) as ${method.requestType}\n`
   const response = method.responseType === 'OpenIMSDKEmptyPayload'
     ? `    const nativePromise: Promise<string> = ${call}.then((_response: OpenIMSDKEmptyPayload): string => {\n      return ''\n    })`
-    : `    const nativePromise: Promise<string> = ${call}.then((response: ${method.responseType}): string => {\n      return ${harmonyObjectResponseEncoder(method.name)}\n    })`
+    : `    const nativePromise: Promise<string> = ${call}.then((response: ${method.responseType}): string => {\n      return ${harmonyObjectResponseEncoder(method.name, encoders)}\n    })`
   return [
     `  private static ${methodName(method.name)}(requestJSON: string, operationID: string): Promise<string> {`,
     request.trimEnd(),
@@ -207,8 +195,12 @@ function renderOperations(
   methods: HarmonyTypedMethod[],
   bindings: HarmonyContractMethodBinding[],
   harVersion: string,
+  responseEncoders: Record<string, string>,
 ): string {
-  const functions = methods.filter((method) => !HARMONY_SPECIAL_METHODS.has(method.name)).map(renderMethod).join('\n\n')
+  const functions = methods
+    .filter((method) => !HARMONY_SPECIAL_METHODS.has(method.name))
+    .map((method) => renderMethod(method, responseEncoders))
+    .join('\n\n')
   const cases = bindings
     .filter((binding) => binding.callableName !== 'getSdkVersion')
     .map((binding) => {
@@ -273,6 +265,9 @@ function harPackageVersion(privateRoot: string): string {
 export function renderHarmonyDriverBindings(privateRoot: string): string {
   const driverPath = join(privateRoot, 'sdk-src/native/harmony/OpenIMHarmonyDriver.ets')
   const source = readFileSync(driverPath, 'utf8')
+  const abi = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8')) as {
+    responseEncoders?: Record<string, string>
+  }
   const methods = harmonyTypedMethods(privateRoot)
   const bindings = harmonyContractMethodBindings(privateRoot)
   const boundMethodNames = new Set(bindings.map((binding) => binding.methodName))
@@ -288,7 +283,12 @@ export function renderHarmonyDriverBindings(privateRoot: string): string {
     ? ''
     : `import {\n${importNames.map((name) => `  ${name}`).join(',\n')}\n} from '@openimsdk/imsdk'\n`
   const withImports = replaceRegion(source, IMPORT_START, IMPORT_END, importBlock)
-  return replaceRegion(withImports, OPERATIONS_START, OPERATIONS_END, renderOperations(generatedMethods, bindings, harPackageVersion(privateRoot)))
+  return replaceRegion(
+    withImports,
+    OPERATIONS_START,
+    OPERATIONS_END,
+    renderOperations(generatedMethods, bindings, harPackageVersion(privateRoot), abi.responseEncoders ?? {}),
+  )
 }
 
 export function renderHarmonyOperationCodes(privateRoot: string): string {

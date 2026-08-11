@@ -89,18 +89,6 @@ export interface SchemaValidationIssue {
   severity: 'error' | 'contract-drift'
 }
 
-const capabilityByCallable = new Map<string, string>([
-  ['getSpeechToTextCapabilities', 'speech'],
-  ['speechToText', 'speech'],
-  ['translateText', 'translation'],
-  ['translateMessage', 'translation'],
-  ['signalingGetInvitationInfoStartApp', 'push-launch'],
-])
-
-const fixtureBackedCapabilityCallables = new Set([
-  'signalingGetInvitationInfoStartApp',
-])
-
 const p0CallableNames = new Set([
   'initSDK', 'login', 'logout', 'unInitSDK', 'getLoginStatus', 'getLoginUserID',
   'getSelfUserInfo', 'setSelfInfo', 'getUsersInfo', 'subscribeUsersStatus', 'unsubscribeUsersStatus',
@@ -108,8 +96,7 @@ const p0CallableNames = new Set([
   'getAllConversationList', 'getOneConversation', 'setConversation', 'setConversationDraft',
   'markConversationMessageAsRead', 'getFriendList', 'addFriend', 'acceptFriendApplication',
   'createGroup', 'getSpecifiedGroupsInfo', 'getGroupMemberList', 'sendGroupMessageReceipt',
-  'uploadFile', 'cancelUpload', 'signalingInvite', 'signalingAccept', 'signalingReject',
-  'signalingCancel', 'signalingInviteInGroup', 'signalingSendCustomSignaling',
+  'uploadFile', 'cancelUpload',
   'off', 'offAll',
 ])
 
@@ -118,12 +105,8 @@ const p0EventNames = new Set([
   'onRecvNewMessage', 'onRecvOfflineNewMessage', 'onConversationChanged', 'onNewConversation',
   'onTotalUnreadMessageCountChanged', 'onSendMessageProgress', 'onUploadFileProgress',
   'onFriendApplicationAdded', 'onFriendAdded', 'onGroupApplicationAdded', 'onGroupMemberAdded',
-  'onReceiveNewInvitation', 'onInviteeAccepted', 'onInviteeRejected', 'onInvitationCancelled',
-  'onHangUp', 'onReceiveCustomSignaling',
 ])
 
-const harmonyUnsupportedCallables = new Set(['updateFcmToken'])
-const harmonyDispatcherMissingCallables = new Set(['updateToken', 'translateText', 'getArchivedConversationList', 'translateMessage'])
 const enterpriseHarmonyApprovedKnownIssues = new Map<string, ApprovedKnownIssueDisposition>([
   ['resetConversationUnread', {
     code: 'harmony-reset-conversation-unread-mismatch',
@@ -148,13 +131,6 @@ const expectedEventsByCallable = new Map<string, string[]>([
   ['joinGroup', ['onGroupApplicationAdded']],
   ['acceptGroupApplication', ['onGroupMemberAdded']],
   ['refuseGroupApplication', ['onGroupApplicationRejected']],
-  ['signalingInvite', ['onReceiveNewInvitation']],
-  ['signalingInviteInGroup', ['onReceiveNewInvitation']],
-  ['signalingAccept', ['onInviteeAccepted']],
-  ['signalingReject', ['onInviteeRejected']],
-  ['signalingCancel', ['onInvitationCancelled']],
-  ['signalingHungUp', ['onHangUp']],
-  ['signalingSendCustomSignaling', ['onReceiveCustomSignaling']],
 ])
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -311,10 +287,8 @@ function callablePlatformDisposition(
   platform: 'android' | 'ios' | 'harmony',
 ): PlatformTestDisposition {
   if (edition === 'public' && platform === 'harmony') return 'not-in-edition'
-  if (platform === 'harmony' && harmonyUnsupportedCallables.has(callable.name)) return 'platform-unsupported'
-  if (platform === 'harmony' && harmonyDispatcherMissingCallables.has(callable.name)) return 'capability-negative'
   if (callable.binding[platform]?.kind === 'unsupported') return 'platform-unsupported'
-  if (capability !== 'core' && !fixtureBackedCapabilityCallables.has(callable.name)) return 'capability-negative'
+  if (capability !== 'core') return 'capability-negative'
   return 'required'
 }
 
@@ -341,13 +315,9 @@ function negativeProfiles(callable: ContractCallable, capability: string): strin
 function executableNegativeProfiles(
   profiles: string[],
   platforms: { android: PlatformTestDisposition; ios: PlatformTestDisposition; harmony: PlatformTestDisposition },
-  callableName?: string,
 ): string[] {
   const executable = new Set(profiles)
   if (Object.values(platforms).includes('platform-unsupported')) executable.add('platform-unsupported')
-  if (callableName != null && platforms.harmony === 'capability-negative' && harmonyDispatcherMissingCallables.has(callableName)) {
-    executable.add('native-function-not-found-10007')
-  }
   return [...executable]
 }
 
@@ -390,7 +360,7 @@ function buildDisposition(
     edition,
     counts: { callables: callables.length, events: events.length },
     callables: callables.map((callable) => {
-      const capability = capabilityByCallable.get(callable.name) ?? 'core'
+      const capability = 'core'
       const unsupported = callable.binding.android?.kind === 'unsupported' && callable.binding.ios?.kind === 'unsupported'
       const { semanticProfile: profile, sideEffectProbe: probe } = requireCallableTestProfile(callable)
       const expectedEvents = callable.role === 'event-subscription'
@@ -423,7 +393,7 @@ function buildDisposition(
         semanticProfile: profile,
         sideEffectProbe: probe,
         expectedEvents,
-        negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms, callable.name),
+        negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms),
         cleanupAction: cleanupAction(callable, probe),
         validationAxes,
         ...(approvedKnownIssue == null ? {} : {

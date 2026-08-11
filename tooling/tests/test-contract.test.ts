@@ -153,12 +153,12 @@ test('platform-unsupported surfaces allow their executable negative profile', ()
   assert.ok(event?.negativeProfiles.includes('platform-unsupported'))
 })
 
-test('Harmony dispatcher gaps remain executable capability negatives', () => {
+test('Harmony native ABI gaps are explicit unsupported dispositions', () => {
   const template = structuredClone(contract.callables.find((item) => item.name === 'updateFcmToken'))
   assert.ok(template)
   template.name = 'updateToken'
   template.signature = 'updateToken(params:OpenIMUpdateTokenParams,operationID?:string|null):Promise<string>'
-  template.binding.harmony = { kind: 'native', symbol: 'updateToken' }
+  template.binding.harmony = { kind: 'unsupported', symbol: 'unsupported-by-native-abi' }
   const delta: EnterpriseDeltaDocument = {
     schemaVersion: 2,
     edition: 'enterprise-delta',
@@ -182,9 +182,8 @@ test('Harmony dispatcher gaps remain executable capability negatives', () => {
   }
 
   const callable = buildEnterpriseTestDisposition(contract, delta).callables.find((item) => item.apiName === 'updateToken')
-  assert.equal(callable?.platforms.harmony, 'capability-negative')
-  assert.ok(callable?.negativeProfiles.includes('native-function-not-found-10007'))
-  assert.equal(callable?.negativeProfiles.includes('platform-unsupported'), false)
+  assert.equal(callable?.platforms.harmony, 'platform-unsupported')
+  assert.ok(callable?.negativeProfiles.includes('platform-unsupported'))
 })
 
 test('Enterprise Harmony known issues are manifest-scoped and axis-specific', () => {
@@ -237,40 +236,6 @@ test('Enterprise Harmony known issues are manifest-scoped and axis-specific', ()
   assert.equal(enterpriseDisposition.events.some((item) => item.approvedKnownIssue != null), false)
   assert.equal(buildPublicTestDisposition(contract).callables.some((item) => item.approvedKnownIssue != null), false)
   assert.equal(buildPublicTestDisposition(contract).events.some((item) => item.approvedKnownIssue != null), false)
-})
-
-test('fixture-backed push launch remains a positive capability path', () => {
-  const template = structuredClone(contract.callables.find((item) => item.name === 'updateFcmToken'))
-  assert.ok(template)
-  template.name = 'signalingGetInvitationInfoStartApp'
-  template.signature = 'signalingGetInvitationInfoStartApp(params?:OpenIMSignalingGetInvitationInfoStartAppParams|null,operationID?:string|null):Promise<OpenIMSignalingGetInvitationInfoStartAppResult|null>'
-  template.binding.harmony = { kind: 'native', symbol: 'signalingGetInvitationInfoStartApp' }
-  const delta: EnterpriseDeltaDocument = {
-    schemaVersion: 2,
-    edition: 'enterprise-delta',
-    origin: {
-      kind: 'imported-facade',
-      repository: 'test',
-      revision: 'test',
-      publicBaseRevision: 'test',
-      importedPublicBaseContractHash: '0'.repeat(64),
-      interfacePath: 'test',
-      facadePaths: { android: 'test', ios: 'test', harmony: 'test' },
-    },
-    expectedTotal: { constants: 0, types: 0, callables: 1, events: 0 },
-    expectedDelta: { constants: 0, types: 0, callables: 1, events: 0, typeExtensions: 0 },
-    approvedBaseCallableOverrides: [],
-    constants: [],
-    types: [],
-    typeExtensions: [],
-    callables: [template],
-    events: [],
-  }
-
-  const callable = buildEnterpriseTestDisposition(contract, delta).callables.find((item) => item.apiName === 'signalingGetInvitationInfoStartApp')
-  assert.equal(callable?.disposition, 'capability-gated')
-  assert.deepEqual(callable?.platforms, { android: 'required', ios: 'required', harmony: 'required' })
-  assert.deepEqual(callable?.negativeProfiles, ['missing-push-payload', 'expired-invitation'])
 })
 
 test('every callable and event response root has a closed concrete schema graph', () => {

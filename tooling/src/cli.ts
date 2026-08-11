@@ -29,12 +29,14 @@ import {
 } from './enterprise-migration.js'
 import {
   extractEnterpriseComposerAuthority,
+  generateEnterpriseAppleAndroid,
   generateEnterprise,
   writeEnterpriseComposerAuthority,
 } from './enterprise-compose.js'
 import {
   assertEnterpriseGeneratedManifestCurrent,
   verifyEnterpriseDeletionRegeneration,
+  writeEnterpriseAppleAndroidGeneratedManifest,
   writeEnterpriseGeneratedManifest,
 } from './enterprise-generated-manifest.js'
 import {
@@ -66,6 +68,14 @@ function requestedPrivatePlatforms(): CompilePlatform[] {
   if (value === 'all') return ['android', 'ios', 'harmony']
   if (value === 'android' || value === 'ios' || value === 'harmony') return [value]
   throw new Error(`Unknown private compile platform: ${value ?? 'missing'}`)
+}
+
+function requestedEnterpriseGenerationScope(): 'full' | 'apple-android' {
+  const index = process.argv.indexOf('--platform')
+  const value = index >= 0 ? process.argv[index + 1] : 'full'
+  if (value === 'full' || value === 'all') return 'full'
+  if (value === 'apple-android') return value
+  throw new Error(`Unknown Enterprise generation platform: ${value ?? 'missing'}`)
 }
 
 function requestedMobilePlatforms(): MobileBuildPlatform[] {
@@ -235,9 +245,15 @@ switch (command) {
   }
   case 'enterprise:generate': {
     const privateRoot = requiredArgument('--private-root')
-    generateEnterprise(root, privateRoot)
-    writeEnterpriseGeneratedManifest(root, privateRoot)
-    console.log('Generated the Enterprise projection from Public base plus Enterprise authority.')
+    if (requestedEnterpriseGenerationScope() === 'apple-android') {
+      const outputs = generateEnterpriseAppleAndroid(root, privateRoot)
+      writeEnterpriseAppleAndroidGeneratedManifest(root, privateRoot)
+      console.log(`Generated ${outputs.length} Enterprise apple-android artifacts and the scoped manifest.`)
+    } else {
+      generateEnterprise(root, privateRoot)
+      writeEnterpriseGeneratedManifest(root, privateRoot)
+      console.log('Generated the Enterprise projection from Public base plus Enterprise authority.')
+    }
     break
   }
   case 'enterprise:verify-generated': {

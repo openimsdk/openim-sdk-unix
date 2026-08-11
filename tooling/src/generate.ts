@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import type { ContractCallable, ContractDocument, ContractEvent, DriverRequestField, Platform, SurfaceSnapshot } from './model.js'
+import type { ContractCallable, ContractDocument, ContractEvent, DriverRequestField, DriverSuccessHook, Platform, SurfaceSnapshot } from './model.js'
 import { INDEX_MARKERS } from './template-authority.js'
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { sha256 } from './source.js'
@@ -185,7 +185,53 @@ function driverResolveExpression(callable: ContractCallable): string {
   throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
 }
 
-function renderLoweredCallable(callable: ContractCallable, platform: 'android' | 'ios'): string {
+function callableParameterNames(callable: ContractCallable): Set<string> {
+  const prefix = `${callable.name}(`
+  const separator = callable.signature.lastIndexOf('):')
+  if (!callable.signature.startsWith(prefix) || separator < prefix.length) return new Set()
+  return new Set(splitSignatureParameters(callable.signature.slice(prefix.length, separator)).map((parameter) => (
+    /^([A-Za-z_$][\w$]*)/.exec(parameter.trim())?.[1] ?? ''
+  )).filter((value) => value !== ''))
+}
+
+function successHookStatement(callable: ContractCallable, hook: DriverSuccessHook): string {
+  if (/^[A-Za-z_$][\w$]*$/.test(hook.symbol) === false) throw new Error(`Invalid success hook symbol for ${callable.name}`)
+  const parameters = callableParameterNames(callable)
+  const args = hook.arguments.map((argument) => {
+    if (argument.kind === 'result') return 'data'
+    if (argument.kind === 'literal') return JSON.stringify(argument.value)
+    if (/^[A-Za-z_$][\w$]*$/.test(argument.name) === false || !parameters.has(argument.name)) {
+      throw new Error(`Unknown success hook parameter for ${callable.name}: ${argument.name}`)
+    }
+    return argument.name
+  })
+  const invocation = `${hook.symbol}(${args.join(', ')})`
+  return hook.when === 'boolean-true' ? `if (data == 'true') { ${invocation} }` : invocation
+}
+
+function successCallback(callable: ContractCallable, continuation: string): string {
+  const lowering = callable.lowering
+  const hook = lowering?.kind === 'platform-driver' ? lowering.successHook : undefined
+  if (hook == null) return continuation
+  const next = continuation === '' ? '' : ` ${continuation}`
+  return `(data : string) => { ${successHookStatement(callable, hook)};${next} }`
+}
+
+function driverResolveExpressionWithHook(callable: ContractCallable): string {
+  const lowering = callable.lowering
+  const hook = lowering?.kind === 'platform-driver' ? lowering.successHook : undefined
+  if (hook == null) return driverResolveExpression(callable)
+  if (callable.responseCodec === 'typed:OpenIMMessageItem') {
+    return `(data : string) => { ${successHookStatement(callable, hook)}; resolveSendMessageData(data, '${callable.name}', resolve, reject) }`
+  }
+  const parser = DRIVER_TYPED_RESPONSE_PARSERS[callable.responseCodec]
+  if (parser != null) {
+    return `(data : string) => { ${successHookStatement(callable, hook)}; try { resolve(${parser}(data)) } catch (error) { rejectNativeError(reject, -1, '${callable.name} returned unparseable response: ' + stringifyJSON(error)) } }`
+  }
+  throw new Error(`Unsupported PlatformDriver response codec for ${callable.name}: ${callable.responseCodec}`)
+}
+
+function renderLoweredCallable(callable: ContractCallable, platform: Platform): string {
   const lowering = callable.lowering
   if (lowering == null) throw new Error(`Missing callable lowering: ${callable.name}`)
   const { parameters, returnType } = callableSignatureParts(callable)
@@ -206,6 +252,21 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
     }
     return `export const ${callable.name} = function () : ${returnType} { return ${lowering.symbol}() }`
   }
+  if (lowering.kind === 'local-promise') {
+    if (callable.completion !== 'promise') throw new Error(`Local promise lowering must return a Promise: ${callable.name}`)
+    if (/^[A-Za-z_$][\w$]*$/.test(lowering.symbol) === false) throw new Error(`Invalid local promise symbol: ${callable.name}`)
+    const parameterNames = callableParameterNames(callable)
+    for (const argument of lowering.arguments) {
+      if (/^[A-Za-z_$][\w$]*$/.test(argument) === false || !parameterNames.has(argument)) {
+        throw new Error(`Unknown local promise argument for ${callable.name}: ${argument}`)
+      }
+    }
+    const binding = callable.binding[platform]
+    if (binding?.kind !== 'facade-alias' || binding.symbol !== lowering.symbol) {
+      throw new Error(`Local promise binding mismatch for ${callable.name} on ${platform}`)
+    }
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${lowering.symbol}(${lowering.arguments.join(', ')}) }`
+  }
   if (lowering.kind === 'event-subscription') {
     if (callable.role !== 'event-subscription' || callable.completion !== 'sync') {
       throw new Error(`Invalid event subscription lowering for ${callable.name}`)
@@ -219,6 +280,22 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
     }
     return `@UTSJS.keepAlive\nexport function ${callable.name}(${parameters}) : ${returnType} { return ${lowering.eventName}Event(handler) }`
   }
+  if (lowering.kind === 'synthetic-event-subscription') {
+    if (callable.role !== 'event-subscription' || callable.completion !== 'sync') {
+      throw new Error(`Invalid synthetic event subscription lowering for ${callable.name}`)
+    }
+    if (lowering.eventName !== callable.name || parameters.startsWith('handler : ') === false) {
+      throw new Error(`Synthetic event subscription identity mismatch for ${callable.name}`)
+    }
+    if (/^[A-Za-z_$][\w$]*$/.test(lowering.registerSymbol) === false) {
+      throw new Error(`Invalid synthetic event registration symbol for ${callable.name}`)
+    }
+    const binding = callable.binding[platform]
+    if (binding?.kind !== 'facade-alias' || binding.symbol !== lowering.registerSymbol) {
+      throw new Error(`Synthetic event binding mismatch for ${callable.name} on ${platform}`)
+    }
+    return `@UTSJS.keepAlive\nexport function ${callable.name}(${parameters}) : ${returnType} { return ${lowering.registerSymbol}(handler) }`
+  }
   if (lowering.kind === 'callable-alias') {
     if (/^[A-Za-z_$][\w$]*$/.test(lowering.target) === false || lowering.arguments.some((value) => /^[A-Za-z_$][\w$]*$/.test(value) === false)) {
       throw new Error(`Invalid callable alias lowering for ${callable.name}`)
@@ -229,6 +306,8 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
     }
     return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${lowering.target}(${lowering.arguments.join(', ')}) }`
   }
+
+  if (platform === 'harmony') throw new Error(`Harmony PlatformDriver lowering requires an edition projection: ${callable.name}`)
 
   const prelude: string[] = []
   let operationID: string
@@ -248,26 +327,34 @@ function renderLoweredCallable(callable: ContractCallable, platform: 'android' |
   const requestPrelude = prelude.length === 0 ? '' : `${prelude.join(' ')} `
 
   if (lowering.transport === 'sync') {
+    if (lowering.successHook != null) throw new Error(`Sync lowering cannot use a success hook: ${callable.name}`)
     if (callable.completion !== 'sync') throw new Error(`Sync lowering has non-sync completion: ${callable.name}`)
     return `export const ${callable.name} = function (${parameters}) : ${returnType} { return driverCallSync(${callable.id}, ${operationID}, ${requestExpression}) }`
   }
   if (callable.completion === 'sync') throw new Error(`Async lowering has sync completion: ${callable.name}`)
   const bindEvents = lowering.bindEvents === true ? 'ensureNativeEventsBound(); ' : ''
   if (callable.completion === 'void') {
-    return `export const ${callable.name} = function (${parameters}) { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, (_data : string) => {}, (_errCode : number, _errMsg : string) => {}) }`
+    const success = successCallback(callable, '')
+    const callback = success === '' ? '(_data : string) => {}' : success
+    return `export const ${callable.name} = function (${parameters}) { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${callback}, (_errCode : number, _errMsg : string) => {}) }`
   }
   const valueType = promiseValueType(returnType)
   const promiseResolver = DRIVER_PROMISE_RESPONSE_RESOLVERS[callable.responseCodec]
   if (promiseResolver != null) {
     const apiName = callable.responseCodec === 'raw-string' ? '' : `'${callable.name}', `
-    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}(${apiName}(resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, resolve, reject) }) }`
+    const resolveCallback = successCallback(callable, 'resolve(data)')
+    const success = resolveCallback === 'resolve(data)' ? 'resolve' : resolveCallback
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}(${apiName}(resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${success}, reject) }) }`
   }
-  const resolveExpression = driverResolveExpression(callable)
+  const resolveExpression = driverResolveExpressionWithHook(callable)
   return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
 }
 
 function platformDeclaration(callable: ContractCallable, platform: Platform): string {
-  if (platform !== 'harmony' && callable.lowering != null) return renderLoweredCallable(callable, platform)
+  if (callable.lowering != null) {
+    const universal = callable.lowering.kind === 'local-promise' || callable.lowering.kind === 'synthetic-event-subscription'
+    if (platform !== 'harmony' || universal) return renderLoweredCallable(callable, platform)
+  }
   const declaration = callable.declaration?.[platform]
   if (!declaration) throw new Error(`Missing ${platform} declaration for ${callable.name}`)
   if (callable.role !== 'event-subscription') return declaration

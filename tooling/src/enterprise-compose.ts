@@ -8,6 +8,7 @@ import type {
   ContractType,
   EnterpriseDeltaDocument,
   EnterpriseTypeExtension,
+  DriverSuccessHook,
   NativeBinding,
   Platform,
 } from './model.js'
@@ -38,6 +39,7 @@ import { buildEnterpriseResponseSchemas, buildEnterpriseTestDisposition } from '
 export interface HarmonyFacadeProjectionEntry {
   name: string
   declaration: string
+  binding?: 'bound' | 'unsupported-by-native-abi'
 }
 
 export interface HarmonyEventProjectionEntry {
@@ -91,11 +93,11 @@ function extendType(type: ContractType, extension: EnterpriseTypeExtension): Con
   return { ...type, declaration, signatureHash: '' }
 }
 
-function projectionMap(entries: HarmonyFacadeProjectionEntry[], label: string): Map<string, string> {
-  const result = new Map<string, string>()
+function projectionMap(entries: HarmonyFacadeProjectionEntry[], label: string): Map<string, HarmonyFacadeProjectionEntry> {
+  const result = new Map<string, HarmonyFacadeProjectionEntry>()
   for (const entry of entries) {
     assert(!result.has(entry.name), `Duplicate Harmony ${label} projection: ${entry.name}`)
-    result.set(entry.name, entry.declaration)
+    result.set(entry.name, entry)
   }
   return result
 }
@@ -122,10 +124,11 @@ function composeTypes(base: ContractDocument, delta: EnterpriseDeltaDocument): C
 
 function composeCallable(
   callable: ContractCallable,
-  harmonyDeclaration: string,
+  harmonyProjection: HarmonyFacadeProjectionEntry,
   override?: EnterpriseDeltaDocument['approvedBaseCallableOverrides'][number],
+  successHook?: DriverSuccessHook,
 ): ContractCallable {
-  const source = override == null ? callable : {
+  let source = override == null ? callable : {
     ...callable,
     signature: override.enterpriseSignature,
     ...(override.declaration == null ? {} : { declaration: override.declaration }),
@@ -138,12 +141,23 @@ function composeCallable(
     assert(override.baseHash === sha256(normalizeContractText(override.baseSignature)), `Base callable override hash is stale: ${callable.name}`)
     assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseSignature)), `Enterprise callable override hash is stale: ${callable.name}`)
   }
+  if (successHook != null) {
+    assert(source.lowering?.kind === 'platform-driver', `Edition lifecycle hook requires PlatformDriver lowering: ${source.name}`)
+    assert(harmonyProjection.declaration.includes(successHook.symbol), `Harmony projection omits edition lifecycle hook: ${source.name}`)
+    source = {
+      ...source,
+      lowering: { ...source.lowering, successHook },
+      signatureHash: '',
+    }
+  }
   return {
     ...source,
-    declaration: { ...(source.declaration ?? {}), harmony: harmonyDeclaration },
+    declaration: { ...(source.declaration ?? {}), harmony: harmonyProjection.declaration },
     binding: {
       ...source.binding,
-      harmony: source.binding.harmony ?? ({ kind: 'dynamic-invoke', symbol: source.name } satisfies NativeBinding),
+      harmony: harmonyProjection.binding === 'unsupported-by-native-abi'
+        ? ({ kind: 'unsupported', symbol: 'unsupported-by-native-abi' } satisfies NativeBinding)
+        : source.binding.harmony ?? ({ kind: 'dynamic-invoke', symbol: source.name } satisfies NativeBinding),
     },
     signatureHash: '',
   }
@@ -195,18 +209,36 @@ export function composeEnterpriseContract(
   const harmonyCallables = projectionMap(harmony.callables, 'callable')
   const harmonyEvents = new Map(harmony.events.map((value) => [value.name, value]))
   const overrides = new Map(delta.approvedBaseCallableOverrides.map((value) => [value.name, value]))
+  const extensions = delta.editionExtensions
+  const localOperations = new Set(extensions?.localOperations ?? [])
+  const syntheticEvents = new Set(extensions?.syntheticEvents ?? [])
+  const lifecycleEffects = new Map<string, DriverSuccessHook>()
+  for (const effect of extensions?.lifecycleEffects ?? []) {
+    assert(!lifecycleEffects.has(effect.callable), `Duplicate edition lifecycle hook: ${effect.callable}`)
+    lifecycleEffects.set(effect.callable, effect.successHook)
+  }
   const constants = [...base.constants, ...delta.constants].map((value) => ({ ...value, signatureHash: '' }))
   const callables = [...base.callables, ...delta.callables].map((value) => {
-    const declaration = harmonyCallables.get(value.name)
-    assert(declaration != null, `Missing Harmony callable projection: ${value.name}`)
+    const projection = harmonyCallables.get(value.name)
+    assert(projection != null, `Missing Harmony callable projection: ${value.name}`)
     const override = base.callables.some((baseCallable) => baseCallable.name === value.name)
       ? overrides.get(value.name)
       : undefined
-    return composeCallable(value, composeHarmonyDeclaration(value, declaration), override)
+    if (localOperations.has(value.name)) assert(value.lowering?.kind === 'local-promise', `Edition local operation lowering is missing: ${value.name}`)
+    if (syntheticEvents.has(value.name)) assert(value.lowering?.kind === 'synthetic-event-subscription', `Edition synthetic event lowering is missing: ${value.name}`)
+    return composeCallable(
+      value,
+      { ...projection, declaration: composeHarmonyDeclaration(value, projection.declaration) },
+      override,
+      lifecycleEffects.get(value.name),
+    )
   })
   for (const override of overrides.values()) {
     assert(base.callables.some((value) => value.name === override.name), `Unknown Enterprise callable override: ${override.name}`)
   }
+  for (const name of localOperations) assert(callables.some((value) => value.name === name), `Unknown edition local operation: ${name}`)
+  for (const name of syntheticEvents) assert(callables.some((value) => value.name === name), `Unknown edition synthetic event: ${name}`)
+  for (const name of lifecycleEffects.keys()) assert(callables.some((value) => value.name === name), `Unknown edition lifecycle callable: ${name}`)
   const events: ContractEvent[] = [...base.events, ...delta.events].map((value) => {
     const projection = harmonyEvents.get(value.name)
     assert(projection != null, `Missing Harmony event projection: ${value.name}`)
@@ -366,12 +398,19 @@ export function extractEnterpriseComposerAuthority(
     constants: constants.map((value) => {
       const declaration = harmonyValues.get(value.name)?.declaration
       assert(declaration != null, `Missing Harmony constant during authority extraction: ${value.name}`)
-      return { name: value.name, declaration: demonomorphizeHarmonyText(declaration, manifest) }
+      return {
+        name: value.name,
+        declaration: demonomorphizeHarmonyText(declaration, manifest),
+      }
     }),
     callables: callables.map((value) => {
       const declaration = harmonyValues.get(value.name)?.declaration
       assert(declaration != null, `Missing Harmony callable during authority extraction: ${value.name}`)
-      return { name: value.name, declaration: demonomorphizeHarmonyText(declaration, manifest) }
+      return {
+        name: value.name,
+        declaration: demonomorphizeHarmonyText(declaration, manifest),
+        binding: declaration.includes('rejectUnsupported') ? 'unsupported-by-native-abi' : 'bound',
+      }
     }),
     events: [...base.events, ...delta.events].map((value) => ({
       name: value.name,
@@ -457,32 +496,28 @@ function normalizeOutputs(outputs: GeneratedOutput[]): GeneratedOutput[] {
   }))
 }
 
-export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot: string): GeneratedOutput[] {
+type EnterpriseGenerationContext = {
+  base: ContractDocument
+  delta: EnterpriseDeltaDocument
+  contract: ContractDocument
+  testDisposition: ReturnType<typeof buildEnterpriseTestDisposition>
+}
+
+function buildEnterpriseGenerationContext(publicRoot: string, privateRoot: string): EnterpriseGenerationContext {
   const base = readContract(join(publicRoot, 'contracts/base/contract.json'))
   const delta = readDelta(join(privateRoot, 'contracts/enterprise/delta.json'))
   const harmonyProjection = readEnterpriseHarmonyProjection(privateRoot)
   const contract = composeEnterpriseContract(base, delta, harmonyProjection)
   const testDisposition = buildEnterpriseTestDisposition(base, delta)
-  const harmonyRaw = generateIndexFromTemplate(
-    readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.harmony), 'utf8'),
-    contract,
-    'harmony',
-  )
-  const harmony = monomorphizeHarmonySource(harmonyRaw)
-  const harmonyDriver = renderHarmonyDriverBindings(privateRoot)
-  const harmonyOperationCodes = renderHarmonyOperationCodes(privateRoot)
-  const harmonyEventInventory = JSON.parse(
-    readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8'),
-  ) as { events: Array<{ name: string; value: number }>; nativeEventAliases: Record<string, string> }
-  const harmonyPlatformDriver = renderHarmonyPlatformDriver(
-    contract,
-    harmonyEventInventory,
-  )
-  return normalizeOutputs([
-    {
-      path: join(privateRoot, 'pages/index/openim-automation-profiles.uts'),
-      content: generateAutomationProfileRegistry(testDisposition),
-    },
+  return { base, delta, contract, testDisposition }
+}
+
+function buildEnterpriseAppleAndroidCoreOutputs(
+  publicRoot: string,
+  privateRoot: string,
+  contract: ContractDocument,
+): GeneratedOutput[] {
+  return [
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'),
       content: generateInterface(contract),
@@ -535,6 +570,64 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMCoreAdapter.swift'),
       content: generatedSource(renderNativeCoreAdapter(contract, 'ios')),
     },
+  ]
+}
+
+function buildEnterpriseSharedContractOutputs(
+  privateRoot: string,
+  context: EnterpriseGenerationContext,
+): GeneratedOutput[] {
+  return [
+    {
+      path: join(privateRoot, 'contracts/enterprise/surface.snapshot.json'),
+      content: JSON.stringify(buildSurfaceSnapshot(context.contract), null, 2),
+    },
+    {
+      path: join(privateRoot, 'contracts/enterprise/response-schemas.json'),
+      content: JSON.stringify(buildEnterpriseResponseSchemas(context.base, context.delta), null, 2),
+    },
+    {
+      path: join(privateRoot, 'contracts/enterprise/test-disposition.json'),
+      content: JSON.stringify(context.testDisposition, null, 2),
+    },
+  ]
+}
+
+export function buildEnterpriseAppleAndroidGeneratedOutputs(
+  publicRoot: string,
+  privateRoot: string,
+): GeneratedOutput[] {
+  const context = buildEnterpriseGenerationContext(publicRoot, privateRoot)
+  return normalizeOutputs([
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, context.contract),
+    ...buildEnterpriseSharedContractOutputs(privateRoot, context),
+  ])
+}
+
+export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot: string): GeneratedOutput[] {
+  const context = buildEnterpriseGenerationContext(publicRoot, privateRoot)
+  const { contract, testDisposition } = context
+  const harmonyRaw = generateIndexFromTemplate(
+    readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.harmony), 'utf8'),
+    contract,
+    'harmony',
+  )
+  const harmony = monomorphizeHarmonySource(harmonyRaw)
+  const harmonyDriver = renderHarmonyDriverBindings(privateRoot)
+  const harmonyOperationCodes = renderHarmonyOperationCodes(privateRoot)
+  const harmonyEventInventory = JSON.parse(
+    readFileSync(join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'), 'utf8'),
+  ) as { events: Array<{ name: string; value: number }>; nativeEventAliases: Record<string, string> }
+  const harmonyPlatformDriver = renderHarmonyPlatformDriver(
+    contract,
+    harmonyEventInventory,
+  )
+  return normalizeOutputs([
+    {
+      path: join(privateRoot, 'pages/index/openim-automation-profiles.uts'),
+      content: generateAutomationProfileRegistry(testDisposition),
+    },
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, contract),
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/index.uts'),
       content: harmony.source,
@@ -555,23 +648,18 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/harmony-operation-codes.uts'),
       content: harmonyOperationCodes,
     },
-    {
-      path: join(privateRoot, 'contracts/enterprise/surface.snapshot.json'),
-      content: JSON.stringify(buildSurfaceSnapshot(contract), null, 2),
-    },
-    {
-      path: join(privateRoot, 'contracts/enterprise/response-schemas.json'),
-      content: JSON.stringify(buildEnterpriseResponseSchemas(base, delta), null, 2),
-    },
-    {
-      path: join(privateRoot, 'contracts/enterprise/test-disposition.json'),
-      content: JSON.stringify(testDisposition, null, 2),
-    },
+    ...buildEnterpriseSharedContractOutputs(privateRoot, context),
     {
       path: join(privateRoot, 'contracts/enterprise/harmony-monomorphic-codecs.json'),
       content: JSON.stringify(harmony.manifest, null, 2),
     },
   ])
+}
+
+export function generateEnterpriseAppleAndroid(publicRoot: string, privateRoot: string): GeneratedOutput[] {
+  const outputs = buildEnterpriseAppleAndroidGeneratedOutputs(publicRoot, privateRoot)
+  for (const output of outputs) writeText(output.path, output.content)
+  return outputs
 }
 
 export function generateEnterprise(publicRoot: string, privateRoot: string): GeneratedOutput[] {
