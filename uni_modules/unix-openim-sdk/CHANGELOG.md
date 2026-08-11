@@ -4,6 +4,7 @@
 - 事件订阅改为返回可跨 UTS 桥传递的 `OpenIMSDKEventSubscription`（包含 `id` 与 `eventName`），使用 `off(subscription)` 精确取消单个监听。
 - 将事件批量取消统一为 `offAll(eventName)`；保留 `off(subscription)` 精确取消，不提供旧名称兼容导出。
 - 这是 0.2.0 的破坏性迁移：调用方需将旧的事件批量取消名称替换为 `offAll`。
+- App iOS 最低支持版本提高到 iOS 14。
 
 ## 0.1.2（2026-07-10）
 - `checkFriend` 对外返回值统一为 `{ result: [{ userID, result }] }`，兼容不同 OpenIM Core 的原始返回格式。
