@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import type { ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
+import type { ContractCallable, ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
+import { preserveEnterpriseCallableAuthority } from '../src/enterprise-contract.js'
 import {
   callableOverrideHash,
   composeEnterpriseContract,
@@ -307,4 +308,79 @@ test('generated event registries expose an edition-neutral synthetic event emitt
     'utf8',
   )
   assert.match(source, /export function emitProjectedSDKEvent\(eventName : OpenIMSDKEventName, payload : string, errCode : number, errMsg : string\)/)
+})
+
+test('Enterprise facade import preserves structured callable authority without private names', () => {
+  const existing: ContractCallable = {
+    id: 9001,
+    name: 'enterpriseOperation',
+    signature: 'enterpriseOperation(params:Params,operationID?:string|null):Promise<string>',
+    completion: 'promise',
+    responseCodec: 'raw-string',
+    errorPolicy: 'frozen-native-rejection',
+    rawString: true,
+    role: 'operation',
+    testProfile: { semanticProfile: 'response-identity', sideEffectProbe: 'none' },
+    lowering: {
+      kind: 'platform-driver', transport: 'async', operationID: 'parameter', request: 'empty-object',
+    },
+    binding: {
+      android: { kind: 'native', symbol: 'enterpriseOperation' },
+      ios: { kind: 'native', symbol: 'enterpriseOperation' },
+      harmony: { kind: 'unsupported', symbol: 'unsupported-by-native-abi' },
+    },
+    signatureHash: 'old',
+  }
+  const extracted: ContractCallable = {
+    ...existing,
+    id: 0,
+    testProfile: { semanticProfile: 'extracted-semantic', sideEffectProbe: 'extracted-side-effect' },
+    declaration: { android: 'generated', ios: 'generated', harmony: 'generated' },
+    binding: {
+      android: { kind: 'facade-alias', symbol: 'resolveStringNative' },
+      ios: { kind: 'facade-alias', symbol: 'resolveStringNative' },
+      harmony: { kind: 'native', symbol: 'enterpriseOperation' },
+    },
+    signatureHash: 'extracted',
+  }
+  const result = preserveEnterpriseCallableAuthority(existing, extracted)
+  assert.equal(result.declaration, undefined)
+  assert.deepEqual(result.lowering, existing.lowering)
+  assert.deepEqual(result.binding.android, existing.binding.android)
+  assert.deepEqual(result.binding.ios, existing.binding.ios)
+  assert.deepEqual(result.binding.harmony, extracted.binding.harmony)
+  assert.deepEqual(result.testProfile, existing.testProfile)
+  assert.notEqual(result.signatureHash, 'old')
+  assert.notEqual(result.signatureHash, 'extracted')
+})
+
+test('Enterprise facade import keeps local and synthetic bindings under edition authority', () => {
+  for (const lowering of [
+    { kind: 'local-promise', symbol: 'readLocal' },
+    { kind: 'synthetic-event-subscription', symbol: 'registerLocal' },
+  ] as const) {
+    const existing = {
+      id: 9002,
+      name: 'editionCallable',
+      signature: 'editionCallable():Promise<string>',
+      completion: 'promise', responseCodec: 'raw-string', errorPolicy: 'frozen-native-rejection',
+      rawString: true, role: 'operation', lowering,
+      binding: {
+        android: { kind: 'facade-alias', symbol: 'editionAndroid' },
+        ios: { kind: 'facade-alias', symbol: 'editionIOS' },
+        harmony: { kind: 'facade-alias', symbol: 'editionHarmony' },
+      },
+      signatureHash: 'old',
+    } as ContractCallable
+    const extracted = {
+      ...existing,
+      declaration: { android: 'generated', ios: 'generated', harmony: 'generated' },
+      binding: {
+        android: { kind: 'none', symbol: '' },
+        ios: { kind: 'none', symbol: '' },
+        harmony: { kind: 'none', symbol: '' },
+      },
+    } as ContractCallable
+    assert.deepEqual(preserveEnterpriseCallableAuthority(existing, extracted).binding, existing.binding)
+  }
 })

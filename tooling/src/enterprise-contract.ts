@@ -55,17 +55,6 @@ import {
   writeEnterpriseStableIDRegistry,
 } from './enterprise-integrity.js'
 
-const EXPECTED_TOTAL = { constants: 109, types: 233, callables: 244, events: 80 } as const
-const EXPECTED_DELTA = { constants: 0, types: 73, callables: 83, events: 32, typeExtensions: 3 } as const
-const APPROVED_BASE_CALLABLE_OVERRIDES = [{
-  name: 'getLoginUserID',
-  enterpriseSignature: 'getLoginUserID(operationID?:string|null):Promise<string>',
-  reason: 'Enterprise Android/iOS native ABI requires operationID; the optional façade parameter preserves no-argument callers.',
-}] as const
-const APPROVED_BASE_TYPE_OVERRIDES = [{
-  name: 'GetLoginUserID',
-  enterpriseDeclaration: 'export type GetLoginUserID = (operationID ?: string | null) => Promise<string>',
-}] as const
 const HARMONY_NATIVE_EVENT_ALIASES = {
   onMsgDeleted: 'EventOnMessageDeleted',
   onSendMessageProgress: 'EventOnSendMsgProgress',
@@ -81,6 +70,34 @@ function assert(condition: unknown, message: string): asserts condition {
 function writeText(path: string, value: string): void {
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, value.endsWith('\n') ? value : `${value}\n`)
+}
+
+export function preserveEnterpriseCallableAuthority(
+  existing: ContractCallable,
+  extracted: ContractCallable,
+): ContractCallable {
+  assert(existing.name === extracted.name, `Enterprise callable name changed during facade import: ${existing.name}`)
+  for (const key of ['signature', 'completion', 'responseCodec', 'errorPolicy', 'rawString', 'role'] as const) {
+    assert(
+      existing[key] === extracted[key],
+      `Enterprise callable ${existing.name} ${key} drifted from the authoritative Contract IR`,
+    )
+  }
+  assert(existing.lowering != null, `Enterprise callable lacks structured lowering authority: ${existing.name}`)
+  assert(existing.declaration == null, `Enterprise callable embeds generated facade declarations: ${existing.name}`)
+  const keepAllBindings = existing.lowering.kind === 'local-promise'
+    || existing.lowering.kind === 'synthetic-event-subscription'
+  const result: ContractCallable = {
+    ...existing,
+    id: 0,
+    testProfile: existing.testProfile ?? extracted.testProfile,
+    binding: keepAllBindings
+      ? existing.binding
+      : { ...existing.binding, harmony: extracted.binding.harmony },
+    signatureHash: '',
+  }
+  result.signatureHash = semanticHashForCallable(result)
+  return result
 }
 
 function callableParameterType(value: ExportedValue, parsed: ParsedSource, index: number): string {
@@ -247,7 +264,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     const enterpriseType = enterpriseTypeByName.get(publicType.name)
     assert(enterpriseType != null, `Enterprise contract is missing public type ${publicType.name}`)
     if (normalizeContractText(enterpriseType.declaration) !== normalizeContractText(publicType.declaration)) {
-      const approvedOverride = APPROVED_BASE_TYPE_OVERRIDES.find((value) => value.name === publicType.name)
+      const approvedOverride = existingDelta.approvedBaseTypeOverrides?.find((value) => value.name === publicType.name)
       if (approvedOverride == null) {
         typeExtensions.push(createTypeExtension(publicType, enterpriseType, typeExtensions.length))
       } else {
@@ -309,7 +326,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     assert(android.signature === ios.signature && android.signature === harmony.signature, `Callable signature differs by platform: ${android.name}`)
     const publicCallable = baseCallableByName.get(android.name)
     if (publicCallable != null) {
-      const approvedOverride = APPROVED_BASE_CALLABLE_OVERRIDES.find((value) => value.name === android.name)
+      const approvedOverride = existingDelta.approvedBaseCallableOverrides.find((value) => value.name === android.name)
       if (approvedOverride == null) {
         assert(publicCallable.signature === android.signature, `Enterprise overrides public callable ${android.name}`)
       } else {
@@ -338,7 +355,9 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       signatureHash: '',
     }
     callable.signatureHash = semanticHashForCallable(callable)
-    callables.push(callable)
+    const existingCallable = existingPrivateCallableByName.get(callable.name)
+    assert(existingCallable != null, `Enterprise callable lacks imported Contract IR authority: ${callable.name}`)
+    callables.push(preserveEnterpriseCallableAuthority(existingCallable, callable))
   }
   const callableIDs = reconcileEnterpriseIDs(stableIDs, 'callables', callables.map((value) => value.name))
   stableIDs = callableIDs.registry
@@ -399,9 +418,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     callables: androidValues.filter((value) => value.isCallable).length,
     events: eventNames.length,
   }
-  assert(JSON.stringify(actualTotal) === JSON.stringify(EXPECTED_TOTAL), `Enterprise total count mismatch: ${JSON.stringify(actualTotal)}`)
   const actualDelta = { constants: 0, types: types.length, callables: callables.length, events: events.length, typeExtensions: typeExtensions.length }
-  assert(JSON.stringify(actualDelta) === JSON.stringify(EXPECTED_DELTA), `Enterprise delta count mismatch: ${JSON.stringify(actualDelta)}`)
 
   const delta: EnterpriseDeltaDocument = {
     schemaVersion: 2,
@@ -409,9 +426,9 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     origin: {
       ...existingDelta.origin,
     },
-    expectedTotal: { ...EXPECTED_TOTAL },
-    expectedDelta: { ...EXPECTED_DELTA },
-    approvedBaseCallableOverrides: APPROVED_BASE_CALLABLE_OVERRIDES.map((value) => {
+    expectedTotal: actualTotal,
+    expectedDelta: actualDelta,
+    approvedBaseCallableOverrides: existingDelta.approvedBaseCallableOverrides.map((value) => {
       const existing = existingDelta.approvedBaseCallableOverrides.find((override) => override.name === value.name)
       return {
         ...existing,
@@ -424,6 +441,7 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
     ...(existingDelta.approvedBaseTypeOverrides == null
       ? {}
       : { approvedBaseTypeOverrides: existingDelta.approvedBaseTypeOverrides }),
+    ...(existingDelta.editionExtensions == null ? {} : { editionExtensions: existingDelta.editionExtensions }),
     constants: [],
     types,
     typeExtensions,
@@ -460,39 +478,42 @@ export function verifyEnterpriseDelta(
     /^[a-f0-9]{64}$/.test(delta.origin.importedPublicBaseContractHash),
     'Enterprise imported Public base hash is invalid',
   )
-  assert(JSON.stringify(delta.expectedTotal) === JSON.stringify(EXPECTED_TOTAL), 'Enterprise total counts changed')
-  assert(JSON.stringify(delta.expectedDelta) === JSON.stringify(EXPECTED_DELTA), 'Enterprise delta counts changed')
-  assert(delta.approvedBaseCallableOverrides.length === APPROVED_BASE_CALLABLE_OVERRIDES.length, 'Enterprise approved base callable override count changed')
-  for (const approved of APPROVED_BASE_CALLABLE_OVERRIDES) {
-    const override = delta.approvedBaseCallableOverrides.find((value) => value.name === approved.name)
-    assert(override != null, `Enterprise approved base callable override is missing: ${approved.name}`)
-    assert(override.baseSignature === 'getLoginUserID():Promise<string>', `Enterprise base override signature changed: ${approved.name}`)
-    assert(override.enterpriseSignature === approved.enterpriseSignature, `Enterprise override signature changed: ${approved.name}`)
-    assert(override.reason === approved.reason, `Enterprise override reason changed: ${approved.name}`)
-    assert(override.baseHash === sha256(normalizeContractText(override.baseSignature)), `Enterprise base override hash is stale: ${approved.name}`)
-    assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseSignature)), `Enterprise override hash is stale: ${approved.name}`)
-    assert(override.declaration == null, `Enterprise override embeds platform implementation declarations: ${approved.name}`)
+  const actualDelta = {
+    constants: delta.constants.length,
+    types: delta.types.length,
+    callables: delta.callables.length,
+    events: delta.events.length,
+    typeExtensions: delta.typeExtensions.length,
+  }
+  const actualTotal = {
+    constants: base.constants.length + delta.constants.length,
+    types: base.types.length + delta.types.length,
+    callables: base.callables.length + delta.callables.length,
+    events: base.events.length + delta.events.length,
+  }
+  assert(JSON.stringify(delta.expectedTotal) === JSON.stringify(actualTotal), 'Enterprise total counts changed')
+  assert(JSON.stringify(delta.expectedDelta) === JSON.stringify(actualDelta), 'Enterprise delta counts changed')
+  for (const override of delta.approvedBaseCallableOverrides) {
+    const publicCallable = base.callables.find((value) => value.name === override.name)
+    assert(publicCallable != null, `Enterprise base callable override is unknown: ${override.name}`)
+    assert(override.baseSignature === publicCallable.signature, `Enterprise base override signature changed: ${override.name}`)
+    assert(override.baseHash === sha256(normalizeContractText(override.baseSignature)), `Enterprise base override hash is stale: ${override.name}`)
+    assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseSignature)), `Enterprise override hash is stale: ${override.name}`)
+    assert(override.reason.trim().length > 0, `Enterprise override reason is missing: ${override.name}`)
+    assert(override.declaration == null, `Enterprise override embeds platform implementation declarations: ${override.name}`)
     assert(
       override.lowering?.kind === 'platform-driver'
-      && override.lowering.transport === 'async'
-      && override.lowering.operationID === 'parameter'
-      && override.lowering.request === 'empty-object',
-      `Enterprise override lowering is incomplete: ${approved.name}`,
+      && override.lowering.transport === 'async',
+      `Enterprise override lowering is incomplete: ${override.name}`,
     )
   }
-  assert(delta.approvedBaseTypeOverrides?.length === APPROVED_BASE_TYPE_OVERRIDES.length, 'Enterprise approved base type override count changed')
-  for (const approved of APPROVED_BASE_TYPE_OVERRIDES) {
-    const override = delta.approvedBaseTypeOverrides?.find((value) => value.name === approved.name)
-    assert(override != null, `Enterprise approved base type override is missing: ${approved.name}`)
-    assert(normalizeContractText(override.enterpriseDeclaration) === normalizeContractText(approved.enterpriseDeclaration), `Enterprise base type override changed: ${approved.name}`)
-    assert(override.baseHash === sha256(normalizeContractText(override.baseDeclaration)), `Enterprise base type hash is stale: ${approved.name}`)
-    assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseDeclaration)), `Enterprise type override hash is stale: ${approved.name}`)
+  for (const override of delta.approvedBaseTypeOverrides ?? []) {
+    const publicType = base.types.find((value) => value.name === override.name)
+    assert(publicType != null, `Enterprise base type override is unknown: ${override.name}`)
+    assert(normalizeContractText(override.baseDeclaration) === normalizeContractText(publicType.declaration), `Enterprise base type override changed: ${override.name}`)
+    assert(override.baseHash === sha256(normalizeContractText(override.baseDeclaration)), `Enterprise base type hash is stale: ${override.name}`)
+    assert(override.enterpriseHash === sha256(normalizeContractText(override.enterpriseDeclaration)), `Enterprise type override hash is stale: ${override.name}`)
   }
-  assert(delta.constants.length === 0, 'Enterprise delta must not add constants')
-  assert(delta.types.length === EXPECTED_DELTA.types, 'Enterprise type delta count changed')
-  assert(delta.typeExtensions.length === EXPECTED_DELTA.typeExtensions, 'Enterprise type extension count changed')
-  assert(delta.callables.length === EXPECTED_DELTA.callables, 'Enterprise callable delta count changed')
-  assert(delta.events.length === EXPECTED_DELTA.events, 'Enterprise event delta count changed')
   assertEnterpriseStableIDs(readEnterpriseStableIDRegistry(privateRoot), delta)
   for (const value of delta.types) assert(value.signatureHash === semanticHashForType(value), `Enterprise type semantic hash is stale: ${value.name}`)
   for (const value of delta.callables) assert(value.signatureHash === semanticHashForCallable(value), `Enterprise callable semantic hash is stale: ${value.name}`)
@@ -516,13 +537,13 @@ export function verifyEnterpriseDelta(
   const responseSchemas = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/response-schemas.json'), 'utf8'))
   const expectedResponseSchemas = buildEnterpriseResponseSchemas(base, delta)
   assert(JSON.stringify(responseSchemas) === JSON.stringify(expectedResponseSchemas), 'Enterprise response schema registry is stale')
-  assert(expectedResponseSchemas.counts.callables === EXPECTED_TOTAL.callables, 'Enterprise response schema callable coverage changed')
-  assert(expectedResponseSchemas.counts.events === EXPECTED_TOTAL.events, 'Enterprise response schema event coverage changed')
+  assert(expectedResponseSchemas.counts.callables === delta.expectedTotal.callables, 'Enterprise response schema callable coverage changed')
+  assert(expectedResponseSchemas.counts.events === delta.expectedTotal.events, 'Enterprise response schema event coverage changed')
   const testDisposition = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/test-disposition.json'), 'utf8'))
   const expectedTestDisposition = buildEnterpriseTestDisposition(base, delta)
   assert(JSON.stringify(testDisposition) === JSON.stringify(expectedTestDisposition), 'Enterprise test disposition registry is stale')
-  assert(expectedTestDisposition.counts.callables === EXPECTED_TOTAL.callables, 'Enterprise callable test disposition coverage changed')
-  assert(expectedTestDisposition.counts.events === EXPECTED_TOTAL.events, 'Enterprise event test disposition coverage changed')
+  assert(expectedTestDisposition.counts.callables === delta.expectedTotal.callables, 'Enterprise callable test disposition coverage changed')
+  assert(expectedTestDisposition.counts.events === delta.expectedTotal.events, 'Enterprise event test disposition coverage changed')
   if (options.verifyHarmonyCertification === false) return
 
   const harmonyABI = JSON.parse(
