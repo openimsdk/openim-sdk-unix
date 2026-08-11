@@ -16,6 +16,16 @@ function writeLedger(entry: Record<string, unknown>): string {
   return root
 }
 
+function writeEnterpriseLedger(baseEntry: Record<string, unknown>, enterpriseEntry: Record<string, unknown>): string {
+  const root = writeLedger(baseEntry)
+  mkdirSync(join(root, 'contracts/enterprise'), { recursive: true })
+  writeFileSync(join(root, 'contracts/enterprise/compatibility-ledger.json'), JSON.stringify({
+    version: 1,
+    entries: [enterpriseEntry],
+  }))
+  return root
+}
+
 const certifiedEntry = {
   id: 'UTS-COMPAT-TEST-001',
   editions: ['public', 'enterprise'],
@@ -58,10 +68,11 @@ test('release policy blocks unresolved and expired compatibility entries', () =>
 test('release compatibility debt is scoped to the edition being published', () => {
   const enterpriseOnlyBlocked = {
     ...certifiedEntry,
+    id: 'UTS-COMPAT-ENTERPRISE-SCOPED-001',
     editions: ['enterprise'],
     releaseStatus: 'blocked',
   }
-  const root = writeLedger(enterpriseOnlyBlocked)
+  const root = writeEnterpriseLedger(certifiedEntry, enterpriseOnlyBlocked)
 
   assert.doesNotThrow(() => verifyCompatibilityLedger(root, true, '2026-08-08', 'public'))
   assert.throws(
@@ -70,13 +81,36 @@ test('release compatibility debt is scoped to the edition being published', () =
   )
 })
 
+test('Enterprise compatibility debt is loaded from edition-owned authority', () => {
+  const enterpriseBlocked = {
+    ...certifiedEntry,
+    id: 'UTS-COMPAT-ENTERPRISE-001',
+    editions: ['enterprise'],
+    releaseStatus: 'blocked',
+  }
+  const root = writeEnterpriseLedger(certifiedEntry, enterpriseBlocked)
+  assert.doesNotThrow(() => verifyCompatibilityLedger(root, true, '2026-08-08', 'public'))
+  assert.throws(
+    () => verifyCompatibilityLedger(root, true, '2026-08-08', 'enterprise'),
+    /UTS-COMPAT-ENTERPRISE-001 is release-blocked/,
+  )
+})
+
 test('compatibility entries require an explicit valid edition inventory', () => {
   assert.throws(
-    () => verifyCompatibilityLedger(writeLedger({ ...certifiedEntry, editions: [] }), false, '2026-08-08'),
+    () => verifyCompatibilityLedger(
+      writeEnterpriseLedger(certifiedEntry, { ...certifiedEntry, id: 'invalid-empty', editions: [] }),
+      false,
+      '2026-08-08',
+    ),
     /editions/,
   )
   assert.throws(
-    () => verifyCompatibilityLedger(writeLedger({ ...certifiedEntry, editions: ['desktop'] }), false, '2026-08-08'),
+    () => verifyCompatibilityLedger(
+      writeEnterpriseLedger(certifiedEntry, { ...certifiedEntry, id: 'invalid-edition', editions: ['desktop'] }),
+      false,
+      '2026-08-08',
+    ),
     /editions/,
   )
 })

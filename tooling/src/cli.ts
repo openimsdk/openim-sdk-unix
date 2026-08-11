@@ -229,7 +229,7 @@ switch (command) {
     const privateRoot = requiredArgument('--private-root')
     const delta = JSON.parse((await import('node:fs')).readFileSync(resolve(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'))
     writeEnterpriseStableIDRegistry(privateRoot, buildEnterpriseStableIDRegistry(delta))
-    console.log('Initialized the Enterprise stable ID registry with retired callable 200001.')
+    console.log('Initialized the Enterprise stable ID registry from the edition delta.')
     break
   }
   case 'enterprise:composer:extract': {

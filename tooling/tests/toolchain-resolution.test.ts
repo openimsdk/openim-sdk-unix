@@ -16,6 +16,21 @@ test('toolchain lock contains no machine-specific workspace path', () => {
   assert.equal(lock.publicNative.source.defaultRoot, undefined)
 })
 
+test('Public package requires iOS 14 consistently', () => {
+  const iosConfig = JSON.parse(readFileSync(resolve(
+    root,
+    'uni_modules/unix-openim-sdk/utssdk/app-ios/config.json',
+  ), 'utf8'))
+  const pluginPackage = JSON.parse(readFileSync(resolve(
+    root,
+    'uni_modules/unix-openim-sdk/package.json',
+  ), 'utf8'))
+
+  assert.equal(lock.minimumPlatforms.ios, '14.0')
+  assert.equal(iosConfig.deploymentTarget, '14.0')
+  assert.equal(pluginPackage.uni_modules.platforms.client['uni-app-x'].app.ios.minVersion, '14')
+})
+
 test('toolchain paths resolve from environment or verified siblings', () => {
   const cli = resolveHBuilderXCLI(lock, { [lock.hbuilderx.cliEnvironmentVariable]: '/tmp/explicit-hbuilderx-cli' })
   assert.equal(cli, '/tmp/explicit-hbuilderx-cli')

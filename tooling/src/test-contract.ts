@@ -58,6 +58,7 @@ export interface TestDispositionDocument {
     semanticProfile: string
     sideEffectProbe: string
     expectedEvents: string[]
+    eventIdentityPaths?: Record<string, string>
     negativeProfiles: string[]
     cleanupAction: string
     validationAxes: CallableValidationAxis[]
@@ -105,17 +106,6 @@ const p0EventNames = new Set([
   'onRecvNewMessage', 'onRecvOfflineNewMessage', 'onConversationChanged', 'onNewConversation',
   'onTotalUnreadMessageCountChanged', 'onSendMessageProgress', 'onUploadFileProgress',
   'onFriendApplicationAdded', 'onFriendAdded', 'onGroupApplicationAdded', 'onGroupMemberAdded',
-])
-
-const enterpriseHarmonyApprovedKnownIssues = new Map<string, ApprovedKnownIssueDisposition>([
-  ['resetConversationUnread', {
-    code: 'harmony-reset-conversation-unread-mismatch',
-    waivedAxes: ['semantic'],
-  }],
-  ['setMessageLocalContent', {
-    code: 'harmony-set-message-local-content-uncertified',
-    waivedAxes: ['semantic', 'side-effect'],
-  }],
 ])
 
 const expectedEventsByCallable = new Map<string, string[]>([
@@ -351,6 +341,7 @@ function buildDisposition(
   callables: ContractCallable[],
   events: ContractEvent[],
   responseSchemas: ResponseSchemaDocument,
+  editionKnownIssues: Readonly<Record<string, ApprovedKnownIssueDisposition>> = {},
 ): TestDispositionDocument {
   const responseSchemaDocument = edition === 'public'
     ? 'contracts/base/response-schemas.json'
@@ -372,9 +363,7 @@ function buildDisposition(
         harmony: callablePlatformDisposition(edition, callable, capability, 'harmony'),
       }
       const validationAxes = callableValidationAxes(callable, probe, expectedEvents)
-      const approvedKnownIssue = edition === 'enterprise'
-        ? enterpriseHarmonyApprovedKnownIssues.get(callable.name)
-        : undefined
+      const approvedKnownIssue = editionKnownIssues[callable.name]
       if (approvedKnownIssue != null) {
         assert(
           approvedKnownIssue.waivedAxes.every((axis) => validationAxes.includes(axis)),
@@ -393,6 +382,9 @@ function buildDisposition(
         semanticProfile: profile,
         sideEffectProbe: probe,
         expectedEvents,
+        ...(callable.testProfile.eventIdentityPaths == null
+          ? {}
+          : { eventIdentityPaths: callable.testProfile.eventIdentityPaths }),
         negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms),
         cleanupAction: cleanupAction(callable, probe),
         validationAxes,
@@ -455,7 +447,8 @@ export function buildEnterpriseTestDisposition(base: ContractDocument, delta: En
   ]
   const events = [...base.events, ...delta.events]
   const schemas = buildEnterpriseResponseSchemas(base, delta)
-  return buildDisposition('enterprise', callables, events, schemas)
+  const knownIssues = (delta.editionExtensions?.testKnownIssues ?? {}) as Record<string, ApprovedKnownIssueDisposition>
+  return buildDisposition('enterprise', callables, events, schemas, knownIssues)
 }
 
 function actualKind(value: unknown): string {

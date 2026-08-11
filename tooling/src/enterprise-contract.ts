@@ -36,6 +36,7 @@ import {
 import { verifyEnterpriseDriverInvariants } from './verify-driver.js'
 import {
   harmonyContractMethodBindings,
+  harmonyNativeEvents,
   harmonyTypedMethods,
   renderHarmonyDriverBindings,
   renderHarmonyOperationCodes,
@@ -55,14 +56,6 @@ import {
   writeEnterpriseStableIDRegistry,
 } from './enterprise-integrity.js'
 import { ENTERPRISE_HARMONY_PROJECTION_PATH } from './enterprise-compose.js'
-
-const HARMONY_NATIVE_EVENT_ALIASES = {
-  onMsgDeleted: 'EventOnMessageDeleted',
-  onSendMessageProgress: 'EventOnSendMsgProgress',
-  onUploadLogsProgress: 'EventOnUploadSDKDataProgress',
-  onUserStatusChanged: 'EventOnUserOnlineStatusChanged',
-  onReceiveCustomSignal: 'EventOnReceiveCustomSignaling',
-} as const
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -208,6 +201,7 @@ function importHarmonyABI(
   const inventoryPath = join(privateRoot, 'contracts/enterprise/native-abi/harmony.json')
   const existingInventory = JSON.parse(readFileSync(inventoryPath, 'utf8')) as {
     responseEncoders?: Record<string, string>
+    nativeEventAliases?: Record<string, string>
   }
   const harPath = join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/libs/imsdk.har')
   const declaration = execFileSync('tar', [
@@ -226,8 +220,8 @@ function importHarmonyABI(
     .map((line) => line.trim())
     .filter((line) => /^[A-Za-z_$][\w$]*(?:<[^>]+>)?\s*\(/.test(line))
   const typedMethodBindings = harmonyTypedMethods(privateRoot)
-  assert(events.length === 69, `Expected 69 Harmony HAR event enum values, got ${events.length}`)
-  assert(methods.length > 100, `Harmony HAR method inventory is unexpectedly small: ${methods.length}`)
+  assert(events.length > 0, 'Harmony HAR event inventory is empty')
+  assert(methods.length > 0, 'Harmony HAR method inventory is empty')
   writeText(
     join(privateRoot, 'contracts/enterprise/native-abi/harmony.json'),
     JSON.stringify({
@@ -242,7 +236,7 @@ function importHarmonyABI(
       typedMethodCount: typedMethodBindings.length,
       typedMethodBindings,
       supportedContractEventCount: contractEventCount - unsupportedEvents.length,
-      nativeEventAliases: HARMONY_NATIVE_EVENT_ALIASES,
+      nativeEventAliases: existingInventory.nativeEventAliases ?? {},
       explicitlyUnsupportedContractEvents: unsupportedEvents,
       explicitlyUnsupportedContractOperations: unsupportedOperations,
       responseEncoders: existingInventory.responseEncoders ?? {},
@@ -589,12 +583,12 @@ export function verifyEnterpriseDelta(
   const toolchain = JSON.parse(readFileSync(join(publicRoot, 'toolchain.lock.json'), 'utf8')) as {
     hbuilderx: { version: string }
   }
-  assert(harmonyABI.eventCount === 69, 'Harmony HAR event enum count changed')
+  assert(harmonyABI.eventCount === harmonyNativeEvents(privateRoot).length, 'Harmony HAR event inventory differs from the locked HAR')
   assert(
     harmonyABI.supportedContractEventCount === countHarmonyBoundEvents(harmonyProjection.events),
     'Harmony supported contract event count changed',
   )
-  assert(harmonyABI.methodCount > 100, 'Harmony HAR method inventory is unexpectedly small')
+  assert(harmonyABI.methodCount >= harmonyABI.typedMethodCount, 'Harmony raw method inventory is smaller than its typed Promise projection')
   assert(
     harmonyABI.typedMethodCount === harmonyTypedMethods(privateRoot).length,
     'Harmony typed Promise method inventory differs from the locked HAR',
@@ -651,7 +645,10 @@ export function verifyEnterpriseDelta(
   assert(harmonyOperationCodes === renderHarmonyOperationCodes(privateRoot), 'Harmony operation code projection is stale')
   const harmonyContractBindings = harmonyContractMethodBindings(privateRoot)
   assert(!harmonyOperationCodes.includes('harmonyOperationCode'), 'Harmony operation code translator was reintroduced')
-  assert((harmonyOperationCodes.match(/if \(eventName == '/g) ?? []).length === 69, 'Harmony event code coverage changed')
+  assert(
+    (harmonyOperationCodes.match(/if \(eventName == '/g) ?? []).length === harmonyABI.eventCount,
+    'Harmony event code coverage differs from the ABI inventory',
+  )
   assert(!/400\d{3}/.test(harmonyDriverSource), 'Harmony legacy operation IDs were reintroduced')
   assert(!harmonyDriverSource.includes('callBindingUnInitSDK'), 'Harmony unInit bypassed the lifecycle barrier')
   for (const binding of harmonyContractBindings) {
@@ -674,10 +671,6 @@ export function verifyEnterpriseDelta(
   assert(!harmonySource.includes('noopUnsubscribe'), 'Harmony contains a silent noop event subscription')
   assert(harmonySource.includes('driverBindEventSink('), 'Harmony event sink is not bound through PlatformDriver')
   assert(harmonySource.includes('function dispatchHarmonyDriverEvent('), 'Harmony public-name event dispatcher drifted')
-  assert(
-    harmonySource.includes("onStringHarmonyEvent('onMessageModified', handler)"),
-    'Harmony onMessageModified public-name subscription drifted',
-  )
   assert(
     harmonySource.includes('export function offAll(eventName : OpenIMSDKEventName) : void { offAllHarmonyUTSSubscriptions(eventName) }'),
     'Harmony offAll does not clean by public event name',

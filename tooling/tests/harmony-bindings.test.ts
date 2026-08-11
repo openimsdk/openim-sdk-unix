@@ -42,6 +42,11 @@ function writeLockedHarmonyFixture(privateRoot: string): void {
     ],
   }))
   writeFileSync(join(contractRoot, 'enterprise/delta.json'), JSON.stringify({ callables: [] }))
+  writeFileSync(join(contractRoot, 'enterprise/harmony-bindings.json'), JSON.stringify({
+    nativeMethodAliases: {},
+    localContractOperations: [],
+    manualNativeMethods: [],
+  }))
   writeFileSync(join(contractRoot, 'enterprise/native-abi/harmony.json'), JSON.stringify({
     responseEncoders: {},
     explicitlyUnsupportedContractOperations: ['abiUnsupportedMethod'],

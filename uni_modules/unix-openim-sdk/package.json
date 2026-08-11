@@ -37,7 +37,7 @@
                 "harmony": "x",
                 "ios": {
                     "extVersion": "0.2.0-rc.1",
-                    "minVersion": "12"
+                    "minVersion": "14"
                 }
             },
             "mp": {

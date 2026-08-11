@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 interface PolicyRule {
@@ -65,13 +65,18 @@ export function verifyCompatibilityLedger(
   today = new Date().toISOString().slice(0, 10),
   edition?: ReleaseEdition,
 ): void {
-  const ledger = JSON.parse(
-    readFileSync(join(root, 'tooling/compatibility/ledger.json'), 'utf8'),
-  ) as CompatibilityLedger
+  const paths = [join(root, 'tooling/compatibility/ledger.json')]
+  const enterprisePath = join(root, 'contracts/enterprise/compatibility-ledger.json')
+  if (existsSync(enterprisePath)) paths.push(enterprisePath)
+  const ledgers = paths.map((path) => JSON.parse(readFileSync(path, 'utf8')) as CompatibilityLedger)
   const findings: string[] = []
-  if (ledger.version !== 1) findings.push('compatibility ledger version changed')
+  if (ledgers.some((ledger) => ledger.version !== 1)) findings.push('compatibility ledger version changed')
   const ids = new Set<string>()
-  for (const entry of ledger.entries) {
+  const entries = [
+    ...ledgers[0]!.entries.filter((entry) => entry.editions?.includes('public') === true),
+    ...ledgers.slice(1).flatMap((ledger) => ledger.entries),
+  ]
+  for (const entry of entries) {
     if (ids.has(entry.id)) findings.push(`${entry.id} is duplicated`)
     ids.add(entry.id)
     if (entry.editions == null || entry.editions.length === 0 || entry.editions.some((value) => !RELEASE_EDITIONS.has(value))) {

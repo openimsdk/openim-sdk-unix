@@ -2,7 +2,7 @@
   "frameworks": [
     "libresolv.tbd"
   ],
-  "deploymentTarget": "12.0",
+  "deploymentTarget": "14.0",
   "dependencies-pod-sources": [
     "https://cdn.cocoapods.org/"
   ],

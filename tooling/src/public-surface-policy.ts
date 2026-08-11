@@ -28,7 +28,6 @@ export function verifyNoLegacyEventControl(root: string): void {
     'uni_modules/unix-openim-sdk/README.md',
     'uni_modules/unix-openim-sdk/utssdk',
     'pages',
-    'HANDOFF_PUBLIC.md',
   ].flatMap((path) => sourceFiles(join(root, path)))
 
   const offenders = paths

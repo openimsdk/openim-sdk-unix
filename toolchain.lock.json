@@ -45,7 +45,6 @@
   },
   "minimumPlatforms": {
     "androidApi": 21,
-    "ios": "12.0",
-    "harmonyApi": 24
+    "ios": "14.0"
   }
 }
