@@ -81,6 +81,11 @@ export function countHarmonyBoundEvents(events: Array<{ binding: string }>): num
   return events.filter((event) => event.binding === 'bound').length
 }
 
+export function hasUnsupportedHarmonyDiagnostic(source: string, callableName: string): boolean {
+  return source.includes(`'${callableName}', 'platform-unsupported:`)
+    && source.includes('Harmony HAR')
+}
+
 export function preserveEnterpriseCallableAuthority(
   existing: ContractCallable,
   extracted: ContractCallable,
@@ -690,7 +695,7 @@ export function verifyEnterpriseDelta(
   }
   for (const callableName of expectedUnsupportedOperations) {
     assert(
-      harmonySource.includes(`'${callableName}', 'is not exposed by the Harmony HAR'`),
+      hasUnsupportedHarmonyDiagnostic(harmonySource, callableName),
       `Harmony unsupported operation is not diagnostic: ${callableName}`,
     )
   }
