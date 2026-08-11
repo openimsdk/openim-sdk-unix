@@ -9,7 +9,7 @@ import {
   mergePublicTemplateHelpers,
   type EnterpriseHarmonyFacadeProjection,
 } from '../src/enterprise-compose.js'
-import { generateIndexFromTemplate } from '../src/generate.js'
+import { generateEvents, generateIndexFromTemplate } from '../src/generate.js'
 import {
   demonomorphizeHarmonySource,
   monomorphizeHarmonySource,
@@ -247,6 +247,14 @@ test('edition extensions lower local promises, synthetic events, and lifecycle h
   assert.match(android, /recordLocalState\(userID, data\)/)
   assert.match(harmonySource, /return readLocalStateLocal\(\)/)
   assert.match(harmonySource, /return registerLocalStateChanged\(handler\)/)
+})
+
+test('edition-owned event prelude is appended without changing the Public prelude authority', () => {
+  const marker = "import { EditionHandler } from '../interface.uts'\nfunction parseEditionEvent(payload : string) : string { return payload }"
+  const generated = generateEvents(resolve('.'), baseContract(), 'android', marker)
+  assert.match(generated, /import \{ EditionHandler \} from '\.\.\/interface\.uts'/)
+  assert.match(generated, /function parseEditionEvent\(payload : string\)/)
+  assert.equal(readFileSync(resolve('sdk-src/uts/app-android/events.prelude.uts'), 'utf8').includes('EditionHandler'), false)
 })
 
 test('Harmony event subscriptions and offAll are projected through the public-name registry', () => {

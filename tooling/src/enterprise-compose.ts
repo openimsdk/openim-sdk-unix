@@ -516,6 +516,7 @@ function buildEnterpriseAppleAndroidCoreOutputs(
   publicRoot: string,
   privateRoot: string,
   contract: ContractDocument,
+  delta: EnterpriseDeltaDocument,
 ): GeneratedOutput[] {
   return [
     {
@@ -540,11 +541,11 @@ function buildEnterpriseAppleAndroidCoreOutputs(
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'),
-      content: generateEvents(privateRoot, contract, 'android'),
+      content: generateEvents(privateRoot, contract, 'android', delta.editionExtensions?.eventPrelude?.android),
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts'),
-      content: generateEvents(privateRoot, contract, 'ios'),
+      content: generateEvents(privateRoot, contract, 'ios', delta.editionExtensions?.eventPrelude?.ios),
     },
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMDriverRuntime.kt'),
@@ -599,7 +600,7 @@ export function buildEnterpriseAppleAndroidGeneratedOutputs(
 ): GeneratedOutput[] {
   const context = buildEnterpriseGenerationContext(publicRoot, privateRoot)
   return normalizeOutputs([
-    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, context.contract),
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, context.contract, context.delta),
     ...buildEnterpriseSharedContractOutputs(privateRoot, context),
   ])
 }
@@ -627,7 +628,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
       path: join(privateRoot, 'pages/index/openim-automation-profiles.uts'),
       content: generateAutomationProfileRegistry(testDisposition),
     },
-    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, contract),
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, contract, context.delta),
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/index.uts'),
       content: harmony.source,

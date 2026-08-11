@@ -497,14 +497,20 @@ function generateOffCase(event: ContractEvent): string {
 `
 }
 
-export function generateEvents(root: string, contract: ContractDocument, platform: 'android' | 'ios'): string {
+export function generateEvents(
+  root: string,
+  contract: ContractDocument,
+  platform: 'android' | 'ios',
+  editionPrelude = '',
+): string {
   const prelude = readFileSync(join(root, `sdk-src/uts/app-${platform}/events.prelude.uts`), 'utf8').trim()
+  const extension = editionPrelude.trim()
   const state = contract.events.map(generateEventState).join('\n')
   const removals = contract.events.map(generateEventRemoval).join('\n\n')
   const registrations = contract.events.map(generateEventRegistration).join('\n\n')
   const dispatchCases = contract.events.map((event) => generateDispatchCase(event, platform)).join('\n')
   const offCases = contract.events.map(generateOffCase).join('\n')
-  return generatedSource(`${prelude}
+  return generatedSource(`${prelude}${extension.length === 0 ? '' : `\n${extension}`}
 
 ${state}
 let nextEventHandlerID : number = 1

@@ -249,6 +249,7 @@ export interface EnterpriseDeltaDocument {
   editionExtensions?: {
     localOperations: string[]
     syntheticEvents: string[]
+    eventPrelude?: Partial<Record<'android' | 'ios', string>>
     lifecycleEffects: Array<{
       callable: string
       successHook: DriverSuccessHook
