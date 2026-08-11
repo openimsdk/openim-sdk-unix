@@ -6,8 +6,8 @@
       "editions": ["public"],
       "platform": "android",
       "name": "io.openim:core-sdk",
-      "version": "3.8.3-patch14.1",
-      "purl": "pkg:maven/io.openim/core-sdk@3.8.3-patch14.1",
+      "version": "3.8.3-patch15",
+      "purl": "pkg:maven/io.openim/core-sdk@3.8.3-patch15",
       "license": "AGPL-3.0-only",
       "hashSource": {
         "document": "toolchain.lock.json",
@@ -19,8 +19,8 @@
       "editions": ["public"],
       "platform": "ios",
       "name": "OpenIMSDKCore",
-      "version": "3.8.3-hotfix.14-dynamic",
-      "purl": "pkg:cocoapods/OpenIMSDKCore@3.8.3-hotfix.14-dynamic",
+      "version": "3.8.3-hotfix.15-dynamic.1",
+      "purl": "pkg:cocoapods/OpenIMSDKCore@3.8.3-hotfix.15-dynamic.1",
       "license": "AGPL-3.0-only",
       "hashSource": {
         "document": "toolchain.lock.json",

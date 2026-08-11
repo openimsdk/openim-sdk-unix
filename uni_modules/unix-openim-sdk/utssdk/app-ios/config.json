@@ -9,7 +9,7 @@
   "dependencies-pods": [
     {
       "name": "OpenIMSDKCore",
-      "version": "3.8.3-hotfix.14-dynamic",
+      "version": "3.8.3-hotfix.15-dynamic.1",
       "source": "https://cdn.cocoapods.org/"
     }
   ]
