@@ -46,6 +46,7 @@ Public surface 已冻结并由 `contracts/base/surface.snapshot.json` 校验：
 权威锁文件是 `toolchain.lock.json`：
 
 - HBuilderX：`5.23.2026080313-alpha`
+- CLI SHA-256：`a22292b1d595c50dd764196233ebff8cedad74af783896876c17880279b69977`（与团队当前分发的 Alpha 应用包一致）
 - CLI SHA256：`2e0621390eb18bbaa40878dc06a363968326352357ed30af4728b01ffcc61302`
 - 内置 UTS plugin：`5.23.2026072314.2329`
 - Public Core revision：`3422edca94f0178d8151397620e65b26e1665bc1`，branch `v3.8.3-patch`
