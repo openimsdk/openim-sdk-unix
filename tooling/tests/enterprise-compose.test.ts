@@ -15,6 +15,8 @@ import {
   type HarmonyMonomorphicManifest,
 } from '../src/harmony-monomorphize.js'
 import { normalizeContractText, sha256 } from '../src/source.js'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 function baseContract(): ContractDocument {
   return {
@@ -297,4 +299,12 @@ test('Harmony local operation wrappers lower to the PlatformDriver seam', () => 
     assert.match(declaration, new RegExp(value.expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
     assert.doesNotMatch(declaration, /OpenIMHarmonyDriver/)
   }
+})
+
+test('generated event registries expose an edition-neutral synthetic event emitter', () => {
+  const source = readFileSync(
+    resolve(import.meta.dirname, '../../uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'),
+    'utf8',
+  )
+  assert.match(source, /export function emitProjectedSDKEvent\(eventName : OpenIMSDKEventName, payload : string, errCode : number, errMsg : string\)/)
 })
