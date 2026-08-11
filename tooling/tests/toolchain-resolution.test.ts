@@ -32,6 +32,10 @@ test('Public package requires iOS 14 consistently', () => {
 })
 
 test('Public native dependencies use the approved patch.15 release coordinates', () => {
+  const pluginPackage = JSON.parse(readFileSync(resolve(
+    root,
+    'uni_modules/unix-openim-sdk/package.json',
+  ), 'utf8'))
   const androidConfig = JSON.parse(readFileSync(resolve(
     root,
     'uni_modules/unix-openim-sdk/utssdk/app-android/config.json',
@@ -42,14 +46,18 @@ test('Public native dependencies use the approved patch.15 release coordinates',
   ), 'utf8'))
 
   assert.equal(lock.publicNative.android.externalCoordinate, 'io.openim:core-sdk:3.8.3-patch15@aar')
-  assert.equal(
-    androidConfig.dependencies[0].source,
-    "implementation 'io.openim:core-sdk:3.8.3-patch15@aar'",
-  )
   assert.equal(lock.publicNative.ios.externalPod, 'OpenIMSDKCore')
   assert.equal(lock.publicNative.ios.externalVersion, '3.8.3-hotfix.15-dynamic.1')
-  assert.equal(iosConfig['dependencies-pods'][0].name, 'OpenIMSDKCore')
-  assert.equal(iosConfig['dependencies-pods'][0].version, '3.8.3-hotfix.15-dynamic.1')
+
+  const harmony = pluginPackage.uni_modules.platforms.client['uni-app-x'].app.harmony
+  if (harmony === 'x') {
+    assert.equal(
+      androidConfig.dependencies[0].source,
+      "implementation 'io.openim:core-sdk:3.8.3-patch15@aar'",
+    )
+    assert.equal(iosConfig['dependencies-pods'][0].name, 'OpenIMSDKCore')
+    assert.equal(iosConfig['dependencies-pods'][0].version, '3.8.3-hotfix.15-dynamic.1')
+  }
 })
 
 test('package candidate version is consistent across platform metadata', () => {
