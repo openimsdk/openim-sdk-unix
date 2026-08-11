@@ -506,30 +506,31 @@ test('cross-account social correlation uses the declared event identity field ex
   assert.equal(composite(JSON.stringify({ groupID: 'group-20', userID: 'user-other' })).passed, false)
 })
 
-test('cross-account signaling correlation validates the exact room or custom payload identity', () => {
-  const signalingManifest = {
+test('edition-owned cross-account correlation validates the declared nested identity path', () => {
+  const editionManifest = {
     schemaVersion: 2,
     edition: 'enterprise',
     counts: { callables: 1, events: 0 },
     callables: [{
-      caseId: 'api/signalingInvite',
-      apiName: 'signalingInvite',
+      caseId: 'api/editionInvite',
+      apiName: 'editionInvite',
       platforms: { android: 'required', ios: 'required', harmony: 'required' },
-      expectedEvents: ['onReceiveNewInvitation'],
+      expectedEvents: ['onEditionInvitation'],
+      eventIdentityPaths: { onEditionInvitation: 'invitation.sessionID' },
       validationAxes: ['event'],
     }],
     events: [],
   }
   const validate = (payloadIdentity: string, eventPayloadDetail: string) => validateAutomationEvidence({
-    manifest: signalingManifest,
+    manifest: editionManifest,
     platform: 'harmony',
     report: {
       cases: [{
-        apiName: 'signalingInvite',
+        apiName: 'editionInvite',
         ok: true,
         eventCorrelations: [{
-          operationApiName: 'signalingInvite',
-          eventName: 'onReceiveNewInvitation',
+          operationApiName: 'editionInvite',
+          eventName: 'onEditionInvitation',
           operationSequence: 10,
           eventSequence: 12,
           operationEpoch: 3,
@@ -546,9 +547,9 @@ test('cross-account signaling correlation validates the exact room or custom pay
     },
   })
 
-  assert.equal(validate('room-1', JSON.stringify({ invitation: { roomID: 'room-1' } })).passed, true)
-  assert.equal(validate('room-1', JSON.stringify(JSON.stringify({ invitation: { roomID: 'room-1' } }))).passed, true)
-  assert.equal(validate('room-1', JSON.stringify({ invitation: { roomID: 'room-other' }, customInfo: 'room-1' })).passed, false)
+  assert.equal(validate('session-1', JSON.stringify({ invitation: { sessionID: 'session-1' } })).passed, true)
+  assert.equal(validate('session-1', JSON.stringify(JSON.stringify({ invitation: { sessionID: 'session-1' } }))).passed, true)
+  assert.equal(validate('session-1', JSON.stringify({ invitation: { sessionID: 'session-other' }, note: 'session-1' })).passed, false)
 })
 
 test('callable semantic and side-effect PASS requires matching structured profile assertions', () => {

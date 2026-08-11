@@ -44,6 +44,24 @@ function command(command: string, args: string[]): string {
   return execFileSync(command, args, { encoding: 'utf8' }).trim()
 }
 
+function deploymentTargetParts(value: string): number[] {
+  assert(/^\d+(?:\.\d+)*$/.test(value), `Invalid iOS deployment target: ${value}`)
+  return value.split('.').map(Number)
+}
+
+export function isNativeDeploymentTargetCompatible(nativeTarget: string, pluginTarget: string): boolean {
+  const native = deploymentTargetParts(nativeTarget)
+  const plugin = deploymentTargetParts(pluginTarget)
+  const count = Math.max(native.length, plugin.length)
+  for (let index = 0; index < count; index += 1) {
+    const nativePart = native[index] ?? 0
+    const pluginPart = plugin[index] ?? 0
+    if (nativePart < pluginPart) return true
+    if (nativePart > pluginPart) return false
+  }
+  return true
+}
+
 export function verifyPrivateNativeArtifacts(
   privateRoot: string,
   platform: MobileBuildPlatform,
@@ -101,5 +119,8 @@ export function verifyPrivateNativeArtifacts(
   const config = JSON.parse(
     readFileSync(join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-ios/config.json'), 'utf8'),
   ) as { deploymentTarget: string }
-  assert(config.deploymentTarget === inventory.ios.deploymentTarget, 'Private iOS deployment target mismatch')
+  assert(
+    isNativeDeploymentTargetCompatible(inventory.ios.deploymentTarget, config.deploymentTarget),
+    'Private iOS native deployment target exceeds the plugin minimum',
+  )
 }

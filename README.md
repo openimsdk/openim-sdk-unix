@@ -48,8 +48,8 @@ uni_modules/unix-openim-sdk
 
 插件平台配置文件中已声明原生依赖：
 
-- Android：`io.openim:core-sdk:3.8.3-patch14.1@aar`
-- iOS：`OpenIMSDKCore` `3.8.3-hotfix.14-dynamic`
+- Android：`io.openim:core-sdk:3.8.3-patch15@aar`
+- iOS：`OpenIMSDKCore` `3.8.3-hotfix.15-dynamic.1`
 
 发布门禁会分别校验 Public 与 Enterprise 的兼容债务。Public 发布还要求上述 Maven AAR 的 SHA-256 与锁定源码产物一致、Pod XCFramework 的解包 inventory SHA-256 与锁定源码产物一致；在 `toolchain.lock.json` 记录完整等价证据前，`npm run verify:release-policy` 会明确阻断发布。
 

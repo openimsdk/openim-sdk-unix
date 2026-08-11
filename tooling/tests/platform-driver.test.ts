@@ -9,7 +9,7 @@ import {
   renderNativeCoreAdapter,
   renderPlatformDriverUTS,
 } from '../src/platform-driver.js'
-import { DRIVER_TYPED_RESPONSE_PARSERS, generateIndex } from '../src/generate.js'
+import { generateIndex, responseParserRegistry } from '../src/generate.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
@@ -608,9 +608,10 @@ test('native login guards live inside generated CoreAdapters', () => {
   }
 })
 
-test('shared compiler names every Enterprise typed response parser explicitly', () => {
+test('edition response parser authority extends the shared compiler explicitly', () => {
+  const registry = responseParserRegistry(Object.fromEntries(ENTERPRISE_TYPED_RESPONSE_PARSERS))
   for (const [codec, parser] of ENTERPRISE_TYPED_RESPONSE_PARSERS) {
-    assert.equal(DRIVER_TYPED_RESPONSE_PARSERS[codec], parser)
+    assert.equal(registry[codec], parser)
   }
 })
 

@@ -153,11 +153,11 @@ test('platform-unsupported surfaces allow their executable negative profile', ()
   assert.ok(event?.negativeProfiles.includes('platform-unsupported'))
 })
 
-test('Harmony native ABI gaps are explicit unsupported dispositions', () => {
+test('edition native ABI gaps are explicit unsupported dispositions', () => {
   const template = structuredClone(contract.callables.find((item) => item.name === 'updateFcmToken'))
   assert.ok(template)
-  template.name = 'updateToken'
-  template.signature = 'updateToken(params:OpenIMUpdateTokenParams,operationID?:string|null):Promise<string>'
+  template.name = 'editionOperation'
+  template.signature = 'editionOperation(params:OpenIMEditionParams,operationID?:string|null):Promise<string>'
   template.binding.harmony = { kind: 'unsupported', symbol: 'unsupported-by-native-abi' }
   const delta: EnterpriseDeltaDocument = {
     schemaVersion: 2,
@@ -181,7 +181,7 @@ test('Harmony native ABI gaps are explicit unsupported dispositions', () => {
     events: [],
   }
 
-  const callable = buildEnterpriseTestDisposition(contract, delta).callables.find((item) => item.apiName === 'updateToken')
+  const callable = buildEnterpriseTestDisposition(contract, delta).callables.find((item) => item.apiName === 'editionOperation')
   assert.equal(callable?.platforms.harmony, 'platform-unsupported')
   assert.ok(callable?.negativeProfiles.includes('platform-unsupported'))
 })
@@ -229,15 +229,15 @@ test('Enterprise test projection applies approved base bindings and edition-owne
 })
 
 test('Enterprise Harmony known issues are manifest-scoped and axis-specific', () => {
-  const resetConversationUnread = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))
-  const setMessageLocalContent = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))
-  assert.ok(resetConversationUnread)
-  assert.ok(setMessageLocalContent)
-  resetConversationUnread.name = 'resetConversationUnread'
-  resetConversationUnread.signature = 'resetConversationUnread(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>'
-  resetConversationUnread.testProfile = { semanticProfile: 'response-identity', sideEffectProbe: 'none' }
-  setMessageLocalContent.name = 'setMessageLocalContent'
-  setMessageLocalContent.signature = 'setMessageLocalContent(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>'
+  const editionKnownIssue = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))
+  const editionSecondIssue = structuredClone(contract.callables.find((item) => item.name === 'setMessageLocalEx'))
+  assert.ok(editionKnownIssue)
+  assert.ok(editionSecondIssue)
+  editionKnownIssue.name = 'editionKnownIssue'
+  editionKnownIssue.signature = 'editionKnownIssue(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>'
+  editionKnownIssue.testProfile = { semanticProfile: 'response-identity', sideEffectProbe: 'none' }
+  editionSecondIssue.name = 'editionSecondIssue'
+  editionSecondIssue.signature = 'editionSecondIssue(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>'
   const delta: EnterpriseDeltaDocument = {
     schemaVersion: 2,
     edition: 'enterprise-delta',
@@ -253,25 +253,34 @@ test('Enterprise Harmony known issues are manifest-scoped and axis-specific', ()
     expectedTotal: { constants: 0, types: 0, callables: 0, events: 0 },
     expectedDelta: { constants: 0, types: 0, callables: 0, events: 0, typeExtensions: 0 },
     approvedBaseCallableOverrides: [],
+    editionExtensions: {
+      localOperations: [],
+      syntheticEvents: [],
+      lifecycleEffects: [],
+      testKnownIssues: {
+        editionKnownIssue: { code: 'edition-known-issue', waivedAxes: ['semantic'] },
+        editionSecondIssue: { code: 'edition-second-issue', waivedAxes: ['semantic', 'side-effect'] },
+      },
+    },
     constants: [],
     types: [],
     typeExtensions: [],
-    callables: [resetConversationUnread, setMessageLocalContent],
+    callables: [editionKnownIssue, editionSecondIssue],
     events: [],
   }
   const enterpriseDisposition = buildEnterpriseTestDisposition(contract, delta)
   const enterprise = new Map(enterpriseDisposition.callables.map((item) => [item.apiName, item]))
 
   assert.equal(enterprise.get('unInitSDK')?.approvedKnownIssue, undefined)
-  assert.deepEqual(enterprise.get('resetConversationUnread')?.approvedKnownIssue, {
+  assert.deepEqual(enterprise.get('editionKnownIssue')?.approvedKnownIssue, {
     harmony: {
-      code: 'harmony-reset-conversation-unread-mismatch',
+      code: 'edition-known-issue',
       waivedAxes: ['semantic'],
     },
   })
-  assert.deepEqual(enterprise.get('setMessageLocalContent')?.approvedKnownIssue, {
+  assert.deepEqual(enterprise.get('editionSecondIssue')?.approvedKnownIssue, {
     harmony: {
-      code: 'harmony-set-message-local-content-uncertified',
+      code: 'edition-second-issue',
       waivedAxes: ['semantic', 'side-effect'],
     },
   })
