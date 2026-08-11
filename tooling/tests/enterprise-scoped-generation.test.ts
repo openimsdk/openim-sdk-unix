@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { ENTERPRISE_APPLE_ANDROID_GENERATOR_AUTHORITY_INPUTS } from '../src/enterprise-generated-manifest.js'
+import { ENTERPRISE_HARMONY_PROJECTION_PATH } from '../src/enterprise-compose.js'
 
 test('apple-android generation keeps the contract projection but excludes Harmony native inputs', () => {
+  assert.equal(ENTERPRISE_HARMONY_PROJECTION_PATH, 'sdk-src/uts/app-harmony/facade-projection.json')
   assert.ok(ENTERPRISE_APPLE_ANDROID_GENERATOR_AUTHORITY_INPUTS.includes('contracts/base/contract.json'))
   assert.ok(ENTERPRISE_APPLE_ANDROID_GENERATOR_AUTHORITY_INPUTS.includes('sdk-src/native/ios/OpenIMDriverRuntime.swift'))
   assert.ok(ENTERPRISE_APPLE_ANDROID_GENERATOR_AUTHORITY_INPUTS.includes('sdk-src/uts/app-harmony/facade-projection.json'))

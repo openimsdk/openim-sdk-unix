@@ -54,6 +54,7 @@ import {
   reconcileEnterpriseIDs,
   writeEnterpriseStableIDRegistry,
 } from './enterprise-integrity.js'
+import { ENTERPRISE_HARMONY_PROJECTION_PATH } from './enterprise-compose.js'
 
 const HARMONY_NATIVE_EVENT_ALIASES = {
   onMsgDeleted: 'EventOnMessageDeleted',
@@ -522,7 +523,7 @@ export function verifyEnterpriseDelta(
     .filter((event) => event.binding.harmony === 'unsupported-by-native-abi')
     .map((event) => event.name)
   const harmonyProjection = JSON.parse(
-    readFileSync(join(privateRoot, 'contracts/enterprise/harmony-facade-projection.json'), 'utf8'),
+    readFileSync(join(privateRoot, ENTERPRISE_HARMONY_PROJECTION_PATH), 'utf8'),
   ) as {
     callables: Array<{ name: string; binding?: string }>
     events: Array<{ name: string; binding: string }>
