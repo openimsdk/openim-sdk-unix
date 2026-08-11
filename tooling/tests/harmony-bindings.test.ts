@@ -37,6 +37,7 @@ function writeLockedHarmonyFixture(privateRoot: string): void {
     callables: [
       { id: 1, name: 'realMethod', role: 'operation', binding: { harmony: { kind: 'native' } } },
       { id: 2, name: 'unsupportedMethod', role: 'operation', binding: { harmony: { kind: 'unsupported' } } },
+      { id: 3, name: 'editionLocalMethod', role: 'operation', lowering: { kind: 'local-promise' }, binding: { harmony: { kind: 'facade-alias' } } },
     ],
   }))
   writeFileSync(join(contractRoot, 'enterprise/delta.json'), JSON.stringify({ callables: [] }))
