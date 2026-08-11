@@ -519,6 +519,10 @@ ${dispatchCases}
   }
 }
 
+export function emitProjectedSDKEvent(eventName : OpenIMSDKEventName, payload : string, errCode : number, errMsg : string) {
+  emitSDKEvent(eventName, payload, errCode, errMsg)
+}
+
 function bindNativeEvents() {
   driverBindEventSink((eventName : string, payload : string, errCode : number, errMsg : string) => {
     emitSDKEvent(eventName, payload, errCode, errMsg)
