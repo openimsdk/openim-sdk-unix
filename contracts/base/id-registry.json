@@ -1,0 +1,2884 @@
+{
+  "schemaVersion": 1,
+  "edition": "public",
+  "namespaces": {
+    "constants": [
+      {
+        "id": 1,
+        "name": "OpenIMMessageStatusNotExist",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2,
+        "name": "OpenIMMessageStatusSending",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3,
+        "name": "OpenIMMessageStatusSucceed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 4,
+        "name": "OpenIMMessageStatusFailed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 5,
+        "name": "OpenIMMessageStatusDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 6,
+        "name": "OpenIMMessageStatusFiltered",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 7,
+        "name": "OpenIMPlatformIOS",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 8,
+        "name": "OpenIMPlatformAndroid",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 9,
+        "name": "OpenIMPlatformWindows",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 10,
+        "name": "OpenIMPlatformMacOSX",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 11,
+        "name": "OpenIMPlatformWeb",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 12,
+        "name": "OpenIMPlatformMiniWeb",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 13,
+        "name": "OpenIMPlatformLinux",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 14,
+        "name": "OpenIMPlatformAndroidPad",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 15,
+        "name": "OpenIMPlatformIPad",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 16,
+        "name": "OpenIMPlatformAdmin",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 17,
+        "name": "OpenIMPlatformHarmony",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 18,
+        "name": "OpenIMLogLevelPanic",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 19,
+        "name": "OpenIMLogLevelFatal",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 20,
+        "name": "OpenIMLogLevelError",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 21,
+        "name": "OpenIMLogLevelWarn",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 22,
+        "name": "OpenIMLogLevelInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 23,
+        "name": "OpenIMLogLevelDebug",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 24,
+        "name": "OpenIMLogLevelVerbose",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 25,
+        "name": "OpenIMMessageTypeText",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 26,
+        "name": "OpenIMMessageTypePicture",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 27,
+        "name": "OpenIMMessageTypeVoice",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 28,
+        "name": "OpenIMMessageTypeVideo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 29,
+        "name": "OpenIMMessageTypeFile",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 30,
+        "name": "OpenIMMessageTypeAtText",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 31,
+        "name": "OpenIMMessageTypeMerge",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 32,
+        "name": "OpenIMMessageTypeCard",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 33,
+        "name": "OpenIMMessageTypeLocation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 34,
+        "name": "OpenIMMessageTypeCustom",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 35,
+        "name": "OpenIMMessageTypeRevoke",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 36,
+        "name": "OpenIMMessageTypeTyping",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 37,
+        "name": "OpenIMMessageTypeQuote",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 38,
+        "name": "OpenIMMessageTypeFace",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 39,
+        "name": "OpenIMMessageTypeAdvancedText",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 40,
+        "name": "OpenIMMessageTypeMarkdownText",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 41,
+        "name": "OpenIMMessageTypeCustomNotTriggerConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 42,
+        "name": "OpenIMMessageTypeCustomOnlineOnly",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 43,
+        "name": "OpenIMMessageTypeReactionModifier",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 44,
+        "name": "OpenIMMessageTypeReactionDeleter",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 45,
+        "name": "OpenIMMessageTypeStream",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 46,
+        "name": "OpenIMMessageTypeCommon",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 47,
+        "name": "OpenIMMessageTypeGroupMsg",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 48,
+        "name": "OpenIMMessageTypeSignalMsg",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 49,
+        "name": "OpenIMMessageTypeCustomNotification",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 50,
+        "name": "OpenIMMessageTypeFriendApplicationApproved",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 51,
+        "name": "OpenIMMessageTypeFriendApplicationRejected",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 52,
+        "name": "OpenIMMessageTypeFriendApplication",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 53,
+        "name": "OpenIMMessageTypeFriendAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 54,
+        "name": "OpenIMMessageTypeFriendDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 55,
+        "name": "OpenIMMessageTypeFriendRemarkSet",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 56,
+        "name": "OpenIMMessageTypeBlackAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 57,
+        "name": "OpenIMMessageTypeBlackDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 58,
+        "name": "OpenIMMessageTypeFriendInfoUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 59,
+        "name": "OpenIMMessageTypeFriendsInfoUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 60,
+        "name": "OpenIMMessageTypeConversationChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 61,
+        "name": "OpenIMMessageTypeUserInfoUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 62,
+        "name": "OpenIMMessageTypeUserStatusChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 63,
+        "name": "OpenIMMessageTypeUserSubscribeOnlineStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 64,
+        "name": "OpenIMMessageTypeOANotification",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 65,
+        "name": "OpenIMMessageTypeGroupCreated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 66,
+        "name": "OpenIMMessageTypeGroupInfoUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 67,
+        "name": "OpenIMMessageTypeJoinGroupApplication",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 68,
+        "name": "OpenIMMessageTypeMemberQuit",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 69,
+        "name": "OpenIMMessageTypeGroupApplicationAccepted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 70,
+        "name": "OpenIMMessageTypeGroupApplicationRejected",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 71,
+        "name": "OpenIMMessageTypeGroupOwnerTransferred",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 72,
+        "name": "OpenIMMessageTypeMemberKicked",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 73,
+        "name": "OpenIMMessageTypeMemberInvited",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 74,
+        "name": "OpenIMMessageTypeMemberEnter",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 75,
+        "name": "OpenIMMessageTypeGroupDismissed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 76,
+        "name": "OpenIMMessageTypeGroupMemberMuted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 77,
+        "name": "OpenIMMessageTypeGroupMemberCancelMuted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 78,
+        "name": "OpenIMMessageTypeGroupMuted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 79,
+        "name": "OpenIMMessageTypeGroupCancelMuted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 80,
+        "name": "OpenIMMessageTypeGroupMemberInfoUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 81,
+        "name": "OpenIMMessageTypeGroupMemberSetToAdmin",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 82,
+        "name": "OpenIMMessageTypeGroupMemberSetToOrdinaryUser",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 83,
+        "name": "OpenIMMessageTypeGroupAnnouncementUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 84,
+        "name": "OpenIMMessageTypeGroupNameUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 85,
+        "name": "OpenIMMessageTypeSuperGroupUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 86,
+        "name": "OpenIMMessageTypeMsgDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 87,
+        "name": "OpenIMMessageTypeBurnMessageChange",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 88,
+        "name": "OpenIMMessageTypeConversationPrivateChat",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 89,
+        "name": "OpenIMMessageTypeConversationUnread",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 90,
+        "name": "OpenIMMessageTypeClearConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 91,
+        "name": "OpenIMMessageTypeConversationGroupChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 92,
+        "name": "OpenIMMessageTypeBusinessNotification",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 93,
+        "name": "OpenIMMessageTypeRevokeMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 94,
+        "name": "OpenIMMessageTypeDeleteMessages",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 95,
+        "name": "OpenIMMessageTypeModifyMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 96,
+        "name": "OpenIMMessageTypeDeleteUserAllMessagesInConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 97,
+        "name": "OpenIMMessageTypeHasReadReceipt",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 98,
+        "name": "OpenIMMessageTypeHasResetUnreadReceipt",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 99,
+        "name": "OpenIMMessageTypeHasGroupReadReceipt",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 100,
+        "name": "OpenIMMessageTypePinned",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 101,
+        "name": "OpenIMMessageTypePinnedRead",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 102,
+        "name": "OpenIMMessageTypeStreamNotification",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 103,
+        "name": "OpenIMSessionTypeSingle",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 104,
+        "name": "OpenIMSessionTypeWriteGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 105,
+        "name": "OpenIMSessionTypeGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 106,
+        "name": "OpenIMSessionTypeNotification",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 107,
+        "name": "OpenIMLoginStatusLogout",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 108,
+        "name": "OpenIMLoginStatusLogging",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 109,
+        "name": "OpenIMLoginStatusLogged",
+        "status": "active",
+        "previousNames": []
+      }
+    ],
+    "types": [
+      {
+        "id": 1001,
+        "name": "OpenIMMessageStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1002,
+        "name": "OpenIMPlatform",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1003,
+        "name": "OpenIMLogLevel",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1004,
+        "name": "OpenIMMessageType",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1005,
+        "name": "OpenIMSessionType",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1006,
+        "name": "OpenIMLoginStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1007,
+        "name": "OpenIMSendMessageOptions",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1008,
+        "name": "OpenIMUploadFileParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1009,
+        "name": "OpenIMCreateSoundMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1010,
+        "name": "OpenIMCreateVideoMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1011,
+        "name": "OpenIMCreateFileMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1012,
+        "name": "OpenIMUploadFileResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1013,
+        "name": "OpenIMUpdateFcmTokenParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1014,
+        "name": "OpenIMUploadLogsParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1015,
+        "name": "OpenIMUploadFileProgressEvent",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1016,
+        "name": "OpenIMUploadLogsProgressEvent",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1017,
+        "name": "OpenIMSendMessageProgressEvent",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1018,
+        "name": "OpenIMMessageKeyParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1019,
+        "name": "OpenIMSetMessageLocalExParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1020,
+        "name": "OpenIMSetConversationBoolean",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1021,
+        "name": "OpenIMSetSelfInfoRecvMsgOpt",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1022,
+        "name": "OpenIMUpdateFriendBoolean",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1023,
+        "name": "OpenIMGroupNeedVerification",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1024,
+        "name": "OpenIMGroupOption",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1025,
+        "name": "OpenIMGroupDisplayIsRead",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1026,
+        "name": "OpenIMGroupMemberRoleLevel",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1027,
+        "name": "OpenIMSetConversationParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1028,
+        "name": "OpenIMSetSelfInfoParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1029,
+        "name": "OpenIMUpdateFriendsParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1030,
+        "name": "OpenIMCheckFriendResultItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1031,
+        "name": "OpenIMCheckFriendResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1032,
+        "name": "OpenIMInsertSingleMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1033,
+        "name": "OpenIMInsertGroupMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1034,
+        "name": "OpenIMInputStateParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1035,
+        "name": "OpenIMSetConversationDraftParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1036,
+        "name": "OpenIMAddFriendParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1037,
+        "name": "OpenIMSearchFriendsParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1038,
+        "name": "OpenIMGetSpecifiedFriendsInfoParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1039,
+        "name": "OpenIMFriendApplicationHandleParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1040,
+        "name": "OpenIMAddBlackParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1041,
+        "name": "OpenIMGroupUserListParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1042,
+        "name": "OpenIMGroupInviteParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1043,
+        "name": "OpenIMSearchGroupMembersParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1044,
+        "name": "OpenIMCreateGroupInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1045,
+        "name": "OpenIMCreateGroupParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1046,
+        "name": "OpenIMSetGroupInfoParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1047,
+        "name": "OpenIMSetGroupMemberInfoParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1048,
+        "name": "OpenIMJoinGroupParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1049,
+        "name": "OpenIMSearchGroupsParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1050,
+        "name": "OpenIMChangeGroupMuteParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1051,
+        "name": "OpenIMChangeGroupMemberMuteParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1052,
+        "name": "OpenIMTransferGroupOwnerParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1053,
+        "name": "OpenIMGroupApplicationHandleParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1054,
+        "name": "OpenIMFindMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1055,
+        "name": "OpenIMCreateCustomMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1056,
+        "name": "OpenIMCreateQuoteMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1057,
+        "name": "OpenIMCreateAdvancedQuoteMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1058,
+        "name": "OpenIMCreateAdvancedTextMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1059,
+        "name": "OpenIMCreateTextAtMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1060,
+        "name": "OpenIMCreateMergerMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1061,
+        "name": "OpenIMCreateFaceMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1062,
+        "name": "OpenIMCreateLocationMessageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1063,
+        "name": "OpenIMMessageEntity",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1064,
+        "name": "OpenIMTextElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1065,
+        "name": "OpenIMCardElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1066,
+        "name": "OpenIMAtUsersInfoItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1067,
+        "name": "OpenIMAtTextElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1068,
+        "name": "OpenIMNotificationElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1069,
+        "name": "OpenIMAdvancedTextElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1070,
+        "name": "OpenIMTypingElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1071,
+        "name": "OpenIMFileElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1072,
+        "name": "OpenIMFaceElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1073,
+        "name": "OpenIMLocationElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1074,
+        "name": "OpenIMCustomElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1075,
+        "name": "OpenIMMergeElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1076,
+        "name": "OpenIMOfflinePush",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1077,
+        "name": "OpenIMPicture",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1078,
+        "name": "OpenIMPictureElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1079,
+        "name": "OpenIMAttachedGroupHasReadInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1080,
+        "name": "OpenIMUploadProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1081,
+        "name": "OpenIMAttachedInfoElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1082,
+        "name": "OpenIMQuoteElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1083,
+        "name": "OpenIMSoundElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1084,
+        "name": "OpenIMVideoElem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1085,
+        "name": "OpenIMMessageItemRef",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1086,
+        "name": "OpenIMMessageItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1087,
+        "name": "OpenIMConversationItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1088,
+        "name": "OpenIMConversationListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1089,
+        "name": "OpenIMUserListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1090,
+        "name": "OpenIMUserStatusItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1091,
+        "name": "OpenIMUserStatusListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1092,
+        "name": "OpenIMFriendListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1093,
+        "name": "OpenIMBlackListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1094,
+        "name": "OpenIMGroupListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1095,
+        "name": "OpenIMGroupMemberListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1096,
+        "name": "OpenIMFriendApplicationListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1097,
+        "name": "OpenIMGroupApplicationListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1098,
+        "name": "OpenIMMessageListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1099,
+        "name": "OpenIMUserInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1100,
+        "name": "OpenIMPublicUserItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1101,
+        "name": "OpenIMFriendUserItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1102,
+        "name": "OpenIMBlackUserItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1103,
+        "name": "OpenIMGroupItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1104,
+        "name": "OpenIMGroupMemberItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1105,
+        "name": "OpenIMFriendApplicationItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1106,
+        "name": "OpenIMGroupApplicationItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1107,
+        "name": "OpenIMMessageRevokedItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1108,
+        "name": "OpenIMMessageReceiptItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1109,
+        "name": "OpenIMMessageReceiptListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1110,
+        "name": "OpenIMConversationInputStatusItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1111,
+        "name": "OpenIMGetOneConversationParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1112,
+        "name": "OpenIMPageParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1113,
+        "name": "OpenIMGetGroupMemberListParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1114,
+        "name": "OpenIMGetAdvancedHistoryMessageListParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1115,
+        "name": "OpenIMAdvancedHistoryMessageListResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1116,
+        "name": "OpenIMSearchLocalMessagesParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1117,
+        "name": "OpenIMApplicationListParams",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1118,
+        "name": "OpenIMSearchMessageResultItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1119,
+        "name": "OpenIMFindMessageResultItem",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1120,
+        "name": "OpenIMSearchMessageResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1121,
+        "name": "OpenIMFindMessageResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1122,
+        "name": "OpenIMError",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1123,
+        "name": "OpenIMInitConfig",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1124,
+        "name": "OpenIMSDKEventName",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1125,
+        "name": "OpenIMSDKEvent",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1126,
+        "name": "OpenIMSDKRawEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1127,
+        "name": "OpenIMVoidEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1128,
+        "name": "OpenIMErrorEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1129,
+        "name": "OpenIMStringEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1130,
+        "name": "OpenIMBooleanEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1131,
+        "name": "OpenIMNumberEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1132,
+        "name": "OpenIMMessageEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1133,
+        "name": "OpenIMMessageListEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1134,
+        "name": "OpenIMMessageRevokedEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1135,
+        "name": "OpenIMMessageReceiptListEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1136,
+        "name": "OpenIMConversationListEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1137,
+        "name": "OpenIMConversationInputStatusEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1138,
+        "name": "OpenIMFriendEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1139,
+        "name": "OpenIMBlackUserEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1140,
+        "name": "OpenIMFriendApplicationEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1141,
+        "name": "OpenIMGroupEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1142,
+        "name": "OpenIMGroupMemberEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1143,
+        "name": "OpenIMGroupApplicationEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1144,
+        "name": "OpenIMUserEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1145,
+        "name": "OpenIMUserStatusListEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1146,
+        "name": "OpenIMSendMessageProgressEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1147,
+        "name": "OpenIMUploadFileProgressEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1148,
+        "name": "OpenIMUploadLogsProgressEventHandler",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1149,
+        "name": "OpenIMSDKEventSubscription",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1150,
+        "name": "OpenIMSDKEventHandlerSubscription",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1151,
+        "name": "OffSDKEventName",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1152,
+        "name": "InitSDK",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1153,
+        "name": "Login",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1154,
+        "name": "Logout",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1155,
+        "name": "GetLoginStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1156,
+        "name": "GetLoginUserID",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1157,
+        "name": "CreateTextMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1158,
+        "name": "SendMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1159,
+        "name": "UploadFile",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1160,
+        "name": "OpenIMSDKInstance",
+        "status": "active",
+        "previousNames": []
+      }
+    ],
+    "callables": [
+      {
+        "id": 2001,
+        "name": "off",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2002,
+        "name": "offAll",
+        "status": "active",
+        "previousNames": [
+          "offEvent"
+        ]
+      },
+      {
+        "id": 2003,
+        "name": "onConnecting",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2004,
+        "name": "onConnectSuccess",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2005,
+        "name": "onConnectFailed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2006,
+        "name": "onKickedOffline",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2007,
+        "name": "onUserTokenExpired",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2008,
+        "name": "onUserTokenInvalid",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2009,
+        "name": "onRecvNewMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2010,
+        "name": "onRecvOfflineNewMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2011,
+        "name": "onRecvOnlineOnlyMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2012,
+        "name": "onMsgDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2013,
+        "name": "onNewRecvMessageRevoked",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2014,
+        "name": "onRecvC2CReadReceipt",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2015,
+        "name": "onRecvNewMessages",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2016,
+        "name": "onRecvOfflineNewMessages",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2017,
+        "name": "onConversationChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2018,
+        "name": "onConversationUserInputStatusChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2019,
+        "name": "onNewConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2020,
+        "name": "onSyncServerFailed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2021,
+        "name": "onSyncServerFinish",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2022,
+        "name": "onSyncServerProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2023,
+        "name": "onSyncServerStart",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2024,
+        "name": "onSendMessageProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2025,
+        "name": "onUploadFileProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2026,
+        "name": "onUploadLogsProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2027,
+        "name": "onTotalUnreadMessageCountChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2028,
+        "name": "onRecvCustomBusinessMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2029,
+        "name": "onBlackAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2030,
+        "name": "onBlackDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2031,
+        "name": "onFriendAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2032,
+        "name": "onFriendApplicationAccepted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2033,
+        "name": "onFriendApplicationAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2034,
+        "name": "onFriendApplicationDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2035,
+        "name": "onFriendApplicationRejected",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2036,
+        "name": "onFriendDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2037,
+        "name": "onFriendInfoChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2038,
+        "name": "onGroupApplicationAccepted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2039,
+        "name": "onGroupApplicationAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2040,
+        "name": "onGroupApplicationDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2041,
+        "name": "onGroupApplicationRejected",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2042,
+        "name": "onGroupDismissed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2043,
+        "name": "onGroupInfoChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2044,
+        "name": "onGroupMemberAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2045,
+        "name": "onGroupMemberDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2046,
+        "name": "onGroupMemberInfoChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2047,
+        "name": "onJoinedGroupAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2048,
+        "name": "onJoinedGroupDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2049,
+        "name": "onSelfInfoUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2050,
+        "name": "onUserStatusChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2051,
+        "name": "initSDK",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2052,
+        "name": "login",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2053,
+        "name": "logout",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2054,
+        "name": "getLoginStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2055,
+        "name": "getLoginUserID",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2056,
+        "name": "getSdkVersion",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2057,
+        "name": "getOpenIMDataPath",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2058,
+        "name": "unInitSDK",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2059,
+        "name": "getAllConversationList",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2060,
+        "name": "getOneConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2061,
+        "name": "getAdvancedHistoryMessageList",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2062,
+        "name": "getSpecifiedGroupsInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2063,
+        "name": "deleteConversationAndDeleteAllMsg",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2064,
+        "name": "markConversationMessageAsRead",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2065,
+        "name": "getGroupMemberList",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2066,
+        "name": "setMessageLocalEx",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2067,
+        "name": "revokeMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2068,
+        "name": "setConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2069,
+        "name": "setAppBackgroundStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2070,
+        "name": "setAppBadge",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2071,
+        "name": "networkStatusChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2072,
+        "name": "getSelfUserInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2073,
+        "name": "getUsersInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2074,
+        "name": "setSelfInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2075,
+        "name": "deleteMessageFromLocalStorage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2076,
+        "name": "deleteMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2077,
+        "name": "deleteAllMsgFromLocal",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2078,
+        "name": "deleteAllMsgFromLocalAndSvr",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2079,
+        "name": "insertSingleMessageToLocalStorage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2080,
+        "name": "insertGroupMessageToLocalStorage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2081,
+        "name": "changeInputStates",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2082,
+        "name": "clearConversationAndDeleteAllMsg",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2083,
+        "name": "hideConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2084,
+        "name": "hideAllConversations",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2085,
+        "name": "markAllConversationMessageAsRead",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2086,
+        "name": "searchConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2087,
+        "name": "getConversationListSplit",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2088,
+        "name": "getConversationIDBySessionType",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2089,
+        "name": "getMultipleConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2090,
+        "name": "deleteConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2091,
+        "name": "setConversationDraft",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2092,
+        "name": "getTotalUnreadMsgCount",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2093,
+        "name": "searchLocalMessages",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2094,
+        "name": "addFriend",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2095,
+        "name": "searchFriends",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2096,
+        "name": "getSpecifiedFriendsInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2097,
+        "name": "getFriendApplicationListAsRecipient",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2098,
+        "name": "getFriendApplicationListAsApplicant",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2099,
+        "name": "getFriendApplicationUnhandledCount",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2100,
+        "name": "getFriendList",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2101,
+        "name": "getFriendListPage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2102,
+        "name": "updateFriends",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2103,
+        "name": "checkFriend",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2104,
+        "name": "acceptFriendApplication",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2105,
+        "name": "refuseFriendApplication",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2106,
+        "name": "deleteFriend",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2107,
+        "name": "addBlack",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2108,
+        "name": "removeBlack",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2109,
+        "name": "getBlackList",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2110,
+        "name": "inviteUserToGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2111,
+        "name": "kickGroupMember",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2112,
+        "name": "isJoinGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2113,
+        "name": "getSpecifiedGroupMembersInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2114,
+        "name": "getUsersInGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2115,
+        "name": "searchGroupMembers",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2116,
+        "name": "getJoinedGroupList",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2117,
+        "name": "getJoinedGroupListPage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2118,
+        "name": "createGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2119,
+        "name": "setGroupInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2120,
+        "name": "setGroupMemberInfo",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2121,
+        "name": "joinGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2122,
+        "name": "searchGroups",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2123,
+        "name": "quitGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2124,
+        "name": "dismissGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2125,
+        "name": "changeGroupMute",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2126,
+        "name": "changeGroupMemberMute",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2127,
+        "name": "transferGroupOwner",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2128,
+        "name": "getGroupApplicationListAsApplicant",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2129,
+        "name": "getGroupApplicationListAsRecipient",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2130,
+        "name": "getGroupApplicationUnhandledCount",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2131,
+        "name": "acceptGroupApplication",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2132,
+        "name": "refuseGroupApplication",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2133,
+        "name": "findMessageList",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2134,
+        "name": "updateFcmToken",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2135,
+        "name": "subscribeUsersStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2136,
+        "name": "unsubscribeUsersStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2137,
+        "name": "getUserStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2138,
+        "name": "getSubscribeUsersStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2139,
+        "name": "createTextMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2140,
+        "name": "createImageMessageFromFullPath",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2141,
+        "name": "createImageMessageByURL",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2142,
+        "name": "createCustomMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2143,
+        "name": "createQuoteMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2144,
+        "name": "createAdvancedQuoteMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2145,
+        "name": "createAdvancedTextMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2146,
+        "name": "createTextAtMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2147,
+        "name": "createSoundMessageFromFullPath",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2148,
+        "name": "createSoundMessageByURL",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2149,
+        "name": "createVideoMessageFromFullPath",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2150,
+        "name": "createVideoMessageByURL",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2151,
+        "name": "createFileMessageFromFullPath",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2152,
+        "name": "createFileMessageByURL",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2153,
+        "name": "createMergerMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2154,
+        "name": "createForwardMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2155,
+        "name": "createFaceMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2156,
+        "name": "createLocationMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2157,
+        "name": "createCardMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2158,
+        "name": "sendMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2159,
+        "name": "sendMessageNotOss",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2160,
+        "name": "uploadFile",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 2161,
+        "name": "uploadLogs",
+        "status": "active",
+        "previousNames": []
+      }
+    ],
+    "events": [
+      {
+        "id": 3001,
+        "name": "onConnecting",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3002,
+        "name": "onConnectSuccess",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3003,
+        "name": "onConnectFailed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3004,
+        "name": "onKickedOffline",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3005,
+        "name": "onUserTokenExpired",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3006,
+        "name": "onUserTokenInvalid",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3007,
+        "name": "onRecvNewMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3008,
+        "name": "onRecvOfflineNewMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3009,
+        "name": "onRecvOnlineOnlyMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3010,
+        "name": "onMsgDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3011,
+        "name": "onNewRecvMessageRevoked",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3012,
+        "name": "onRecvC2CReadReceipt",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3013,
+        "name": "onRecvNewMessages",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3014,
+        "name": "onRecvOfflineNewMessages",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3015,
+        "name": "onConversationChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3016,
+        "name": "onConversationUserInputStatusChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3017,
+        "name": "onNewConversation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3018,
+        "name": "onSyncServerFailed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3019,
+        "name": "onSyncServerFinish",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3020,
+        "name": "onSyncServerProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3021,
+        "name": "onSyncServerStart",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3022,
+        "name": "onSendMessageProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3023,
+        "name": "onUploadFileProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3024,
+        "name": "onUploadLogsProgress",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3025,
+        "name": "onTotalUnreadMessageCountChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3026,
+        "name": "onRecvCustomBusinessMessage",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3027,
+        "name": "onBlackAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3028,
+        "name": "onBlackDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3029,
+        "name": "onFriendAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3030,
+        "name": "onFriendApplicationAccepted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3031,
+        "name": "onFriendApplicationAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3032,
+        "name": "onFriendApplicationDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3033,
+        "name": "onFriendApplicationRejected",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3034,
+        "name": "onFriendDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3035,
+        "name": "onFriendInfoChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3036,
+        "name": "onGroupApplicationAccepted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3037,
+        "name": "onGroupApplicationAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3038,
+        "name": "onGroupApplicationDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3039,
+        "name": "onGroupApplicationRejected",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3040,
+        "name": "onGroupDismissed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3041,
+        "name": "onGroupInfoChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3042,
+        "name": "onGroupMemberAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3043,
+        "name": "onGroupMemberDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3044,
+        "name": "onGroupMemberInfoChanged",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3045,
+        "name": "onJoinedGroupAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3046,
+        "name": "onJoinedGroupDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3047,
+        "name": "onSelfInfoUpdated",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 3048,
+        "name": "onUserStatusChanged",
+        "status": "active",
+        "previousNames": []
+      }
+    ]
+  }
+}

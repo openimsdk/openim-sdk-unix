@@ -1,0 +1,2884 @@
+{
+  "schemaVersion": 1,
+  "edition": "public",
+  "counts": {
+    "constants": 109,
+    "types": 160,
+    "callables": 161,
+    "events": 48
+  },
+  "constants": [
+    {
+      "id": 1,
+      "name": "OpenIMMessageStatusNotExist",
+      "type": "OpenIMMessageStatus",
+      "value": "0",
+      "signatureHash": "2a4b381a80b67e1204ce1408e1c9716d76bd127abb51b6e38bb412eb4ac2b281"
+    },
+    {
+      "id": 2,
+      "name": "OpenIMMessageStatusSending",
+      "type": "OpenIMMessageStatus",
+      "value": "1",
+      "signatureHash": "070e728a9a77022fe21a407bbe20cd4b5563db65d7eba0c96d4013d6a21c7c15"
+    },
+    {
+      "id": 3,
+      "name": "OpenIMMessageStatusSucceed",
+      "type": "OpenIMMessageStatus",
+      "value": "2",
+      "signatureHash": "4d57b2f3a1229cc4076674e4f6efe40266f6f4914d36828b56f3a6327af95dbd"
+    },
+    {
+      "id": 4,
+      "name": "OpenIMMessageStatusFailed",
+      "type": "OpenIMMessageStatus",
+      "value": "3",
+      "signatureHash": "32072ad37fba2c7eb5d8e8aea0db4c9c64c0b531c12f9e6cddf8cdf555b27f99"
+    },
+    {
+      "id": 5,
+      "name": "OpenIMMessageStatusDeleted",
+      "type": "OpenIMMessageStatus",
+      "value": "4",
+      "signatureHash": "194d15beeaefb3cda73b2259ac4e00757cc25bb5a63ae50c5052affdc38dd1de"
+    },
+    {
+      "id": 6,
+      "name": "OpenIMMessageStatusFiltered",
+      "type": "OpenIMMessageStatus",
+      "value": "5",
+      "signatureHash": "7012a2915edc26d1988dd663a3d30c4b2ed5b8e22a1dd0f077e74c7937508098"
+    },
+    {
+      "id": 7,
+      "name": "OpenIMPlatformIOS",
+      "type": "OpenIMPlatform",
+      "value": "1",
+      "signatureHash": "e6e38b8de87db7b61c243148707ecdfdeb061ae861c5f648d17c0aa8c7106539"
+    },
+    {
+      "id": 8,
+      "name": "OpenIMPlatformAndroid",
+      "type": "OpenIMPlatform",
+      "value": "2",
+      "signatureHash": "d4a78094e10c034f911c5673351e432e483c31b78816ab2fecc62512ef0ac57b"
+    },
+    {
+      "id": 9,
+      "name": "OpenIMPlatformWindows",
+      "type": "OpenIMPlatform",
+      "value": "3",
+      "signatureHash": "b41afae1e8edeeafde20ae166a139e47053e7eb4c0def7c984ceac67ddbdf206"
+    },
+    {
+      "id": 10,
+      "name": "OpenIMPlatformMacOSX",
+      "type": "OpenIMPlatform",
+      "value": "4",
+      "signatureHash": "90816949b6b443ef2496b58eebb6091afa35050a3400d4fb94da32d431b55ae7"
+    },
+    {
+      "id": 11,
+      "name": "OpenIMPlatformWeb",
+      "type": "OpenIMPlatform",
+      "value": "5",
+      "signatureHash": "f5376e51c3784fbbbf99e841924ec8888b018772799dde5c8162035adce7093f"
+    },
+    {
+      "id": 12,
+      "name": "OpenIMPlatformMiniWeb",
+      "type": "OpenIMPlatform",
+      "value": "6",
+      "signatureHash": "cb850fe970c49f30459c3106e1c94fd91d21d089c14dd5a72f7550b0738fbb0f"
+    },
+    {
+      "id": 13,
+      "name": "OpenIMPlatformLinux",
+      "type": "OpenIMPlatform",
+      "value": "7",
+      "signatureHash": "4e0bbbb9c862eaaff848bdeae582242b0c42091058a2f442da707d137f02079d"
+    },
+    {
+      "id": 14,
+      "name": "OpenIMPlatformAndroidPad",
+      "type": "OpenIMPlatform",
+      "value": "8",
+      "signatureHash": "060296c24e70b3c35c56c8a541e712c5be1818538c0fb3870d733d2a00cd2e4d"
+    },
+    {
+      "id": 15,
+      "name": "OpenIMPlatformIPad",
+      "type": "OpenIMPlatform",
+      "value": "9",
+      "signatureHash": "a65f7f7127fc25fee8d1a30d4ba3c27245bea17b5c162492f0ea9e06e06cfd49"
+    },
+    {
+      "id": 16,
+      "name": "OpenIMPlatformAdmin",
+      "type": "OpenIMPlatform",
+      "value": "10",
+      "signatureHash": "88769580d90807f6b33a082b6280a63c75513610306473852679d469492bd8d7"
+    },
+    {
+      "id": 17,
+      "name": "OpenIMPlatformHarmony",
+      "type": "OpenIMPlatform",
+      "value": "11",
+      "signatureHash": "d4d286cb1276a7e9ebe85b55dd6e6b0f4a8c49009e780f37e557338c10acedc4"
+    },
+    {
+      "id": 18,
+      "name": "OpenIMLogLevelPanic",
+      "type": "OpenIMLogLevel",
+      "value": "0",
+      "signatureHash": "c0a8c5932fe32bcf89c963a2159e7d1c7795204b16b550de80d39253f8b2d7ed"
+    },
+    {
+      "id": 19,
+      "name": "OpenIMLogLevelFatal",
+      "type": "OpenIMLogLevel",
+      "value": "1",
+      "signatureHash": "8e0068bb3abe2ba62268a777aa5cb304d06bb2f2655c22c43e8b044ddf5405e3"
+    },
+    {
+      "id": 20,
+      "name": "OpenIMLogLevelError",
+      "type": "OpenIMLogLevel",
+      "value": "2",
+      "signatureHash": "b90392e54565f0a3b45ca83979173727804d8b4dc84fb3152af1b0b186ff2d8b"
+    },
+    {
+      "id": 21,
+      "name": "OpenIMLogLevelWarn",
+      "type": "OpenIMLogLevel",
+      "value": "3",
+      "signatureHash": "4e98ffd53d102275b511c53fd32dc3ec14000d0b5c96c2fb7954da5cd1cefa99"
+    },
+    {
+      "id": 22,
+      "name": "OpenIMLogLevelInfo",
+      "type": "OpenIMLogLevel",
+      "value": "4",
+      "signatureHash": "feac04d582af5d99464224e52e576c9780f22538363164c3208dc1a59a317122"
+    },
+    {
+      "id": 23,
+      "name": "OpenIMLogLevelDebug",
+      "type": "OpenIMLogLevel",
+      "value": "5",
+      "signatureHash": "ec21ea478d6357ef935f4070688e3d1075965325c75d9725d94539c517697229"
+    },
+    {
+      "id": 24,
+      "name": "OpenIMLogLevelVerbose",
+      "type": "OpenIMLogLevel",
+      "value": "6",
+      "signatureHash": "7b8aac06c6557b7dfc445ef97babc4fc5ff240c7d3db31a4af5a2474601f9fbf"
+    },
+    {
+      "id": 25,
+      "name": "OpenIMMessageTypeText",
+      "type": "OpenIMMessageType",
+      "value": "101",
+      "signatureHash": "e59ced7cb303c70e55a67099cbdd00fe688ea0c0648bba8b319be58e14ed71f9"
+    },
+    {
+      "id": 26,
+      "name": "OpenIMMessageTypePicture",
+      "type": "OpenIMMessageType",
+      "value": "102",
+      "signatureHash": "e5c2fe4cba1366314eb30b4b4cfd2acba61284a2d4958bc52e5ea07a86cf3a32"
+    },
+    {
+      "id": 27,
+      "name": "OpenIMMessageTypeVoice",
+      "type": "OpenIMMessageType",
+      "value": "103",
+      "signatureHash": "e0adce21bb0e9b8bc66f1770d774aa64517c3cae10531ddb6568f65b6edbe83f"
+    },
+    {
+      "id": 28,
+      "name": "OpenIMMessageTypeVideo",
+      "type": "OpenIMMessageType",
+      "value": "104",
+      "signatureHash": "96a8ec045bec323a2af3a707aba03f95c68332fc5cd106aaa0cc1b3cf98c67b5"
+    },
+    {
+      "id": 29,
+      "name": "OpenIMMessageTypeFile",
+      "type": "OpenIMMessageType",
+      "value": "105",
+      "signatureHash": "d46a65a1d61a164d70d68bb4df0c986feb89385251dac68e1003e57612045242"
+    },
+    {
+      "id": 30,
+      "name": "OpenIMMessageTypeAtText",
+      "type": "OpenIMMessageType",
+      "value": "106",
+      "signatureHash": "7b76708a3e80ae11759af633b060abc2cad41b9736fc7f72bdbeee876e55f775"
+    },
+    {
+      "id": 31,
+      "name": "OpenIMMessageTypeMerge",
+      "type": "OpenIMMessageType",
+      "value": "107",
+      "signatureHash": "7ef0baf1e0b66a32ba28842ea3b474f5c045648de6d11cbde85cde4746540473"
+    },
+    {
+      "id": 32,
+      "name": "OpenIMMessageTypeCard",
+      "type": "OpenIMMessageType",
+      "value": "108",
+      "signatureHash": "87446dbf6c07eee050f3677be1bf8f8af8c48431d64059574ce94bd131ab2dff"
+    },
+    {
+      "id": 33,
+      "name": "OpenIMMessageTypeLocation",
+      "type": "OpenIMMessageType",
+      "value": "109",
+      "signatureHash": "180aa305e0e9a3541fcb46f1756c0789b8cea3fbee27d10ca369d59feccf2e4e"
+    },
+    {
+      "id": 34,
+      "name": "OpenIMMessageTypeCustom",
+      "type": "OpenIMMessageType",
+      "value": "110",
+      "signatureHash": "184c7c18e9d595c7b3bebca29d519869407fd459603a0453df6d9bbb6d3965d6"
+    },
+    {
+      "id": 35,
+      "name": "OpenIMMessageTypeRevoke",
+      "type": "OpenIMMessageType",
+      "value": "111",
+      "signatureHash": "73e358e0e75eec7fd893ff532d13ccef60effa8c621f751e8706f04816fa575f"
+    },
+    {
+      "id": 36,
+      "name": "OpenIMMessageTypeTyping",
+      "type": "OpenIMMessageType",
+      "value": "113",
+      "signatureHash": "a699dd4ac56aab9a14dbdde4dc26f9033fefe3c9c92c6efc5a835c269bd299f4"
+    },
+    {
+      "id": 37,
+      "name": "OpenIMMessageTypeQuote",
+      "type": "OpenIMMessageType",
+      "value": "114",
+      "signatureHash": "f034d2eb36576016b460885877e0c6a8caeeaa4bb0e9a4c416947eefc20ad8e2"
+    },
+    {
+      "id": 38,
+      "name": "OpenIMMessageTypeFace",
+      "type": "OpenIMMessageType",
+      "value": "115",
+      "signatureHash": "6fac65dc2a469f74ef365769a110e5384543defd0a4abbc8187e7c5720671ae4"
+    },
+    {
+      "id": 39,
+      "name": "OpenIMMessageTypeAdvancedText",
+      "type": "OpenIMMessageType",
+      "value": "117",
+      "signatureHash": "3a35eb1fe16a5888890844e6e747270e9df67a7b8238ffc267ec1d1b8d203b0f"
+    },
+    {
+      "id": 40,
+      "name": "OpenIMMessageTypeMarkdownText",
+      "type": "OpenIMMessageType",
+      "value": "118",
+      "signatureHash": "df5d043f97af2aa804122585527dab19c7e23da0b92291174c9f5cedfd5cc93f"
+    },
+    {
+      "id": 41,
+      "name": "OpenIMMessageTypeCustomNotTriggerConversation",
+      "type": "OpenIMMessageType",
+      "value": "119",
+      "signatureHash": "4cec7fa964ead6b7dd79ea8ca27ab13dcb288672776f1715b704a8c45b6d276c"
+    },
+    {
+      "id": 42,
+      "name": "OpenIMMessageTypeCustomOnlineOnly",
+      "type": "OpenIMMessageType",
+      "value": "120",
+      "signatureHash": "f073abc70384000b818510f4ff94e72283ae053fdfce4a3a642edd35a9b68525"
+    },
+    {
+      "id": 43,
+      "name": "OpenIMMessageTypeReactionModifier",
+      "type": "OpenIMMessageType",
+      "value": "121",
+      "signatureHash": "1409dcead0595e33e1f2d89d6bb0022052effee02fd702a2aa5db60700e5ffe4"
+    },
+    {
+      "id": 44,
+      "name": "OpenIMMessageTypeReactionDeleter",
+      "type": "OpenIMMessageType",
+      "value": "122",
+      "signatureHash": "4ac105d88abe582979595f9e4f88549b8a27670b586d39e75a96d7988086f1a5"
+    },
+    {
+      "id": 45,
+      "name": "OpenIMMessageTypeStream",
+      "type": "OpenIMMessageType",
+      "value": "143",
+      "signatureHash": "08831b08629d84dfed0f81b8d824321b1738f4808af02766e585f05b9aab678d"
+    },
+    {
+      "id": 46,
+      "name": "OpenIMMessageTypeCommon",
+      "type": "OpenIMMessageType",
+      "value": "200",
+      "signatureHash": "72fd4e17dc1564f0462b2c673fac4346f40e090e198751f8c167ebfab01107db"
+    },
+    {
+      "id": 47,
+      "name": "OpenIMMessageTypeGroupMsg",
+      "type": "OpenIMMessageType",
+      "value": "201",
+      "signatureHash": "479d65c81f9487fadd882dc9b7207a20581b026b3cf809adae7b11dbea367b66"
+    },
+    {
+      "id": 48,
+      "name": "OpenIMMessageTypeSignalMsg",
+      "type": "OpenIMMessageType",
+      "value": "202",
+      "signatureHash": "0633498bf4aa0cebabc10c5a02c11d78b9b774e087813e663c75e49a33fc03c8"
+    },
+    {
+      "id": 49,
+      "name": "OpenIMMessageTypeCustomNotification",
+      "type": "OpenIMMessageType",
+      "value": "203",
+      "signatureHash": "294ae910cc0dae841faff0c22dfda6c16b212f224a5faa6fb67c17b6882b349b"
+    },
+    {
+      "id": 50,
+      "name": "OpenIMMessageTypeFriendApplicationApproved",
+      "type": "OpenIMMessageType",
+      "value": "1201",
+      "signatureHash": "e917437a1bf81159bd18139502aa54fd1723dc57f6517c1a901d9982ba0ddb85"
+    },
+    {
+      "id": 51,
+      "name": "OpenIMMessageTypeFriendApplicationRejected",
+      "type": "OpenIMMessageType",
+      "value": "1202",
+      "signatureHash": "d9c885eab0e64b8d8ba4664111b5995833a373f285027865d897b4bfe62398c0"
+    },
+    {
+      "id": 52,
+      "name": "OpenIMMessageTypeFriendApplication",
+      "type": "OpenIMMessageType",
+      "value": "1203",
+      "signatureHash": "6bb4694b38d8d7154b74f5cdcd1005737951fc2566e482a1214b0af0252390ad"
+    },
+    {
+      "id": 53,
+      "name": "OpenIMMessageTypeFriendAdded",
+      "type": "OpenIMMessageType",
+      "value": "1204",
+      "signatureHash": "f81e08c5fe98bebebe6191b221066e06951e27c459a03a11f285fa01e99e741a"
+    },
+    {
+      "id": 54,
+      "name": "OpenIMMessageTypeFriendDeleted",
+      "type": "OpenIMMessageType",
+      "value": "1205",
+      "signatureHash": "9bbb020ec836e0261231ba2e667fa8c71512cb61467c370c5e0e077acd98097a"
+    },
+    {
+      "id": 55,
+      "name": "OpenIMMessageTypeFriendRemarkSet",
+      "type": "OpenIMMessageType",
+      "value": "1206",
+      "signatureHash": "b2ab8dee0430fced5f0ab29cd18e8918a2a55103fc9cf4c7d6e7731de7af7271"
+    },
+    {
+      "id": 56,
+      "name": "OpenIMMessageTypeBlackAdded",
+      "type": "OpenIMMessageType",
+      "value": "1207",
+      "signatureHash": "e7d92f8ca77eb51d6cc1f02ba38b07f586b5990afaa0c2d4038c08f4ee49297e"
+    },
+    {
+      "id": 57,
+      "name": "OpenIMMessageTypeBlackDeleted",
+      "type": "OpenIMMessageType",
+      "value": "1208",
+      "signatureHash": "29edb1aed1677b93f3927b6d6d717ee9b5e4cd6fd81dab632e0c44e92cfb866e"
+    },
+    {
+      "id": 58,
+      "name": "OpenIMMessageTypeFriendInfoUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1209",
+      "signatureHash": "4a50fd797c30391e94840ed101f5be09f3ff2884e8f362e7c77ec82c969470e2"
+    },
+    {
+      "id": 59,
+      "name": "OpenIMMessageTypeFriendsInfoUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1210",
+      "signatureHash": "7b871aead5bb83feae308459e09b5f1c38f41126cb19c138fe2c67d1c6ef5578"
+    },
+    {
+      "id": 60,
+      "name": "OpenIMMessageTypeConversationChanged",
+      "type": "OpenIMMessageType",
+      "value": "1300",
+      "signatureHash": "3efa94bfecd5a9fc8904e5c7b66f2f994b6855a442e446b8503b77bb7d02a159"
+    },
+    {
+      "id": 61,
+      "name": "OpenIMMessageTypeUserInfoUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1303",
+      "signatureHash": "7dd1b75a310cfdd8b01b6306af9756ba21a7dc03463a518ba063b94348ed1897"
+    },
+    {
+      "id": 62,
+      "name": "OpenIMMessageTypeUserStatusChanged",
+      "type": "OpenIMMessageType",
+      "value": "1304",
+      "signatureHash": "158f2115e8c1b8ff6da7ca4e023408e525a12d7d3d165214001cd12940b20322"
+    },
+    {
+      "id": 63,
+      "name": "OpenIMMessageTypeUserSubscribeOnlineStatus",
+      "type": "OpenIMMessageType",
+      "value": "1308",
+      "signatureHash": "8ae42b719541a04b42bcafa017f1f3fe318df82ab8a230b993966f01e2d445ca"
+    },
+    {
+      "id": 64,
+      "name": "OpenIMMessageTypeOANotification",
+      "type": "OpenIMMessageType",
+      "value": "1400",
+      "signatureHash": "56c83fb8f874a6f18ebddebb8583a1e61d3872c3f159705a6d063e4c2ba56ecd"
+    },
+    {
+      "id": 65,
+      "name": "OpenIMMessageTypeGroupCreated",
+      "type": "OpenIMMessageType",
+      "value": "1501",
+      "signatureHash": "bd1b1a645a92dbe313e457b961c01d012e55b2cc20e126cdd06cbf5622e7c9eb"
+    },
+    {
+      "id": 66,
+      "name": "OpenIMMessageTypeGroupInfoUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1502",
+      "signatureHash": "80c9fb644fba0c4cbdf9dd3d2195c696ba41aa7b64cda45ee14e5a0450732f2c"
+    },
+    {
+      "id": 67,
+      "name": "OpenIMMessageTypeJoinGroupApplication",
+      "type": "OpenIMMessageType",
+      "value": "1503",
+      "signatureHash": "484a7c4eecb280e27333f4b80f7831ebb4b7f1d1f25764abec56633afe66060f"
+    },
+    {
+      "id": 68,
+      "name": "OpenIMMessageTypeMemberQuit",
+      "type": "OpenIMMessageType",
+      "value": "1504",
+      "signatureHash": "ba0ffeefdf7ff09645fbcec9a4c0ec06c4507c90768e2410e3e4d236e8ebe0d2"
+    },
+    {
+      "id": 69,
+      "name": "OpenIMMessageTypeGroupApplicationAccepted",
+      "type": "OpenIMMessageType",
+      "value": "1505",
+      "signatureHash": "a281ff8f075f64313f182378715eabbd502bf6e187b43170c0594f383f55e8a4"
+    },
+    {
+      "id": 70,
+      "name": "OpenIMMessageTypeGroupApplicationRejected",
+      "type": "OpenIMMessageType",
+      "value": "1506",
+      "signatureHash": "465ff14d67e0cd9ef9376f36e1584e7de775aa5211fca1097158254926dc18c0"
+    },
+    {
+      "id": 71,
+      "name": "OpenIMMessageTypeGroupOwnerTransferred",
+      "type": "OpenIMMessageType",
+      "value": "1507",
+      "signatureHash": "2e3568f962310719898e8c49fe4c6f24825b6e71e00dd10cd80e56052bdcb5b9"
+    },
+    {
+      "id": 72,
+      "name": "OpenIMMessageTypeMemberKicked",
+      "type": "OpenIMMessageType",
+      "value": "1508",
+      "signatureHash": "eb7f8288a4921d76622f749e49927baefe1127511d025f7319216058434b6149"
+    },
+    {
+      "id": 73,
+      "name": "OpenIMMessageTypeMemberInvited",
+      "type": "OpenIMMessageType",
+      "value": "1509",
+      "signatureHash": "cd9e309b187ff3166aa66aff02d39798bb4da9a0728ac2e71e83b784bbf12c88"
+    },
+    {
+      "id": 74,
+      "name": "OpenIMMessageTypeMemberEnter",
+      "type": "OpenIMMessageType",
+      "value": "1510",
+      "signatureHash": "5ccccee453e561c6a1c7c22236049d85b7c7cac4f1f878e56ebc77626da334d6"
+    },
+    {
+      "id": 75,
+      "name": "OpenIMMessageTypeGroupDismissed",
+      "type": "OpenIMMessageType",
+      "value": "1511",
+      "signatureHash": "9b99cb57cce0e84205459f5cb4db94eda23e7563a8f5d51b6386c9dc76671bb8"
+    },
+    {
+      "id": 76,
+      "name": "OpenIMMessageTypeGroupMemberMuted",
+      "type": "OpenIMMessageType",
+      "value": "1512",
+      "signatureHash": "c0d5d8de0202e47af2b8ac939362a225e7de4af12ae2b9669f15a0c6d01d63a7"
+    },
+    {
+      "id": 77,
+      "name": "OpenIMMessageTypeGroupMemberCancelMuted",
+      "type": "OpenIMMessageType",
+      "value": "1513",
+      "signatureHash": "ae0fab64c6dcdebd2a70c961ccb57b4776278bbc3abf221a5870cba7621a42e6"
+    },
+    {
+      "id": 78,
+      "name": "OpenIMMessageTypeGroupMuted",
+      "type": "OpenIMMessageType",
+      "value": "1514",
+      "signatureHash": "ed1982e496801073ae7d26867cabee6fccd4a3c3ba4a0fc143417f808b801640"
+    },
+    {
+      "id": 79,
+      "name": "OpenIMMessageTypeGroupCancelMuted",
+      "type": "OpenIMMessageType",
+      "value": "1515",
+      "signatureHash": "f6bac2a5eb233123fbd5e8802edeb8894fb70e4922860de34253ad1c216a8ef2"
+    },
+    {
+      "id": 80,
+      "name": "OpenIMMessageTypeGroupMemberInfoUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1516",
+      "signatureHash": "5c045cbc1cc24ef75bd867265860cf05f160df31d539a1a184e2c72e7a805215"
+    },
+    {
+      "id": 81,
+      "name": "OpenIMMessageTypeGroupMemberSetToAdmin",
+      "type": "OpenIMMessageType",
+      "value": "1517",
+      "signatureHash": "e5b2c2407efa9abb7b8ba646f81ea075595e854d91eec0a9d84516b514c291f7"
+    },
+    {
+      "id": 82,
+      "name": "OpenIMMessageTypeGroupMemberSetToOrdinaryUser",
+      "type": "OpenIMMessageType",
+      "value": "1518",
+      "signatureHash": "b743e9afb175eb6c2d7e2a28ddc883144eb4be3da70b34b7bdc82d618f35ac08"
+    },
+    {
+      "id": 83,
+      "name": "OpenIMMessageTypeGroupAnnouncementUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1519",
+      "signatureHash": "c0a5857216c66ed71859cfa5cfae3892717db278596ae6fd56f038f93452aeb9"
+    },
+    {
+      "id": 84,
+      "name": "OpenIMMessageTypeGroupNameUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1520",
+      "signatureHash": "c1b6e4c0a8a99c8d24e125fd9def524a4d4bb5de6f25ba640286f95cbc3f83e0"
+    },
+    {
+      "id": 85,
+      "name": "OpenIMMessageTypeSuperGroupUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1651",
+      "signatureHash": "42a3e7a5324c3eea35a9b960988ecfeda75906e698ed4bea846c275945eec3f3"
+    },
+    {
+      "id": 86,
+      "name": "OpenIMMessageTypeMsgDeleted",
+      "type": "OpenIMMessageType",
+      "value": "1652",
+      "signatureHash": "496eae88bdd81bf7040a4eaedb13340dc690b2f8179328b8a51d731440ffe071"
+    },
+    {
+      "id": 87,
+      "name": "OpenIMMessageTypeBurnMessageChange",
+      "type": "OpenIMMessageType",
+      "value": "1701",
+      "signatureHash": "07f3b0fd30bab3a763ea9c2bbc7582c8a7168e5a3bdd5d5a680f82de2d724b00"
+    },
+    {
+      "id": 88,
+      "name": "OpenIMMessageTypeConversationPrivateChat",
+      "type": "OpenIMMessageType",
+      "value": "1701",
+      "signatureHash": "41302b1649327e5b43328bbbc928e0229f2f27878b4b3cf37cc173924f6db317"
+    },
+    {
+      "id": 89,
+      "name": "OpenIMMessageTypeConversationUnread",
+      "type": "OpenIMMessageType",
+      "value": "1702",
+      "signatureHash": "2554e6b9a8e42a9713008b325d8161e24f6397202150aec964153ad60d305203"
+    },
+    {
+      "id": 90,
+      "name": "OpenIMMessageTypeClearConversation",
+      "type": "OpenIMMessageType",
+      "value": "1703",
+      "signatureHash": "9b03e7b7d33ea062af3be9ab6b11295fdda136e8b1e9e6933613267971c5d028"
+    },
+    {
+      "id": 91,
+      "name": "OpenIMMessageTypeConversationGroupChanged",
+      "type": "OpenIMMessageType",
+      "value": "1704",
+      "signatureHash": "11fd2db040c40c59f28425dbaabb7effd1c535c056862c8cbe710a5856741450"
+    },
+    {
+      "id": 92,
+      "name": "OpenIMMessageTypeBusinessNotification",
+      "type": "OpenIMMessageType",
+      "value": "2001",
+      "signatureHash": "2e090397c74a4a655ac236f1fb8bff5560205adb8a8ebfb8b3262217461a5ca7"
+    },
+    {
+      "id": 93,
+      "name": "OpenIMMessageTypeRevokeMessage",
+      "type": "OpenIMMessageType",
+      "value": "2101",
+      "signatureHash": "dfb60feb5232a1303a4a5aa3391e94e53678974a214cbd65980dbe9e06469418"
+    },
+    {
+      "id": 94,
+      "name": "OpenIMMessageTypeDeleteMessages",
+      "type": "OpenIMMessageType",
+      "value": "2102",
+      "signatureHash": "1a021e3a15c68b570ac2c2bb28f3338b5003f925e0638e609716301d9604a8e1"
+    },
+    {
+      "id": 95,
+      "name": "OpenIMMessageTypeModifyMessage",
+      "type": "OpenIMMessageType",
+      "value": "2103",
+      "signatureHash": "e9f254a20508cd856176a287a18261996c7ffbd0d86b5adcefea1b676bdde0d2"
+    },
+    {
+      "id": 96,
+      "name": "OpenIMMessageTypeDeleteUserAllMessagesInConversation",
+      "type": "OpenIMMessageType",
+      "value": "2150",
+      "signatureHash": "212c96d6b66c26acf56219978140a8e9923df51902da9111234969e14103df21"
+    },
+    {
+      "id": 97,
+      "name": "OpenIMMessageTypeHasReadReceipt",
+      "type": "OpenIMMessageType",
+      "value": "2200",
+      "signatureHash": "16dc95633a698fc1af48f1d1208418f2cf26a09595260fd73aa5ca2f15de79fc"
+    },
+    {
+      "id": 98,
+      "name": "OpenIMMessageTypeHasResetUnreadReceipt",
+      "type": "OpenIMMessageType",
+      "value": "2210",
+      "signatureHash": "eba37f5670dd25c39aca09240f9e2e0829419b2b0fb8bcea18047da65ab2760f"
+    },
+    {
+      "id": 99,
+      "name": "OpenIMMessageTypeHasGroupReadReceipt",
+      "type": "OpenIMMessageType",
+      "value": "2300",
+      "signatureHash": "bf64c05ff943cf993073771fc7325410f51077b919b8fc2142f28197005767a2"
+    },
+    {
+      "id": 100,
+      "name": "OpenIMMessageTypePinned",
+      "type": "OpenIMMessageType",
+      "value": "2400",
+      "signatureHash": "c10057828a57a53d32efeefa64280f84c49fe9f584031a9b19f24e42d7d8aea5"
+    },
+    {
+      "id": 101,
+      "name": "OpenIMMessageTypePinnedRead",
+      "type": "OpenIMMessageType",
+      "value": "2401",
+      "signatureHash": "df316b0c18a9cc4abb85fdc9c0ecc9b19f11a7022fdcbd5f6481099cc4c6e11c"
+    },
+    {
+      "id": 102,
+      "name": "OpenIMMessageTypeStreamNotification",
+      "type": "OpenIMMessageType",
+      "value": "2500",
+      "signatureHash": "777e3161b61a07a8f97bd4468b47fb9150b36ce50a22416929fc9b00bd6b4fef"
+    },
+    {
+      "id": 103,
+      "name": "OpenIMSessionTypeSingle",
+      "type": "OpenIMSessionType",
+      "value": "1",
+      "signatureHash": "68748002bd1f8251ec2268aaacf2518bc5cc40b14490fe02fc46fc39cec9e707"
+    },
+    {
+      "id": 104,
+      "name": "OpenIMSessionTypeWriteGroup",
+      "type": "OpenIMSessionType",
+      "value": "2",
+      "signatureHash": "61496eeda0e9535aae6221dabcf64dde69037008568b24a07bbf941cd79105e2"
+    },
+    {
+      "id": 105,
+      "name": "OpenIMSessionTypeGroup",
+      "type": "OpenIMSessionType",
+      "value": "3",
+      "signatureHash": "7f21ec4de72cc512a81855fdd6641d93f62303df49ff39f5cda2c6f63ca86ee7"
+    },
+    {
+      "id": 106,
+      "name": "OpenIMSessionTypeNotification",
+      "type": "OpenIMSessionType",
+      "value": "4",
+      "signatureHash": "ba39713f1abecc80e5a23cb582148bf460a41cd00c3ae0947772d212274b0b73"
+    },
+    {
+      "id": 107,
+      "name": "OpenIMLoginStatusLogout",
+      "type": "OpenIMLoginStatus",
+      "value": "1",
+      "signatureHash": "7c91f0aad42da1f3066a53034ce7e660fb6149904d880c73050c465301a326ec"
+    },
+    {
+      "id": 108,
+      "name": "OpenIMLoginStatusLogging",
+      "type": "OpenIMLoginStatus",
+      "value": "2",
+      "signatureHash": "a6df080b6db816fd30b632a66132e6dff4e7b3085ff3f276bb1408d406647e76"
+    },
+    {
+      "id": 109,
+      "name": "OpenIMLoginStatusLogged",
+      "type": "OpenIMLoginStatus",
+      "value": "3",
+      "signatureHash": "83d5ad7e02193fd11100ab63e2e9f5382d7c244807aa01156f24f11d129c00f5"
+    }
+  ],
+  "types": [
+    {
+      "id": 1001,
+      "name": "OpenIMMessageStatus",
+      "signatureHash": "b2f9f6298304e038fd8b54d90b728663fe36c3f9a9aa258f1fcfdd87644a5048"
+    },
+    {
+      "id": 1002,
+      "name": "OpenIMPlatform",
+      "signatureHash": "c7ecca9d16336958a9f6cf5d43d33585b9b70f8884255a1b7ee5cfa99511a700"
+    },
+    {
+      "id": 1003,
+      "name": "OpenIMLogLevel",
+      "signatureHash": "8f418680b6af67c6d8c0221fc8d0d18d3f058b45d7ada4eabf8a200cfb714425"
+    },
+    {
+      "id": 1004,
+      "name": "OpenIMMessageType",
+      "signatureHash": "a896503a3dacf7674d5f9d9ceb3e70390cfc0551a99654263940bd1a21873807"
+    },
+    {
+      "id": 1005,
+      "name": "OpenIMSessionType",
+      "signatureHash": "3be98e61dd3e572f04aed92c518998a285b66af8308b999fc8f475d9a63d880c"
+    },
+    {
+      "id": 1006,
+      "name": "OpenIMLoginStatus",
+      "signatureHash": "64720e63372998e9bf1fd37bbe417e169a94c7a7207a92ce16f0df133acf30dc"
+    },
+    {
+      "id": 1007,
+      "name": "OpenIMSendMessageOptions",
+      "signatureHash": "eac3f9993534e25873c5e326527e4f4a1ae84186d2fd74527af4d32b5952bdc2"
+    },
+    {
+      "id": 1008,
+      "name": "OpenIMUploadFileParams",
+      "signatureHash": "84f7a2754e348014514f24217ff84759ee2c955d7e7d97ce990528771ae9b677"
+    },
+    {
+      "id": 1009,
+      "name": "OpenIMCreateSoundMessageParams",
+      "signatureHash": "1ea28b2936efc33dfdbdbdbb9897f5d88efda5e8e04d71a6bd49bf5c049017ff"
+    },
+    {
+      "id": 1010,
+      "name": "OpenIMCreateVideoMessageParams",
+      "signatureHash": "751521ec6af7db95420faf899fbc8a6339c609596f349240c701259b6fb2f8d0"
+    },
+    {
+      "id": 1011,
+      "name": "OpenIMCreateFileMessageParams",
+      "signatureHash": "56d15e22c2280cbfa593874d3bcbb8eb47af794592974d23a60666f498a94606"
+    },
+    {
+      "id": 1012,
+      "name": "OpenIMUploadFileResult",
+      "signatureHash": "219e6a0fb0566ea50ae525a28cf6e11336b700358aed3b587c483cbcd93af23e"
+    },
+    {
+      "id": 1013,
+      "name": "OpenIMUpdateFcmTokenParams",
+      "signatureHash": "1857fade55acc23759b0efb9fb2178a606c2323615eeb7739352fc7632c2b449"
+    },
+    {
+      "id": 1014,
+      "name": "OpenIMUploadLogsParams",
+      "signatureHash": "9114ee1d599165b3d41a2add587b07f71622c5c85e09629cdbf5bf930fe2578b"
+    },
+    {
+      "id": 1015,
+      "name": "OpenIMUploadFileProgressEvent",
+      "signatureHash": "dfa7bf7e3fba9d430783547ec82ee7f59152712b7517bbc2696ae4c209ecf4c9"
+    },
+    {
+      "id": 1016,
+      "name": "OpenIMUploadLogsProgressEvent",
+      "signatureHash": "8c5ef7c1358d92260f092f6ed4ff2b809d11059568c819c3656ce91336513c69"
+    },
+    {
+      "id": 1017,
+      "name": "OpenIMSendMessageProgressEvent",
+      "signatureHash": "54f0625244e81275e8a24272a0fac424ecac74448eaed729455eacfad5357abc"
+    },
+    {
+      "id": 1018,
+      "name": "OpenIMMessageKeyParams",
+      "signatureHash": "a4b08926a883fa47f808c5871818ea398db243fd9e29c36322edab8257b325e4"
+    },
+    {
+      "id": 1019,
+      "name": "OpenIMSetMessageLocalExParams",
+      "signatureHash": "5f827fd476e965160edb48de70da0bf7041fa6819a06f478c88da01acbe7323a"
+    },
+    {
+      "id": 1020,
+      "name": "OpenIMSetConversationBoolean",
+      "signatureHash": "9789e69ec980a591ffbc69d7e212af26c4096dffc73d0466144326b36202dde4"
+    },
+    {
+      "id": 1021,
+      "name": "OpenIMSetSelfInfoRecvMsgOpt",
+      "signatureHash": "6af170121ec89812d978317f6308580bf371f923eefa0f5faf556da8aa8533fb"
+    },
+    {
+      "id": 1022,
+      "name": "OpenIMUpdateFriendBoolean",
+      "signatureHash": "6d90068c2baca1528f40ceeea5f210c04502688bfb31a09364cc6cd730bc109d"
+    },
+    {
+      "id": 1023,
+      "name": "OpenIMGroupNeedVerification",
+      "signatureHash": "d917f362aa627f1c48128ac20cea7f394ff9ff5cd3e8ff285cffa55cd485bb0b"
+    },
+    {
+      "id": 1024,
+      "name": "OpenIMGroupOption",
+      "signatureHash": "5cfc8db4d763fb4968c159241605ccc795eba8ccbe1b60630692b83389e350f8"
+    },
+    {
+      "id": 1025,
+      "name": "OpenIMGroupDisplayIsRead",
+      "signatureHash": "9fb3166f1208f9598d34f4a95da376a5e7cacf11d7740588262b702646daaa34"
+    },
+    {
+      "id": 1026,
+      "name": "OpenIMGroupMemberRoleLevel",
+      "signatureHash": "6dfeb17bdc44ec09d528b134e753009b308f897302792ff60be0dbc2e535d475"
+    },
+    {
+      "id": 1027,
+      "name": "OpenIMSetConversationParams",
+      "signatureHash": "be0ad0433ae82d7088f8330cb25a8c18a36827d55355d5f776be36635ede1506"
+    },
+    {
+      "id": 1028,
+      "name": "OpenIMSetSelfInfoParams",
+      "signatureHash": "4923c4d16dcc83f754cb8bf299fe9f91b21f9771d071c0564d3a276bec48e34c"
+    },
+    {
+      "id": 1029,
+      "name": "OpenIMUpdateFriendsParams",
+      "signatureHash": "3083b26e53a16884f99b4784e2cd30f4aaa2b4c76676f57499e47256abfa5cfc"
+    },
+    {
+      "id": 1030,
+      "name": "OpenIMCheckFriendResultItem",
+      "signatureHash": "e50bf85d703cdd288d84161a79082ca94e204929fd3a30720b0a7fe820f3ce37"
+    },
+    {
+      "id": 1031,
+      "name": "OpenIMCheckFriendResult",
+      "signatureHash": "9fb50399497985a1dda92c6c2e00d1f986cf72192fcea3f1d8ba4bcaf247c951"
+    },
+    {
+      "id": 1032,
+      "name": "OpenIMInsertSingleMessageParams",
+      "signatureHash": "d4501725cd0b5d85e03dc9496e70d48568294b0e99385fc054274302d1e1db34"
+    },
+    {
+      "id": 1033,
+      "name": "OpenIMInsertGroupMessageParams",
+      "signatureHash": "1f8d36212c539d38926b6097d1883148dfe567a3ba740544dd6f9f9c3ec523ce"
+    },
+    {
+      "id": 1034,
+      "name": "OpenIMInputStateParams",
+      "signatureHash": "87257e63994511261c554c08716a18ae95cdddd77052833d79298ea99b0a5b20"
+    },
+    {
+      "id": 1035,
+      "name": "OpenIMSetConversationDraftParams",
+      "signatureHash": "f2fb1522043f4c8ef413d03f484a205640c3da7a42150089cb223a6c5f6bda04"
+    },
+    {
+      "id": 1036,
+      "name": "OpenIMAddFriendParams",
+      "signatureHash": "a16116e0fbfedeada13e8398a485423ce91bef47eb67aa58f664df0ebafda6ef"
+    },
+    {
+      "id": 1037,
+      "name": "OpenIMSearchFriendsParams",
+      "signatureHash": "588996d616658863839c01da93dfd76a1758ee19e10984ae3f6c2ec7c1f8b6af"
+    },
+    {
+      "id": 1038,
+      "name": "OpenIMGetSpecifiedFriendsInfoParams",
+      "signatureHash": "63062033bb6ff8f863312012ea915095b4fb1dc55526b9b41a1fb2dc86b6333e"
+    },
+    {
+      "id": 1039,
+      "name": "OpenIMFriendApplicationHandleParams",
+      "signatureHash": "0acb9df4416bb0c17ea5b80af18130e1f874c4b936301dd209dc20baa30330f5"
+    },
+    {
+      "id": 1040,
+      "name": "OpenIMAddBlackParams",
+      "signatureHash": "a032838d52c66b5e1063228eb2ae81398a1d1bb3feead727f4c4f8d77d2be6b3"
+    },
+    {
+      "id": 1041,
+      "name": "OpenIMGroupUserListParams",
+      "signatureHash": "ac3d0f15f98f91af596c6d7d4e2a31e0b8efd35d6c8312473c2b899172ce0d68"
+    },
+    {
+      "id": 1042,
+      "name": "OpenIMGroupInviteParams",
+      "signatureHash": "aabedb02fbcb2eecdb9ca8cbad9551b4b9320c65938183e2bcf354f125951fd0"
+    },
+    {
+      "id": 1043,
+      "name": "OpenIMSearchGroupMembersParams",
+      "signatureHash": "6b849bfb059cd39e3a022e5f3d4c564c58c5778edff7ffa28e828442b4d2d6f0"
+    },
+    {
+      "id": 1044,
+      "name": "OpenIMCreateGroupInfo",
+      "signatureHash": "ffec54165e4c12239b73917e333ffe16126376c86068de95f3ab36ec87a1c64b"
+    },
+    {
+      "id": 1045,
+      "name": "OpenIMCreateGroupParams",
+      "signatureHash": "b1109c4277ee0b7ac1d7fcb5a7b52706e821a2660d79b4ffbe28fc9b2905cb47"
+    },
+    {
+      "id": 1046,
+      "name": "OpenIMSetGroupInfoParams",
+      "signatureHash": "b6da4a10753ad1184c55ab4f7f6f64d5fa20b4aa143879b730d1e163a21f4dfb"
+    },
+    {
+      "id": 1047,
+      "name": "OpenIMSetGroupMemberInfoParams",
+      "signatureHash": "be5a45a607a834119a540dd426b154a0f542eb1822ef8df4c704bc60e9e327e7"
+    },
+    {
+      "id": 1048,
+      "name": "OpenIMJoinGroupParams",
+      "signatureHash": "04d375b93c6de64b3b6a5bfe36ddaccd0f07f5f02c6c622a646f36d3c2c07eb5"
+    },
+    {
+      "id": 1049,
+      "name": "OpenIMSearchGroupsParams",
+      "signatureHash": "ffa28e5f24c96d16a54914ffc4a3701cab1f61437fc62121a6c4e76d43b726b2"
+    },
+    {
+      "id": 1050,
+      "name": "OpenIMChangeGroupMuteParams",
+      "signatureHash": "aa17171474e80fd1e6a36a7dbe304166c234c3cfa6eeab576195946f52cc0256"
+    },
+    {
+      "id": 1051,
+      "name": "OpenIMChangeGroupMemberMuteParams",
+      "signatureHash": "6697ba759a76a4403895ac2dbf7de0a9368321cd2a8294ec92b11fec2a58cf2e"
+    },
+    {
+      "id": 1052,
+      "name": "OpenIMTransferGroupOwnerParams",
+      "signatureHash": "9f7c7aee7ecdeed54731c5ad4ef0cf95a1c4923db8671b3f6727f6f9bf4e1d3e"
+    },
+    {
+      "id": 1053,
+      "name": "OpenIMGroupApplicationHandleParams",
+      "signatureHash": "8ba30188c3e3cd4695c4793a7f8fc7bd32529b232b2c987db7111a9d308776d6"
+    },
+    {
+      "id": 1054,
+      "name": "OpenIMFindMessageParams",
+      "signatureHash": "d5a6e9e2e19d5dd2241a33a10da6aef942485b87af823429495e33f6873bf903"
+    },
+    {
+      "id": 1055,
+      "name": "OpenIMCreateCustomMessageParams",
+      "signatureHash": "9bd7a01198c96058cb52d6fffa3d059b14082e4eab3b59f9c26b7370eb38be98"
+    },
+    {
+      "id": 1056,
+      "name": "OpenIMCreateQuoteMessageParams",
+      "signatureHash": "63f428d077669061ebb78118e8bcb19a413ad24872bb520e644650e239c214eb"
+    },
+    {
+      "id": 1057,
+      "name": "OpenIMCreateAdvancedQuoteMessageParams",
+      "signatureHash": "21b9c8457dc0ab691f098ed81c93908ee611c2f61e3b0db6df186dd8a7644f51"
+    },
+    {
+      "id": 1058,
+      "name": "OpenIMCreateAdvancedTextMessageParams",
+      "signatureHash": "160e42977b232d732945b544b434124976ca12f5159b8c1a776acbc746a86641"
+    },
+    {
+      "id": 1059,
+      "name": "OpenIMCreateTextAtMessageParams",
+      "signatureHash": "805f4869c2be9695182db1ae1bd542df39943f243f7b3bc45d61bb0b10b83d78"
+    },
+    {
+      "id": 1060,
+      "name": "OpenIMCreateMergerMessageParams",
+      "signatureHash": "53f569e81369fd7ea141af0c1ff31dabcb8073e813cca1a201100509f202ba3e"
+    },
+    {
+      "id": 1061,
+      "name": "OpenIMCreateFaceMessageParams",
+      "signatureHash": "bf4a90e528812c64c24c8a1cfe052bfe62eae542622cc3455a81e41c1dbb4c2a"
+    },
+    {
+      "id": 1062,
+      "name": "OpenIMCreateLocationMessageParams",
+      "signatureHash": "2b3dfb06f155a776b629519e9acea98e67b0806b5da142acd524295d4878ab6f"
+    },
+    {
+      "id": 1063,
+      "name": "OpenIMMessageEntity",
+      "signatureHash": "a1c002f8741dbb614ab2d9d48a75f9055fb3f7a7634608bbba329b4ac663e553"
+    },
+    {
+      "id": 1064,
+      "name": "OpenIMTextElem",
+      "signatureHash": "0f49b7b5160434661322667b9cec3bb31799c5a767eb1fd3171a8e66e1287045"
+    },
+    {
+      "id": 1065,
+      "name": "OpenIMCardElem",
+      "signatureHash": "a3368b7e2eda8f0248d03cb5555ff0ae5335817452c8ec49c9a038c21eb9ba43"
+    },
+    {
+      "id": 1066,
+      "name": "OpenIMAtUsersInfoItem",
+      "signatureHash": "aed660c51226b8723b69c65bfb1b5d3382efc2a2e333a74135b4946521c1f8ab"
+    },
+    {
+      "id": 1067,
+      "name": "OpenIMAtTextElem",
+      "signatureHash": "75efddfb740bffb13e16d424b7e34b025bf07362cb46860d6065c1f3438d9350"
+    },
+    {
+      "id": 1068,
+      "name": "OpenIMNotificationElem",
+      "signatureHash": "8ed1ab19f3af3ffbd158d394c27908b7e09d71f7b14e5c74f9b17241538b5199"
+    },
+    {
+      "id": 1069,
+      "name": "OpenIMAdvancedTextElem",
+      "signatureHash": "ee82bd73672c4dcb3258d33df5ba72a01ad4dd378785d229f464e1c8478e7055"
+    },
+    {
+      "id": 1070,
+      "name": "OpenIMTypingElem",
+      "signatureHash": "be42daaaead94a9138309b444aa9a63ce0150fc377dd29295365e0d471c2e0db"
+    },
+    {
+      "id": 1071,
+      "name": "OpenIMFileElem",
+      "signatureHash": "71f34c3511c7edadf3ef9116effcca1d6f2bf0f1d4efe2d9ed5a14be23849ced"
+    },
+    {
+      "id": 1072,
+      "name": "OpenIMFaceElem",
+      "signatureHash": "d1a016aef3afaade3a7eb4445cc7bf6c1adf289dedf01e313a4c9b74c6953b19"
+    },
+    {
+      "id": 1073,
+      "name": "OpenIMLocationElem",
+      "signatureHash": "e9c0c035a0c9820eae383005e7674f565909e3c047e0f20de51c9669b8a0e46c"
+    },
+    {
+      "id": 1074,
+      "name": "OpenIMCustomElem",
+      "signatureHash": "a4d3376f2c455c65f34afd0bee12da76f53ba1b662ad40b57a7ca13dd3b328b1"
+    },
+    {
+      "id": 1075,
+      "name": "OpenIMMergeElem",
+      "signatureHash": "23fb44975d05b1105f0b158bb4d1ea7faa86a867c953dc6599a6625ea2aef659"
+    },
+    {
+      "id": 1076,
+      "name": "OpenIMOfflinePush",
+      "signatureHash": "9b90be2a0c61ef7b0c249c26b30e687e3b184e250a3cb4a5866dc693321a5fda"
+    },
+    {
+      "id": 1077,
+      "name": "OpenIMPicture",
+      "signatureHash": "f04bdadf101bb6ebc3ff41ac57a89d32e522763ca0f0be711b3ce9d4e3a53b25"
+    },
+    {
+      "id": 1078,
+      "name": "OpenIMPictureElem",
+      "signatureHash": "70fbb702fb0804466b1924df67ffcd7ffe3568e52f8364867f40481044dd70ad"
+    },
+    {
+      "id": 1079,
+      "name": "OpenIMAttachedGroupHasReadInfo",
+      "signatureHash": "c03da824911cb525bb53693ae7bb1579cb5014febcb1f130d0b452447d4a76bd"
+    },
+    {
+      "id": 1080,
+      "name": "OpenIMUploadProgress",
+      "signatureHash": "b52193934a41200dc2a4d272b12ffc53936dddf30170efc1b1eb7a12ce907ac6"
+    },
+    {
+      "id": 1081,
+      "name": "OpenIMAttachedInfoElem",
+      "signatureHash": "9ba2f2535b1577151196a45f0bb26866b48067bfd451085fa620e6ce9111e0d1"
+    },
+    {
+      "id": 1082,
+      "name": "OpenIMQuoteElem",
+      "signatureHash": "31af4d22fa4fe24496e61fbda8ecd10b5b961c860ea7ceeb29cdda3a0e5ce7da"
+    },
+    {
+      "id": 1083,
+      "name": "OpenIMSoundElem",
+      "signatureHash": "50de258e4269a9118635019c551ab2b04703e423b7188d8dc668353fcbd0c8c7"
+    },
+    {
+      "id": 1084,
+      "name": "OpenIMVideoElem",
+      "signatureHash": "aa263f920958c6d75d1d3254f6c18e904248901bc49a832c5e70a5d7bf52678e"
+    },
+    {
+      "id": 1085,
+      "name": "OpenIMMessageItemRef",
+      "signatureHash": "1ac0f0db5fdc73648e4e5739aa1ea4cbd8542877e48ace677a90bbd5c6ea1e81"
+    },
+    {
+      "id": 1086,
+      "name": "OpenIMMessageItem",
+      "signatureHash": "5aec8cb3a7963f19d9f39e7f3d383620ff62e8748994ebb89f81b1bf15b3f141"
+    },
+    {
+      "id": 1087,
+      "name": "OpenIMConversationItem",
+      "signatureHash": "598414c4c588fa99562775080bb8d17daa4cbb793dd6b15aea42afb478f6ddd0"
+    },
+    {
+      "id": 1088,
+      "name": "OpenIMConversationListResult",
+      "signatureHash": "fd65acc4e6f32e7fb0e9e4c1f0feb1e0c5ed89b137a4507ca4ac87815b4b50ed"
+    },
+    {
+      "id": 1089,
+      "name": "OpenIMUserListResult",
+      "signatureHash": "403313cbd3c36d50f047d193977c7a401a6d62d1680a149e4e1f2839e3b06fff"
+    },
+    {
+      "id": 1090,
+      "name": "OpenIMUserStatusItem",
+      "signatureHash": "a8d28054689489918abd8332b6339a2cb5cb28ad0941b0f7290e676fc46dda8d"
+    },
+    {
+      "id": 1091,
+      "name": "OpenIMUserStatusListResult",
+      "signatureHash": "80948b1e7f541d4a52cd9bed55cce5bb78017128f96988173be79a78b63cb66a"
+    },
+    {
+      "id": 1092,
+      "name": "OpenIMFriendListResult",
+      "signatureHash": "95441a05fa85bd1d953d068544a351ec342404fe264e6ec6af553749e875341d"
+    },
+    {
+      "id": 1093,
+      "name": "OpenIMBlackListResult",
+      "signatureHash": "ad014afc58f1cc960ebd231eb7e347c6857a5a81806785080b3e375a9a5fc725"
+    },
+    {
+      "id": 1094,
+      "name": "OpenIMGroupListResult",
+      "signatureHash": "e5c01b3fc76eeca5804c9383b089886e48467767603574caa3f9ae29a36a36ed"
+    },
+    {
+      "id": 1095,
+      "name": "OpenIMGroupMemberListResult",
+      "signatureHash": "ce8e5c716e5aef111ba89bdaa67e2d26524320a59920aa9f40f241f8d875f58e"
+    },
+    {
+      "id": 1096,
+      "name": "OpenIMFriendApplicationListResult",
+      "signatureHash": "e232583f1151817ca1fb1cf7886a9fcb471a4fd6fe84eb970bbf570c1c41e785"
+    },
+    {
+      "id": 1097,
+      "name": "OpenIMGroupApplicationListResult",
+      "signatureHash": "46db95eab29b381521911d02a613bd6dcc54aed40a3d10117bd88fc3f25c2a95"
+    },
+    {
+      "id": 1098,
+      "name": "OpenIMMessageListResult",
+      "signatureHash": "8e6e1f89a0fb403f7a2a3daddacfcd8c5a7e4cc53d9031d2f0a31b2500cd965a"
+    },
+    {
+      "id": 1099,
+      "name": "OpenIMUserInfo",
+      "signatureHash": "ce8160a04596bf7e963750e430746f3c09f8c8904972036030426300000b3f39"
+    },
+    {
+      "id": 1100,
+      "name": "OpenIMPublicUserItem",
+      "signatureHash": "87765e398f97f0789dbdc4ba62eddeea11d36573d497bd42d31a196585d72e62"
+    },
+    {
+      "id": 1101,
+      "name": "OpenIMFriendUserItem",
+      "signatureHash": "3aab4773462c2927d59d3be09888222b758abd0bd95b11fcf1978fa39b7527c2"
+    },
+    {
+      "id": 1102,
+      "name": "OpenIMBlackUserItem",
+      "signatureHash": "713c267f837a34d9ba48d3a2fa5090dda8d058c131491b546b8480f7cbe9c237"
+    },
+    {
+      "id": 1103,
+      "name": "OpenIMGroupItem",
+      "signatureHash": "7a3c765d2938ab26d72e645d65f89483e94c0404c7dcf3e3210aa7b0d579aca7"
+    },
+    {
+      "id": 1104,
+      "name": "OpenIMGroupMemberItem",
+      "signatureHash": "81ad1090935d1bb275b174f79bfb9c9a96939f692971de1c2481fb01e3e3234d"
+    },
+    {
+      "id": 1105,
+      "name": "OpenIMFriendApplicationItem",
+      "signatureHash": "366f3242235b8dcb611776ececab41acfe647ae1ea7b9b97d36cc5c80e62fc8d"
+    },
+    {
+      "id": 1106,
+      "name": "OpenIMGroupApplicationItem",
+      "signatureHash": "7b33f7fe84a3f268f96ea23446c4ca9334624827f7c1607de708fd3ad6ed4e86"
+    },
+    {
+      "id": 1107,
+      "name": "OpenIMMessageRevokedItem",
+      "signatureHash": "b6ddba526c9690a96f36deebc7804168b8ccc8e017db7b96076797fed505758c"
+    },
+    {
+      "id": 1108,
+      "name": "OpenIMMessageReceiptItem",
+      "signatureHash": "2eb37aa8fa133a4be81504cb3882de71c4e9babf2b70eabaa3eae2d2bc4cb8da"
+    },
+    {
+      "id": 1109,
+      "name": "OpenIMMessageReceiptListResult",
+      "signatureHash": "de29548e1d2deb766bcb1d81a918f40baa12ffaecc3f5ab395c1c13e9fcc3b2e"
+    },
+    {
+      "id": 1110,
+      "name": "OpenIMConversationInputStatusItem",
+      "signatureHash": "ea0d22504dd2734a2f02cbea762beb04d681440d3d8ebe46f4951fee83856b7a"
+    },
+    {
+      "id": 1111,
+      "name": "OpenIMGetOneConversationParams",
+      "signatureHash": "6bb7b29d59bcf4d675d5f5216addd62b5e9e63a95b18dd9455d0b34755ad0573"
+    },
+    {
+      "id": 1112,
+      "name": "OpenIMPageParams",
+      "signatureHash": "f5ecdf631ff9ebc8595ebf4635d14c10c6ba15283e629da31c6784b1b67c6076"
+    },
+    {
+      "id": 1113,
+      "name": "OpenIMGetGroupMemberListParams",
+      "signatureHash": "06c82731d2e593ca418de1a0866a245b71a2be01ddeb3c02277edae1e84ec4f0"
+    },
+    {
+      "id": 1114,
+      "name": "OpenIMGetAdvancedHistoryMessageListParams",
+      "signatureHash": "b521938a9052e5499ecbc005550e44e6abacf2e815092ec5e496a3dbc90774cc"
+    },
+    {
+      "id": 1115,
+      "name": "OpenIMAdvancedHistoryMessageListResult",
+      "signatureHash": "02a6f480de44a33716123127bcec9de5615609d9fc54fcd5abc66b3e9dd5bf06"
+    },
+    {
+      "id": 1116,
+      "name": "OpenIMSearchLocalMessagesParams",
+      "signatureHash": "0bde1c182740b5537146b79e2d10ae65bdc9cc4b2c6d62b41d8a2311c938b4a5"
+    },
+    {
+      "id": 1117,
+      "name": "OpenIMApplicationListParams",
+      "signatureHash": "0bec3ff5c5bc96e5b42d183209b936658e96d6fc2cacc2ff9b0dc16b84d90d27"
+    },
+    {
+      "id": 1118,
+      "name": "OpenIMSearchMessageResultItem",
+      "signatureHash": "99e8c2726231bddc4908b7e7eddf469cbfaeec2ba704c6f4a44870da18ebe83e"
+    },
+    {
+      "id": 1119,
+      "name": "OpenIMFindMessageResultItem",
+      "signatureHash": "8bc5514ea67060fa41e5341d6803ae4dbb06847ac4ef290cba907621b978f5d3"
+    },
+    {
+      "id": 1120,
+      "name": "OpenIMSearchMessageResult",
+      "signatureHash": "7d78f39157a9b03b4476e05b221ae8d0c211de0ab4e5db089cf1955064607afc"
+    },
+    {
+      "id": 1121,
+      "name": "OpenIMFindMessageResult",
+      "signatureHash": "b32c26060524c7fecb0554641ac3be5adff9c8e308c1e486652ce529b13dfac8"
+    },
+    {
+      "id": 1122,
+      "name": "OpenIMError",
+      "signatureHash": "478f2ffc6a418fe49bb1723358d86dbcbf40e9073138eb7adade0808a3118100"
+    },
+    {
+      "id": 1123,
+      "name": "OpenIMInitConfig",
+      "signatureHash": "69fa6f811bac82a49cf579ff1632381d4681eae0ee45d7032c4a4631864a7777"
+    },
+    {
+      "id": 1124,
+      "name": "OpenIMSDKEventName",
+      "signatureHash": "9e5ea6ea56bceef44bef3fc2009ed98fbcfe34804794ee2a1543fbfd0dc3783e"
+    },
+    {
+      "id": 1125,
+      "name": "OpenIMSDKEvent",
+      "signatureHash": "e5e9143dc06c8aa13eafb05fdb8e21d36b9c4f28adcdaada75eb76734cceeda9"
+    },
+    {
+      "id": 1126,
+      "name": "OpenIMSDKRawEventHandler",
+      "signatureHash": "3f289b82198d4dbe45788c499bac189efe66fa057b43f4129e8ab018b9003dec"
+    },
+    {
+      "id": 1127,
+      "name": "OpenIMVoidEventHandler",
+      "signatureHash": "48a97d3e392f62df40855612d6d54073c807881812dc7d431305dedabc49c4ad"
+    },
+    {
+      "id": 1128,
+      "name": "OpenIMErrorEventHandler",
+      "signatureHash": "3e62a50c91e1a2061d1bd5a36ebdcbea657f50dc37c7be266dd4907c79493719"
+    },
+    {
+      "id": 1129,
+      "name": "OpenIMStringEventHandler",
+      "signatureHash": "f870d165332d98817acaf3826aa69daa29be5e76ed8132be05d3b0e82415d025"
+    },
+    {
+      "id": 1130,
+      "name": "OpenIMBooleanEventHandler",
+      "signatureHash": "bde386d92783485892101af27eb658d4dfe0565890c6b393cfedc1630d39fd5d"
+    },
+    {
+      "id": 1131,
+      "name": "OpenIMNumberEventHandler",
+      "signatureHash": "dd13d2cbcded18d7f66aea0e333e89ddede124042da30694bb8533e0bc953546"
+    },
+    {
+      "id": 1132,
+      "name": "OpenIMMessageEventHandler",
+      "signatureHash": "6a57ccf1b6b18662cffa213a97c1fdea1b6249db78644989ec452e0ba01e373a"
+    },
+    {
+      "id": 1133,
+      "name": "OpenIMMessageListEventHandler",
+      "signatureHash": "fe41c43860b84789f428bd4a1ba99199c5850a30abd6b7b89a444afa012fc767"
+    },
+    {
+      "id": 1134,
+      "name": "OpenIMMessageRevokedEventHandler",
+      "signatureHash": "2569484c6de8cdf2c32329350b81cdcc1050230ff0b48a3e7aea69cf7e6b3b3d"
+    },
+    {
+      "id": 1135,
+      "name": "OpenIMMessageReceiptListEventHandler",
+      "signatureHash": "021e91ed7fbfb6226d659c74ce08659fdedf58a296b5fd8a708098ce9fe60ab7"
+    },
+    {
+      "id": 1136,
+      "name": "OpenIMConversationListEventHandler",
+      "signatureHash": "06af96d04d931226f9808baffcffc9679bad648db4ac5254ff6ce05d42a64d0b"
+    },
+    {
+      "id": 1137,
+      "name": "OpenIMConversationInputStatusEventHandler",
+      "signatureHash": "d33d1d4895c125fb7ced51a93a681b60f52c405199fe50373e16737482c14c92"
+    },
+    {
+      "id": 1138,
+      "name": "OpenIMFriendEventHandler",
+      "signatureHash": "f94fc891670192afe3bdbd22b9a35266c85ac508e9b6695195c23d1e1dfc8f8e"
+    },
+    {
+      "id": 1139,
+      "name": "OpenIMBlackUserEventHandler",
+      "signatureHash": "3da436e1e4fe4d66bca36c0d5cd74bc5be027ff0c2630664ece23fd49cc49b78"
+    },
+    {
+      "id": 1140,
+      "name": "OpenIMFriendApplicationEventHandler",
+      "signatureHash": "a3331b84bb3414e118e078803c649bcbc67123196c61f4522a25eaa1ff549e79"
+    },
+    {
+      "id": 1141,
+      "name": "OpenIMGroupEventHandler",
+      "signatureHash": "2f15d91f365de9c2096aeca7fbb2d848a3da7b36e04c1c5db38ca195221ff19e"
+    },
+    {
+      "id": 1142,
+      "name": "OpenIMGroupMemberEventHandler",
+      "signatureHash": "bf674055e818325bfad60d00bccaea2f0ab63b3558e2312b9e0999999fccc37e"
+    },
+    {
+      "id": 1143,
+      "name": "OpenIMGroupApplicationEventHandler",
+      "signatureHash": "cffa01101c8a9cd200aceacebac33a3985a021311fc4e297efac3da72f860b5c"
+    },
+    {
+      "id": 1144,
+      "name": "OpenIMUserEventHandler",
+      "signatureHash": "03b54da5270343a77c0158aca0878863e8580123aba43025ebefe0919e256acd"
+    },
+    {
+      "id": 1145,
+      "name": "OpenIMUserStatusListEventHandler",
+      "signatureHash": "9d03e4deb5e807363258985e22ce51ac80155cf77ec851d42130a5c15ab40cd3"
+    },
+    {
+      "id": 1146,
+      "name": "OpenIMSendMessageProgressEventHandler",
+      "signatureHash": "a33288bae0f33d2a59f709d74b1c919fe08f29b04b639eff6955b288abf07ee8"
+    },
+    {
+      "id": 1147,
+      "name": "OpenIMUploadFileProgressEventHandler",
+      "signatureHash": "f435a7ed1f7694850009e934dd7e58af3dcdc021ff4ff7472151d33edb2928b0"
+    },
+    {
+      "id": 1148,
+      "name": "OpenIMUploadLogsProgressEventHandler",
+      "signatureHash": "c6ffa8ec174b16230e476be4539e7b5b5b7d4a2957ceaa728504b6ddc9a2b620"
+    },
+    {
+      "id": 1149,
+      "name": "OpenIMSDKEventSubscription",
+      "signatureHash": "6c3ec62c48e51e10ba3c0f565a2697bf12946f86874562ce3eca9db5c1709d75"
+    },
+    {
+      "id": 1150,
+      "name": "OpenIMSDKEventHandlerSubscription",
+      "signatureHash": "a00d5d5c3a68f2a2465ef91915d955638b45d8e188bd0dd0547c46184585d9e4"
+    },
+    {
+      "id": 1151,
+      "name": "OffSDKEventName",
+      "signatureHash": "fb35d17cda3711451ae48dae991b8ef8784fc797459b00534d80385c0cdc27f5"
+    },
+    {
+      "id": 1152,
+      "name": "InitSDK",
+      "signatureHash": "5c201130e8065147e6561c859af8e574b8b4aa1fb0db512c9c48a9023073f2ea"
+    },
+    {
+      "id": 1153,
+      "name": "Login",
+      "signatureHash": "890d88bc5fac876fe0a79c991da57a1aa88a659f1170fdd4e251e3f04f69d366"
+    },
+    {
+      "id": 1154,
+      "name": "Logout",
+      "signatureHash": "1145164a27244218680bcc5ee0dd30bb664716d4aa49bb124a4af0396e27d999"
+    },
+    {
+      "id": 1155,
+      "name": "GetLoginStatus",
+      "signatureHash": "1ef052c6a4844d72f5abd8096bbe2d00f2ef867da168dd048deb204a0ce158c8"
+    },
+    {
+      "id": 1156,
+      "name": "GetLoginUserID",
+      "signatureHash": "af7623df1b8b1fd4a0ad5511cf56fc55685460be85d4fe26b8ff7c7b4c54ee5a"
+    },
+    {
+      "id": 1157,
+      "name": "CreateTextMessage",
+      "signatureHash": "a636155e9a0ee2ed4f324589d97b4941c34558ea5ea78253ad17e2848d88abad"
+    },
+    {
+      "id": 1158,
+      "name": "SendMessage",
+      "signatureHash": "928a3238e64fa3d366e8129103d928731214e2e66761a9d36ec946a7a81d5cc6"
+    },
+    {
+      "id": 1159,
+      "name": "UploadFile",
+      "signatureHash": "3e615d261070c7689fe37123ee7e538315e63683cc75ab72c35cc2d3ca16c7c5"
+    },
+    {
+      "id": 1160,
+      "name": "OpenIMSDKInstance",
+      "signatureHash": "b825f5e5894ba29931c5c212158214ef7b50058e72e52e08e9d3a35204d53118"
+    }
+  ],
+  "callables": [
+    {
+      "id": 2001,
+      "name": "off",
+      "signature": "off(subscription:OpenIMSDKEventSubscription):void",
+      "signatureHash": "2df0c5d007dd5bfc48ab1f2c14e0ca2a2b79fd6467747ee255cbdde9da6f54a1"
+    },
+    {
+      "id": 2002,
+      "name": "offAll",
+      "signature": "offAll(eventName:OpenIMSDKEventName):void",
+      "signatureHash": "d88788a5c151d356b9167454f5f59dd4b5b91fd0edac224f5230ebe33627d8f0"
+    },
+    {
+      "id": 2003,
+      "name": "onConnecting",
+      "signature": "onConnecting(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "6379b21b03568f94c5e0b718b44e45b9efd4ae322ce7a5bec7a13f948ff7caf0"
+    },
+    {
+      "id": 2004,
+      "name": "onConnectSuccess",
+      "signature": "onConnectSuccess(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "3cc501553ffabdfefd4d8d1ff6788ebdc2871bc9361b61c95b6a754d06efa02b"
+    },
+    {
+      "id": 2005,
+      "name": "onConnectFailed",
+      "signature": "onConnectFailed(handler:OpenIMErrorEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "6be6ffdbe33aa5f6e29d2f792e32a2fcc5d638862a247f40888b25768ea679f3"
+    },
+    {
+      "id": 2006,
+      "name": "onKickedOffline",
+      "signature": "onKickedOffline(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "2f07413a395a7d132be0353e6811e41be8e6c27f5f29f7a8756a2261d4b5db3a"
+    },
+    {
+      "id": 2007,
+      "name": "onUserTokenExpired",
+      "signature": "onUserTokenExpired(handler:OpenIMVoidEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "502dfeb80207518a7f51bf65105b405d464c03abb073835477f5afd33f65262f"
+    },
+    {
+      "id": 2008,
+      "name": "onUserTokenInvalid",
+      "signature": "onUserTokenInvalid(handler:OpenIMErrorEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "b4792ec664f6e7b6537e97ee85fec7f95f146ad00ca61077cf046f4cae72f858"
+    },
+    {
+      "id": 2009,
+      "name": "onRecvNewMessage",
+      "signature": "onRecvNewMessage(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "cb598fa221776e8e3108df526d34dd63fb8162ef63b6c1ca4d73aca0fa921a15"
+    },
+    {
+      "id": 2010,
+      "name": "onRecvOfflineNewMessage",
+      "signature": "onRecvOfflineNewMessage(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "c2f789227a9a18f28de7577f40f3574af1050f6101a0745d3108945b1c9724f9"
+    },
+    {
+      "id": 2011,
+      "name": "onRecvOnlineOnlyMessage",
+      "signature": "onRecvOnlineOnlyMessage(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "28ae206024bf115b10cecbe7f8dd372b67a4f26b0b09a294fff762974c355bab"
+    },
+    {
+      "id": 2012,
+      "name": "onMsgDeleted",
+      "signature": "onMsgDeleted(handler:OpenIMMessageEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "acab800c8da5f72651a09f13c404c3f7e23ea707fe48e0631d379f4a996cc63e"
+    },
+    {
+      "id": 2013,
+      "name": "onNewRecvMessageRevoked",
+      "signature": "onNewRecvMessageRevoked(handler:OpenIMMessageRevokedEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "c0d5d606b52276597d619bb26dbcf110d6154572758d14934ea3925fadcbb559"
+    },
+    {
+      "id": 2014,
+      "name": "onRecvC2CReadReceipt",
+      "signature": "onRecvC2CReadReceipt(handler:OpenIMMessageReceiptListEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "c81b6eaf72e58a0c442520191ff8631b3d03c51b0eb5b41ad862a74c3b3346c7"
+    },
+    {
+      "id": 2015,
+      "name": "onRecvNewMessages",
+      "signature": "onRecvNewMessages(handler:OpenIMMessageListEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "a5e6b667b13cd119b50711f84456c10b40141091be90d40e9f6e04d9385c78ed"
+    },
+    {
+      "id": 2016,
+      "name": "onRecvOfflineNewMessages",
+      "signature": "onRecvOfflineNewMessages(handler:OpenIMMessageListEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "d54d89da65e3e0b12a915c8395051cb109ebd7a375dbf43475facde0ae46c455"
+    },
+    {
+      "id": 2017,
+      "name": "onConversationChanged",
+      "signature": "onConversationChanged(handler:OpenIMConversationListEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "1a3b6522ae7b27ad6c16ad562138d66d84bca5b8cc8d1f2dc9577a54276bd316"
+    },
+    {
+      "id": 2018,
+      "name": "onConversationUserInputStatusChanged",
+      "signature": "onConversationUserInputStatusChanged(handler:OpenIMConversationInputStatusEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "8a2966a2afc97e4cfbdbcd084bbd17af54f8daab45682cf9ff33ee32dcbdf70e"
+    },
+    {
+      "id": 2019,
+      "name": "onNewConversation",
+      "signature": "onNewConversation(handler:OpenIMConversationListEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "62fbc1dac9df4e7876cad6864430bd9ce64fb6c347d1501295addfb635286553"
+    },
+    {
+      "id": 2020,
+      "name": "onSyncServerFailed",
+      "signature": "onSyncServerFailed(handler:OpenIMBooleanEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "730a56228f1bc3873befc3d23988f06e611a08f31f2c69d111ac206b38ad8f94"
+    },
+    {
+      "id": 2021,
+      "name": "onSyncServerFinish",
+      "signature": "onSyncServerFinish(handler:OpenIMBooleanEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "98a5a6562b5f75fec0a254c22c5104bb5ccac11d434956aff1e2a7b034e2b36e"
+    },
+    {
+      "id": 2022,
+      "name": "onSyncServerProgress",
+      "signature": "onSyncServerProgress(handler:OpenIMNumberEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "15cec3efa80332d192a3a70c26b20c6fe7a47d6fd5e2c6407937498c47fa0808"
+    },
+    {
+      "id": 2023,
+      "name": "onSyncServerStart",
+      "signature": "onSyncServerStart(handler:OpenIMBooleanEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "f45ad5a2fc8c8ac3bb0887db5101d97195f243203bde589a11a97547bdc0f668"
+    },
+    {
+      "id": 2024,
+      "name": "onSendMessageProgress",
+      "signature": "onSendMessageProgress(handler:OpenIMSendMessageProgressEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "e2aa6754118e13098a7b9678f33410b0c163cfc760f6035fd14ffef37f4dfd42"
+    },
+    {
+      "id": 2025,
+      "name": "onUploadFileProgress",
+      "signature": "onUploadFileProgress(handler:OpenIMUploadFileProgressEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "aeb7c9890a841d30d1df9d27dd1968781f15c39877b8a9875051883d0a542982"
+    },
+    {
+      "id": 2026,
+      "name": "onUploadLogsProgress",
+      "signature": "onUploadLogsProgress(handler:OpenIMUploadLogsProgressEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "9bce29667aed98ac7a8c69a51dbdca812d9c590458d13f0edc68bdf0f96356fb"
+    },
+    {
+      "id": 2027,
+      "name": "onTotalUnreadMessageCountChanged",
+      "signature": "onTotalUnreadMessageCountChanged(handler:OpenIMNumberEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "36f55eb99c1b5c3dc7a682aea4c0d136aec324154c9aa6812944b0c0ad87e0dd"
+    },
+    {
+      "id": 2028,
+      "name": "onRecvCustomBusinessMessage",
+      "signature": "onRecvCustomBusinessMessage(handler:OpenIMStringEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "4c690babd523d5dacbc6d04c6d9f88b82e9fd7e5531ddf9712bc5930d61d1af0"
+    },
+    {
+      "id": 2029,
+      "name": "onBlackAdded",
+      "signature": "onBlackAdded(handler:OpenIMBlackUserEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "c62fd9fbb0127d3e3bd788aa9c9d1823b46386415442be9d4d576e15e3950b3e"
+    },
+    {
+      "id": 2030,
+      "name": "onBlackDeleted",
+      "signature": "onBlackDeleted(handler:OpenIMBlackUserEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "01a0218fa86dddebe68dede732f577280e733f2d0242c9a5c7063dba30e19008"
+    },
+    {
+      "id": 2031,
+      "name": "onFriendAdded",
+      "signature": "onFriendAdded(handler:OpenIMFriendEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "5fb7a206bb26f92d17e767610ee42765405f2f92836fa100599a886091fc143e"
+    },
+    {
+      "id": 2032,
+      "name": "onFriendApplicationAccepted",
+      "signature": "onFriendApplicationAccepted(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "06f99faf5d13ac440af1587ec3830019f66e363356e6e60ca61f70c7ca9c6dd7"
+    },
+    {
+      "id": 2033,
+      "name": "onFriendApplicationAdded",
+      "signature": "onFriendApplicationAdded(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "dbed918b949aed2f0fb6c853dba5d590d97a72751b6eed87ecb24baca83d39c5"
+    },
+    {
+      "id": 2034,
+      "name": "onFriendApplicationDeleted",
+      "signature": "onFriendApplicationDeleted(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "12f410937858eec8e25e2c2a8d96a6aec68cdd1574d1322a899b0406b89ab548"
+    },
+    {
+      "id": 2035,
+      "name": "onFriendApplicationRejected",
+      "signature": "onFriendApplicationRejected(handler:OpenIMFriendApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "17f8fb8070643b571d97818afa34510d7fd6231a3ec8c0a0ffe1d05c4e48d802"
+    },
+    {
+      "id": 2036,
+      "name": "onFriendDeleted",
+      "signature": "onFriendDeleted(handler:OpenIMFriendEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "7b4c36fdddf0f3da708edf6ffc3a9db93920dbe24672252161ef230c613f896e"
+    },
+    {
+      "id": 2037,
+      "name": "onFriendInfoChanged",
+      "signature": "onFriendInfoChanged(handler:OpenIMFriendEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "f44a8e3dcbcd7d4c36eebeb17a986cf2a6ed20e3b98c694af52643d056be1694"
+    },
+    {
+      "id": 2038,
+      "name": "onGroupApplicationAccepted",
+      "signature": "onGroupApplicationAccepted(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "e91afd62da203b130805187cb3e0ee7a316cc2db2b818af8a8eb80aee988ae6c"
+    },
+    {
+      "id": 2039,
+      "name": "onGroupApplicationAdded",
+      "signature": "onGroupApplicationAdded(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "eb92df5396d0c8bc2dcc89d35c642105da110f94afde23785936746567bbbd23"
+    },
+    {
+      "id": 2040,
+      "name": "onGroupApplicationDeleted",
+      "signature": "onGroupApplicationDeleted(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "88de7cf717bc8eef404ac8e3bb9d83cd7359287c5cbdfc12d151f9e564131408"
+    },
+    {
+      "id": 2041,
+      "name": "onGroupApplicationRejected",
+      "signature": "onGroupApplicationRejected(handler:OpenIMGroupApplicationEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "2ca5c5eb11e0dbc82db94dfe47abf91f83056b17781f9857de99a4f6e36d6167"
+    },
+    {
+      "id": 2042,
+      "name": "onGroupDismissed",
+      "signature": "onGroupDismissed(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "c8d2047275330f4b5c4c0cdb269887daf04cbcc56b62d2d003900ad7eaf51643"
+    },
+    {
+      "id": 2043,
+      "name": "onGroupInfoChanged",
+      "signature": "onGroupInfoChanged(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "2df8eac562287c65cc8262d67d76acffee2474673e8918fc33ee0becf1788a30"
+    },
+    {
+      "id": 2044,
+      "name": "onGroupMemberAdded",
+      "signature": "onGroupMemberAdded(handler:OpenIMGroupMemberEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "80d501e01d3dcd8820cdc18ca8a1165f12116353e54a2022eb613fd82d6cc66b"
+    },
+    {
+      "id": 2045,
+      "name": "onGroupMemberDeleted",
+      "signature": "onGroupMemberDeleted(handler:OpenIMGroupMemberEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "d60988a0cb4691164cc22c77d10c7c71a603273b5624a12a49597991a4ed42e6"
+    },
+    {
+      "id": 2046,
+      "name": "onGroupMemberInfoChanged",
+      "signature": "onGroupMemberInfoChanged(handler:OpenIMGroupMemberEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "0a9aafa795e4e97ae4348241e5979fa222d1e5d48955296c6711c38e2280d395"
+    },
+    {
+      "id": 2047,
+      "name": "onJoinedGroupAdded",
+      "signature": "onJoinedGroupAdded(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "b4ad572330fe786665d515f82eae2e86f0d8cb7502dadad8fa257c1ee9ce53da"
+    },
+    {
+      "id": 2048,
+      "name": "onJoinedGroupDeleted",
+      "signature": "onJoinedGroupDeleted(handler:OpenIMGroupEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "3f507fae67e363cb95a66ad665a905f7241e220fd692bc8a364fed05ed0fb7a1"
+    },
+    {
+      "id": 2049,
+      "name": "onSelfInfoUpdated",
+      "signature": "onSelfInfoUpdated(handler:OpenIMUserEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "1dfb5fdd2f280ecac650c1332b42ed6975833d9a1e4299a1e99aecdebac9fc9f"
+    },
+    {
+      "id": 2050,
+      "name": "onUserStatusChanged",
+      "signature": "onUserStatusChanged(handler:OpenIMUserStatusListEventHandler):OpenIMSDKEventSubscription",
+      "signatureHash": "20f3e0b852164d19a2281a5f4c983016071bb76703b414ac7c806edd0fe553f0"
+    },
+    {
+      "id": 2051,
+      "name": "initSDK",
+      "signature": "initSDK(config:OpenIMInitConfig,operationID?:string|null):Promise<boolean>",
+      "signatureHash": "17d37c0bab961a0787a6ac6d325ea50b7b31e585810e2b65a25454a0a14db47b"
+    },
+    {
+      "id": 2052,
+      "name": "login",
+      "signature": "login(userID:string,token:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "6b7701a708a6a96c191ee5bdb87fd3f70fcd1ab08ae17d7b991bd9b7f3bc8d8f"
+    },
+    {
+      "id": 2053,
+      "name": "logout",
+      "signature": "logout(operationID?:string|null):Promise<string>",
+      "signatureHash": "c6dacc2be84df2c590235c1160374e7276ae2063e2e962ca07b0dfa6c28cf856"
+    },
+    {
+      "id": 2054,
+      "name": "getLoginStatus",
+      "signature": "getLoginStatus(operationID?:string|null):Promise<OpenIMLoginStatus>",
+      "signatureHash": "437a1ef72cbabc1068417ddca3e5f390bc48c72caca972d28a4e26e2aff5be35"
+    },
+    {
+      "id": 2055,
+      "name": "getLoginUserID",
+      "signature": "getLoginUserID():Promise<string>",
+      "signatureHash": "d02aedfdac5de47cd052819c5bcf0d8f8562c6056bab5c7700d24186291bdcc4"
+    },
+    {
+      "id": 2056,
+      "name": "getSdkVersion",
+      "signature": "getSdkVersion():string",
+      "signatureHash": "439f76a399abc635f410acbf8b2696333e52a59537bcc4e828fa362cf66f003a"
+    },
+    {
+      "id": 2057,
+      "name": "getOpenIMDataPath",
+      "signature": "getOpenIMDataPath():string",
+      "signatureHash": "83f90ca0a70b68833295282061309803c9cf97f28554eb46cc308bfaa781c466"
+    },
+    {
+      "id": 2058,
+      "name": "unInitSDK",
+      "signature": "unInitSDK(operationID?:string|null):void",
+      "signatureHash": "1a7769dd6775745d7de695427d2d4e994389c9112182b108cbac738d1d4779c1"
+    },
+    {
+      "id": 2059,
+      "name": "getAllConversationList",
+      "signature": "getAllConversationList(operationID?:string|null):Promise<OpenIMConversationListResult|null>",
+      "signatureHash": "eab5f262692d8938d26edbdd117f7c9bcb6d2f42334f01eaeb495a8ad37a7b17"
+    },
+    {
+      "id": 2060,
+      "name": "getOneConversation",
+      "signature": "getOneConversation(params:OpenIMGetOneConversationParams,operationID?:string|null):Promise<OpenIMConversationItem|null>",
+      "signatureHash": "1109a3a88073b470cee7f5dbad10260528b33cfd351b91acd3ec3c772a573527"
+    },
+    {
+      "id": 2061,
+      "name": "getAdvancedHistoryMessageList",
+      "signature": "getAdvancedHistoryMessageList(params:OpenIMGetAdvancedHistoryMessageListParams,operationID?:string|null):Promise<OpenIMAdvancedHistoryMessageListResult|null>",
+      "signatureHash": "9e669a739a3f290a78f58eaa4f70c1321e975fcc27d006d2aaed0a2733bd2b30"
+    },
+    {
+      "id": 2062,
+      "name": "getSpecifiedGroupsInfo",
+      "signature": "getSpecifiedGroupsInfo(params:Array<string>,operationID?:string|null):Promise<OpenIMGroupListResult|null>",
+      "signatureHash": "673908e988dc61d35988c4e0d362015ed13516df8c268175c11e52dbaebb004d"
+    },
+    {
+      "id": 2063,
+      "name": "deleteConversationAndDeleteAllMsg",
+      "signature": "deleteConversationAndDeleteAllMsg(conversationID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "76b70a323bc271cd521b011f2b97286242de6c3608e5f7d08cb7a7aab89bd9ae"
+    },
+    {
+      "id": 2064,
+      "name": "markConversationMessageAsRead",
+      "signature": "markConversationMessageAsRead(conversationID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "ddc8f3b99dfa3b2b0109a920c05240b22dbad9748631608d06bbd548e0cdb411"
+    },
+    {
+      "id": 2065,
+      "name": "getGroupMemberList",
+      "signature": "getGroupMemberList(params:OpenIMGetGroupMemberListParams,operationID?:string|null):Promise<OpenIMGroupMemberListResult|null>",
+      "signatureHash": "0eb60fe607aae2a8bf3e0e86a826e45e42e6fc4819fa71bd7334a771c4f392df"
+    },
+    {
+      "id": 2066,
+      "name": "setMessageLocalEx",
+      "signature": "setMessageLocalEx(params:OpenIMSetMessageLocalExParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "60cc7328942cfc318027b039644632f704338313df75898efd1f93f378e2f883"
+    },
+    {
+      "id": 2067,
+      "name": "revokeMessage",
+      "signature": "revokeMessage(params:OpenIMMessageKeyParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "67705aae15d3deb71a2c8fccd69e7ebdf94501654ee3d29ca7716bef2361b84a"
+    },
+    {
+      "id": 2068,
+      "name": "setConversation",
+      "signature": "setConversation(params:OpenIMSetConversationParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "0f337b3cd59b01e3a8b2b59a31b93dfd366177eb83cb7ed844e15e61a65ae9bd"
+    },
+    {
+      "id": 2069,
+      "name": "setAppBackgroundStatus",
+      "signature": "setAppBackgroundStatus(data:boolean,operationID?:string|null):Promise<string>",
+      "signatureHash": "c7adb4c4bf882f3b06823b164e922085b89fe2deca399cd696eec8e799b6f731"
+    },
+    {
+      "id": 2070,
+      "name": "setAppBadge",
+      "signature": "setAppBadge(appUnreadCount:number,operationID?:string|null):Promise<string>",
+      "signatureHash": "73e9325bf542593d9495e4ba3b26b9a34294800e2ce37ff1192c9d0c1734747a"
+    },
+    {
+      "id": 2071,
+      "name": "networkStatusChanged",
+      "signature": "networkStatusChanged(operationID?:string|null):Promise<string>",
+      "signatureHash": "935770e453250d5579fcd7fee40892f944145eaba9fe5bfb3436f40e7e373b7f"
+    },
+    {
+      "id": 2072,
+      "name": "getSelfUserInfo",
+      "signature": "getSelfUserInfo(operationID?:string|null):Promise<OpenIMUserInfo|null>",
+      "signatureHash": "1a372ef67a89431fcf2ba44be0f8b32245503b1e57628d08808bc1a2e7e56d60"
+    },
+    {
+      "id": 2073,
+      "name": "getUsersInfo",
+      "signature": "getUsersInfo(data:Array<string>,operationID?:string|null):Promise<OpenIMUserListResult|null>",
+      "signatureHash": "2335679725285457f43cd7c4ca753654c7ddf7a81eae26460adc71742bdf5829"
+    },
+    {
+      "id": 2074,
+      "name": "setSelfInfo",
+      "signature": "setSelfInfo(data:OpenIMSetSelfInfoParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "6a5e3f96590ead30192e0df7d5e0171bb9ae68e1923d6c6496aec56083fb4558"
+    },
+    {
+      "id": 2075,
+      "name": "deleteMessageFromLocalStorage",
+      "signature": "deleteMessageFromLocalStorage(params:OpenIMMessageKeyParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "dba5ceb2efcb2a33c7404b8e9d322f64bcda1e2329d4d9dabafc62c45939fe3f"
+    },
+    {
+      "id": 2076,
+      "name": "deleteMessage",
+      "signature": "deleteMessage(params:OpenIMMessageKeyParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "78c319447ad93987f8db2e6e2bd9097c02f06da55fadef4cb21200383241d234"
+    },
+    {
+      "id": 2077,
+      "name": "deleteAllMsgFromLocal",
+      "signature": "deleteAllMsgFromLocal(operationID?:string|null):Promise<string>",
+      "signatureHash": "19c216a05015b89e6977c26fdd7aa4765da0cb37ff8cc4b3019173be6743cdc0"
+    },
+    {
+      "id": 2078,
+      "name": "deleteAllMsgFromLocalAndSvr",
+      "signature": "deleteAllMsgFromLocalAndSvr(operationID?:string|null):Promise<string>",
+      "signatureHash": "28dfd500c66d4daa7a4fed792292ef936ffcc804cb76003eca4541d93821bbcd"
+    },
+    {
+      "id": 2079,
+      "name": "insertSingleMessageToLocalStorage",
+      "signature": "insertSingleMessageToLocalStorage(params:OpenIMInsertSingleMessageParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "9625b59db3cb0abae0103d6221e6e392ff02ab99f3d26669731fe36988f93088"
+    },
+    {
+      "id": 2080,
+      "name": "insertGroupMessageToLocalStorage",
+      "signature": "insertGroupMessageToLocalStorage(params:OpenIMInsertGroupMessageParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "4de757ef93ce32916e567b089abf72b9077c12a878325ec078b33055f7d7a3ad"
+    },
+    {
+      "id": 2081,
+      "name": "changeInputStates",
+      "signature": "changeInputStates(params:OpenIMInputStateParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "77c643a3d9840d3e53c195e87193efc2d5c63d9756e4fdc17cc61874322d7090"
+    },
+    {
+      "id": 2082,
+      "name": "clearConversationAndDeleteAllMsg",
+      "signature": "clearConversationAndDeleteAllMsg(conversationID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "248ec901ee1c1b91d37ac22e7baa4c5562eb51747132e67760b47c63953dabf0"
+    },
+    {
+      "id": 2083,
+      "name": "hideConversation",
+      "signature": "hideConversation(conversationID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "bda461bdeddee291c0418c855552317b0bf125a2adb6fa5d2d2d72cfb6c4bc8c"
+    },
+    {
+      "id": 2084,
+      "name": "hideAllConversations",
+      "signature": "hideAllConversations(operationID?:string|null):Promise<string>",
+      "signatureHash": "c21c0c7db0dcf1b2d19ea15b3ab721429b126c8085bc5096ba609c01fd90440b"
+    },
+    {
+      "id": 2085,
+      "name": "markAllConversationMessageAsRead",
+      "signature": "markAllConversationMessageAsRead(operationID?:string|null):Promise<string>",
+      "signatureHash": "cb151cfc0786a8684b440ae1aeb4411b1f062b2efa2a6396f6d2c48179ad3b87"
+    },
+    {
+      "id": 2086,
+      "name": "searchConversation",
+      "signature": "searchConversation(searchParam:string,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
+      "signatureHash": "9916caea795169cc358744400aba3e979e62dadb0b4f38054a060f27e166f65d"
+    },
+    {
+      "id": 2087,
+      "name": "getConversationListSplit",
+      "signature": "getConversationListSplit(params:OpenIMPageParams,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
+      "signatureHash": "f5038bd9bc237e7954e958906d62c42cd1a1e0187096da24431701b5d79ab082"
+    },
+    {
+      "id": 2088,
+      "name": "getConversationIDBySessionType",
+      "signature": "getConversationIDBySessionType(params:OpenIMGetOneConversationParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "0de4ea8e9cc65ac65bf2a8627889fba39bb185f384e2ece643f7abd78b493693"
+    },
+    {
+      "id": 2089,
+      "name": "getMultipleConversation",
+      "signature": "getMultipleConversation(data:Array<string>,operationID?:string|null):Promise<OpenIMConversationListResult|null>",
+      "signatureHash": "e4dcea27ea8f6aa929fae7fa7305d6b9d85ab4a3d106559185e50377a45858a3"
+    },
+    {
+      "id": 2090,
+      "name": "deleteConversation",
+      "signature": "deleteConversation(conversationID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "ca1a75e0b2faa7b77ee4317b7a44fe99357268086b78626281dd8bfb064b9091"
+    },
+    {
+      "id": 2091,
+      "name": "setConversationDraft",
+      "signature": "setConversationDraft(params:OpenIMSetConversationDraftParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "1b1fb581d1c7513b23baf353aa6fcdd431dd182e0b8564a61e1e2cbc216f9b47"
+    },
+    {
+      "id": 2092,
+      "name": "getTotalUnreadMsgCount",
+      "signature": "getTotalUnreadMsgCount(operationID?:string|null):Promise<number|null>",
+      "signatureHash": "53b8461bbfa131758c7dd7c61368b5c024059b8424c408890a9675ebdc93f14a"
+    },
+    {
+      "id": 2093,
+      "name": "searchLocalMessages",
+      "signature": "searchLocalMessages(params:OpenIMSearchLocalMessagesParams,operationID?:string|null):Promise<OpenIMSearchMessageResult|null>",
+      "signatureHash": "d2e19438a86d7163f6fd58f070addf1ca2670a1f8c30611b641c1f2039c73ca9"
+    },
+    {
+      "id": 2094,
+      "name": "addFriend",
+      "signature": "addFriend(params:OpenIMAddFriendParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "d3c3c21a991edebf8896d536749eb4568b1e3ff99b61539a967eab7aeb338bb3"
+    },
+    {
+      "id": 2095,
+      "name": "searchFriends",
+      "signature": "searchFriends(params:OpenIMSearchFriendsParams,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
+      "signatureHash": "1b53678a459b98173d4eefd9ab19f70dbe8bd9698162be5a297780a5b5e12370"
+    },
+    {
+      "id": 2096,
+      "name": "getSpecifiedFriendsInfo",
+      "signature": "getSpecifiedFriendsInfo(params:OpenIMGetSpecifiedFriendsInfoParams,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
+      "signatureHash": "a088ba0a0eebf3c5c8e7631fda1ebf7e329c4b234818aeb2ac6dda920290b715"
+    },
+    {
+      "id": 2097,
+      "name": "getFriendApplicationListAsRecipient",
+      "signature": "getFriendApplicationListAsRecipient(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMFriendApplicationListResult|null>",
+      "signatureHash": "26734ef79c4e558a1f98348b711c36b832c11172f8d0618e6cc8ee9925be506e"
+    },
+    {
+      "id": 2098,
+      "name": "getFriendApplicationListAsApplicant",
+      "signature": "getFriendApplicationListAsApplicant(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMFriendApplicationListResult|null>",
+      "signatureHash": "16517715af93f1af25553aa8ad83a196d78734dcd2241567a4eb4408100492e7"
+    },
+    {
+      "id": 2099,
+      "name": "getFriendApplicationUnhandledCount",
+      "signature": "getFriendApplicationUnhandledCount(params:OpenIMPageParams,operationID?:string|null):Promise<number|null>",
+      "signatureHash": "86197da08f433091e804e5b8c3778fc73b4d95d930736d3a1485f1cea4a9156d"
+    },
+    {
+      "id": 2100,
+      "name": "getFriendList",
+      "signature": "getFriendList(filterBlack?:boolean|null,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
+      "signatureHash": "39c3fc118d30676d8b2490d0261c0ed8789f0a8b575b656efae0c2adc3f22463"
+    },
+    {
+      "id": 2101,
+      "name": "getFriendListPage",
+      "signature": "getFriendListPage(params:OpenIMPageParams,operationID?:string|null):Promise<OpenIMFriendListResult|null>",
+      "signatureHash": "16e5a5a5a7e6c76a943d9b1d94149075c498bf27d6be754da1df66f38a5b5096"
+    },
+    {
+      "id": 2102,
+      "name": "updateFriends",
+      "signature": "updateFriends(params:OpenIMUpdateFriendsParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "4fa5ab5bc9810b7d5b0d63235189a0fa6ceb963aba104d2de0757820b3811ee7"
+    },
+    {
+      "id": 2103,
+      "name": "checkFriend",
+      "signature": "checkFriend(data:Array<string>,operationID?:string|null):Promise<OpenIMCheckFriendResult|null>",
+      "signatureHash": "b552c59d68a4a28124ef3b0621d1a56c7f667fae153e11b552120c2ce05218c7"
+    },
+    {
+      "id": 2104,
+      "name": "acceptFriendApplication",
+      "signature": "acceptFriendApplication(params:OpenIMFriendApplicationHandleParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "ecfd0190df324eb113f7a76c54fce7bf4ee8ab0572b17b5ce6f738c5bbc940e2"
+    },
+    {
+      "id": 2105,
+      "name": "refuseFriendApplication",
+      "signature": "refuseFriendApplication(params:OpenIMFriendApplicationHandleParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "1f4271d84680c0b26ff0e00b3a440ed7df078510dd13d4fa4d5b41ff73e21b83"
+    },
+    {
+      "id": 2106,
+      "name": "deleteFriend",
+      "signature": "deleteFriend(userID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "7da46b9729e17992f2298f5dda3dfdd8ad4eb94f583531ce60da4d313f04c0d5"
+    },
+    {
+      "id": 2107,
+      "name": "addBlack",
+      "signature": "addBlack(params:OpenIMAddBlackParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "3263e7cede293d3f40e1e30353b33730fef31842e5eaadacef012262b176f00d"
+    },
+    {
+      "id": 2108,
+      "name": "removeBlack",
+      "signature": "removeBlack(userID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "b5dc31e24cc7936cf763b68765eda28eead6851ee1529572ceaf1e19cf27916a"
+    },
+    {
+      "id": 2109,
+      "name": "getBlackList",
+      "signature": "getBlackList(operationID?:string|null):Promise<OpenIMBlackListResult|null>",
+      "signatureHash": "e4e25a3a67c0ab3ec324f4e96e1ab75a2c21a9916fa12af85f9c6add5d20f228"
+    },
+    {
+      "id": 2110,
+      "name": "inviteUserToGroup",
+      "signature": "inviteUserToGroup(params:OpenIMGroupInviteParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "c16edb9cf003c923f59b778b8c8e95747674e6a6c5f317089615acaade50ca74"
+    },
+    {
+      "id": 2111,
+      "name": "kickGroupMember",
+      "signature": "kickGroupMember(params:OpenIMGroupInviteParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "ab0c3ff78b50d9ea2329ed136980d299705fe66fdd74e07265292ef1ba98b9e3"
+    },
+    {
+      "id": 2112,
+      "name": "isJoinGroup",
+      "signature": "isJoinGroup(groupID:string,operationID?:string|null):Promise<boolean>",
+      "signatureHash": "a11f260440f0c4fdaef5227b393730743dc9245eb867b20376045715491abf5e"
+    },
+    {
+      "id": 2113,
+      "name": "getSpecifiedGroupMembersInfo",
+      "signature": "getSpecifiedGroupMembersInfo(params:OpenIMGroupUserListParams,operationID?:string|null):Promise<OpenIMGroupMemberListResult|null>",
+      "signatureHash": "c0c9760f45f8a4615eb8142fc6c0398d77b1f2117605adc67b4b51c24dc9c667"
+    },
+    {
+      "id": 2114,
+      "name": "getUsersInGroup",
+      "signature": "getUsersInGroup(params:OpenIMGroupUserListParams,operationID?:string|null):Promise<Array<string>|null>",
+      "signatureHash": "0dd130de086026ac917047ff754d3b9fc99125fa8777bcc6dd04ea6864fd2e2c"
+    },
+    {
+      "id": 2115,
+      "name": "searchGroupMembers",
+      "signature": "searchGroupMembers(params:OpenIMSearchGroupMembersParams,operationID?:string|null):Promise<OpenIMGroupMemberListResult|null>",
+      "signatureHash": "8292bf8590d401c4c8dda4a5884f80d1e8fe3ac4ea2e6e6254546e10633a0ece"
+    },
+    {
+      "id": 2116,
+      "name": "getJoinedGroupList",
+      "signature": "getJoinedGroupList(operationID?:string|null):Promise<OpenIMGroupListResult|null>",
+      "signatureHash": "6184743dab7de7bf6a0aa8c6558c839fb1a4d4b5765ae0f61ae5eaa5d23fd225"
+    },
+    {
+      "id": 2117,
+      "name": "getJoinedGroupListPage",
+      "signature": "getJoinedGroupListPage(params:OpenIMPageParams,operationID?:string|null):Promise<OpenIMGroupListResult|null>",
+      "signatureHash": "2e39ab5c58e12d749e419fcae13d80a261f50ad271df089f4253b14a0e9f9a26"
+    },
+    {
+      "id": 2118,
+      "name": "createGroup",
+      "signature": "createGroup(params:OpenIMCreateGroupParams,operationID?:string|null):Promise<OpenIMGroupItem|null>",
+      "signatureHash": "15ad419faf0ca37d291629170f058f09cc247444fa41d276167abba194bdf14c"
+    },
+    {
+      "id": 2119,
+      "name": "setGroupInfo",
+      "signature": "setGroupInfo(params:OpenIMSetGroupInfoParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "457497565e4554bc8c1fb906f351ae825ec25c0ba3b9a305867cdbcb2733e6e7"
+    },
+    {
+      "id": 2120,
+      "name": "setGroupMemberInfo",
+      "signature": "setGroupMemberInfo(params:OpenIMSetGroupMemberInfoParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "c4414503ecc4a97b1a6bfec8f0ab8dccdda0e81bfcfa3d530f665389167978b4"
+    },
+    {
+      "id": 2121,
+      "name": "joinGroup",
+      "signature": "joinGroup(params:OpenIMJoinGroupParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "92fb651d5e5e4d285813be6a8d16e2159c775aed1a7919f62ad096b55f34aac1"
+    },
+    {
+      "id": 2122,
+      "name": "searchGroups",
+      "signature": "searchGroups(params:OpenIMSearchGroupsParams,operationID?:string|null):Promise<OpenIMGroupListResult|null>",
+      "signatureHash": "3f40ba274797c82a3a4322ddadf4b0898033be316b88fadf9f23ab5672cb83eb"
+    },
+    {
+      "id": 2123,
+      "name": "quitGroup",
+      "signature": "quitGroup(groupID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "cfd460b6bb7947893801cc74c2382f98705ca88a5a9ad029c162f6a22d003987"
+    },
+    {
+      "id": 2124,
+      "name": "dismissGroup",
+      "signature": "dismissGroup(groupID:string,operationID?:string|null):Promise<string>",
+      "signatureHash": "d30f94844d2af91b024f2fe3be2b47736088d0ab42e9d6f55d661f3aae06d29e"
+    },
+    {
+      "id": 2125,
+      "name": "changeGroupMute",
+      "signature": "changeGroupMute(params:OpenIMChangeGroupMuteParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "d0b9b15ff25841d4525578cecc2e6094863878ed754fab3a3827af5e4e1ad2ef"
+    },
+    {
+      "id": 2126,
+      "name": "changeGroupMemberMute",
+      "signature": "changeGroupMemberMute(params:OpenIMChangeGroupMemberMuteParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "db5a9e8521e3c18cd681a2b0063a7ab71f6f933f60276ae1909c51fe7f83a661"
+    },
+    {
+      "id": 2127,
+      "name": "transferGroupOwner",
+      "signature": "transferGroupOwner(params:OpenIMTransferGroupOwnerParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "ca3c5e0b9a48ef1c2d98600e6ff896ebc9a0c1205f2edd8ef141353da6c667c5"
+    },
+    {
+      "id": 2128,
+      "name": "getGroupApplicationListAsApplicant",
+      "signature": "getGroupApplicationListAsApplicant(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMGroupApplicationListResult|null>",
+      "signatureHash": "a70cfa4d8ca86e471c9a5e99148d4043379722b424c95c36351002e9516bc6f7"
+    },
+    {
+      "id": 2129,
+      "name": "getGroupApplicationListAsRecipient",
+      "signature": "getGroupApplicationListAsRecipient(params?:OpenIMApplicationListParams|null,operationID?:string|null):Promise<OpenIMGroupApplicationListResult|null>",
+      "signatureHash": "000d0d9824ccfedc20d5b0f5fd3e4e172d7a529ea0fd368c000e430e274731eb"
+    },
+    {
+      "id": 2130,
+      "name": "getGroupApplicationUnhandledCount",
+      "signature": "getGroupApplicationUnhandledCount(params:OpenIMPageParams,operationID?:string|null):Promise<number|null>",
+      "signatureHash": "bcc324db72b965ec2f632fa6d2c0ad86c1f31e18a201ab76b7f30a5e361ab467"
+    },
+    {
+      "id": 2131,
+      "name": "acceptGroupApplication",
+      "signature": "acceptGroupApplication(params:OpenIMGroupApplicationHandleParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "1099c562b0fabd39fa4e5d583a2bcdf888e30029d98b22103e838cf1a4909738"
+    },
+    {
+      "id": 2132,
+      "name": "refuseGroupApplication",
+      "signature": "refuseGroupApplication(params:OpenIMGroupApplicationHandleParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "7404f044ce17c0efa2dcaab62cf6e4b4e16040f00da6756ea55f56995a743494"
+    },
+    {
+      "id": 2133,
+      "name": "findMessageList",
+      "signature": "findMessageList(params:Array<OpenIMFindMessageParams>,operationID?:string|null):Promise<OpenIMFindMessageResult|null>",
+      "signatureHash": "a936c538694402dece04cd5893bfb5c992f32ddf93f206a578692590b6f297e9"
+    },
+    {
+      "id": 2134,
+      "name": "updateFcmToken",
+      "signature": "updateFcmToken(params:OpenIMUpdateFcmTokenParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "fa9058d0f69a336d812b23c125a910c5584d48dfdbb50d43a126409c25c18336"
+    },
+    {
+      "id": 2135,
+      "name": "subscribeUsersStatus",
+      "signature": "subscribeUsersStatus(data:Array<string>,operationID?:string|null):Promise<string>",
+      "signatureHash": "d156f227f1dd0368a589f9c578aa40bac80098f9dbe908374cd5f1f56f4ec467"
+    },
+    {
+      "id": 2136,
+      "name": "unsubscribeUsersStatus",
+      "signature": "unsubscribeUsersStatus(data:Array<string>,operationID?:string|null):Promise<string>",
+      "signatureHash": "31d985e8893bb6f106e4d9750ea83bbe0e16df9a2e7f997552ace06e41446f85"
+    },
+    {
+      "id": 2137,
+      "name": "getUserStatus",
+      "signature": "getUserStatus(data:Array<string>,operationID?:string|null):Promise<OpenIMUserStatusListResult|null>",
+      "signatureHash": "9a8bcfbf07d5cc6de1710e09e0a4520339e0fe1ada39f734f40aa2c9a4168f4d"
+    },
+    {
+      "id": 2138,
+      "name": "getSubscribeUsersStatus",
+      "signature": "getSubscribeUsersStatus(operationID?:string|null):Promise<OpenIMUserStatusListResult|null>",
+      "signatureHash": "3fc1f34037291d2a7540ca1842c4bf06f32d75609d052cade4a65f89a3afb6f3"
+    },
+    {
+      "id": 2139,
+      "name": "createTextMessage",
+      "signature": "createTextMessage(text:string,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "b1ba8f14b72ce676fbaea3535542022ec8129cf85aa7e7b05059b274bf8cd23d"
+    },
+    {
+      "id": 2140,
+      "name": "createImageMessageFromFullPath",
+      "signature": "createImageMessageFromFullPath(imageFullPath:string,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "fc651d1cfe119f600df2fbfdf0fc555f4637a99a0d70e7c1ef78eb0f1ad5d716"
+    },
+    {
+      "id": 2141,
+      "name": "createImageMessageByURL",
+      "signature": "createImageMessageByURL(params:OpenIMPictureElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "b382b4f20e9cb88d625a0254ab8ac5c0e5e6e9ee8cfb280d52c63bff0cdee5e7"
+    },
+    {
+      "id": 2142,
+      "name": "createCustomMessage",
+      "signature": "createCustomMessage(params:OpenIMCreateCustomMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "25e0cd49cfe08c3a15e06c519cdc37cb531a7fce5b7c1c14f6e72538b37eb2e5"
+    },
+    {
+      "id": 2143,
+      "name": "createQuoteMessage",
+      "signature": "createQuoteMessage(params:OpenIMCreateQuoteMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "8697f0bae564c42fcc5ee956754d48cfade9fc0e90081ef629c4677a1bec9aa8"
+    },
+    {
+      "id": 2144,
+      "name": "createAdvancedQuoteMessage",
+      "signature": "createAdvancedQuoteMessage(params:OpenIMCreateAdvancedQuoteMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "a7d4258f0a8e2267b1222692ab0ee90f143a5ab8b8a841065192468f3c92fb83"
+    },
+    {
+      "id": 2145,
+      "name": "createAdvancedTextMessage",
+      "signature": "createAdvancedTextMessage(params:OpenIMCreateAdvancedTextMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "c1f136241d44f830c1282deaabde920e9f0e1630b56d703da215463661f9a8b9"
+    },
+    {
+      "id": 2146,
+      "name": "createTextAtMessage",
+      "signature": "createTextAtMessage(params:OpenIMCreateTextAtMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "91aa64e221d3b170131efaf14f9d06b2d53845937f901ccf9fffdb040039a9bd"
+    },
+    {
+      "id": 2147,
+      "name": "createSoundMessageFromFullPath",
+      "signature": "createSoundMessageFromFullPath(params:OpenIMCreateSoundMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "646de06734dad7e7362caab81a93470e3faa6733d4ab533415c1e631c5fc8455"
+    },
+    {
+      "id": 2148,
+      "name": "createSoundMessageByURL",
+      "signature": "createSoundMessageByURL(params:OpenIMSoundElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "3a5507ccef8199906a4b5e8e0e62a5e45859ccc0229c6a275750570c639afa6d"
+    },
+    {
+      "id": 2149,
+      "name": "createVideoMessageFromFullPath",
+      "signature": "createVideoMessageFromFullPath(params:OpenIMCreateVideoMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "413135192e58d8077e5ac31c56bf9745ccb0f42ad70c91237428853d1e186044"
+    },
+    {
+      "id": 2150,
+      "name": "createVideoMessageByURL",
+      "signature": "createVideoMessageByURL(params:OpenIMVideoElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "6a30697576213bb47c8394e6ce8e33b7a28cfada67828733b4d9f5b5fb03214a"
+    },
+    {
+      "id": 2151,
+      "name": "createFileMessageFromFullPath",
+      "signature": "createFileMessageFromFullPath(params:OpenIMCreateFileMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "5952dc2c51f6e285b8347b999091366a47057ba128bede867963cfaa42de1876"
+    },
+    {
+      "id": 2152,
+      "name": "createFileMessageByURL",
+      "signature": "createFileMessageByURL(params:OpenIMFileElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "f382e6d26fece67fe23686afbeb9cfe67ae619022111e389e1749a37ee7a97d9"
+    },
+    {
+      "id": 2153,
+      "name": "createMergerMessage",
+      "signature": "createMergerMessage(params:OpenIMCreateMergerMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "8a3ce41bf2f1063fa8982fc19877932708f17b7d3e52892f8e6d552023df25fb"
+    },
+    {
+      "id": 2154,
+      "name": "createForwardMessage",
+      "signature": "createForwardMessage(message:OpenIMMessageItem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "ae81f7f45361f12f83944ed90586a6d6bab32ccccde328054fa99eba81dfa996"
+    },
+    {
+      "id": 2155,
+      "name": "createFaceMessage",
+      "signature": "createFaceMessage(params:OpenIMCreateFaceMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "2f43755fc2ecd48d5b1292c1a98a223bf366195d496461415e28f20901b5dc58"
+    },
+    {
+      "id": 2156,
+      "name": "createLocationMessage",
+      "signature": "createLocationMessage(params:OpenIMCreateLocationMessageParams,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "1ea72eca37a2fe724ef1e30f69183604be2481467c09d582482985be1aef7c63"
+    },
+    {
+      "id": 2157,
+      "name": "createCardMessage",
+      "signature": "createCardMessage(card:OpenIMCardElem,operationID?:string|null):Promise<OpenIMMessageItem|null>",
+      "signatureHash": "1079cfc16223358541bfb9d17beaa80ce10662b29a26219cc5406c6ff2cd9a74"
+    },
+    {
+      "id": 2158,
+      "name": "sendMessage",
+      "signature": "sendMessage(options:OpenIMSendMessageOptions):Promise<OpenIMMessageItem>",
+      "signatureHash": "ba3beda7ea300382d56b132a0f95f5c54a41058706f5e36b08cc521e14e9573b"
+    },
+    {
+      "id": 2159,
+      "name": "sendMessageNotOss",
+      "signature": "sendMessageNotOss(options:OpenIMSendMessageOptions):Promise<OpenIMMessageItem>",
+      "signatureHash": "93523eba569b4261f3078a8230f90517145c5bb3b7204d7b857ef125d9210688"
+    },
+    {
+      "id": 2160,
+      "name": "uploadFile",
+      "signature": "uploadFile(params:OpenIMUploadFileParams,operationID?:string|null):Promise<OpenIMUploadFileResult|null>",
+      "signatureHash": "1350dc6ebb63466357d1a48fca4552ebdc3a4c832e7e8469ec3a9eab94898d4f"
+    },
+    {
+      "id": 2161,
+      "name": "uploadLogs",
+      "signature": "uploadLogs(params:OpenIMUploadLogsParams,operationID?:string|null):Promise<string>",
+      "signatureHash": "256479d965cb34cdba7a0d24e7455998835aabaa149f5a92ee542f2ab6418603"
+    }
+  ],
+  "events": [
+    {
+      "id": 3001,
+      "name": "onConnecting",
+      "callable": "onConnecting",
+      "handlerType": "OpenIMVoidEventHandler",
+      "signatureHash": "9e76f3da6cb012e9c6c3a5572507622ab0965e984b24ae164543f912a246407f"
+    },
+    {
+      "id": 3002,
+      "name": "onConnectSuccess",
+      "callable": "onConnectSuccess",
+      "handlerType": "OpenIMVoidEventHandler",
+      "signatureHash": "e0284abf29f998be70a3b2d4fbd2e1b5e98654db9b8e1c7b367bb8cf31fa0847"
+    },
+    {
+      "id": 3003,
+      "name": "onConnectFailed",
+      "callable": "onConnectFailed",
+      "handlerType": "OpenIMErrorEventHandler",
+      "signatureHash": "e998fee10ae684b92937f0d9f2a11d6110012e43e3237f28ba8aa0ac2663e79f"
+    },
+    {
+      "id": 3004,
+      "name": "onKickedOffline",
+      "callable": "onKickedOffline",
+      "handlerType": "OpenIMVoidEventHandler",
+      "signatureHash": "73eb1ce0f57f73b85f9e98566606d07eaeb99f831db247c434269f5b8c3a1568"
+    },
+    {
+      "id": 3005,
+      "name": "onUserTokenExpired",
+      "callable": "onUserTokenExpired",
+      "handlerType": "OpenIMVoidEventHandler",
+      "signatureHash": "3dc9c2541e1695100c377c6b72c4ced6406627b28e501175f620ffa77bb17d20"
+    },
+    {
+      "id": 3006,
+      "name": "onUserTokenInvalid",
+      "callable": "onUserTokenInvalid",
+      "handlerType": "OpenIMErrorEventHandler",
+      "signatureHash": "89d0b7cff2c66df5e0aaf26a7e0d37ae35f4598f46120cc196528b8976e2381a"
+    },
+    {
+      "id": 3007,
+      "name": "onRecvNewMessage",
+      "callable": "onRecvNewMessage",
+      "handlerType": "OpenIMMessageEventHandler",
+      "signatureHash": "6606b336524418b7495a8b0135a62f9cfcee920f82fb4fe783656a505215ee5a"
+    },
+    {
+      "id": 3008,
+      "name": "onRecvOfflineNewMessage",
+      "callable": "onRecvOfflineNewMessage",
+      "handlerType": "OpenIMMessageEventHandler",
+      "signatureHash": "ade717195971f0002ae2114e930b1fa4adf27b14c793655811eb94f126effe49"
+    },
+    {
+      "id": 3009,
+      "name": "onRecvOnlineOnlyMessage",
+      "callable": "onRecvOnlineOnlyMessage",
+      "handlerType": "OpenIMMessageEventHandler",
+      "signatureHash": "5aaaaa5b4d191a3d26d84fab88bf7da45bf843adcb5ab28ffc85e454411b88e1"
+    },
+    {
+      "id": 3010,
+      "name": "onMsgDeleted",
+      "callable": "onMsgDeleted",
+      "handlerType": "OpenIMMessageEventHandler",
+      "signatureHash": "d864c8a4b5fe3f250e742e095518a6ca2dfe9056a19ad4e6c591889675496874"
+    },
+    {
+      "id": 3011,
+      "name": "onNewRecvMessageRevoked",
+      "callable": "onNewRecvMessageRevoked",
+      "handlerType": "OpenIMMessageRevokedEventHandler",
+      "signatureHash": "a9e07fa543fdd9f1f7cd7fceee90fa39f6eff6401f9b7cc9c15959455e7bd028"
+    },
+    {
+      "id": 3012,
+      "name": "onRecvC2CReadReceipt",
+      "callable": "onRecvC2CReadReceipt",
+      "handlerType": "OpenIMMessageReceiptListEventHandler",
+      "signatureHash": "5d413612c1899328fb708ef51bb3875236bf114ec31b5652b93ae68f5a2a1cc5"
+    },
+    {
+      "id": 3013,
+      "name": "onRecvNewMessages",
+      "callable": "onRecvNewMessages",
+      "handlerType": "OpenIMMessageListEventHandler",
+      "signatureHash": "f7b57f40aa9944ed65ee163ef099936e943dbf6430ff3ccca62b67db038fafeb"
+    },
+    {
+      "id": 3014,
+      "name": "onRecvOfflineNewMessages",
+      "callable": "onRecvOfflineNewMessages",
+      "handlerType": "OpenIMMessageListEventHandler",
+      "signatureHash": "c6b312812bbe7857575e89c67b533348042eb374635dd59e5d66923e43e28437"
+    },
+    {
+      "id": 3015,
+      "name": "onConversationChanged",
+      "callable": "onConversationChanged",
+      "handlerType": "OpenIMConversationListEventHandler",
+      "signatureHash": "491ebef72c5848d3583fd7813e49621288b0d4b87cad2459be46ce30c3dc8b27"
+    },
+    {
+      "id": 3016,
+      "name": "onConversationUserInputStatusChanged",
+      "callable": "onConversationUserInputStatusChanged",
+      "handlerType": "OpenIMConversationInputStatusEventHandler",
+      "signatureHash": "382c2ecbf1fe709af990281baa2934c3a0aed43a4faf851d7f71512b5790cc46"
+    },
+    {
+      "id": 3017,
+      "name": "onNewConversation",
+      "callable": "onNewConversation",
+      "handlerType": "OpenIMConversationListEventHandler",
+      "signatureHash": "5303ced2356976f15d360f701b4cdf6926e256e5abdc794b7404a66c181936dc"
+    },
+    {
+      "id": 3018,
+      "name": "onSyncServerFailed",
+      "callable": "onSyncServerFailed",
+      "handlerType": "OpenIMBooleanEventHandler",
+      "signatureHash": "a64d4d1944fcff61c575742144e0ab00bd3b01df8be29183953bac2b327fadc2"
+    },
+    {
+      "id": 3019,
+      "name": "onSyncServerFinish",
+      "callable": "onSyncServerFinish",
+      "handlerType": "OpenIMBooleanEventHandler",
+      "signatureHash": "e5fe63c04e07fc247081fbd2b7c23bd25211c78829ad357b7101cfe84b4aad3c"
+    },
+    {
+      "id": 3020,
+      "name": "onSyncServerProgress",
+      "callable": "onSyncServerProgress",
+      "handlerType": "OpenIMNumberEventHandler",
+      "signatureHash": "c82210ff85dd257d5cff5fb2a65cf01b6157fc7a6c887c0cc5d4ac2d81d40ba3"
+    },
+    {
+      "id": 3021,
+      "name": "onSyncServerStart",
+      "callable": "onSyncServerStart",
+      "handlerType": "OpenIMBooleanEventHandler",
+      "signatureHash": "ecb081a0862692d4658ef9b4b04003daef79aa995177b72325748dfb62ac07e7"
+    },
+    {
+      "id": 3022,
+      "name": "onSendMessageProgress",
+      "callable": "onSendMessageProgress",
+      "handlerType": "OpenIMSendMessageProgressEventHandler",
+      "signatureHash": "8fe48426a1d2b1beb3613a6852a6b83744c95937395cec4ab3bfddb48d2c7509"
+    },
+    {
+      "id": 3023,
+      "name": "onUploadFileProgress",
+      "callable": "onUploadFileProgress",
+      "handlerType": "OpenIMUploadFileProgressEventHandler",
+      "signatureHash": "991ef356646ec176ae5ebacb2cec4ede2486f5a24937d0fc5a01905a9c887e90"
+    },
+    {
+      "id": 3024,
+      "name": "onUploadLogsProgress",
+      "callable": "onUploadLogsProgress",
+      "handlerType": "OpenIMUploadLogsProgressEventHandler",
+      "signatureHash": "6b6fd8724015d5e3bfe85cddcb379719e084a6f28b04e1e265b63b326f01d76c"
+    },
+    {
+      "id": 3025,
+      "name": "onTotalUnreadMessageCountChanged",
+      "callable": "onTotalUnreadMessageCountChanged",
+      "handlerType": "OpenIMNumberEventHandler",
+      "signatureHash": "fd4d082551c28edf6e55a5c2fe32cbe6e82e8a58fe5b7c3a3e63fa367f867fee"
+    },
+    {
+      "id": 3026,
+      "name": "onRecvCustomBusinessMessage",
+      "callable": "onRecvCustomBusinessMessage",
+      "handlerType": "OpenIMStringEventHandler",
+      "signatureHash": "61d85fdec69ca835b15bbc4c21af62f1139c0b1f8139f0ac49c63c7afe943831"
+    },
+    {
+      "id": 3027,
+      "name": "onBlackAdded",
+      "callable": "onBlackAdded",
+      "handlerType": "OpenIMBlackUserEventHandler",
+      "signatureHash": "d2574a6aefb4e9e24af8c5c77941a257f1e7e31263c0a97e1cc6ef5602028315"
+    },
+    {
+      "id": 3028,
+      "name": "onBlackDeleted",
+      "callable": "onBlackDeleted",
+      "handlerType": "OpenIMBlackUserEventHandler",
+      "signatureHash": "3f6cab74a52abce8bab78979d2c1597e0febcae74b4b29b4ed5555d6d3af0208"
+    },
+    {
+      "id": 3029,
+      "name": "onFriendAdded",
+      "callable": "onFriendAdded",
+      "handlerType": "OpenIMFriendEventHandler",
+      "signatureHash": "4d0e64be4d97d7d9a9c65d05f6caeb98b9abc381e820ba8e617d7ee342286959"
+    },
+    {
+      "id": 3030,
+      "name": "onFriendApplicationAccepted",
+      "callable": "onFriendApplicationAccepted",
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "signatureHash": "18ba0d62fa243b882aa67748e8aef62fdb9a2be14f37a2c6022c5cac75405b38"
+    },
+    {
+      "id": 3031,
+      "name": "onFriendApplicationAdded",
+      "callable": "onFriendApplicationAdded",
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "signatureHash": "2e5355019ae53e4fd891f08d47495bbb8866835670b920dd2bd0092b15428c4e"
+    },
+    {
+      "id": 3032,
+      "name": "onFriendApplicationDeleted",
+      "callable": "onFriendApplicationDeleted",
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "signatureHash": "ce48b1a77ac2e0b13a87030ab26e499f4f53286f05019a4df91097a38f4d7e24"
+    },
+    {
+      "id": 3033,
+      "name": "onFriendApplicationRejected",
+      "callable": "onFriendApplicationRejected",
+      "handlerType": "OpenIMFriendApplicationEventHandler",
+      "signatureHash": "92e431b009eacb7de0527a91585992d868f6e8edec5fda9b26535bace358df45"
+    },
+    {
+      "id": 3034,
+      "name": "onFriendDeleted",
+      "callable": "onFriendDeleted",
+      "handlerType": "OpenIMFriendEventHandler",
+      "signatureHash": "fc11b7f8b30bf1e8b4c7e31d3cc67008b57e80fbbbe605375ca9079294f04210"
+    },
+    {
+      "id": 3035,
+      "name": "onFriendInfoChanged",
+      "callable": "onFriendInfoChanged",
+      "handlerType": "OpenIMFriendEventHandler",
+      "signatureHash": "25e939b2957e1b33cffc9e556046904b82d59e5fd44bc22d134cc1291539cc8f"
+    },
+    {
+      "id": 3036,
+      "name": "onGroupApplicationAccepted",
+      "callable": "onGroupApplicationAccepted",
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "signatureHash": "5ec72b7492e33b778201a368e953fb1781bbcd40ea836db9d699e87ae215b113"
+    },
+    {
+      "id": 3037,
+      "name": "onGroupApplicationAdded",
+      "callable": "onGroupApplicationAdded",
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "signatureHash": "f180ed4e0ff5af6a0f6f087da9f763cf9f997977efec70c63855cffa8acb9b31"
+    },
+    {
+      "id": 3038,
+      "name": "onGroupApplicationDeleted",
+      "callable": "onGroupApplicationDeleted",
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "signatureHash": "595d7bea243eae4f1c002e796f8ae423a12f000bde9e6d46b4f43c52ebd183f8"
+    },
+    {
+      "id": 3039,
+      "name": "onGroupApplicationRejected",
+      "callable": "onGroupApplicationRejected",
+      "handlerType": "OpenIMGroupApplicationEventHandler",
+      "signatureHash": "f2ff0a645029a9d337e8caf5c2e302153f9d3e501a1d5d8b938e8c627d4badba"
+    },
+    {
+      "id": 3040,
+      "name": "onGroupDismissed",
+      "callable": "onGroupDismissed",
+      "handlerType": "OpenIMGroupEventHandler",
+      "signatureHash": "e93b0e6732866e8f93e69f883762f6fbc609659356efa3e455315162613145ce"
+    },
+    {
+      "id": 3041,
+      "name": "onGroupInfoChanged",
+      "callable": "onGroupInfoChanged",
+      "handlerType": "OpenIMGroupEventHandler",
+      "signatureHash": "731e7619107471c3c30e4f0abd5bf2e11f57cf00148f9b3b0448953d41bb2106"
+    },
+    {
+      "id": 3042,
+      "name": "onGroupMemberAdded",
+      "callable": "onGroupMemberAdded",
+      "handlerType": "OpenIMGroupMemberEventHandler",
+      "signatureHash": "c7d88c8d06ef22c13ca9e7c62b7455d048591b0dde44169f1a59ba528669d1b9"
+    },
+    {
+      "id": 3043,
+      "name": "onGroupMemberDeleted",
+      "callable": "onGroupMemberDeleted",
+      "handlerType": "OpenIMGroupMemberEventHandler",
+      "signatureHash": "5821d93655920df3b4b58ce22971b10879f629e4efebc91fb51d0abe1034d09c"
+    },
+    {
+      "id": 3044,
+      "name": "onGroupMemberInfoChanged",
+      "callable": "onGroupMemberInfoChanged",
+      "handlerType": "OpenIMGroupMemberEventHandler",
+      "signatureHash": "0a0ad0897669e07d35863c364e245ea7a1305a134f77deb612577d461085593d"
+    },
+    {
+      "id": 3045,
+      "name": "onJoinedGroupAdded",
+      "callable": "onJoinedGroupAdded",
+      "handlerType": "OpenIMGroupEventHandler",
+      "signatureHash": "5cfdaabc15b040fd4ab465690b9d9669c213614812827caf70b28533946d0dfb"
+    },
+    {
+      "id": 3046,
+      "name": "onJoinedGroupDeleted",
+      "callable": "onJoinedGroupDeleted",
+      "handlerType": "OpenIMGroupEventHandler",
+      "signatureHash": "ff8946f8310b8c4681ee6f99c00772c35ac05c4c5ac575b34a2cf4cb9ccc5b5c"
+    },
+    {
+      "id": 3047,
+      "name": "onSelfInfoUpdated",
+      "callable": "onSelfInfoUpdated",
+      "handlerType": "OpenIMUserEventHandler",
+      "signatureHash": "ad9d287a8867325c374e97b7b357cf885490421d7ec3fc9753bae2fd079a8fd0"
+    },
+    {
+      "id": 3048,
+      "name": "onUserStatusChanged",
+      "callable": "onUserStatusChanged",
+      "handlerType": "OpenIMUserStatusListEventHandler",
+      "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
+    }
+  ],
+  "contractHash": "d50e8875fa1787ab9821d823bdd98f57e546d30304d1eb572c1d42fbe1b7c76d"
+}

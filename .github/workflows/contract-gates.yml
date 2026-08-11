@@ -1,0 +1,110 @@
+name: OpenIM contract gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '30 18 * * *'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Run release-only policy and runtime-evidence gates
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openim-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regenerate from authority
+        run: |
+          npm run generate
+          git diff --exit-code
+      - run: npm run typecheck:tooling
+      - run: npm run test:tooling
+      - run: npm run verify
+      - run: npm run verify:generated
+      - run: npm run verify:policy
+      - run: npm run verify:release-integrity
+      - run: npm audit --omit=dev
+
+  native-nightly:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: [self-hosted, macOS, openim-sdk]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Prove locked source and artifact identity
+        run: npm run native:verify
+      - name: Compile positive and removed-export consumers
+        run: |
+          npm run verify:consumer:android
+          npm run verify:consumer:ios
+      - name: Compile release dependency profiles
+        run: npm run compile:public
+
+  release:
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    needs: native-nightly
+    runs-on: [self-hosted, macOS, openim-sdk]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Generate clean SBOM and verify licenses and secrets
+        run: npm run verify:release-integrity -- --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openim-release-integrity
+          path: test-results/release/*-release-integrity.json
+          if-no-files-found: error
+      - name: Refuse edition-scoped compatibility and native artifact debt
+        run: npm run verify:release-policy
+      - name: Prove deterministic regeneration twice
+        run: |
+          npm run generate
+          git diff --exit-code
+          npm run generate
+          git diff --exit-code
+      - name: Require three clean platform-bound runtime passes
+        env:
+          ANDROID_EVIDENCE_1: ${{ vars.OPENIM_PUBLIC_ANDROID_EVIDENCE_1 }}
+          ANDROID_EVIDENCE_2: ${{ vars.OPENIM_PUBLIC_ANDROID_EVIDENCE_2 }}
+          ANDROID_EVIDENCE_3: ${{ vars.OPENIM_PUBLIC_ANDROID_EVIDENCE_3 }}
+          IOS_EVIDENCE_1: ${{ vars.OPENIM_PUBLIC_IOS_EVIDENCE_1 }}
+          IOS_EVIDENCE_2: ${{ vars.OPENIM_PUBLIC_IOS_EVIDENCE_2 }}
+          IOS_EVIDENCE_3: ${{ vars.OPENIM_PUBLIC_IOS_EVIDENCE_3 }}
+        run: |
+          test -n "$ANDROID_EVIDENCE_1" -a -f "$ANDROID_EVIDENCE_1"
+          test -n "$ANDROID_EVIDENCE_2" -a -f "$ANDROID_EVIDENCE_2"
+          test -n "$ANDROID_EVIDENCE_3" -a -f "$ANDROID_EVIDENCE_3"
+          test -n "$IOS_EVIDENCE_1" -a -f "$IOS_EVIDENCE_1"
+          test -n "$IOS_EVIDENCE_2" -a -f "$IOS_EVIDENCE_2"
+          test -n "$IOS_EVIDENCE_3" -a -f "$IOS_EVIDENCE_3"
+          npm run verify:runtime-evidence -- --release --expected-platform android --minimum-runs 3 --require-arm64-physical-release --evidence "$ANDROID_EVIDENCE_1" --evidence "$ANDROID_EVIDENCE_2" --evidence "$ANDROID_EVIDENCE_3"
+          npm run verify:runtime-evidence -- --release --expected-platform ios --minimum-runs 3 --evidence "$IOS_EVIDENCE_1" --evidence "$IOS_EVIDENCE_2" --evidence "$IOS_EVIDENCE_3"

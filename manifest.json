@@ -46,7 +46,9 @@
 	},
 	"app-android": {
 		"distribute": {
-			"modules": {},
+			"modules": {
+				"uni-websocket": {}
+			},
 			"icons": {
 				"hdpi": "",
 				"xhdpi": "",
@@ -60,7 +62,9 @@
 	},
 	"app-ios": {
 		"distribute": {
-			"modules": {},
+			"modules": {
+				"uni-websocket": {}
+			},
 			"icons": {},
 			"splashScreens": {}
 		}

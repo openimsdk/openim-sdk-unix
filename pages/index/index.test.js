@@ -1,10 +1,19 @@
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+const { execFileSync } = require('child_process')
+const { formatAutomationEvidenceIssues, validateAutomationEvidence } = require('../../tooling/runtime/automation-evidence.cjs')
 
-jest.setTimeout(30 * 60 * 1000)
+const projectRoot = path.resolve(__dirname, '../..')
+const configPath = path.join(projectRoot, '.openim-test-accounts.json')
+const fixtureScriptPath = path.join(projectRoot, 'scripts/register-openim-test-accounts.mjs')
+const testDispositionPath = path.join(projectRoot, 'contracts/base/test-disposition.json')
+const responseSchemasPath = path.join(projectRoot, 'contracts/base/response-schemas.json')
+const runTimeoutMs = Number(process.env.OPENIM_AUTOMATION_TIMEOUT_MS || 20 * 60 * 1000)
 
-const artifactDir = path.resolve(__dirname, '../../test-results/openim-automation')
+jest.setTimeout(runTimeoutMs + 60 * 1000)
+
+const artifactDir = path.join(projectRoot, 'test-results/openim-automation')
 
 function isLoopbackHost(hostname) {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '::1'
@@ -54,7 +63,7 @@ function normalizeEndpointForDevice(config) {
       continue
     }
     const url = new URL(next[key])
-    if (isLoopbackHost(url.hostname) || (next.source === 'register-openim-test-accounts' && knownLocalHosts.has(url.hostname))) {
+    if (isLoopbackHost(url.hostname) || (next.source === 'openim-test-fixture' && knownLocalHosts.has(url.hostname))) {
       next[key] = replaceURLHost(next[key], localLANIP)
     }
   }
@@ -63,11 +72,51 @@ function normalizeEndpointForDevice(config) {
 }
 
 function readAutomationConfig() {
-  const filePath = path.resolve(__dirname, '../../.openim-test-accounts.json')
-  if (!fs.existsSync(filePath)) {
+  if (!fs.existsSync(configPath)) {
     return null
   }
-  return normalizeEndpointForDevice(JSON.parse(fs.readFileSync(filePath, 'utf8')))
+  return normalizeEndpointForDevice(JSON.parse(fs.readFileSync(configPath, 'utf8')))
+}
+
+function provisionAutomationConfig() {
+  if (process.env.OPENIM_AUTOMATION_REUSE === '1' && fs.existsSync(configPath)) {
+    return
+  }
+  execFileSync(process.execPath, [fixtureScriptPath], {
+    cwd: projectRoot,
+    env: {
+      ...process.env,
+      OUTPUT: configPath,
+      STATIC_OUTPUT: 'false',
+      PLATFORM_IDS: process.env.PLATFORM_IDS || '1,2',
+    },
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: 60 * 1000,
+  })
+}
+
+function withRunGuard(promise, label) {
+  return new Promise((resolve, reject) => {
+    const startedAt = Date.now()
+    const heartbeat = setInterval(() => {
+      const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000)
+      console.log(`[openim-test] ${label} still running (${elapsedSeconds}s)`)
+    }, 15 * 1000)
+    const timeout = setTimeout(() => {
+      clearInterval(heartbeat)
+      reject(new Error(`${label} exceeded hard timeout ${runTimeoutMs}ms`))
+    }, runTimeoutMs)
+    promise.then((value) => {
+      clearInterval(heartbeat)
+      clearTimeout(timeout)
+      resolve(value)
+    }, (error) => {
+      clearInterval(heartbeat)
+      clearTimeout(timeout)
+      reject(error)
+    })
+  })
 }
 
 function ensureArtifactDir() {
@@ -90,6 +139,14 @@ function writeAutomationArtifacts(baseName, summary) {
   return { jsonPath, logPath }
 }
 
+function validateReportAgainstContract(summary) {
+  const uniOSName = String(process.env.UNI_OS_NAME || '').toLowerCase()
+  const platform = uniOSName === 'ios' ? 'ios' : 'android'
+  const manifest = JSON.parse(fs.readFileSync(testDispositionPath, 'utf8'))
+  const responseSchemas = JSON.parse(fs.readFileSync(responseSchemasPath, 'utf8'))
+  return validateAutomationEvidence({ manifest, responseSchemas, report: summary, platform, fullRun: true })
+}
+
 async function writeAutomationScreenshot(baseName) {
   try {
     ensureArtifactDir()
@@ -103,6 +160,7 @@ async function writeAutomationScreenshot(baseName) {
 
 describe('OpenIM SDK demo automation', () => {
   it('runs the index page API smoke flow when local accounts are configured', async () => {
+    provisionAutomationConfig()
     const config = readAutomationConfig()
     if (config == null) {
       const summary = {
@@ -131,29 +189,46 @@ describe('OpenIM SDK demo automation', () => {
       throw new Error('Missing .openim-test-accounts.json. Run scripts/register-openim-test-accounts.mjs first, or set OPENIM_AUTOMATION_SKIP=1 to skip explicitly.')
     }
 
-    await program.reLaunch('/pages/index/index')
-    const page = await program.currentPage()
-    await program.callUniMethod('setStorageSync', 'openim-test-config', config)
+    console.log('[openim-test] automator connected; starting OpenIM flow')
+    const automationConfig = { ...config, autorun: 'false' }
+    await program.callUniMethod('setStorageSync', 'openim-test-config', automationConfig)
+    try {
+      const page = await program.reLaunch('/pages/index/index')
+      await page.waitFor(500)
 
-    const baseName = createArtifactBaseName()
-    const summary = await page.callMethod('handleRunAutomation')
-    const artifacts = writeAutomationArtifacts(baseName, summary)
-    await writeAutomationScreenshot(baseName)
+      const baseName = createArtifactBaseName()
+      const summary = await withRunGuard(page.callMethod('handleRunAutomation'), 'OpenIM automation')
+      if (typeof summary === 'string') {
+        throw new Error('OpenIM automation returned legacy text without per-axis contract evidence')
+      }
 
-    if (typeof summary === 'string') {
-      expect(summary).toContain('Automation passed')
-      return
+      expect(summary).toBeTruthy()
+      summary.contractEvidence = validateReportAgainstContract(summary)
+      const artifacts = writeAutomationArtifacts(baseName, summary)
+      await writeAutomationScreenshot(baseName)
+      if (summary.failed !== 0) {
+        const failures = Array.isArray(summary.cases)
+          ? summary.cases
+            .filter((item) => item && item.ok === false && item.skipped !== true)
+            .map((item) => `${item.group || item.suite}/${item.name}: ${item.message || item.detail || 'no detail'}`)
+          : []
+        throw new Error(`OpenIM automation reported ${summary.failed} failure(s): ${failures.join('; ') || 'no case details'}; artifacts: ${artifacts.jsonPath}, ${artifacts.logPath}`)
+      }
+      if (!summary.contractEvidence.passed) {
+        throw new Error(`OpenIM automation contract evidence failed: ${formatAutomationEvidenceIssues(summary.contractEvidence)}; artifacts: ${artifacts.jsonPath}, ${artifacts.logPath}`)
+      }
+      expect(summary.failed).toBe(0)
+      expect(summary.contractEvidence.passed).toBe(true)
+      expect(summary.passed).toBeGreaterThan(0)
+      expect(summary.coverageMissing).toEqual([])
+      expect(summary.unexpectedSkipped).toEqual([])
+      expect(summary.validatedUnexpectedMissing).toEqual([])
+      expect(Array.isArray(summary.groups)).toBe(true)
+      expect(Array.isArray(summary.cases)).toBe(true)
+      expect(summary.logFilePath || artifacts.logPath).toBeTruthy()
+      expect(String(summary.headline || summary.summaryText)).toContain('Automation passed')
+    } finally {
+      await program.callUniMethod('removeStorageSync', 'openim-test-config')
     }
-
-    expect(summary).toBeTruthy()
-    expect(summary.failed).toBe(0)
-    expect(summary.passed).toBeGreaterThan(0)
-    expect(summary.coverageMissing).toEqual([])
-    expect(summary.unexpectedSkipped).toEqual([])
-    expect(summary.validatedUnexpectedMissing).toEqual([])
-    expect(Array.isArray(summary.groups)).toBe(true)
-    expect(Array.isArray(summary.cases)).toBe(true)
-    expect(summary.logFilePath || artifacts.logPath).toBeTruthy()
-    expect(String(summary.headline || summary.summaryText)).toContain('Automation passed')
   })
 })

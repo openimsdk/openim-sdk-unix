@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "files": [
+    "uni_modules/unix-openim-sdk/utssdk/interface.uts",
+    "uni_modules/unix-openim-sdk/utssdk/common/native-call-common.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-android/index.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-android/events.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-ios/native-call.uts"
+  ],
+  "boundaryFiles": [
+    "uni_modules/unix-openim-sdk/utssdk/common/native-call-common.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts",
+    "uni_modules/unix-openim-sdk/utssdk/app-ios/native-call.uts"
+  ],
+  "rules": [
+    { "id": "UTS-FORBID-ASYNC", "pattern": "\\b(?:async|await)\\b", "description": "async/await is outside the stable UTS subset" },
+    { "id": "UTS-FORBID-MAPSET", "pattern": "\\b(?:Map|Set)\\s*[<(]", "description": "Map/Set registries are forbidden in shared UTS" },
+    { "id": "UTS-FORBID-ESOBJECT", "pattern": "\\bESObject\\b", "description": "ESObject is restricted to the Harmony adapter" },
+    { "id": "UTS-FORBID-DYNAMIC-INVOKE", "pattern": "\\.invoke\\s*<", "description": "generic dynamic invocation is forbidden" },
+    { "id": "UTS-FORBID-OPTIONAL-CHAIN", "pattern": "\\?\\.", "description": "optional chaining is outside the stable subset" },
+    { "id": "UTS-FORBID-NULLISH", "pattern": "\\?\\?", "description": "nullish coalescing is outside the stable subset" },
+    { "id": "UTS-FORBID-SPREAD", "pattern": "\\.\\.\\.", "description": "spread syntax is outside the stable subset" },
+    { "id": "UTS-FORBID-WILDCARD", "pattern": "import\\s+\\*", "description": "wildcard imports are forbidden" },
+    { "id": "UTS-FORBID-CLASS", "pattern": "\\b(?:class|implements)\\b", "description": "runtime class abstractions are forbidden in UTS" }
+  ],
+  "boundaryOnlyRules": [
+    { "id": "UTS-BOUNDARY-ANY", "pattern": "\\bany\\b", "description": "any is only allowed at a registered codec boundary" },
+    { "id": "UTS-BOUNDARY-JSONOBJECT", "pattern": "\\bUTSJSONObject\\b", "description": "UTSJSONObject is only allowed at a registered codec boundary" }
+  ]
+}

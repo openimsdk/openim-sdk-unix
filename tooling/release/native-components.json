@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "public-core-android",
+      "editions": ["public"],
+      "platform": "android",
+      "name": "io.openim:core-sdk",
+      "version": "3.8.3-patch14.1",
+      "purl": "pkg:maven/io.openim/core-sdk@3.8.3-patch14.1",
+      "license": "AGPL-3.0-only",
+      "hashSource": {
+        "document": "toolchain.lock.json",
+        "jsonPointer": "/publicNative/android/sha256"
+      }
+    },
+    {
+      "id": "public-core-ios",
+      "editions": ["public"],
+      "platform": "ios",
+      "name": "OpenIMSDKCore",
+      "version": "3.8.3-hotfix.14-dynamic",
+      "purl": "pkg:cocoapods/OpenIMSDKCore@3.8.3-hotfix.14-dynamic",
+      "license": "AGPL-3.0-only",
+      "hashSource": {
+        "document": "toolchain.lock.json",
+        "jsonPointer": "/publicNative/ios/zipSha256"
+      }
+    }
+  ]
+}

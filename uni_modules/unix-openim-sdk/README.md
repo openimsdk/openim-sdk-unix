@@ -86,7 +86,8 @@ import {
   getLoginStatus,
   onConnectSuccess,
   onUploadFileProgress,
-  offEvent,
+  off,
+  offAll,
   createTextMessage,
   createImageMessageFromFullPath,
   createSoundMessageFromFullPath,
@@ -152,14 +153,14 @@ type UnixOpenIMError = {
 
 ## 事件订阅
 
-插件提供类型化事件订阅函数。订阅后会返回 `OpenIMSDKUnsubscribe` 取消函数。
+插件提供类型化事件订阅函数。订阅后会返回包含 `id` 和 `eventName` 的 `OpenIMSDKEventSubscription`。
 
 ```uts
-const unsubscribe = onConnectSuccess(() => {
+const subscription = onConnectSuccess(() => {
   console.log('OpenIM connected')
 })
 
-unsubscribe()
+off(subscription)
 ```
 
 常用事件示例：
@@ -180,7 +181,7 @@ onUploadLogsProgress((progress) => {})
 如需清理某一类事件的所有订阅，可调用：
 
 ```uts
-offEvent('onRecvNewMessage')
+offAll('onRecvNewMessage')
 ```
 
 ## 发送文本消息

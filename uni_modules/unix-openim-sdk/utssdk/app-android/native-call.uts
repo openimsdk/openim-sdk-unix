@@ -1,5 +1,5 @@
 import { UTSAndroid } from 'io.dcloud.uts'
-import { normalizeOperationID, stringifyJSON, rejectNativeError, readNativeValue, NativeParserHelpers, parseNativeUploadFileResultCommon, parseNativeUploadFileProgressEventCommon, parseNativeUploadLogsProgressEventCommon, parseNativeConversationEventListCommon, parseNativeConversationObjectCommon, parseNativeConversationListResultCommon, parseNativeConversationListResultFallbackCommon, parseNativeUserListResultCommon, parseNativeUserObjectCommon, parseNativeUserStatusListResultCommon, parseNativeUserStatusEventListCommon, parseNativeCheckFriendResultCommon, parseNativeFriendListResultCommon, parseNativeFriendListResultFallbackCommon, parseNativeFriendObjectCommon, parseNativeBlackListResultCommon, parseNativeBlackUserObjectCommon, parseNativeGroupListResultCommon, parseNativeGroupListResultFallbackCommon, parseNativeGroupObjectCommon, parseNativeGroupMemberListResultCommon, parseNativeGroupMemberListResultFallbackCommon, parseNativeGroupMemberObjectCommon, parseNativeFriendApplicationListResultCommon, parseNativeFriendApplicationListResultFallbackCommon, parseNativeFriendApplicationObjectCommon, parseNativeGroupApplicationListResultCommon, parseNativeGroupApplicationListResultFallbackCommon, parseNativeGroupApplicationObjectCommon, parseNativeConversationInputStatusCommon, parseNativeMessageCommon, parseNativeAdvancedHistoryMessageListCommon, parseNativeAdvancedHistoryMessageListFallbackCommon, parseNativeMessageEventListCommon, parseNativeMessageEventListFallbackCommon, parseNativeFindMessageResultCommon, parseNativeMessageListResultCommon, parseNativeSearchMessageResultCommon, parseNativeMessageRevokedCommon, parseNativeMessageReceiptListCommon, parseNativeLoginStatusCommon } from '../common/native-call-common.uts'
+import { normalizeOperationID, stringifyJSON, rejectNativeError, readNativeValue, NativeParserHelpers, parseNativeUploadFileResultCommon, parseNativeUploadFileProgressEventCommon, parseNativeUploadLogsProgressEventCommon, parseNativeSendMessageProgressEventCommon, parseNativeConversationEventListCommon, parseNativeConversationObjectCommon, parseNativeConversationListResultCommon, parseNativeConversationListResultFallbackCommon, parseNativeUserListResultCommon, parseNativeUserObjectCommon, parseNativeUserStatusListResultCommon, parseNativeUserStatusEventListCommon, parseNativeCheckFriendResultCommon, parseNativeFriendListResultCommon, parseNativeFriendListResultFallbackCommon, parseNativeFriendObjectCommon, parseNativeBlackListResultCommon, parseNativeBlackUserObjectCommon, parseNativeGroupListResultCommon, parseNativeGroupListResultFallbackCommon, parseNativeGroupObjectCommon, parseNativeGroupMemberListResultCommon, parseNativeGroupMemberListResultFallbackCommon, parseNativeGroupMemberObjectCommon, parseNativeFriendApplicationListResultCommon, parseNativeFriendApplicationListResultFallbackCommon, parseNativeFriendApplicationObjectCommon, parseNativeGroupApplicationListResultCommon, parseNativeGroupApplicationListResultFallbackCommon, parseNativeGroupApplicationObjectCommon, parseNativeFindMessageResultCommon, parseNativeMessageListResultCommon, parseNativeSearchMessageResultCommon, parseNativeMessageRevokedCommon, parseNativeMessageReceiptListCommon, parseNativeLoginStatusCommon, parseNativeConversationInputStatusCommon, parseNativeMessageCommon, parseNativeAdvancedHistoryMessageListCommon, parseNativeAdvancedHistoryMessageListFallbackCommon, parseNativeMessageEventListCommon, parseNativeMessageEventListFallbackCommon } from '../common/native-call-common.uts'
 export { normalizeOperationID, stringifyJSON, rejectNativeError }
 import {
   OpenIMInitConfig,
@@ -32,7 +32,8 @@ import {
   OpenIMUserStatusListResult,
   OpenIMUploadFileResult,
   OpenIMUploadFileProgressEvent,
-  OpenIMUploadLogsProgressEvent
+  OpenIMUploadLogsProgressEvent,
+  OpenIMSendMessageProgressEvent
 } from '../interface.uts'
 
 type NativeOpenIMInitConfig = {
@@ -91,9 +92,26 @@ export function parseNativeMessage(data : string) : OpenIMMessageItem | null {
   return parseNativeMessageCommon(data, getNativeParserHelpers())
 }
 
+function nativeValueClassName(value : any) : string {
+  return UTSAndroid.getJavaClass(value).name
+}
+
+function isNativeStringValue(value : any) : boolean {
+  return nativeValueClassName(value) == 'java.lang.String'
+}
+
+function isNativeBooleanValue(value : any) : boolean {
+  return nativeValueClassName(value) == 'java.lang.Boolean'
+}
+
+function isNativeNumberValue(value : any) : boolean {
+  const className = nativeValueClassName(value)
+  return className == 'java.lang.Byte' || className == 'java.lang.Short' || className == 'java.lang.Integer' || className == 'java.lang.Long' || className == 'java.lang.Float' || className == 'java.lang.Double' || className == 'java.math.BigInteger' || className == 'java.math.BigDecimal'
+}
+
 export function readStringParam(value : any | null, key : string) : string {
   const raw = readNativeValue(value, key)
-  if (raw != null) {
+  if (raw != null && isNativeStringValue(raw)) {
     return raw as string
   }
   return ''
@@ -101,7 +119,7 @@ export function readStringParam(value : any | null, key : string) : string {
 
 export function readNumberParam(value : any | null, key : string) : number {
   const raw = readNativeValue(value, key)
-  if (raw != null) {
+  if (raw != null && isNativeNumberValue(raw)) {
     return raw as number
   }
   return 0
@@ -109,7 +127,7 @@ export function readNumberParam(value : any | null, key : string) : number {
 
 export function readBooleanParam(value : any | null, key : string) : boolean {
   const raw = readNativeValue(value, key)
-  if (raw != null) {
+  if (raw != null && isNativeBooleanValue(raw)) {
     return raw as boolean
   }
   return false
@@ -141,11 +159,15 @@ export function stringifyOpenIMMessagePayload(value : any | null) : string {
 
 function isRequiredField(value : UTSJSONObject, key : string) : boolean {
   const raw = readNativeValue(value, key)
-  return raw != null
+  if (raw == null) { return false }
+  if (key == 'isRead' || key == 'isEnd') { return isNativeBooleanValue(raw) }
+  if (key == 'conversationType' || key == 'recvMsgOpt' || key == 'unreadCount' || key == 'latestMsgSendTime' || key == 'draftTextTime' || key == 'burnDuration' || key == 'minSeq' || key == 'maxSeq' || key == 'msgDestructTime' || key == 'groupAtType' || key == 'updateUnreadCountTime' || key == 'status' || key == 'type' || key == 'createTime' || key == 'sendTime' || key == 'sessionType' || key == 'msgFrom' || key == 'contentType' || key == 'senderPlatformID' || key == 'seq' || key == 'revokeTime' || key == 'readTime' || key == 'addSource' || key == 'memberCount' || key == 'groupType' || key == 'needVerification' || key == 'lookMemberInfo' || key == 'applyMemberFriend' || key == 'notificationUpdateTime' || key == 'roleLevel' || key == 'joinTime' || key == 'joinSource' || key == 'muteEndTime' || key == 'handleResult' || key == 'handleTime' || key == 'reqTime' || key == 'handledTime' || key == 'lastMinSeq' || key == 'errCode') { return isNativeNumberValue(raw) }
+  return isNativeStringValue(raw)
 }
 
 function isOptionalNumberField(value : UTSJSONObject, key : string) : boolean {
-  return true
+  const raw = readNativeValue(value, key)
+  return raw == null || isNativeNumberValue(raw)
 }
 
 function parseNativeConversationItemData(data : string) : OpenIMConversationItem | null { return JSON.parseObject<OpenIMConversationItem>(data) }
@@ -210,6 +232,8 @@ export function parseNativeUploadFileResult(data : string) : OpenIMUploadFileRes
 export function parseNativeUploadFileProgressEvent(data : string) : OpenIMUploadFileProgressEvent | null { return parseNativeUploadFileProgressEventCommon(data, getNativeParserHelpers()) }
 
 export function parseNativeUploadLogsProgressEvent(data : string) : OpenIMUploadLogsProgressEvent | null { return parseNativeUploadLogsProgressEventCommon(data, getNativeParserHelpers()) }
+
+export function parseNativeSendMessageProgressEvent(data : string) : OpenIMSendMessageProgressEvent | null { return parseNativeSendMessageProgressEventCommon(data, getNativeParserHelpers()) }
 
 export function parseNativeConversationEventList(data : string) : OpenIMConversationListResult | null { return parseNativeConversationEventListCommon(data, getNativeParserHelpers()) }
 

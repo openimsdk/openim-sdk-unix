@@ -1,46 +1,30 @@
 #!/usr/bin/env node
 
-import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { networkInterfaces } from 'node:os';
 import { dirname, resolve } from 'node:path';
 
 const env = process.env;
 
-const CHAT_API_BASE = env.CHAT_API_BASE || 'http://127.0.0.1:10008';
-const CHAT_ADMIN_API_BASE = env.CHAT_ADMIN_API_BASE || 'http://127.0.0.1:10009';
 const OPENIM_API_BASE = env.OPENIM_API_BASE || 'http://127.0.0.1:10002';
 const OPENIM_WS_BASE = env.OPENIM_WS_BASE || 'ws://127.0.0.1:10001';
 const OPENIM_SDK_API_BASE = env.OPENIM_SDK_API_BASE || '';
 const OPENIM_SDK_WS_BASE = env.OPENIM_SDK_WS_BASE || '';
 
-const CHAT_ADMIN_ACCOUNT = env.CHAT_ADMIN_ACCOUNT || 'chatAdmin';
-const CHAT_ADMIN_PASSWORD = env.CHAT_ADMIN_PASSWORD || 'chatAdmin';
-const CHAT_ADMIN_PASSWORD_MD5 = env.CHAT_ADMIN_PASSWORD_MD5 || md5Hex(CHAT_ADMIN_PASSWORD);
 const IM_ADMIN_USER_ID = env.IM_ADMIN_USER_ID || 'imAdmin';
 const IM_SECRET = env.IM_SECRET || 'openIM123';
 
 const PLATFORM_IDS = parsePlatformIDs(env.PLATFORM_IDS || env.PLATFORM_ID || '1,2');
-const CHAT_PLATFORM_ID = Number(env.CHAT_PLATFORM_ID || PLATFORM_IDS[0]);
-const RAW_PASSWORD = env.RAW_PASSWORD || 'OpenIM@123456';
-const PASSWORD_MD5 = env.PASSWORD_MD5 || md5Hex(RAW_PASSWORD);
 const ACCOUNT_PREFIX = sanitizeAccountPrefix(env.ACCOUNT_PREFIX || 'unixagent');
 const OUTPUT = resolve(env.OUTPUT || '.openim-test-accounts.json');
 const STATIC_OUTPUT = env.STATIC_OUTPUT == null || env.STATIC_OUTPUT === '' || env.STATIC_OUTPUT === 'false'
   ? ''
   : resolve(env.STATIC_OUTPUT);
+const AUTORUN = env.AUTORUN === '1' || env.AUTORUN === 'true' ? 'true' : '';
 const TIMEOUT_MS = Number(env.TIMEOUT_MS || '15000');
-
-if (!Number.isFinite(CHAT_PLATFORM_ID) || CHAT_PLATFORM_ID <= 0) {
-  throw new Error(`CHAT_PLATFORM_ID must be a positive number, got ${env.CHAT_PLATFORM_ID}`);
-}
 
 if (typeof fetch !== 'function') {
   throw new Error('This script requires Node.js 18+ with global fetch support.');
-}
-
-function md5Hex(value) {
-  return createHash('md5').update(value).digest('hex');
 }
 
 function sanitizeAccountPrefix(value) {
@@ -201,54 +185,6 @@ async function getIMAdminToken(suffix) {
   return token;
 }
 
-async function loginChatAdmin(suffix) {
-  const resp = await postJson(
-    `${trimBaseURL(CHAT_ADMIN_API_BASE)}/account/login`,
-    {
-      account: CHAT_ADMIN_ACCOUNT,
-      password: CHAT_ADMIN_PASSWORD_MD5,
-      version: '1.8.4',
-    },
-    `chat_admin_login_${suffix}`,
-  );
-  assertOK(resp, 'chat admin login');
-  const token = readString(resp.data.adminToken);
-  if (token.length === 0) {
-    throw new Error(`chat admin login returned empty token: ${resp.raw}`);
-  }
-  return token;
-}
-
-async function registerViaChat(account, chatAdminToken, suffix) {
-  const resp = await postJson(
-    `${trimBaseURL(CHAT_API_BASE)}/account/register`,
-    {
-      deviceID: `device${account}`,
-      platform: CHAT_PLATFORM_ID,
-      autoLogin: true,
-      user: {
-        userID: account,
-        account,
-        nickname: account,
-        email: `${account}@example.com`,
-        password: PASSWORD_MD5,
-        gender: 1,
-      },
-    },
-    `chat_register_${account}_${suffix}`,
-    chatAdminToken,
-  );
-  assertOK(resp, `chat register ${account}`);
-  const userID = readString(resp.data.userID);
-  if (userID.length === 0) {
-    throw new Error(`chat register returned empty userID for ${account}: ${resp.raw}`);
-  }
-  return {
-    userID,
-    chatToken: readString(resp.data.chatToken),
-  };
-}
-
 async function registerViaOpenIM(account, imAdminToken, suffix) {
   const resp = await postJson(
     `${trimBaseURL(OPENIM_API_BASE)}/user/user_register`,
@@ -264,10 +200,7 @@ async function registerViaOpenIM(account, imAdminToken, suffix) {
     imAdminToken,
   );
   assertOK(resp, `OpenIM user register ${account}`);
-  return {
-    userID: account,
-    chatToken: '',
-  };
+  return account;
 }
 
 async function getUserToken(userID, platformID, imAdminToken, suffix) {
@@ -302,33 +235,18 @@ async function validateToken(userID, platformID, token, suffix) {
   }
 }
 
-async function registerAccount(account, chatAdminToken, imAdminToken, suffix) {
-  let registered;
-  if (chatAdminToken.length > 0) {
-    try {
-      registered = await registerViaChat(account, chatAdminToken, suffix);
-    } catch (error) {
-      console.warn(`[openim-test] chat register failed for ${account}, fallback to OpenIM user_register: ${error.message}`);
-    }
-  }
-
-  if (!registered) {
-    registered = await registerViaOpenIM(account, imAdminToken, suffix);
-  }
-
+async function registerAccount(account, imAdminToken, suffix) {
+  const userID = await registerViaOpenIM(account, imAdminToken, suffix);
   const imTokens = {};
   for (const platformID of PLATFORM_IDS) {
-    const imToken = await getUserToken(registered.userID, platformID, imAdminToken, suffix);
-    await validateToken(registered.userID, platformID, imToken, suffix);
+    const imToken = await getUserToken(userID, platformID, imAdminToken, suffix);
+    await validateToken(userID, platformID, imToken, suffix);
     imTokens[String(platformID)] = imToken;
   }
   return {
-    userID: registered.userID,
-    account,
-    password: RAW_PASSWORD,
+    userID,
     platformIDs: PLATFORM_IDS,
     imTokens,
-    chatToken: registered.chatToken,
   };
 }
 
@@ -345,18 +263,11 @@ async function main() {
   const sdkWsBase = OPENIM_SDK_WS_BASE.length > 0 ? OPENIM_SDK_WS_BASE : OPENIM_WS_BASE;
 
   const imAdminToken = await getIMAdminToken(suffix);
-  let chatAdminToken = '';
-  try {
-    chatAdminToken = await loginChatAdmin(suffix);
-  } catch (error) {
-    console.warn(`[openim-test] chat admin login failed, fallback to OpenIM user_register: ${error.message}`);
-  }
-
-  const primary = await registerAccount(primaryAccount, chatAdminToken, imAdminToken, suffix);
-  const secondary = await registerAccount(secondaryAccount, chatAdminToken, imAdminToken, suffix);
+  const primary = await registerAccount(primaryAccount, imAdminToken, suffix);
+  const secondary = await registerAccount(secondaryAccount, imAdminToken, suffix);
 
   const output = {
-    source: 'register-openim-test-accounts',
+    source: 'openim-test-fixture',
     generatedAt: new Date().toISOString(),
     localLANIP: lanIP,
     apiAddr: toDeviceBaseURL(sdkApiBase, lanIP),
@@ -381,7 +292,7 @@ async function main() {
   writeJSONFile(STATIC_OUTPUT, {
     source: output.source,
     generatedAt: output.generatedAt,
-    autorun: '',
+    autorun: AUTORUN,
     localLANIP: output.localLANIP,
     apiAddr: output.apiAddr,
     wsAddr: output.wsAddr,

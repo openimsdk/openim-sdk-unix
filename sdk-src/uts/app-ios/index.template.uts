@@ -1,0 +1,377 @@
+import { driverCallAsync, driverCallSync } from './platform-driver.uts'
+import {
+  OpenIMMessageStatus,
+  OpenIMPlatform,
+  OpenIMLogLevel,
+  OpenIMMessageType,
+  OpenIMSessionType,
+  OpenIMLoginStatus,
+  OpenIMSendMessageOptions,
+  OpenIMUploadFileParams,
+  OpenIMCreateSoundMessageParams,
+  OpenIMCreateVideoMessageParams,
+  OpenIMCreateFileMessageParams,
+  OpenIMUploadFileResult,
+  OpenIMUpdateFcmTokenParams,
+  OpenIMUploadLogsParams,
+  OpenIMUploadFileProgressEvent,
+  OpenIMUploadLogsProgressEvent,
+  OpenIMSendMessageProgressEvent,
+  OpenIMMessageKeyParams,
+  OpenIMSetMessageLocalExParams,
+  OpenIMSetConversationBoolean,
+  OpenIMSetSelfInfoRecvMsgOpt,
+  OpenIMUpdateFriendBoolean,
+  OpenIMGroupNeedVerification,
+  OpenIMGroupOption,
+  OpenIMGroupDisplayIsRead,
+  OpenIMGroupMemberRoleLevel,
+  OpenIMSetConversationParams,
+  OpenIMSetSelfInfoParams,
+  OpenIMUpdateFriendsParams,
+  OpenIMInsertSingleMessageParams,
+  OpenIMInsertGroupMessageParams,
+  OpenIMInputStateParams,
+  OpenIMSetConversationDraftParams,
+  OpenIMAddFriendParams,
+  OpenIMSearchFriendsParams,
+  OpenIMGetSpecifiedFriendsInfoParams,
+  OpenIMFriendApplicationHandleParams,
+  OpenIMAddBlackParams,
+  OpenIMGroupUserListParams,
+  OpenIMGroupInviteParams,
+  OpenIMSearchGroupMembersParams,
+  OpenIMCreateGroupInfo,
+  OpenIMCreateGroupParams,
+  OpenIMSetGroupInfoParams,
+  OpenIMSetGroupMemberInfoParams,
+  OpenIMJoinGroupParams,
+  OpenIMSearchGroupsParams,
+  OpenIMChangeGroupMuteParams,
+  OpenIMChangeGroupMemberMuteParams,
+  OpenIMTransferGroupOwnerParams,
+  OpenIMGroupApplicationHandleParams,
+  OpenIMFindMessageParams,
+  OpenIMCreateCustomMessageParams,
+  OpenIMCreateQuoteMessageParams,
+  OpenIMCreateAdvancedQuoteMessageParams,
+  OpenIMCreateAdvancedTextMessageParams,
+  OpenIMCreateTextAtMessageParams,
+  OpenIMCreateMergerMessageParams,
+  OpenIMCreateFaceMessageParams,
+  OpenIMCreateLocationMessageParams,
+  OpenIMMessageEntity,
+  OpenIMTextElem,
+  OpenIMCardElem,
+  OpenIMAtUsersInfoItem,
+  OpenIMAtTextElem,
+  OpenIMNotificationElem,
+  OpenIMAdvancedTextElem,
+  OpenIMTypingElem,
+  OpenIMFileElem,
+  OpenIMFaceElem,
+  OpenIMLocationElem,
+  OpenIMCustomElem,
+  OpenIMMergeElem,
+  OpenIMOfflinePush,
+  OpenIMPicture,
+  OpenIMPictureElem,
+  OpenIMAttachedGroupHasReadInfo,
+  OpenIMUploadProgress,
+  OpenIMAttachedInfoElem,
+  OpenIMQuoteElem,
+  OpenIMSoundElem,
+  OpenIMVideoElem,
+  OpenIMMessageItemRef,
+  OpenIMMessageItem,
+  OpenIMConversationItem,
+  OpenIMConversationListResult,
+  OpenIMUserListResult,
+  OpenIMCheckFriendResult,
+  OpenIMUserStatusItem,
+  OpenIMUserStatusListResult,
+  OpenIMFriendListResult,
+  OpenIMBlackListResult,
+  OpenIMGroupListResult,
+  OpenIMGroupMemberListResult,
+  OpenIMFriendApplicationListResult,
+  OpenIMGroupApplicationListResult,
+  OpenIMMessageListResult,
+  OpenIMUserInfo,
+  OpenIMPublicUserItem,
+  OpenIMFriendUserItem,
+  OpenIMBlackUserItem,
+  OpenIMGroupItem,
+  OpenIMGroupMemberItem,
+  OpenIMFriendApplicationItem,
+  OpenIMGroupApplicationItem,
+  OpenIMMessageRevokedItem,
+  OpenIMMessageReceiptItem,
+  OpenIMMessageReceiptListResult,
+  OpenIMConversationInputStatusItem,
+  OpenIMGetOneConversationParams,
+  OpenIMPageParams,
+  OpenIMGetGroupMemberListParams,
+  OpenIMGetAdvancedHistoryMessageListParams,
+  OpenIMAdvancedHistoryMessageListResult,
+  OpenIMSearchLocalMessagesParams,
+  OpenIMApplicationListParams,
+  OpenIMSearchMessageResultItem,
+  OpenIMFindMessageResultItem,
+  OpenIMSearchMessageResult,
+  OpenIMFindMessageResult,
+  OpenIMError,
+  OpenIMInitConfig,
+  OpenIMSDKEventName,
+  OpenIMSDKEvent,
+  OpenIMSDKRawEventHandler,
+  OpenIMVoidEventHandler,
+  OpenIMErrorEventHandler,
+  OpenIMStringEventHandler,
+  OpenIMBooleanEventHandler,
+  OpenIMNumberEventHandler,
+  OpenIMMessageEventHandler,
+  OpenIMMessageListEventHandler,
+  OpenIMMessageRevokedEventHandler,
+  OpenIMMessageReceiptListEventHandler,
+  OpenIMConversationListEventHandler,
+  OpenIMConversationInputStatusEventHandler,
+  OpenIMFriendEventHandler,
+  OpenIMBlackUserEventHandler,
+  OpenIMFriendApplicationEventHandler,
+  OpenIMGroupEventHandler,
+  OpenIMGroupMemberEventHandler,
+  OpenIMGroupApplicationEventHandler,
+  OpenIMUserEventHandler,
+  OpenIMUserStatusListEventHandler,
+  OpenIMSendMessageProgressEventHandler,
+  OpenIMUploadFileProgressEventHandler,
+  OpenIMUploadLogsProgressEventHandler,
+  OpenIMSDKEventSubscription,
+  InitSDK,
+  Login,
+  Logout,
+  GetLoginStatus,
+  GetLoginUserID,
+  CreateTextMessage,
+  SendMessage,
+  UploadFile,
+  OpenIMSDKInstance
+} from '../interface.uts'
+import {
+  ensureNativeEventsBound,
+  offSDKEvent,
+  offAllSDKEvents,
+  onConnectingEvent,
+  onConnectSuccessEvent,
+  onConnectFailedEvent,
+  onKickedOfflineEvent,
+  onUserTokenExpiredEvent,
+  onUserTokenInvalidEvent,
+  onRecvNewMessageEvent,
+  onRecvOfflineNewMessageEvent,
+  onRecvOnlineOnlyMessageEvent,
+  onMsgDeletedEvent,
+  onNewRecvMessageRevokedEvent,
+  onRecvC2CReadReceiptEvent,
+  onRecvNewMessagesEvent,
+  onRecvOfflineNewMessagesEvent,
+  onConversationChangedEvent,
+  onConversationUserInputStatusChangedEvent,
+  onNewConversationEvent,
+  onSyncServerFailedEvent,
+  onSyncServerFinishEvent,
+  onSyncServerProgressEvent,
+  onSyncServerStartEvent,
+  onSendMessageProgressEvent,
+  onUploadFileProgressEvent,
+  onUploadLogsProgressEvent,
+  onTotalUnreadMessageCountChangedEvent,
+  onRecvCustomBusinessMessageEvent,
+  onBlackAddedEvent,
+  onBlackDeletedEvent,
+  onFriendAddedEvent,
+  onFriendApplicationAcceptedEvent,
+  onFriendApplicationAddedEvent,
+  onFriendApplicationDeletedEvent,
+  onFriendApplicationRejectedEvent,
+  onFriendDeletedEvent,
+  onFriendInfoChangedEvent,
+  onGroupApplicationAcceptedEvent,
+  onGroupApplicationAddedEvent,
+  onGroupApplicationDeletedEvent,
+  onGroupApplicationRejectedEvent,
+  onGroupDismissedEvent,
+  onGroupInfoChangedEvent,
+  onGroupMemberAddedEvent,
+  onGroupMemberDeletedEvent,
+  onGroupMemberInfoChangedEvent,
+  onJoinedGroupAddedEvent,
+  onJoinedGroupDeletedEvent,
+  onSelfInfoUpdatedEvent,
+  onUserStatusChangedEvent
+} from './events.uts'
+import {
+  normalizeOperationID,
+  stringifyJSON,
+  rejectNativeError,
+  getOpenIMDataPathNative,
+  normalizeInitConfig,
+  parseNativeMessage,
+  readStringParam,
+  readNumberParam,
+  readBooleanParam,
+  stringifyOpenIMMessageEntityList,
+  stringifyOpenIMPicture,
+  stringifyOpenIMSoundElem,
+  stringifyOpenIMVideoElem,
+  stringifyOpenIMFileElem,
+  stringifyOpenIMMessage,
+  stringifyOpenIMMessageList,
+  stringifyOpenIMMessagePayload,
+  parseNativeUploadFileResult,
+  parseNativeUploadFileProgressEvent,
+  parseNativeUploadLogsProgressEvent,
+  parseNativeConversationEventList,
+  parseNativeConversationObject,
+  parseNativeConversationListResult,
+  parseNativeConversationListResultFallback,
+  parseNativeUserListResult,
+  parseNativeUserObject,
+  parseNativeUserStatusListResult,
+  parseNativeUserStatusEventList,
+  parseNativeCheckFriendResult,
+  parseNativeFriendListResult,
+  parseNativeFriendListResultFallback,
+  parseNativeFriendObject,
+  parseNativeBlackListResult,
+  parseNativeBlackUserObject,
+  parseNativeGroupListResult,
+  parseNativeGroupListResultFallback,
+  parseNativeGroupObject,
+  parseNativeGroupMemberListResult,
+  parseNativeGroupMemberListResultFallback,
+  parseNativeGroupMemberObject,
+  parseNativeFriendApplicationListResult,
+  parseNativeFriendApplicationListResultFallback,
+  parseNativeFriendApplicationObject,
+  parseNativeGroupApplicationListResult,
+  parseNativeGroupApplicationListResultFallback,
+  parseNativeGroupApplicationObject,
+  parseNativeConversationInputStatus,
+  parseNativeMessageRevoked,
+  parseNativeMessageReceiptList,
+  parseNativeAdvancedHistoryMessageList,
+  parseNativeAdvancedHistoryMessageListFallback,
+  parseNativeMessageEventList,
+  parseNativeMessageEventListFallback,
+  parseNativeFindMessageResult,
+  parseNativeMessageListResult,
+  parseNativeSearchMessageResult,
+  parseNativeLoginStatus
+} from './native-call.uts'
+// <openim-generated:constants>
+
+
+function optionalString(value ?: string | null) : string { return value != null ? value as string : '' }
+function optionalBoolean(value ?: boolean | null) : boolean { return value != null ? value as boolean : false }
+function optionalNumber(value ?: number | null) : number { return value != null ? value as number : 0 }
+
+function normalizeIOSLocalMediaPath(path : string) : string {
+  if (path.indexOf('file://') == 0) {
+    return path.substring(7)
+  }
+  return path
+}
+
+function rejectUnsupportedIOSLocalMediaPath(apiName : string, path : string, reject : (reason : any | null) => void) : boolean { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-ANY UTS-COMPAT-CODEC-001
+  if (path.indexOf('unifile://') == 0 || path.indexOf('unifile:') == 0) {
+    rejectNativeError(reject, -1, apiName + ' requires a POSIX local path')
+    return true
+  }
+  return false
+}
+
+function readOfflinePushInfo(options : OpenIMSendMessageOptions) : string { return options.offlinePushInfo != null ? stringifyJSON(options.offlinePushInfo) : '{}' }
+function readIsOnlineOnly(options : OpenIMSendMessageOptions) : boolean { return options.isOnlineOnly != null ? options.isOnlineOnly as boolean : false }
+function readOperationID(options : OpenIMSendMessageOptions) : string { return options.operationID != null ? options.operationID as string : '' }
+function appendPayloadField(payload : string, field : string) : string { return payload.length > 0 ? payload + ',' + field : field }
+function stringifyUpdateFriendsPayload(params : OpenIMUpdateFriendsParams) : string {
+  let payload = ''
+  payload = appendPayloadField(payload, '"friendUserIDs":' + stringifyJSON(params.friendUserIDs))
+  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
+  if (params.remark != null) { payload = appendPayloadField(payload, '"remark":' + stringifyJSON(params.remark)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  return '{' + payload + '}'
+}
+function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : string {
+  let payload = ''
+  payload = appendPayloadField(payload, '"groupID":' + stringifyJSON(params.groupID))
+  if (params.groupName != null) { payload = appendPayloadField(payload, '"groupName":' + stringifyJSON(params.groupName)) }
+  if (params.notification != null) { payload = appendPayloadField(payload, '"notification":' + stringifyJSON(params.notification)) }
+  if (params.introduction != null) { payload = appendPayloadField(payload, '"introduction":' + stringifyJSON(params.introduction)) }
+  if (params.faceURL != null) { payload = appendPayloadField(payload, '"faceURL":' + stringifyJSON(params.faceURL)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  if (params.needVerification != null) { payload = appendPayloadField(payload, '"needVerification":' + stringifyJSON(params.needVerification)) }
+  if (params.lookMemberInfo != null) { payload = appendPayloadField(payload, '"lookMemberInfo":' + stringifyJSON(params.lookMemberInfo)) }
+  if (params.applyMemberFriend != null) { payload = appendPayloadField(payload, '"applyMemberFriend":' + stringifyJSON(params.applyMemberFriend)) }
+  if (params.displayIsRead != null) { payload = appendPayloadField(payload, '"displayIsRead":' + stringifyJSON(params.displayIsRead)) }
+  return '{' + payload + '}'
+}
+function stringifySetGroupMemberInfoPayload(params : OpenIMSetGroupMemberInfoParams) : string {
+  let payload = ''
+  payload = appendPayloadField(payload, '"groupID":' + stringifyJSON(params.groupID))
+  payload = appendPayloadField(payload, '"userID":' + stringifyJSON(params.userID))
+  if (params.nickname != null) { payload = appendPayloadField(payload, '"nickname":' + stringifyJSON(params.nickname)) }
+  if (params.faceURL != null) { payload = appendPayloadField(payload, '"faceURL":' + stringifyJSON(params.faceURL)) }
+  if (params.roleLevel != null) { payload = appendPayloadField(payload, '"roleLevel":' + stringifyJSON(params.roleLevel)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  return '{' + payload + '}'
+}
+
+function resolveStringNative(invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<string> { return new Promise<string>((resolve, reject) => { invoke(resolve, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function isValidNativeNumberValue(data : string) : boolean { return data.length == 0 || (/^[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?$/.test(data) && isFinite(parseFloat(data))) }
+function parseNativeNumberValue(data : string) : number | null { return data.length == 0 ? null : parseFloat(data) }
+function isValidNativeBooleanValue(data : string) : boolean { return data == 'true' || data == 'false' }
+function parseNativeBooleanValue(data : string) : boolean { return data == 'true' }
+function parseNativeStringListValue(data : string) : Array<string> | null {
+  const trimmed = data.trim()
+  if (trimmed.length < 2) { return null }
+  const parsed = JSON.parseArray<string>(trimmed)
+  if (parsed != null) { return parsed }
+  return null
+}
+function resolveNumberNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<number | null> { return new Promise<number | null>((resolve, reject) => { invoke((data : string) => { if (isValidNativeNumberValue(data) == false) { rejectNativeError(reject, -1, apiName + ' returned invalid number response: ' + data); return }; resolve(parseNativeNumberValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveBooleanNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<boolean> { return new Promise<boolean>((resolve, reject) => { invoke((data : string) => { if (isValidNativeBooleanValue(data) == false) { rejectNativeError(reject, -1, apiName + ' returned invalid boolean response: ' + data); return }; resolve(parseNativeBooleanValue(data)) }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveStringListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<Array<string> | null> { return new Promise<Array<string> | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeStringListValue(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveCheckFriendNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMCheckFriendResult | null> { return new Promise<OpenIMCheckFriendResult | null>((resolve, reject) => { invoke((data : string) => { try { const typed = JSON.parseObject<OpenIMCheckFriendResult>(data); if (typed != null && typed.result != null) { resolve(typed); return }; resolve(parseNativeCheckFriendResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveConversationObjectNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMConversationItem | null> { return new Promise<OpenIMConversationItem | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeConversationObject(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveConversationListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMConversationListResult | null> { return new Promise<OpenIMConversationListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeConversationListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveUserObjectNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMUserInfo | null> { return new Promise<OpenIMUserInfo | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeUserObject(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveUserListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMUserListResult | null> { return new Promise<OpenIMUserListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeUserListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveUserStatusListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMUserStatusListResult | null> { return new Promise<OpenIMUserStatusListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeUserStatusListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveFriendListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFriendListResult | null> { return new Promise<OpenIMFriendListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeFriendListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveBlackListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMBlackListResult | null> { return new Promise<OpenIMBlackListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeBlackListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveFriendApplicationListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFriendApplicationListResult | null> { return new Promise<OpenIMFriendApplicationListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeFriendApplicationListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupListResult | null> { return new Promise<OpenIMGroupListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeGroupListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupObjectNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupItem | null> { return new Promise<OpenIMGroupItem | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeGroupObject(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupMemberListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupMemberListResult | null> { return new Promise<OpenIMGroupMemberListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeGroupMemberListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveGroupApplicationListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMGroupApplicationListResult | null> { return new Promise<OpenIMGroupApplicationListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeGroupApplicationListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveMessageListNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMFindMessageResult | null> { return new Promise<OpenIMFindMessageResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeMessageListResult(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveAdvancedHistoryNative(apiName : string, invoke : (resolve : (data : string) => void, reject : (errCode : number, errMsg : string) => void) => void) : Promise<OpenIMAdvancedHistoryMessageListResult | null> { return new Promise<OpenIMAdvancedHistoryMessageListResult | null>((resolve, reject) => { invoke((data : string) => { try { resolve(parseNativeAdvancedHistoryMessageList(data)) } catch (error) { rejectNativeError(reject, -1, apiName + ' returned unparseable response: ' + stringifyJSON(error)) } }, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }
+function resolveSendMessageData(data : string, apiName : string, resolve : (value : OpenIMMessageItem) => void, reject : (reason : any | null) => void) { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-ANY UTS-COMPAT-CODEC-001
+  try {
+    const message = parseNativeMessage(data)
+    if (message != null) {
+      resolve(message)
+    } else {
+      rejectNativeError(reject, -1, apiName + ' returned invalid message data')
+    }
+  } catch (error) {
+    rejectNativeError(reject, -1, apiName + ' returned unparseable message data: ' + stringifyJSON(error))
+  }
+}
+
+// <openim-generated:event-callables>
+
+// <openim-generated:operations>

@@ -24,8 +24,8 @@ OpenIM 服务端、REST API 和 SDK 文档请访问 [https://docs.openim.io/](ht
 
 本仓库当前在本机主要使用以下环境运行和验证：
 
-- HBuilderX：5.14 alpha
-- 平台：App iOS
+- HBuilderX：5.23.2026080313-alpha
+- 平台：App Android、App iOS
 - 编译模式：uni-app x 蒸汽模式
 
 开源版本目标仍为 App Android 和 App iOS。Android 侧依赖自定义基座或正式包验证原生 SDK 能力；HarmonyOS 端能力请使用商业版。
@@ -50,6 +50,10 @@ uni_modules/unix-openim-sdk
 
 - Android：`io.openim:core-sdk:3.8.3-patch14.1@aar`
 - iOS：`OpenIMSDKCore` `3.8.3-hotfix.14-dynamic`
+
+发布门禁会分别校验 Public 与 Enterprise 的兼容债务。Public 发布还要求上述 Maven AAR 的 SHA-256 与锁定源码产物一致、Pod XCFramework 的解包 inventory SHA-256 与锁定源码产物一致；在 `toolchain.lock.json` 记录完整等价证据前，`npm run verify:release-policy` 会明确阻断发布。
+
+`npm run verify:release-integrity` 会从 `package-lock.json`、插件元数据和受控原生组件清单生成 CycloneDX 1.6 SBOM，同时执行 SPDX license allowlist 与 Git 跟踪文本 secret scan，报告写入 `test-results/release/`。发布流水线使用 `--release` 额外要求 `dirty=false` 并上传该报告。
 
 由于本插件依赖原生 SDK，请使用自定义基座或正式打包产物验证原生能力。标准基座可以用于页面编译和渲染验证，但无法实际调用依赖原生 SDK 的能力。
 
@@ -174,7 +178,46 @@ demo 工程不内置媒体测试素材。在 `pages/index/index.uvue` 中运行�
 pages/index/index.uvue
 ```
 
-使用 HBuilderX 5.7.0 或更高版本打开项目，替换 demo 中的 OpenIM 服务地址和账号占位值，然后使用自定义基座或正式包验证原生 SDK 行为。
+使用精确锁定的 `HBuilderX 5.23.2026080313-alpha` 打开项目，替换 demo 中的 OpenIM 服务地址和账号占位值，然后使用自定义基座或正式包验证原生 SDK 行为。其他 HBuilderX 构建只能用于诊断，不能作为本仓库的发布认证结果。
+
+### 自动化 smoke 测试
+
+可以直接从本地 OpenIM 服务创建两名临时用户，并获取 Android/iOS token：
+
+```bash
+OPENIM_API_BASE=http://127.0.0.1:10002 \
+OPENIM_WS_BASE=ws://127.0.0.1:10001 \
+PLATFORM_IDS=1,2 \
+node scripts/register-openim-test-accounts.mjs
+```
+
+脚本只调用 OpenIM 的 admin token、`user_register`、`get_user_token` 和 `parse_token` 接口，不依赖 Chat。测试默认每次创建新用户；设置 `OPENIM_AUTOMATION_REUSE=1` 才复用本地忽略文件 `.openim-test-accounts.json`。
+
+uni-automator 使用 `uni.connectSocket` 连接测试宿主，因此 Android 和 iOS 自定义基座都必须包含 `uni-websocket`。本项目已在 `manifest.json` 中显式声明该模块；修改模块配置后必须重新制作自定义基座。受控测试入口会先检查基座内容，避免 HBuilderX/Jest 静默等待：
+
+```bash
+node scripts/run-openim-automation.mjs android --device-id emulator-5554
+node scripts/run-openim-automation.mjs ios --device-id <simulator-uuid>
+```
+
+受控入口默认按 Vapor bytecode 模式运行，基座必须同时是 Vapor runtime 并包含 `uni-websocket`。仅在排查旧经典渲染基座时可以显式设置 `OPENIM_TEST_VAPOR=false`；该结果属于诊断证据，不能替代 Vapor 发布认证。正式 Jest 流程还要求 `static/openim-test-config.json` 不启用 autorun，避免初始页和 Jest 重复启动两套流程。
+
+测试会把账号配置临时注入 storage，执行 `pages/index/index.uvue` 的 API smoke 流程，并在 `test-results/openim-automation/` 保存 JSON、日志和截图。无论成功或失败，注入的 storage 都会清理。受控入口同时提供启动超时、总超时、心跳和进程组清理，避免残留 Jest 占用 9520/9521 端口。
+
+发布证据必须显式记录真实设备环境；`unknown` 元数据不会通过发布门禁。连续运行时为三次执行设置相同的 series ID，并依次设置 sequence 1、2、3：
+
+```bash
+OPENIM_TEST_DEVICE_KIND=physical \
+OPENIM_TEST_OS_VERSION=16 \
+OPENIM_TEST_ARCHITECTURE=arm64-v8a \
+OPENIM_TEST_BUILD_CONFIGURATION=Release \
+OPENIM_AUTOMATION_SERIES_ID=android-release-current-sha \
+OPENIM_AUTOMATION_SERIES_SEQUENCE=1 \
+OPENIM_AUTOMATION_SERIES_TOTAL=3 \
+node scripts/run-openim-automation.mjs android --device-id <device-id>
+```
+
+每次执行都会保留一份带唯一 runId 的不可变 evidence，同时更新 `<platform>-latest-evidence.json`。发布门禁校验三份 evidence 的平台、当前 Git SHA、clean 状态、连续序号、零失败/零跳过、结构/语义证据，并要求 Android 三次结果中至少一份来自 arm64 真机 Release 构建。
 
 ## 社区 :busts_in_silhouette:
 

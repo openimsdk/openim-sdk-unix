@@ -1,0 +1,309 @@
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import ts from 'typescript'
+import type {
+  CompletionMode,
+  ContractCallable,
+  ContractConstant,
+  ContractDocument,
+  ContractEvent,
+  ContractType,
+  EventDecoder,
+  NativeBinding,
+  SourceByPlatform,
+} from './model.js'
+import {
+  extractExportedTypes,
+  extractExportedValues,
+  extractStringUnion,
+  findExportedFunction,
+  findMatchingCallArguments,
+  getParameterType,
+  normalizeContractText,
+  parseSource,
+  sha256,
+  type ExportedValue,
+  type ParsedSource,
+} from './source.js'
+import {
+  readPublicStableIDRegistry,
+  reconcileStableIDs,
+  withComputedSemanticHashes,
+  writePublicStableIDRegistry,
+} from './contract-integrity.js'
+import { INDEX_MARKERS, makeIndexTemplate } from './template-authority.js'
+import { inferCallableTestProfile } from './test-profile.js'
+
+const EXPECTED_PUBLIC = { constants: 109, types: 160, callables: 161, events: 48 } as const
+
+function writeText(path: string, value: string): void {
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, value.endsWith('\n') ? value : `${value}\n`)
+}
+
+export function declarationParts(value: ExportedValue, parsed: ParsedSource): { type: string; initializer: string } {
+  if (!ts.isVariableStatement(value.node)) throw new Error(`${value.name} is not a constant declaration`)
+  const declaration = value.node.declarationList.declarations.find(
+    (item) => ts.isIdentifier(item.name) && item.name.text === value.name,
+  )
+  if (!declaration) throw new Error(`Cannot read declaration for ${value.name}`)
+  return {
+    type: normalizeContractText(declaration.type?.getText(parsed.sourceFile) ?? 'unknown'),
+    initializer: normalizeContractText(declaration.initializer?.getText(parsed.sourceFile) ?? ''),
+  }
+}
+
+export function completionMode(returnType: string): CompletionMode {
+  if (returnType === 'void') return 'void'
+  if (returnType.startsWith('Promise<')) return 'promise'
+  return 'sync'
+}
+
+export function codecFor(returnType: string): string {
+  if (returnType === 'void') return 'void'
+  if (returnType === 'string' || returnType === 'Promise<string>') return 'raw-string'
+  if (returnType === 'Promise<boolean>' || returnType === 'boolean') return 'boolean'
+  if (returnType.includes('number')) return 'number'
+  const promise = /^Promise<(.+)>$/.exec(returnType)
+  return `typed:${promise?.[1] ?? returnType}`
+}
+
+export function bindingFor(declaration: string, eventNames: Set<string>, name: string): NativeBinding {
+  if (eventNames.has(name)) return { kind: 'event', symbol: name }
+  if (name === 'off' || name === 'offAll') return { kind: 'event', symbol: name }
+  const native = /NativeOpenIMSDK\.([A-Za-z_$][\w$]*)/.exec(declaration)
+  if (native?.[1]) return { kind: 'native', symbol: native[1] }
+  const alias = /\breturn\s+([A-Za-z_$][\w$]*)\s*\(/.exec(declaration)
+  if (alias?.[1]) return { kind: 'facade-alias', symbol: alias[1] }
+  return { kind: 'none', symbol: '' }
+}
+
+export function dispatchArguments(eventFunctionText: string, generatedEventsSource?: string, eventName?: string): string {
+  if (eventFunctionText.includes('onVoidEvent(')) return ''
+  if (eventFunctionText.includes('onErrorEvent(')) return 'errCode, errMsg'
+  if (eventFunctionText.includes('onMessageEvent(')) return 'parseNativeMessage(payload)'
+  if (eventFunctionText.includes('onMessageListEvent(')) return 'parseNativeMessageEventList(payload)'
+  if (eventFunctionText.includes('onConversationListEvent(')) return 'parseNativeConversationEventList(payload)'
+  if (eventFunctionText.includes('onBooleanEvent(')) return "payload == 'true'"
+  if (eventFunctionText.includes('onNumberEvent(')) return 'parseFloat(payload)'
+  if (eventFunctionText.includes('onStringEvent(')) return 'payload'
+  const argumentsText = findMatchingCallArguments(eventFunctionText, 'handler')
+  const generatedArguments = generatedEventsSource != null && eventName != null
+    ? findMatchingCallArguments(generatedEventsSource, `${eventName}DispatchHandler`)
+    : undefined
+  const inferredArguments = argumentsText ?? generatedArguments
+  if (inferredArguments === undefined) throw new Error(`Cannot infer event projection from: ${eventFunctionText}`)
+  return inferredArguments
+    .replaceAll('event.payload', 'payload')
+    .replaceAll('event.errCode', 'errCode')
+    .replaceAll('event.errMsg', 'errMsg')
+    .trim()
+}
+
+export function eventDecoderForDispatchArguments(value: string): EventDecoder {
+  const normalized = normalizeContractText(value)
+  if (normalized === '') return { kind: 'void' }
+  if (normalized === 'errCode,errMsg') return { kind: 'native-error' }
+  if (normalized === "payload=='true'") return { kind: 'boolean' }
+  if (normalized === 'parseFloat(payload)') return { kind: 'number' }
+  if (normalized === 'payload') return { kind: 'raw-string' }
+  const parser = /^([A-Za-z_$][\w$]*)\(payload\)$/.exec(normalized)
+  if (parser?.[1] != null) return { kind: 'parser', symbol: parser[1] }
+  throw new Error(`Unsupported event decoder expression: ${value}`)
+}
+
+function makeEventPrelude(parsed: ParsedSource): string {
+  const helperNames = new Set([
+    'readBooleanPayload',
+    'readNumberPayload',
+    'readJSONStringField',
+    'readJSONNumberField',
+    'parseSendMessageProgress',
+  ])
+  const statements: string[] = []
+  for (const statement of parsed.sourceFile.statements) {
+    if (ts.isImportDeclaration(statement)) {
+      statements.push(statement.getText(parsed.sourceFile))
+      continue
+    }
+    if (ts.isFunctionDeclaration(statement) && statement.name && helperNames.has(statement.name.text)) {
+      statements.push(statement.getText(parsed.sourceFile))
+    }
+  }
+  return statements.join('\n')
+}
+
+export function pairValues(android: ExportedValue[], ios: ExportedValue[]): Array<[ExportedValue, ExportedValue]> {
+  const iosByName = new Map(ios.map((value) => [value.name, value]))
+  const result: Array<[ExportedValue, ExportedValue]> = []
+  for (const androidValue of android) {
+    const iosValue = iosByName.get(androidValue.name)
+    if (!iosValue) throw new Error(`iOS façade is missing export ${androidValue.name}`)
+    result.push([androidValue, iosValue])
+    iosByName.delete(androidValue.name)
+  }
+  if (iosByName.size > 0) throw new Error(`Android façade is missing exports: ${[...iosByName.keys()].join(', ')}`)
+  return result
+}
+
+export function importPublicContract(root: string): ContractDocument {
+  const existingContract = JSON.parse(readFileSync(join(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
+  const plugin = join(root, 'uni_modules/unix-openim-sdk/utssdk')
+  const interfacePath = join(plugin, 'interface.uts')
+  const androidIndexPath = join(plugin, 'app-android/index.uts')
+  const iosIndexPath = join(plugin, 'app-ios/index.uts')
+  const androidEventsPath = join(plugin, 'app-android/events.uts')
+  const iosEventsPath = join(plugin, 'app-ios/events.uts')
+  const interfaceSource = parseSource(interfacePath)
+  const androidIndex = parseSource(androidIndexPath)
+  const iosIndex = parseSource(iosIndexPath)
+  const androidEvents = parseSource(androidEventsPath)
+  const iosEvents = parseSource(iosEventsPath)
+  let stableIDs = readPublicStableIDRegistry(root)
+
+  const exportedTypes = extractExportedTypes(interfaceSource)
+  const typeIDs = reconcileStableIDs(stableIDs, 'types', exportedTypes.map((value) => value.name))
+  stableIDs = typeIDs.registry
+  const types: ContractType[] = exportedTypes.map((value, index) => ({
+    id: typeIDs.entries[index]!.id,
+    name: value.name,
+    declaration: value.declaration,
+    signatureHash: sha256(normalizeContractText(value.declaration)),
+  }))
+
+  const pairs = pairValues(extractExportedValues(androidIndex), extractExportedValues(iosIndex))
+  const constants: ContractConstant[] = []
+  const callablePairs: Array<[ExportedValue, ExportedValue]> = []
+  for (const pair of pairs) {
+    if (pair[0].isCallable) callablePairs.push(pair)
+    else {
+      const androidParts = declarationParts(pair[0], androidIndex)
+      const iosParts = declarationParts(pair[1], iosIndex)
+      if (androidParts.type !== iosParts.type || androidParts.initializer !== iosParts.initializer) {
+        throw new Error(`Constant ${pair[0].name} differs between Android and iOS`)
+      }
+      constants.push({
+        id: 0,
+        name: pair[0].name,
+        type: androidParts.type,
+        value: androidParts.initializer,
+        signatureHash: sha256(`${pair[0].name}:${androidParts.type}=${androidParts.initializer}`),
+      })
+    }
+  }
+
+  const constantIDs = reconcileStableIDs(stableIDs, 'constants', constants.map((value) => value.name))
+  stableIDs = constantIDs.registry
+  for (let index = 0; index < constants.length; index += 1) constants[index]!.id = constantIDs.entries[index]!.id
+
+  const eventNames = extractStringUnion(interfaceSource, 'OpenIMSDKEventName')
+  const eventNameSet = new Set(eventNames)
+  const eventCallableNames = new Set([...eventNames, 'off', 'offAll'])
+  const callableIDs = reconcileStableIDs(stableIDs, 'callables', callablePairs.map(([android]) => android.name))
+  stableIDs = callableIDs.registry
+  const existingCallableByName = new Map(existingContract.callables.map((value) => [value.name, value]))
+  const callables: ContractCallable[] = callablePairs.map(([android, ios], index) => {
+    if (android.signature !== ios.signature) {
+      throw new Error(`Callable ${android.name} differs by platform:\n${android.signature}\n${ios.signature}`)
+    }
+    const isEvent = eventNameSet.has(android.name)
+    const role: ContractCallable['role'] = isEvent ? 'event-subscription' : android.name === 'off' || android.name === 'offAll' ? 'event-control' : 'operation'
+    const identity = { name: android.name, role }
+    return {
+      id: callableIDs.entries[index]!.id,
+      name: android.name,
+      signature: android.signature,
+      completion: completionMode(android.returnType),
+      responseCodec: isEvent ? 'event-handler' : codecFor(android.returnType),
+      errorPolicy: android.returnType.startsWith('Promise<') ? 'frozen-native-rejection' : 'none',
+      rawString: android.returnType === 'string' || android.returnType === 'Promise<string>',
+      role,
+      testProfile: existingCallableByName.get(android.name)?.testProfile ?? inferCallableTestProfile(identity),
+      declaration: { android: android.declaration, ios: ios.declaration },
+      binding: {
+        android: bindingFor(android.declaration, eventNameSet, android.name),
+        ios: bindingFor(ios.declaration, eventNameSet, ios.name),
+        harmony: undefined,
+      },
+      signatureHash: sha256(android.signature),
+    }
+  })
+
+  const eventIDs = reconcileStableIDs(stableIDs, 'events', eventNames)
+  stableIDs = eventIDs.registry
+  const events: ContractEvent[] = eventNames.map((name, index) => {
+    const eventCallable = callables.find((callable) => callable.name === name)
+    if (!eventCallable) throw new Error(`Missing public subscription callable ${name}`)
+    const internalName = `${name}Event`
+    const androidFunction = findExportedFunction(androidEvents, internalName)
+    const iosFunction = findExportedFunction(iosEvents, internalName)
+    if (!androidFunction || !iosFunction) throw new Error(`Missing event adapter ${internalName}`)
+    const androidHandler = getParameterType(androidFunction, 0, androidEvents.sourceFile)
+    const iosHandler = getParameterType(iosFunction, 0, iosEvents.sourceFile)
+    if (normalizeContractText(androidHandler) !== normalizeContractText(iosHandler)) {
+      throw new Error(`Event handler ${name} differs by platform`)
+    }
+    const androidDispatch = dispatchArguments(androidFunction.getText(androidEvents.sourceFile), androidEvents.text, name)
+    const iosDispatch = dispatchArguments(iosFunction.getText(iosEvents.sourceFile), iosEvents.text, name)
+    if (normalizeContractText(androidDispatch) !== normalizeContractText(iosDispatch)) {
+      throw new Error(`Event decoder ${name} differs by platform`)
+    }
+    const event: ContractEvent = {
+      id: eventIDs.entries[index]!.id,
+      name,
+      callable: name,
+      handlerType: normalizeContractText(androidHandler),
+      decoder: eventDecoderForDispatchArguments(androidDispatch),
+      rawPayload: androidHandler === 'OpenIMStringEventHandler',
+      binding: {
+        android: 'bound',
+        ios: 'bound',
+        harmony: 'not-in-edition',
+      },
+      signatureHash: sha256(`${name}:${normalizeContractText(androidHandler)}`),
+    }
+    return event
+  })
+
+  const contract = withComputedSemanticHashes({
+    schemaVersion: 2,
+    edition: 'public',
+    // This field is the immutable origin of the initial façade import. Build
+    // provenance belongs in generated-manifest.json and must not rewrite it.
+    origin: existingContract.origin,
+    expected: { ...EXPECTED_PUBLIC },
+    constants,
+    types,
+    callables,
+    events,
+  } as ContractDocument)
+
+  const actual = {
+    constants: constants.length,
+    types: types.length,
+    callables: callables.length,
+    events: events.length,
+  }
+  if (JSON.stringify(actual) !== JSON.stringify(EXPECTED_PUBLIC)) {
+    throw new Error(`Public surface count mismatch: expected ${JSON.stringify(EXPECTED_PUBLIC)}, got ${JSON.stringify(actual)}`)
+  }
+
+  const contractsPath = join(root, 'contracts/base/contract.json')
+  writeText(contractsPath, JSON.stringify(contract, null, 2))
+  writePublicStableIDRegistry(root, stableIDs)
+  const constantsSet = new Set(constants.map((value) => value.name))
+  const operationSet = new Set(callables.filter((value) => value.role === 'operation').map((value) => value.name))
+  writeText(
+    join(root, 'sdk-src/uts/app-android/index.template.uts'),
+    makeIndexTemplate(androidIndex, constantsSet, eventCallableNames, operationSet),
+  )
+  writeText(
+    join(root, 'sdk-src/uts/app-ios/index.template.uts'),
+    makeIndexTemplate(iosIndex, constantsSet, eventCallableNames, operationSet),
+  )
+  writeText(join(root, 'sdk-src/uts/app-android/events.prelude.uts'), makeEventPrelude(androidEvents))
+  writeText(join(root, 'sdk-src/uts/app-ios/events.prelude.uts'), makeEventPrelude(iosEvents))
+  return contract
+}
+
+export { INDEX_MARKERS, makeIndexTemplate }

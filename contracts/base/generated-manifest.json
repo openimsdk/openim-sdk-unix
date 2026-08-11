@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 2,
+  "edition": "public",
+  "generator": "tooling/src/generate.ts#buildGeneratedOutputs",
+  "inputs": [
+    {
+      "path": "contracts/base/contract.json",
+      "sha256": "ad1da8af9a26487e9bad5e9605e56f3409975d6397c8a801229d96d9b795aced",
+      "bytes": 302815
+    },
+    {
+      "path": "sdk-src/uts/app-android/index.template.uts",
+      "sha256": "5b65bf7cc3e3980ee3f5183e3b20e71a1ed04f8131cbe4b0a5a19eed15c18e69",
+      "bytes": 23541
+    },
+    {
+      "path": "sdk-src/uts/app-ios/index.template.uts",
+      "sha256": "96953a84fd7564ce1a561cadd3259e2bd50a9fbb0019e59715afb85e23367e8b",
+      "bytes": 24189
+    },
+    {
+      "path": "sdk-src/uts/app-android/events.prelude.uts",
+      "sha256": "ffd44f11ad8249d6a8dcc6604747ec6f49e27c67b85c137af44d95e10c35b7d1",
+      "bytes": 1907
+    },
+    {
+      "path": "sdk-src/uts/app-ios/events.prelude.uts",
+      "sha256": "ffd44f11ad8249d6a8dcc6604747ec6f49e27c67b85c137af44d95e10c35b7d1",
+      "bytes": 1907
+    },
+    {
+      "path": "sdk-src/native/android/OpenIMDriverRuntime.kt",
+      "sha256": "dcd78fff4c47dd74e250457e2f4c59f88cceb6b2bafcea91e1922c90a8d13023",
+      "bytes": 6863
+    },
+    {
+      "path": "sdk-src/native/ios/OpenIMDriverRuntime.swift",
+      "sha256": "e7ba3c3bc5cd8e544f7416c35b52481b42218b494d411ca0f364e67428e20d3c",
+      "bytes": 8031
+    },
+    {
+      "path": "tooling/src/contract-integrity.ts",
+      "sha256": "671f17bd5761e450e4b6c1f215f97565bd9914d6ac6c0545d147390700df3b95",
+      "bytes": 9115
+    },
+    {
+      "path": "tooling/src/generate.ts",
+      "sha256": "995dd74053f4dae1b6768d8aeb37c87d699140e749e033f2f1c7ee794814cba2",
+      "bytes": 35924
+    },
+    {
+      "path": "tooling/src/model.ts",
+      "sha256": "413577eb624f8ad1ed23dd7e6f78d5459ad2bb639cf39a922c8b8787831eb920",
+      "bytes": 6309
+    },
+    {
+      "path": "tooling/src/platform-driver.ts",
+      "sha256": "6d603aa8ecab0deb9bbddbe4dd44d39150a79e79744e64ac072d746019a9ff25",
+      "bytes": 14571
+    },
+    {
+      "path": "tooling/src/source.ts",
+      "sha256": "948ed05ee804f4736189b35c2cb1c2f94859e38aee6f0e04b56fe82f73cb7649",
+      "bytes": 6065
+    },
+    {
+      "path": "tooling/src/template-authority.ts",
+      "sha256": "e124a0c44b68af3e119080f54bae836c63ec84341357272fcd9c4918815b988a",
+      "bytes": 2177
+    },
+    {
+      "path": "tooling/src/test-contract.ts",
+      "sha256": "58a582cc954ecd733c320154df5bf7756b16d221a612306d787ebf12e88db9f3",
+      "bytes": 26862
+    },
+    {
+      "path": "tooling/src/test-profile.ts",
+      "sha256": "c26f63777569466e1a7a6bfc92ec0cbc6ea6010b2db2de3ae3401dce71334d9f",
+      "bytes": 3026
+    }
+  ],
+  "outputs": [
+    {
+      "path": "pages/index/openim-automation-profiles.uts",
+      "sha256": "975d36ab8f4ae8abf659b8a9ec51b569d5aa84c85ced6b175c610b3365422140",
+      "bytes": 33177
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/interface.uts",
+      "sha256": "ad67bec61ae63a421cb5d34a604ac704bd8ef458ff0abb1342e5356c7dba33b1",
+      "bytes": 52401
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/index.uts",
+      "sha256": "f8709b6de64f743b9f2278749afdf4d2f36aabd2b66d26e880c958f38a17effe",
+      "bytes": 88680
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts",
+      "sha256": "8c5fa16ec4b4e10360836876ee90998c1456a3f9acf5cf480598fae0c29b413b",
+      "bytes": 90106
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/events.uts",
+      "sha256": "3dd8a993b6e23b40a49bfd5ca6a06addced2ae752f77ee98a66f20ab49591398",
+      "bytes": 129937
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts",
+      "sha256": "3dd8a993b6e23b40a49bfd5ca6a06addced2ae752f77ee98a66f20ab49591398",
+      "bytes": 129937
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMDriverRuntime.kt",
+      "sha256": "6e58c6568431991c56c27197d74fbb9067a9a902d16aa02e4d5272e75ab2baff",
+      "bytes": 6919
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMDriverRuntime.swift",
+      "sha256": "2467c2980c783a92f0278eabcb90c5faa7b94934fc388b32c3abe7b3fcf82642",
+      "bytes": 8087
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/platform-driver.uts",
+      "sha256": "f99d9f6a828693dc9c37fdd6d301f9419d77f7daf1bf550d442d2a0d06bfbce2",
+      "bytes": 783
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/platform-driver.uts",
+      "sha256": "287cc48324c07023dd78d2539e51bbf43493b065a75fa564a829d8abb8a9d559",
+      "bytes": 716
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-android/OpenIMCoreAdapter.kt",
+      "sha256": "9da4dc75ba2694801870bf0b06235059c94b16dbf8520706e647b9c97a31b5d9",
+      "bytes": 25676
+    },
+    {
+      "path": "uni_modules/unix-openim-sdk/utssdk/app-ios/OpenIMCoreAdapter.swift",
+      "sha256": "5302b9e6cba116ba33c9d253b86183ee300b65835a4d7df5b7d2d7ea2d013996",
+      "bytes": 31139
+    },
+    {
+      "path": "contracts/base/surface.snapshot.json",
+      "sha256": "f06162c5bd8e2a0483aa22fa57d3149cea6ad90c3c79749495682e2065ce2623",
+      "bytes": 106843
+    },
+    {
+      "path": "contracts/base/response-schemas.json",
+      "sha256": "c402e3f00db1b54703c3c07bbc1a12b9745ae5cf09676545a3c889795f22d20e",
+      "bytes": 183438
+    },
+    {
+      "path": "contracts/base/test-disposition.json",
+      "sha256": "20331f164ac0eaad8e41d3295d20fe73ae5d46dc42bc518d15638c46302d95fe",
+      "bytes": 195622
+    }
+  ]
+}

@@ -2,8 +2,8 @@ package uts.sdk.modules.unixOpenimSdk
 
 import open_im_sdk.Open_im_sdk
 import open_im_sdk_callback.Base
-import open_im_sdk_callback.OnBatchMsgListener
 import open_im_sdk_callback.OnAdvancedMsgListener
+import open_im_sdk_callback.OnBatchMsgListener
 import open_im_sdk_callback.OnConnListener
 import open_im_sdk_callback.OnConversationListener
 import open_im_sdk_callback.OnCustomBusinessListener
@@ -22,38 +22,62 @@ typealias OpenIMNativeEvent = (String, String, Number, String) -> Unit
 typealias OpenIMMessageEvent = (String, String) -> Unit
 typealias OpenIMConnEvent = (String, Number, String) -> Unit
 
+private fun readOpenIMUploadCancellationID(data: String): String {
+  return try {
+    val request = JSONObject(data)
+    val cancelID = request.optString("cancelID")
+    if (cancelID.isNotEmpty()) cancelID else request.optString("uuid")
+  } catch (_: Throwable) {
+    ""
+  }
+}
+
+private fun readOpenIMClientMsgID(message: String): String {
+  return try {
+    JSONObject(message).optString("clientMsgID")
+  } catch (_: Throwable) {
+    ""
+  }
+}
+
 class OpenIMBaseCallback(
   private val resolve: OpenIMResolveString,
   private val reject: OpenIMReject
 ) : Base {
+  internal val ticket = OpenIMDriverRuntime.register(resolve, reject)
+
   override fun onSuccess(data: String?) {
-    resolve(data ?: "")
+    OpenIMDriverRuntime.resolve(ticket, data ?: "")
   }
 
   override fun onError(errCode: Int, errMsg: String?) {
-    reject(errCode, errMsg ?: "")
+    OpenIMDriverRuntime.reject(ticket, errCode, errMsg ?: "")
   }
 }
 
 class OpenIMSendMessageCallback(
-  private val operationID: String,
+  private val clientMsgID: String,
   private val resolve: OpenIMResolveString,
   private val reject: OpenIMReject,
   private val emit: OpenIMNativeEvent?
 ) : SendMsgCallBack {
+  private val ticket = OpenIMDriverRuntime.register(resolve, reject)
+
   override fun onSuccess(data: String?) {
-    resolve(data ?: "")
+    OpenIMDriverRuntime.resolve(ticket, data ?: "")
   }
 
   override fun onError(errCode: Int, errMsg: String?) {
-    reject(errCode, errMsg ?: "")
+    OpenIMDriverRuntime.reject(ticket, errCode, errMsg ?: "")
   }
 
   override fun onProgress(progress: Long) {
     val payload = JSONObject()
-      .put("operationID", operationID)
+      .put("clientMsgID", clientMsgID)
       .put("progress", progress)
-    emit?.invoke("onSendMessageProgress", payload.toString(), 0, "")
+    OpenIMDriverRuntime.progress(ticket) {
+      emit?.invoke("onSendMessageProgress", payload.toString(), 0, "")
+    }
   }
 }
 
@@ -111,6 +135,7 @@ class OpenIMAdvancedMsgListenerNative(
   override fun onRecvC2CReadReceipt(msgReceiptList: String?) {
     emit("onRecvC2CReadReceipt", msgReceiptList ?: "")
   }
+
 }
 
 class OpenIMBatchMsgListenerNative(private val emit: OpenIMMessageEvent) : OnBatchMsgListener {
@@ -161,18 +186,20 @@ class OpenIMGroupListenerNative(private val emit: OpenIMMessageEvent) : OnGroupL
 
 class OpenIMUserListenerNative(private val emit: OpenIMMessageEvent) : OnUserListener {
   override fun onSelfInfoUpdated(userInfo: String?) { emit("onSelfInfoUpdated", userInfo ?: "") }
+  // UTS-COMPAT-EDITION-001: Public Core exposes these callbacks, but the frozen public UTS contract does not.
   override fun onUserCommandAdd(userCommand: String?) {}
   override fun onUserCommandDelete(userCommand: String?) {}
   override fun onUserCommandUpdate(userCommand: String?) {}
   override fun onUserStatusChanged(userOnlineStatus: String?) { emit("onUserStatusChanged", userOnlineStatus ?: "") }
 }
 
-class OpenIMUploadFileCallback(
+internal class OpenIMUploadFileCallback(
+  private val ticket: OpenIMDriverTicket,
   private val emit: OpenIMMessageEvent
 ) : UploadFileCallback {
   private fun emitProgress(progress: Long) {
     val payload = JSONObject().put("progress", progress)
-    emit("onUploadFileProgress", payload.toString())
+    OpenIMDriverRuntime.progress(ticket) { emit("onUploadFileProgress", payload.toString()) }
   }
 
   override fun complete(size: Long, url: String?, typ: Long) {}
@@ -192,18 +219,19 @@ class OpenIMUploadFileCallback(
   override fun uploadPartComplete(partSize: Long, num: Long, etag: String?) {}
 }
 
-class OpenIMUploadLogProgress(
+internal class OpenIMUploadLogProgress(
+  private val ticket: OpenIMDriverTicket,
   private val emit: OpenIMMessageEvent
 ) : UploadLogProgress {
   override fun onProgress(current: Long, size: Long) {
     val percent = if (size > 0) current * 100 / size else 0L
     val payload = JSONObject().put("progress", percent)
-    emit("onUploadLogsProgress", payload.toString())
+    OpenIMDriverRuntime.progress(ticket) { emit("onUploadLogsProgress", payload.toString()) }
   }
 }
 
 object NativeOpenIMSDK {
-  private val connListener = OpenIMConnListener()
+  private var connListener: OpenIMConnListener? = null
   private var advancedMsgListener: OpenIMAdvancedMsgListenerNative? = null
   private var batchMsgListener: OpenIMBatchMsgListenerNative? = null
   private var conversationListener: OpenIMConversationListenerNative? = null
@@ -213,6 +241,8 @@ object NativeOpenIMSDK {
   private var userListener: OpenIMUserListenerNative? = null
   private var nativeEventEmit: OpenIMNativeEvent? = null
   private var sdkInitialized: Boolean = false
+  private var sessionEpoch: Long = -1
+  private var listenersBoundEpoch: Long = -1
 
   fun uploadFile(
     operationID: String,
@@ -220,21 +250,36 @@ object NativeOpenIMSDK {
     resolve: OpenIMResolveString,
     reject: OpenIMReject
   ) {
+    val callback = OpenIMBaseCallback(resolve, reject)
+    OpenIMDriverRuntime.registerCancellable(readOpenIMUploadCancellationID(data), callback.ticket)
     Open_im_sdk.uploadFile(
-      OpenIMBaseCallback(resolve, reject),
+      callback,
       operationID,
       data,
-      OpenIMUploadFileCallback { eventName, payload ->
+      OpenIMUploadFileCallback(callback.ticket) { eventName, payload ->
         nativeEventEmit?.invoke(eventName, payload, 0, "")
       }
     )
   }
 
   fun initSDK(operationID: String, sdkConfig: String): String {
-    val initialized = Open_im_sdk.initSDK(connListener, operationID, sdkConfig)
+    val epoch = OpenIMDriverRuntime.startSession()
+    unbindNativeEventListeners()
+    sessionEpoch = epoch
+    val listener = OpenIMConnListener()
+    listener.emit = { eventName, errCode, errMsg ->
+      OpenIMDriverRuntime.emitEvent(epoch, allowWhileStarting = true) {
+        nativeEventEmit?.invoke(eventName, "", errCode, errMsg)
+      }
+    }
+    connListener = listener
+    val initialized = Open_im_sdk.initSDK(listener, operationID, sdkConfig)
     sdkInitialized = initialized
+    OpenIMDriverRuntime.markInitialized(epoch, initialized)
     if (initialized) {
       applyNativeEventListeners()
+    } else {
+      connListener = null
     }
     return initialized.toString()
   }
@@ -252,8 +297,17 @@ object NativeOpenIMSDK {
   }
 
   fun unInitSDK(operationID: String): String {
-    Open_im_sdk.unInitSDK(operationID)
+    val stoppingEpoch = OpenIMDriverRuntime.shutdown()
     sdkInitialized = false
+    connListener?.emit = null
+    unbindNativeEventListeners()
+    try {
+      Open_im_sdk.unInitSDK(operationID)
+    } finally {
+      connListener = null
+      sessionEpoch = -1
+      OpenIMDriverRuntime.finishShutdown(stoppingEpoch)
+    }
     return ""
   }
 
@@ -748,7 +802,8 @@ object NativeOpenIMSDK {
   }
 
   fun uploadLogs(operationID: String, line: Number, ex: String, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.uploadLogs(OpenIMBaseCallback(resolve, reject), operationID, line.toLong(), ex, OpenIMUploadLogProgress { eventName, payload ->
+    val callback = OpenIMBaseCallback(resolve, reject)
+    Open_im_sdk.uploadLogs(callback, operationID, line.toLong(), ex, OpenIMUploadLogProgress(callback.ticket) { eventName, payload ->
       nativeEventEmit?.invoke(eventName, payload, 0, "")
     })
   }
@@ -770,11 +825,11 @@ object NativeOpenIMSDK {
   }
 
   fun sendMessage(operationID: String, message: String, recvID: String, groupID: String, offlinePushInfo: String, isOnlineOnly: Boolean, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.sendMessage(OpenIMSendMessageCallback(operationID, resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
+    Open_im_sdk.sendMessage(OpenIMSendMessageCallback(readOpenIMClientMsgID(message), resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
   }
 
   fun sendMessageNotOss(operationID: String, message: String, recvID: String, groupID: String, offlinePushInfo: String, isOnlineOnly: Boolean, resolve: OpenIMResolveString, reject: OpenIMReject) {
-    Open_im_sdk.sendMessageNotOss(OpenIMSendMessageCallback(operationID, resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
+    Open_im_sdk.sendMessageNotOss(OpenIMSendMessageCallback(readOpenIMClientMsgID(message), resolve, reject, nativeEventEmit), operationID, message, recvID, groupID, offlinePushInfo, isOnlineOnly)
   }
 
   fun createTextMessage(operationID: String, text: String): String {
@@ -858,14 +913,13 @@ object NativeOpenIMSDK {
   }
 
   private fun applyNativeEventListeners() {
-    val emit = nativeEventEmit ?: return
-    val connEmit: OpenIMConnEvent = { eventName, errCode, errMsg ->
-      emit(eventName, "", errCode, errMsg)
-    }
+    if (!sdkInitialized || nativeEventEmit == null || sessionEpoch < 0 || listenersBoundEpoch == sessionEpoch) return
+    val epoch = sessionEpoch
     val messageEmit: OpenIMMessageEvent = { eventName, payload ->
-      emit(eventName, payload, 0, "")
+      OpenIMDriverRuntime.emitEvent(epoch) {
+        nativeEventEmit?.invoke(eventName, payload, 0, "")
+      }
     }
-    connListener.emit = connEmit
     advancedMsgListener = OpenIMAdvancedMsgListenerNative(messageEmit)
     batchMsgListener = OpenIMBatchMsgListenerNative(messageEmit)
     conversationListener = OpenIMConversationListenerNative(messageEmit)
@@ -880,13 +934,25 @@ object NativeOpenIMSDK {
     Open_im_sdk.setFriendListener(friendshipListener)
     Open_im_sdk.setGroupListener(groupListener)
     Open_im_sdk.setUserListener(userListener)
+    listenersBoundEpoch = epoch
+  }
+
+  private fun unbindNativeEventListeners() {
+    if (listenersBoundEpoch < 0) return
+    // UTS-COMPAT-NATIVE-LISTENER-001: the locked Go Core panics when a listener setter receives null.
+    // shutdown() invalidates the epoch first; Core unInit owns native listener release.
+    advancedMsgListener = null
+    batchMsgListener = null
+    conversationListener = null
+    customBusinessListener = null
+    friendshipListener = null
+    groupListener = null
+    userListener = null
+    listenersBoundEpoch = -1
   }
 
   fun bindNativeEvents(emit: OpenIMNativeEvent) {
     nativeEventEmit = emit
-    connListener.emit = { eventName, errCode, errMsg ->
-      emit(eventName, "", errCode, errMsg)
-    }
     if (sdkInitialized) {
       applyNativeEventListeners()
     }

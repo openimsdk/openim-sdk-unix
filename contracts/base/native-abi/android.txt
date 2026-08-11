@@ -1,0 +1,323 @@
+## open_im_sdk.LoginMgr
+public final class open_im_sdk.LoginMgr implements go.Seq$Proxy {
+  public final int incRefnum();
+  public open_im_sdk.LoginMgr();
+  public native open_im_sdk_callback.OnAdvancedMsgListener advancedMsgListener();
+  public native open_im_sdk_callback.OnBatchMsgListener batchMsgListener();
+  public native open_im_sdk_callback.OnCustomBusinessListener businessListener();
+  public native open_im_sdk_callback.OnConversationListener conversationListener();
+  public native void exit();
+  public native open_im_sdk_callback.OnFriendshipListener friendshipListener();
+  public native java.lang.String getLoginUserID();
+  public native java.lang.String getToken();
+  public native open_im_sdk_callback.OnGroupListener groupListener();
+  public native open_im_sdk_callback.OnMessageKvInfoListener msgKvListener();
+  public native void setAdvancedMsgListener(open_im_sdk_callback.OnAdvancedMsgListener);
+  public native void setBatchMsgListener(open_im_sdk_callback.OnBatchMsgListener);
+  public native void setConversationListener(open_im_sdk_callback.OnConversationListener);
+  public native void setCustomBusinessListener(open_im_sdk_callback.OnCustomBusinessListener);
+  public native void setFriendshipListener(open_im_sdk_callback.OnFriendshipListener);
+  public native void setGroupListener(open_im_sdk_callback.OnGroupListener);
+  public native void setMessageKvInfoListener(open_im_sdk_callback.OnMessageKvInfoListener);
+  public native void setUserListener(open_im_sdk_callback.OnUserListener);
+  public native open_im_sdk_callback.OnSignalingListener signalingListener();
+  public native void unInitSDK();
+  public native open_im_sdk_callback.OnUserListener userListener();
+  public boolean equals(java.lang.Object);
+  public int hashCode();
+  public java.lang.String toString();
+}
+
+## open_im_sdk.Open_im_sdk
+public abstract class open_im_sdk.Open_im_sdk {
+  public static final long Logged;
+  public static final long Logging;
+  public static final long LogoutStatus;
+  public static final java.lang.String LogoutTips;
+  public static void touch();
+  public static native void setErrNotImplemented(java.lang.Exception);
+  public static native java.lang.Exception getErrNotImplemented();
+  public static native void setUserForSDK(open_im_sdk.LoginMgr);
+  public static native open_im_sdk.LoginMgr getUserForSDK();
+  public static native void acceptFriendApplication(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void acceptGroupApplication(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native void addBlack(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void addFriend(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void addUserCommand(open_im_sdk_callback.Base, java.lang.String, int, java.lang.String, java.lang.String);
+  public static native void changeGroupMemberMute(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, long);
+  public static native void changeGroupMute(open_im_sdk_callback.Base, java.lang.String, java.lang.String, boolean);
+  public static native void changeInputStates(open_im_sdk_callback.Base, java.lang.String, java.lang.String, boolean);
+  public static native void checkFriend(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void checkResourceLoad(open_im_sdk.LoginMgr, java.lang.String) throws java.lang.Exception;
+  public static native void clearConversationAndDeleteAllMsg(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native java.lang.String createAdvancedQuoteMessage(java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createAdvancedTextMessage(java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createCardMessage(java.lang.String, java.lang.String);
+  public static native java.lang.String createCustomMessage(java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createFaceMessage(java.lang.String, long, java.lang.String);
+  public static native java.lang.String createFileMessage(java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createFileMessageByURL(java.lang.String, java.lang.String);
+  public static native java.lang.String createFileMessageFromFullPath(java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createForwardMessage(java.lang.String, java.lang.String);
+  public static native void createGroup(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native java.lang.String createImageMessage(java.lang.String, java.lang.String);
+  public static native java.lang.String createImageMessageByURL(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createImageMessageFromFullPath(java.lang.String, java.lang.String);
+  public static native java.lang.String createLocationMessage(java.lang.String, java.lang.String, double, double);
+  public static native java.lang.String createMergerMessage(java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createQuoteMessage(java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createSoundMessage(java.lang.String, java.lang.String, long);
+  public static native java.lang.String createSoundMessageByURL(java.lang.String, java.lang.String);
+  public static native java.lang.String createSoundMessageFromFullPath(java.lang.String, java.lang.String, long);
+  public static native java.lang.String createTextAtMessage(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native java.lang.String createTextMessage(java.lang.String, java.lang.String);
+  public static native java.lang.String createVideoMessage(java.lang.String, java.lang.String, java.lang.String, long, java.lang.String);
+  public static native java.lang.String createVideoMessageByURL(java.lang.String, java.lang.String);
+  public static native java.lang.String createVideoMessageFromFullPath(java.lang.String, java.lang.String, java.lang.String, long, java.lang.String);
+  public static native void deleteAllMsgFromLocal(open_im_sdk_callback.Base, java.lang.String);
+  public static native void deleteAllMsgFromLocalAndSvr(open_im_sdk_callback.Base, java.lang.String);
+  public static native void deleteConversationAndDeleteAllMsg(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void deleteFriend(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void deleteMessage(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void deleteMessageFromLocalStorage(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void deleteUserCommand(open_im_sdk_callback.Base, java.lang.String, int, java.lang.String);
+  public static native void dismissGroup(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void findMessageList(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getAdvancedHistoryMessageList(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getAdvancedHistoryMessageListReverse(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getAllConversationList(open_im_sdk_callback.Base, java.lang.String);
+  public static native void getAllUserCommands(open_im_sdk_callback.Base, java.lang.String, int);
+  public static native java.lang.String getAtAllTag(java.lang.String);
+  public static native void getBlackList(open_im_sdk_callback.Base, java.lang.String);
+  public static native java.lang.String getConversationIDBySessionType(java.lang.String, java.lang.String, long);
+  public static native void getConversationListSplit(open_im_sdk_callback.Base, java.lang.String, long, long);
+  public static native void getFriendApplicationListAsApplicant(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getFriendApplicationListAsRecipient(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getFriendApplicationUnhandledCount(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getFriendList(open_im_sdk_callback.Base, java.lang.String, boolean);
+  public static native void getFriendListPage(open_im_sdk_callback.Base, java.lang.String, int, int, boolean);
+  public static native void getGroupApplicationListAsApplicant(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getGroupApplicationListAsRecipient(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getGroupApplicationUnhandledCount(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getGroupMemberList(open_im_sdk_callback.Base, java.lang.String, java.lang.String, int, int, int);
+  public static native void getGroupMemberListByJoinTimeFilter(open_im_sdk_callback.Base, java.lang.String, java.lang.String, int, int, long, long, java.lang.String);
+  public static native void getGroupMemberOwnerAndAdmin(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getInputStates(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void getJoinedGroupList(open_im_sdk_callback.Base, java.lang.String);
+  public static native void getJoinedGroupListPage(open_im_sdk_callback.Base, java.lang.String, int, int);
+  public static native long getLoginStatus(java.lang.String);
+  public static native java.lang.String getLoginUserID();
+  public static native void getMultipleConversation(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getOneConversation(open_im_sdk_callback.Base, java.lang.String, int, java.lang.String);
+  public static native java.lang.String getSdkVersion();
+  public static native void getSelfUserInfo(open_im_sdk_callback.Base, java.lang.String);
+  public static native void getSpecifiedFriendsInfo(open_im_sdk_callback.Base, java.lang.String, java.lang.String, boolean);
+  public static native void getSpecifiedGroupMembersInfo(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void getSpecifiedGroupsInfo(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getSubscribeUsersStatus(open_im_sdk_callback.Base, java.lang.String);
+  public static native void getTotalUnreadMsgCount(open_im_sdk_callback.Base, java.lang.String);
+  public static native void getUserStatus(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void getUsersInGroup(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void getUsersInfo(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void hideAllConversations(open_im_sdk_callback.Base, java.lang.String);
+  public static native void hideConversation(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native boolean initSDK(open_im_sdk_callback.OnConnListener, java.lang.String, java.lang.String);
+  public static native void insertGroupMessageToLocalStorage(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native void insertSingleMessageToLocalStorage(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native void inviteUserToGroup(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native void isJoinGroup(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void joinGroup(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, int, java.lang.String);
+  public static native void kickGroupMember(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native void login(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void logout(open_im_sdk_callback.Base, java.lang.String);
+  public static native void logs(open_im_sdk_callback.Base, java.lang.String, long, java.lang.String, long, java.lang.String, java.lang.String, java.lang.String);
+  public static native void markAllConversationMessageAsRead(open_im_sdk_callback.Base, java.lang.String);
+  public static native void markConversationMessageAsRead(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void markMessagesAsReadByMsgID(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void networkStatusChanged(open_im_sdk_callback.Base, java.lang.String);
+  public static native open_im_sdk.LoginMgr newLoginMgr();
+  public static native void quitGroup(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void refuseFriendApplication(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void refuseGroupApplication(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native void removeBlack(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void revokeMessage(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void searchConversation(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void searchFriends(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void searchGroupMembers(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void searchGroups(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void searchLocalMessages(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void sendMessage(open_im_sdk_callback.SendMsgCallBack, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean);
+  public static native void sendMessageNotOss(open_im_sdk_callback.SendMsgCallBack, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean);
+  public static native void setAdvancedMsgListener(open_im_sdk_callback.OnAdvancedMsgListener);
+  public static native void setAppBackgroundStatus(open_im_sdk_callback.Base, java.lang.String, boolean);
+  public static native void setAppBadge(open_im_sdk_callback.Base, java.lang.String, int);
+  public static native void setBatchMsgListener(open_im_sdk_callback.OnBatchMsgListener);
+  public static native void setConversation(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void setConversationDraft(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void setConversationListener(open_im_sdk_callback.OnConversationListener);
+  public static native void setCustomBusinessListener(open_im_sdk_callback.OnCustomBusinessListener);
+  public static native void setFriendListener(open_im_sdk_callback.OnFriendshipListener);
+  public static native void setGroupInfo(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void setGroupListener(open_im_sdk_callback.OnGroupListener);
+  public static native void setGroupMemberInfo(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void setMessageKvInfoListener(open_im_sdk_callback.OnMessageKvInfoListener);
+  public static native void setMessageLocalEx(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+  public static native void setSelfInfo(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void setUserListener(open_im_sdk_callback.OnUserListener);
+  public static native void subscribeUsersStatus(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void transferGroupOwner(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void typingStatusUpdate(open_im_sdk_callback.Base, java.lang.String, java.lang.String, java.lang.String);
+  public static native void unInitSDK(java.lang.String);
+  public static native void unsubscribeUsersStatus(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void updateFcmToken(open_im_sdk_callback.Base, java.lang.String, java.lang.String, long);
+  public static native void updateFriends(open_im_sdk_callback.Base, java.lang.String, java.lang.String);
+  public static native void uploadFile(open_im_sdk_callback.Base, java.lang.String, java.lang.String, open_im_sdk_callback.UploadFileCallback);
+  public static native void uploadLogs(open_im_sdk_callback.Base, java.lang.String, long, java.lang.String, open_im_sdk_callback.UploadLogProgress);
+}
+
+## open_im_sdk_callback.Base
+public interface open_im_sdk_callback.Base {
+  public abstract void onError(int, java.lang.String);
+  public abstract void onSuccess(java.lang.String);
+}
+
+## open_im_sdk_callback.OnAdvancedMsgListener
+public interface open_im_sdk_callback.OnAdvancedMsgListener {
+  public abstract void onMsgDeleted(java.lang.String);
+  public abstract void onNewRecvMessageRevoked(java.lang.String);
+  public abstract void onRecvC2CReadReceipt(java.lang.String);
+  public abstract void onRecvNewMessage(java.lang.String);
+  public abstract void onRecvOfflineNewMessage(java.lang.String);
+  public abstract void onRecvOnlineOnlyMessage(java.lang.String);
+}
+
+## open_im_sdk_callback.OnBatchMsgListener
+public interface open_im_sdk_callback.OnBatchMsgListener {
+  public abstract void onRecvNewMessages(java.lang.String);
+  public abstract void onRecvOfflineNewMessages(java.lang.String);
+}
+
+## open_im_sdk_callback.OnConnListener
+public interface open_im_sdk_callback.OnConnListener {
+  public abstract void onConnectFailed(int, java.lang.String);
+  public abstract void onConnectSuccess();
+  public abstract void onConnecting();
+  public abstract void onKickedOffline();
+  public abstract void onUserTokenExpired();
+  public abstract void onUserTokenInvalid(java.lang.String);
+}
+
+## open_im_sdk_callback.OnConversationListener
+public interface open_im_sdk_callback.OnConversationListener {
+  public abstract void onConversationChanged(java.lang.String);
+  public abstract void onConversationUserInputStatusChanged(java.lang.String);
+  public abstract void onNewConversation(java.lang.String);
+  public abstract void onSyncServerFailed(boolean);
+  public abstract void onSyncServerFinish(boolean);
+  public abstract void onSyncServerProgress(long);
+  public abstract void onSyncServerStart(boolean);
+  public abstract void onTotalUnreadMessageCountChanged(int);
+}
+
+## open_im_sdk_callback.OnCustomBusinessListener
+public interface open_im_sdk_callback.OnCustomBusinessListener {
+  public abstract void onRecvCustomBusinessMessage(java.lang.String);
+}
+
+## open_im_sdk_callback.OnFriendshipListener
+public interface open_im_sdk_callback.OnFriendshipListener {
+  public abstract void onBlackAdded(java.lang.String);
+  public abstract void onBlackDeleted(java.lang.String);
+  public abstract void onFriendAdded(java.lang.String);
+  public abstract void onFriendApplicationAccepted(java.lang.String);
+  public abstract void onFriendApplicationAdded(java.lang.String);
+  public abstract void onFriendApplicationDeleted(java.lang.String);
+  public abstract void onFriendApplicationRejected(java.lang.String);
+  public abstract void onFriendDeleted(java.lang.String);
+  public abstract void onFriendInfoChanged(java.lang.String);
+}
+
+## open_im_sdk_callback.OnFriendshipListenerSdk
+public interface open_im_sdk_callback.OnFriendshipListenerSdk {
+}
+
+## open_im_sdk_callback.OnGroupListener
+public interface open_im_sdk_callback.OnGroupListener {
+  public abstract void onGroupApplicationAccepted(java.lang.String);
+  public abstract void onGroupApplicationAdded(java.lang.String);
+  public abstract void onGroupApplicationDeleted(java.lang.String);
+  public abstract void onGroupApplicationRejected(java.lang.String);
+  public abstract void onGroupDismissed(java.lang.String);
+  public abstract void onGroupInfoChanged(java.lang.String);
+  public abstract void onGroupMemberAdded(java.lang.String);
+  public abstract void onGroupMemberDeleted(java.lang.String);
+  public abstract void onGroupMemberInfoChanged(java.lang.String);
+  public abstract void onJoinedGroupAdded(java.lang.String);
+  public abstract void onJoinedGroupDeleted(java.lang.String);
+}
+
+## open_im_sdk_callback.OnListenerForService
+public interface open_im_sdk_callback.OnListenerForService {
+  public abstract void onFriendApplicationAccepted(java.lang.String);
+  public abstract void onFriendApplicationAdded(java.lang.String);
+  public abstract void onGroupApplicationAccepted(java.lang.String);
+  public abstract void onGroupApplicationAdded(java.lang.String);
+  public abstract void onRecvNewMessage(java.lang.String);
+}
+
+## open_im_sdk_callback.OnMessageKvInfoListener
+public interface open_im_sdk_callback.OnMessageKvInfoListener {
+  public abstract void onMessageKvInfoChanged(java.lang.String);
+}
+
+## open_im_sdk_callback.OnSignalingListener
+public interface open_im_sdk_callback.OnSignalingListener {
+  public abstract void onHangUp(java.lang.String);
+  public abstract void onInvitationCancelled(java.lang.String);
+  public abstract void onInvitationTimeout(java.lang.String);
+  public abstract void onInviteeAccepted(java.lang.String);
+  public abstract void onInviteeAcceptedByOtherDevice(java.lang.String);
+  public abstract void onInviteeRejected(java.lang.String);
+  public abstract void onInviteeRejectedByOtherDevice(java.lang.String);
+  public abstract void onReceiveNewInvitation(java.lang.String);
+  public abstract void onRoomParticipantConnected(java.lang.String);
+  public abstract void onRoomParticipantDisconnected(java.lang.String);
+}
+
+## open_im_sdk_callback.OnUserListener
+public interface open_im_sdk_callback.OnUserListener {
+  public abstract void onSelfInfoUpdated(java.lang.String);
+  public abstract void onUserCommandAdd(java.lang.String);
+  public abstract void onUserCommandDelete(java.lang.String);
+  public abstract void onUserCommandUpdate(java.lang.String);
+  public abstract void onUserStatusChanged(java.lang.String);
+}
+
+## open_im_sdk_callback.Open_im_sdk_callback
+public abstract class open_im_sdk_callback.Open_im_sdk_callback {
+  public static void touch();
+}
+
+## open_im_sdk_callback.SendMsgCallBack
+public interface open_im_sdk_callback.SendMsgCallBack extends open_im_sdk_callback.Base {
+  public abstract void onError(int, java.lang.String);
+  public abstract void onProgress(long);
+  public abstract void onSuccess(java.lang.String);
+}
+
+## open_im_sdk_callback.UploadFileCallback
+public interface open_im_sdk_callback.UploadFileCallback {
+  public abstract void complete(long, java.lang.String, long);
+  public abstract void hashPartComplete(java.lang.String, java.lang.String);
+  public abstract void hashPartProgress(long, long, java.lang.String);
+  public abstract void open(long);
+  public abstract void partSize(long, long);
+  public abstract void uploadComplete(long, long, long);
+  public abstract void uploadID(java.lang.String);
+  public abstract void uploadPartComplete(long, long, java.lang.String);
+}
+
+## open_im_sdk_callback.UploadLogProgress
+public interface open_im_sdk_callback.UploadLogProgress {
+  public abstract void onProgress(long, long);
+}
