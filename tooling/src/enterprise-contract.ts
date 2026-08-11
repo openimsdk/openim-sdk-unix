@@ -73,6 +73,10 @@ function writeText(path: string, value: string): void {
   writeFileSync(path, value.endsWith('\n') ? value : `${value}\n`)
 }
 
+export function canonicalCapabilityNames(values: Iterable<string>): string[] {
+  return [...new Set(values)].sort()
+}
+
 export function preserveEnterpriseCallableAuthority(
   existing: ContractCallable,
   extracted: ContractCallable,
@@ -519,21 +523,21 @@ export function verifyEnterpriseDelta(
   for (const value of delta.types) assert(value.signatureHash === semanticHashForType(value), `Enterprise type semantic hash is stale: ${value.name}`)
   for (const value of delta.callables) assert(value.signatureHash === semanticHashForCallable(value), `Enterprise callable semantic hash is stale: ${value.name}`)
   for (const value of delta.events) assert(value.signatureHash === semanticHashForEvent(value), `Enterprise event semantic hash is stale: ${value.name}`)
-  const unsupported = delta.events
+  const unsupported = canonicalCapabilityNames(delta.events
     .filter((event) => event.binding.harmony === 'unsupported-by-native-abi')
-    .map((event) => event.name)
+    .map((event) => event.name))
   const harmonyProjection = JSON.parse(
     readFileSync(join(privateRoot, ENTERPRISE_HARMONY_PROJECTION_PATH), 'utf8'),
   ) as {
     callables: Array<{ name: string; binding?: string }>
     events: Array<{ name: string; binding: string }>
   }
-  const expectedUnsupportedEvents = harmonyProjection.events
+  const expectedUnsupportedEvents = canonicalCapabilityNames(harmonyProjection.events
     .filter((event) => event.binding === 'unsupported-by-native-abi')
-    .map((event) => event.name)
-  const expectedUnsupportedOperations = harmonyProjection.callables
+    .map((event) => event.name))
+  const expectedUnsupportedOperations = canonicalCapabilityNames(harmonyProjection.callables
     .filter((callable) => callable.binding === 'unsupported-by-native-abi')
-    .map((callable) => callable.name)
+    .map((callable) => callable.name))
   assert(JSON.stringify(unsupported) === JSON.stringify(expectedUnsupportedEvents), 'Enterprise unsupported event projection drifted')
   const responseSchemas = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/response-schemas.json'), 'utf8'))
   const expectedResponseSchemas = buildEnterpriseResponseSchemas(base, delta)
@@ -597,11 +601,11 @@ export function verifyEnterpriseDelta(
     assert(run.explicitSuccess && !run.failureMarker && run.shellExitCode === 0, 'Harmony clean run did not certify success')
   }
   assert(
-    JSON.stringify(harmonyABI.explicitlyUnsupportedContractEvents) === JSON.stringify(expectedUnsupportedEvents),
+    JSON.stringify(canonicalCapabilityNames(harmonyABI.explicitlyUnsupportedContractEvents)) === JSON.stringify(expectedUnsupportedEvents),
     'Harmony ABI unsupported event list changed',
   )
   assert(
-    JSON.stringify(harmonyABI.explicitlyUnsupportedContractOperations) === JSON.stringify(expectedUnsupportedOperations),
+    JSON.stringify(canonicalCapabilityNames(harmonyABI.explicitlyUnsupportedContractOperations)) === JSON.stringify(expectedUnsupportedOperations),
     'Harmony ABI unsupported operation list changed',
   )
   const harPath = join(privateRoot, harmonyABI.artifactPath)
