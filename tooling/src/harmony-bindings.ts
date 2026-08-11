@@ -67,7 +67,6 @@ const HARMONY_METHOD_ALIASES: Record<string, string> = {
 const HARMONY_LOCAL_OR_UNSUPPORTED_OPERATIONS = new Set([
   'getLoginUserID',
   'getOpenIMDataPath',
-  'updateFcmToken',
 ])
 
 const HARMONY_SPECIAL_METHODS = new Set([
@@ -116,10 +115,10 @@ export function harmonyTypedMethods(privateRoot: string): HarmonyTypedMethod[] {
 
 export function harmonyContractMethodBindings(privateRoot: string): HarmonyContractMethodBinding[] {
   const base = JSON.parse(readFileSync(join(privateRoot, 'contracts/base/contract.json'), 'utf8')) as {
-    callables: Array<{ id: number; name: string; role: string; binding?: { harmony?: { kind: string } } }>
+    callables: Array<{ id: number; name: string; role: string; lowering?: { kind: string }; binding?: { harmony?: { kind: string } } }>
   }
   const delta = JSON.parse(readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8')) as {
-    callables: Array<{ id: number; name: string; role: string; binding?: { harmony?: { kind: string } } }>
+    callables: Array<{ id: number; name: string; role: string; lowering?: { kind: string }; binding?: { harmony?: { kind: string } } }>
   }
   const nativeMethods = new Set(harmonyTypedMethods(privateRoot).map((method) => method.name))
   const bindings: HarmonyContractMethodBinding[] = []
@@ -128,6 +127,10 @@ export function harmonyContractMethodBindings(privateRoot: string): HarmonyContr
     if (callable.role !== 'operation') continue
     const methodName = HARMONY_METHOD_ALIASES[callable.name] ?? callable.name
     if (callable.binding?.harmony?.kind === 'unsupported') {
+      continue
+    } else if (callable.lowering?.kind === 'local-helper'
+      || callable.lowering?.kind === 'local-promise'
+      || callable.lowering?.kind === 'synthetic-event-subscription') {
       continue
     } else if (nativeMethods.has(methodName)) {
       bindings.push({ callableID: callable.id, callableName: callable.name, methodName })
