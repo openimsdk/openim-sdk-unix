@@ -70,8 +70,8 @@
     },
     {
       "path": "tooling/src/test-contract.ts",
-      "sha256": "b9d65b5f5ce91cb83e4078c73c1fe17fd2b0a6e5ec0bd231d05ec7b1f96931a7",
-      "bytes": 27431
+      "sha256": "9642cc2ed459e15d6dc64dcb9fce346544fe432e10625e71487c768a32e79bde",
+      "bytes": 27406
     },
     {
       "path": "tooling/src/test-profile.ts",
@@ -152,8 +152,8 @@
     },
     {
       "path": "contracts/base/test-disposition.json",
-      "sha256": "20331f164ac0eaad8e41d3295d20fe73ae5d46dc42bc518d15638c46302d95fe",
-      "bytes": 195622
+      "sha256": "8852280caadf87d495029a0ee7a069dd8731bacddbbfc30a43804924f9978c8b",
+      "bytes": 195589
     }
   ]
 }

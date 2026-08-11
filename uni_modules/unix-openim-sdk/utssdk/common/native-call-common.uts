@@ -729,10 +729,11 @@ function parseNativePicture(value : any | null, helpers : NativeParserHelpers) :
 
 function parseNativePictureElem(value : any | null, helpers : NativeParserHelpers) : OpenIMPictureElem | null {
   if (value instanceof UTSJSONObject) {
+    const sourcePath = helpers.readStringParam(value, 'sourcePath')
     const sourcePicture = parseNativePicture(readNativeValue(value, 'sourcePicture'), helpers)
     const bigPicture = parseNativePicture(readNativeValue(value, 'bigPicture'), helpers)
     const snapshotPicture = parseNativePicture(readNativeValue(value, 'snapshotPicture'), helpers)
-    if (sourcePicture != null && bigPicture != null && snapshotPicture != null) { return { sourcePath: helpers.readStringParam(value, 'sourcePath'), sourcePicture: sourcePicture, bigPicture: bigPicture, snapshotPicture: snapshotPicture } }
+    if (sourcePicture != null || bigPicture != null || snapshotPicture != null || sourcePath.length > 0) { return { sourcePath: sourcePath, sourcePicture: sourcePicture, bigPicture: bigPicture, snapshotPicture: snapshotPicture } }
   }
   return null
 }

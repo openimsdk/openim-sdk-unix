@@ -78,6 +78,11 @@ test('case manifest assigns concrete semantic and side-effect probes to P0 flows
   assert.equal(byAPI.get('sendMessage')?.semanticProfile, 'message-delivery-correlation')
   assert.equal(byAPI.get('sendMessage')?.sideEffectProbe, 'cross-account-event-observation')
   assert.deepEqual(byAPI.get('sendMessage')?.expectedEvents, ['onSendMessageProgress', 'onRecvNewMessage'])
+  assert.deepEqual(
+    byAPI.get('sendMessageNotOss')?.expectedEvents,
+    ['onRecvNewMessage'],
+    'sendMessageNotOss bypasses OSS upload and therefore has no send-progress callback',
+  )
   assert.equal(byAPI.get('setSelfInfo')?.sideEffectProbe, 'read-after-write')
   assert.equal(byAPI.get('setSelfInfo')?.cleanupAction, 'restore-via-read-before-write')
   assert.equal(byAPI.get('uploadFile')?.semanticProfile, 'progress-terminal-correlation')
