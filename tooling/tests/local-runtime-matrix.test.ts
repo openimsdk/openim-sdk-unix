@@ -171,6 +171,9 @@ test('runner source rejects HBuilder and native compiler failures hidden behind 
   assert.match(source, /BUILD FAILED/)
   assert.match(source, /reported a compiler failure despite exiting successfully/)
   assert.match(source, /OPENIM_LOCAL_CLASSIC_VIDEO: descriptor\.classicVideo === true \? '1' : '0'/)
+  assert.match(source, /OPENIM_DCLOUD_APP_KEY_ANDROID/)
+  assert.match(source, /OPENIM_DCLOUD_APP_KEY_IOS/)
+  assert.match(source, /required for traditional uni-app runtime acceptance/)
 })
 
 test('uni-app x iOS host builds only the simulator architecture exported by HBuilderX', () => {
@@ -220,6 +223,8 @@ test('classic iOS host aligns every plugin to the product deployment target', ()
   assert.match(source, /descriptor\.iosHost\?\.deploymentTarget/)
   assert.match(source, /config\.deploymentTarget = deploymentTarget/)
   assert.match(source, /platform :ios, '\$\{deploymentTarget\}'/)
+  assert.match(source, /OPENIM_DCLOUD_APP_KEY_IOS/)
+  assert.match(source, /dcloud_appkey/)
   const common = readFileSync(new URL('../../local-runtime/scripts/common.sh', import.meta.url), 'utf8')
   assert.match(common, /iosHost\?\.requiredFrameworks/)
   assert.match(common, /iosHost\?\.uniappxRequiredFrameworks/)

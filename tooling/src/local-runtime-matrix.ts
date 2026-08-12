@@ -529,6 +529,10 @@ export function runLocalRuntime(options: LocalRuntimeOptions): { project: string
     redactions: { tokensPersisted: false, credentialsPersisted: false, serverAddressPersisted: false },
   }
   try {
+    if (options.surface !== 'uniappx' && (options.command === 'run' || options.command === 'test')) {
+      const credential = options.platform === 'android' ? 'OPENIM_DCLOUD_APP_KEY_ANDROID' : 'OPENIM_DCLOUD_APP_KEY_IOS'
+      assert(process.env[credential] != null && process.env[credential] !== '', `${credential} is required for traditional uni-app runtime acceptance`)
+    }
     project = prepareStableProject(descriptor, options.surface, workspaceRoot)
     if (options.command !== 'doctor' && options.command !== 'prepare') {
       evidence.artifacts = archiveRuntimeArtifacts(

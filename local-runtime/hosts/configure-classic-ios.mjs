@@ -16,6 +16,7 @@ const descriptor = JSON.parse(readFileSync(required('OPENIM_LOCAL_PRODUCT_DESCRI
 const deploymentTarget = String(descriptor.iosHost?.deploymentTarget ?? '14.0')
 if (!/^\d+\.\d+$/.test(deploymentTarget)) throw new Error(`Invalid classic iOS deployment target: ${deploymentTarget}`)
 const appID = required('OPENIM_LOCAL_DCLOUD_APP_ID')
+const appKey = process.env.OPENIM_DCLOUD_APP_KEY_IOS || 'LOCAL_BUILD_REQUIRES_RUNTIME_APP_KEY'
 const exported = join(project, 'unpackage/resources')
 const pluginRoot = join(host, 'UTSPlugins')
 rmSync(pluginRoot, { recursive: true, force: true })
@@ -43,6 +44,12 @@ rmSync(apps, { recursive: true, force: true })
 mkdirSync(apps, { recursive: true })
 cpSync(join(exported, appID), join(apps, appID), { recursive: true })
 writeFileSync(join(host, 'HBuilder-Hello/control.xml'), `<HBuilder debug="true" version="1.9.9.81702"><apps><app appid="${appID}" appver="1.0.0"/></apps></HBuilder>\n`)
+
+const infoPlistPath = join(host, 'HBuilder-Hello/HBuilder-Hello-Info.plist')
+let infoPlist = readFileSync(infoPlistPath, 'utf8')
+const escapedAppKey = appKey.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+infoPlist = infoPlist.replace(/(<key>dcloud_appkey<\/key>\s*<string>)[^<]*(<\/string>)/, `$1${escapedAppKey}$2`)
+writeFileSync(infoPlistPath, infoPlist)
 
 const podfilePath = join(host, 'Podfile')
 let podfile = readFileSync(podfilePath, 'utf8')
