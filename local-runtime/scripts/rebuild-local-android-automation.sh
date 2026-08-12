@@ -30,7 +30,7 @@ if ! rg -q "wsEndpoint = .*:${OPENIM_AUTOMATOR_PORT}" "$GENERATED_SOURCE" || \
   echo "Generated Android source does not target the allocated automator port $OPENIM_AUTOMATOR_PORT" >&2
   exit 1
 fi
-if [[ ! -x "$NATIVE_ROOT/gradlew" ]]; then
+if [[ ! -f "$NATIVE_ROOT/settings.gradle" ]]; then
   echo "Local Android host is not prepared; run local:run:android first" >&2
   exit 1
 fi
@@ -44,10 +44,11 @@ if [[ ! -x "$java_runtime/bin/java" ]]; then
   exit 1
 fi
 
+gradle_bootstrap="$(resolve_gradle_bootstrap)"
 (
   cd "$NATIVE_ROOT"
   JAVA_HOME="$java_runtime" ANDROID_HOME="$ANDROID_SDK" \
-    ./gradlew --no-daemon --rerun-tasks :app:assembleDebug
+    "$gradle_bootstrap" --no-daemon --rerun-tasks :app:assembleDebug
 )
 
 built_apk="$NATIVE_ROOT/app/build/outputs/apk/debug/app-debug.apk"

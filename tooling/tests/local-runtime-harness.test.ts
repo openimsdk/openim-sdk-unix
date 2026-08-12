@@ -340,6 +340,9 @@ test('Android automation runner rebuilds the static VDOM host for the allocated 
     /strings\s*\|\s*rg\s+-q/,
     'pipefail must not turn a successful endpoint match into an unzip SIGPIPE failure',
   )
+  assert.match(androidRebuild, /gradle_bootstrap="\$\(resolve_gradle_bootstrap\)"/)
+  assert.match(androidRebuild, /"\$gradle_bootstrap" --no-daemon --rerun-tasks :app:assembleDebug/)
+  assert.doesNotMatch(androidRebuild, /\.\/gradlew/)
 })
 
 test('descriptor-driven Android runtime never falls back to the Public legacy APK name', () => {
