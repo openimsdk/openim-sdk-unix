@@ -93,10 +93,20 @@ rsync -a --delete \
   "$NATIVE_ROOT/uniappx/src/main/assets/apps/$app_id/"
 sync_plugin
 
-expected_openim_aar_sha="$(read_json "$TOOLCHAIN_LOCK" publicNative.android.sha256)"
+expected_openim_aar_sha="$(node -e '
+  const crypto = require("crypto");
+  const fs = require("fs");
+  const path = require("path");
+  const descriptorPath = path.resolve(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR);
+  const descriptor = JSON.parse(fs.readFileSync(descriptorPath, "utf8"));
+  const plugin = descriptor.plugins.find((item) => item.id === "unix-openim-sdk");
+  if (!plugin) throw new Error("unix-openim-sdk is absent from the product descriptor");
+  const artifact = path.resolve(path.dirname(descriptorPath), plugin.source, "utssdk/app-android/libs/open_im_sdk.aar");
+  process.stdout.write(crypto.createHash("sha256").update(fs.readFileSync(artifact)).digest("hex"));
+')"
 exported_openim_aar="$NATIVE_ROOT/unix-openim-sdk/libs/open_im_sdk.aar"
 if [[ ! -f "$exported_openim_aar" || "$(sha256_file "$exported_openim_aar")" != "$expected_openim_aar_sha" ]]; then
-  echo "Exported Public OpenIM AAR is absent or stale: $exported_openim_aar" >&2
+  echo "Exported product OpenIM AAR is absent or stale: $exported_openim_aar" >&2
   exit 1
 fi
 
