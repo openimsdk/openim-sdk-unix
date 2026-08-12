@@ -15,6 +15,8 @@ const exported = join(project, 'unpackage/resources')
 const appID = required('OPENIM_LOCAL_DCLOUD_APP_ID')
 const applicationID = required('OPENIM_LOCAL_APPLICATION_ID')
 const descriptor = JSON.parse(readFileSync(required('OPENIM_LOCAL_PRODUCT_DESCRIPTOR'), 'utf8'))
+const minSdk = Number(descriptor.androidHost?.minSdk ?? 21)
+if (!Number.isInteger(minSdk) || minSdk < 21) throw new Error(`Invalid classic Android minSdk: ${descriptor.androidHost?.minSdk}`)
 const appKey = process.env.OPENIM_DCLOUD_APP_KEY_ANDROID || 'LOCAL_BUILD_REQUIRES_RUNTIME_APP_KEY'
 
 const escapeSingle = (value) => value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")
@@ -54,7 +56,7 @@ for (const id of pluginIDs) {
 android {
     namespace '${escapeSingle(`io.openim.local.generated.${id.replaceAll('-', '')}`)}'
     compileSdkVersion 35
-    defaultConfig { minSdkVersion 21 }
+    defaultConfig { minSdkVersion ${minSdk} }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -82,6 +84,7 @@ let appGradle = readFileSync(appGradlePath, 'utf8')
 appGradle = appGradle
   .replace("namespace 'com.android.UniPlugin'", `namespace '${escapeSingle(applicationID)}'`)
   .replace('applicationId "com.android.UniPlugin"', `applicationId '${escapeSingle(applicationID)}'`)
+  .replace(/minSdkVersion\s+\d+/, `minSdkVersion ${minSdk}`)
   .replace(/\n\s*implementation project\(':[^']+'\)/g, '')
   .replace(/\n}\s*$/, `\n${pluginIDs.map((id) => `    implementation project(':${escapeSingle(id)}')`).join('\n')}\n}\n`)
 writeFileSync(appGradlePath, appGradle)

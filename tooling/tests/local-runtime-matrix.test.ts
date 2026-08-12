@@ -144,6 +144,8 @@ test('classic Android host removes legacy manifest package declarations from gen
   const source = readFileSync(new URL('../../local-runtime/hosts/configure-classic-android.mjs', import.meta.url), 'utf8')
   assert.match(source, /replace\(\/\\s\+package=/)
   assert.match(source, /src\/main\/AndroidManifest\.xml/)
+  assert.match(source, /descriptor\.androidHost\?\.minSdk/)
+  assert.match(source, /replace\(\/minSdkVersion\\s\+\\d\+\//)
 })
 
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
