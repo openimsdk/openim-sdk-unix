@@ -12,7 +12,7 @@
 | uni-app App iOS（Vue 2 / Vue 3） | 支持 | iOS 14 |
 | uni-app x App Android | 支持 | Android 5.0 / API 21 |
 | uni-app x App iOS | 支持 | iOS 14 |
-| HarmonyOS | 不支持 | — |
+| HarmonyOS | 当前市场版不支持；商业版已支持 | — |
 | Web / 小程序 | 不支持 | — |
 
 开发环境要求：
