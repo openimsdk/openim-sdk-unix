@@ -271,6 +271,13 @@ import {
 function optionalString(value ?: string | null) : string { return value != null ? value as string : '' }
 function optionalBoolean(value ?: boolean | null) : boolean { return value != null ? value as boolean : false }
 function optionalNumber(value ?: number | null) : number { return value != null ? value as number : 0 }
+function normalizeAndroidLocalMediaPath(path : string) : string { return UTSAndroid.convert2AbsFullPath(path) }
+function normalizeAndroidUploadFileParams(params : OpenIMUploadFileParams) : OpenIMUploadFileParams {
+  const normalized : OpenIMUploadFileParams = { filepath: normalizeAndroidLocalMediaPath(params.filepath), name: params.name, contentType: params.contentType, uuid: params.uuid }
+  if (params.cancelID != null) { normalized.cancelID = params.cancelID }
+  if (params.cause != null) { normalized.cause = params.cause }
+  return normalized
+}
 function readOfflinePushInfo(options : OpenIMSendMessageOptions) : string { return options.offlinePushInfo != null ? stringifyJSON(options.offlinePushInfo) : '{}' }
 function readIsOnlineOnly(options : OpenIMSendMessageOptions) : boolean { return options.isOnlineOnly != null ? options.isOnlineOnly as boolean : false }
 function readOperationID(options : OpenIMSendMessageOptions) : string { return options.operationID != null ? options.operationID as string : '' }

@@ -500,7 +500,12 @@
 			return 'null'
 		}
 		if (value instanceof Error) {
-			return value.message
+			const errorMessage = value.message
+			if (errorMessage.length > 0) {
+				return errorMessage
+			}
+			const errorFallback = value.toString()
+			return errorFallback.length > 0 ? errorFallback : 'Error'
 		}
 		const text = JSON.stringify(value)
 		if (text != null) {
@@ -1802,17 +1807,6 @@
 		return suffix == '/' ? parent + child : parent + '/' + child
 	}
 
-	function ensureAutomationDirectory(dirPath : string) {
-		try {
-			uni.getFileSystemManager().mkdirSync(dirPath, true)
-		} catch (error) {
-			const detail = stringifyAPIValue(error)
-			if (detail.indexOf('already exists') < 0) {
-				throw error
-			}
-		}
-	}
-
 	function requireAutomationBase64FileContent(filePath : string, label : string) {
 		const contentValue = uni.getFileSystemManager().readFileSync(filePath, 'base64')
 		const content = contentValue as string
@@ -1827,9 +1821,7 @@
 
 	function initializeAutomationLogFiles() {
 		try {
-			const baseDir = joinAutomationPath(uni.env.USER_DATA_PATH, 'openim-automation-results')
-			ensureAutomationDirectory(baseDir)
-			const basePath = joinAutomationPath(baseDir, 'openim-automation-' + new Date().getTime().toString())
+			const basePath = joinAutomationPath(uni.env.USER_DATA_PATH, 'openim-automation-result-' + new Date().getTime().toString())
 			automationRunLogFilePath = basePath + '.log'
 			automationRunJSONFilePath = basePath + '.json'
 			uni.getFileSystemManager().writeFileSync(automationRunLogFilePath, 'OpenIM public Android/iOS automation started\n', 'utf-8')
@@ -2047,22 +2039,24 @@
 		if (nativeBasePath.length == 0) {
 			throw new Error('getOpenIMDataPath returned empty path')
 		}
-			const fileSystemBasePath = uni.env.USER_DATA_PATH
-			const fileSystemDirPath = joinAutomationPath(fileSystemBasePath, 'openim-automation-assets')
-		const nativeDirPath = joinAutomationPath(nativeBasePath, 'openim-automation-assets')
-		ensureAutomationDirectory(fileSystemDirPath)
-		automationAssetDirFileSystemPath = fileSystemDirPath
-		automationAssetDirFullPath = nativeDirPath
-		const imageFileSystemPath = joinAutomationPath(fileSystemDirPath, 'image.jpg')
-		const soundFileSystemPath = joinAutomationPath(fileSystemDirPath, 'sound.wav')
-		const videoFileSystemPath = joinAutomationPath(fileSystemDirPath, 'video.mp4')
-		const videoSnapshotFileSystemPath = joinAutomationPath(fileSystemDirPath, 'video-snapshot.jpg')
-		const fileFileSystemPath = joinAutomationPath(fileSystemDirPath, demoFixedFileName)
-		automationFixedImageFullPath = joinAutomationPath(nativeDirPath, 'image.jpg')
-		automationFixedSoundFullPath = joinAutomationPath(nativeDirPath, 'sound.wav')
-		automationFixedVideoFullPath = joinAutomationPath(nativeDirPath, 'video.mp4')
-		automationFixedVideoSnapshotFullPath = joinAutomationPath(nativeDirPath, 'video-snapshot.jpg')
-		automationFixedFileFullPath = joinAutomationPath(nativeDirPath, demoFixedFileName)
+		const fileSystemBasePath = uni.env.USER_DATA_PATH
+		automationAssetDirFileSystemPath = fileSystemBasePath
+		automationAssetDirFullPath = fileSystemBasePath
+		const imageFileName = 'openim-automation-image.jpg'
+		const soundFileName = 'openim-automation-sound.wav'
+		const videoFileName = 'openim-automation-video.mp4'
+		const videoSnapshotFileName = 'openim-automation-video-snapshot.jpg'
+		const documentFileName = 'openim-automation-' + demoFixedFileName
+		const imageFileSystemPath = joinAutomationPath(fileSystemBasePath, imageFileName)
+		const soundFileSystemPath = joinAutomationPath(fileSystemBasePath, soundFileName)
+		const videoFileSystemPath = joinAutomationPath(fileSystemBasePath, videoFileName)
+		const videoSnapshotFileSystemPath = joinAutomationPath(fileSystemBasePath, videoSnapshotFileName)
+		const fileFileSystemPath = joinAutomationPath(fileSystemBasePath, documentFileName)
+		automationFixedImageFullPath = imageFileSystemPath
+		automationFixedSoundFullPath = soundFileSystemPath
+		automationFixedVideoFullPath = videoFileSystemPath
+		automationFixedVideoSnapshotFullPath = videoSnapshotFileSystemPath
+		automationFixedFileFullPath = fileFileSystemPath
 		const fileManager = uni.getFileSystemManager()
 		const jpegFixtureBase64 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAIAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDxSiiivyo/vs//2Q=='
 		fileManager.writeFileSync(imageFileSystemPath, jpegFixtureBase64, 'base64')
@@ -2072,7 +2066,7 @@
 		fileManager.writeFileSync(soundFileSystemPath, 'UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=', 'base64')
 		fileManager.writeFileSync(videoFileSystemPath, 'AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgAAAAFtZGF0AAAAAAAAAdkAAAA7BgUyR1ZK3FxMQz+U78URPNFDqAEAAAMAAQMAAAMAAQIAAeYACwAAAwAAAwAAAwEsDAOJEQQN/////4AAAABgJbggH/OE2wf7G6BilVOQltbo87Dd82hFMEqlLT5a6/u56Md6qBSSFXchCwiC2bWQr9ABEIDyDZ1jR1RfLkt6R7XKQrBx+Fo80jnWO4waIc7rbWiiiEGYIfV4BejiXasgAAAAJSHhEF/Tawpc9JZ8Q8Al1sG1AlVA7e+JpX6CnpRUWKQBxW9PQmgAAAAgIaiChL/mWdziwCDB9Vgx2a8xlDHZgm431pzMTTLf44AAAAAbAajBj//uQ7TOISLcqJiC22ewgGwpH2NuDf6mAAAAEQGow4v/TNJHAA6a/pUQ9OyoAAAAMiHjIaIif5YSgvVi5onPAv/wCXNRyXgXbQiGYChEyN53/+b+5Si2xGTFumonRcG4YZIcAAAAFyGpBoRf/thmYTbpmnqETikwEWupnHi4AAAAGwGpRYv/7LNplEJFw+xvN+nn7Eiocx80ScRnXgAAABEBqUeL/0zSRwAOmv6VEPTsqAAAABwh5SWiIv9gdB4ag/X0Achy5kcD/rjnypPfzqtiAAADTG1vb3YAAABsbXZoZAAAAADmbleb5m5XnAAAAlgAAAJYAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAALYdHJhawAAAFx0a2hkAAAAAeZuV5zmblecAAAAAQAAAAAAAAJYAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAQAAAAEAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAACWAAAAHgAAQAAAAACUG1kaWEAAAAgbWRoZAAAAADmblec5m5XnAAAAlgAAAJYVcQAAAAAADFoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAQ29yZSBNZWRpYSBWaWRlbwAAAAH3bWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAABt3N0YmwAAAChc3RzZAAAAAAAAAABAAAAkWF2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAEAAQAEgAAABIAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY//8AAAAnYXZjQwFkAAv/4QAMJ2QAC6xWUMN4FmClAQAEKO48sP34+AAAAAAKZmllbAEAAAAACmNocm0AAAAAABhzdHRzAAAAAAAAAAEAAAAKAAAAPAAAAGBjdHRzAAAAAAAAAAoAAAABAAAAeAAAAAEAAAEsAAAAAQAAAHgAAAABAAAAAAAAAAEAAAA8AAAAAQAAASwAAAABAAAAeAAAAAEAAAAAAAAAAQAAADwAAAABAAAAeAAAABRzdHNzAAAAAAAAAAEAAAABAAAAFnNkdHAAAAAAIBAQGBgQEBgYEAAAABxzdHNjAAAAAAAAAAEAAAABAAAACgAAAAEAAAA8c3RzegAAAAAAAAAAAAAACgAAAKMAAAApAAAAJAAAAB8AAAAVAAAANgAAABsAAAAfAAAAFQAAACAAAAAUc3RjbwAAAAAAAAABAAAALA==', 'base64')
 		fileManager.writeFileSync(fileFileSystemPath, '%PDF-1.1\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n', 'utf-8')
-		recordAutomationStep('setup', 'prepareLocalFiles', true, nativeDirPath)
+		recordAutomationStep('setup', 'prepareLocalFiles', true, nativeBasePath)
 	}
 
 	function automationSuiteRequiresLocalFiles() : boolean {
@@ -2190,18 +2184,18 @@
 				await sleepAutomation(500)
 			}
 		}
-		beginAutomationOperation('login')
+		beginAutomationOperation('login', null, false)
 		await runAutomationStep<string>('setup', 'login', login(userID, token, 'uvue_auto_login_' + label), (_value : string) => {
 			automationLoggedIn = true
 			automationActiveUserID = userID
 		})
-		await runAutomationStep<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), (value : OpenIMLoginStatus) => {
+		await runAutomationStepWithEvidence<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), (value : OpenIMLoginStatus) => {
 			requireAutomation(value == 3, 'getLoginStatus did not report logged-in state')
 		}, responseAutomationEvidence('getLoginStatus', 'login-status-is-logged'))
-		await runAutomationStep<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
+		await runAutomationStepWithEvidence<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
 			requireAutomation(value == userID, 'getLoginUserID returned ' + value + ', expected ' + userID)
 		}, responseAutomationEvidence('getLoginUserID', 'login-user-id-matches-active-user'))
-		recordAutomationEvidenceStep('setup', 'login', true, 'read-after-login status and userID matched ' + userID, mutationAutomationEvidence('login', 'authenticated-user-observed', 'login-readback-observed', false))
+		recordAutomationEvidenceStep('setup', 'login', true, 'read-after-login status and userID matched ' + userID, mutationAutomationEvidence('login', 'authenticated-user-observed', 'login-readback-observed', false), null, null)
 	}
 
 	async function switchAutomationPrimary(config : OpenIMAutomationConfig, label : string) : Promise<void> {
@@ -2210,6 +2204,23 @@
 
 	async function switchAutomationSecondary(config : OpenIMAutomationConfig, label : string) : Promise<void> {
 		await switchAutomationAccount(config, config.secondaryUserID, config.secondaryToken, label)
+	}
+
+	async function normalizeAutomationExistingSession() : Promise<void> {
+		const status = await runAutomationStep<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_existing_login_status'), (_value : OpenIMLoginStatus) => {})
+		if (status == 3) {
+			const existingUserID = await runAutomationStep<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => { requireAutomationString(value, 'retained getLoginUserID returned empty userID') })
+			automationLoggedIn = true
+			automationActiveUserID = existingUserID
+			await runAutomationStep<string>('setup', 'logout', logout('uvue_auto_existing_logout'), (_value : string) => {
+				automationLoggedIn = false
+				automationActiveUserID = ''
+			})
+			if (isIOSRuntime()) { await sleepAutomation(500) }
+		} else {
+			automationLoggedIn = false
+			automationActiveUserID = ''
+		}
 	}
 
 	function recordAutomationEventSubscriptionCoverage() {
@@ -2237,35 +2248,63 @@
 		let removedCount = 0
 		let selfRemovingCount = 0
 		let survivorCount = 0
+		let connectionCompletedCount = 0
+		let postOffAllWitnessCount = 0
 		const removed = onConnecting(() => { removedCount = removedCount + 1 })
 		let selfRemoving : OpenIMSDKEventSubscription | null = null
+		let postOffAllWitness : OpenIMSDKEventSubscription | null = null
 		selfRemoving = onConnecting(() => {
 			selfRemovingCount = selfRemovingCount + 1
 			if (selfRemoving != null) { off(selfRemoving as OpenIMSDKEventSubscription) }
 		})
 		const survivor = onConnecting(() => { survivorCount = survivorCount + 1 })
-		requireAutomationString(removed.id, 'off scenario returned empty subscription id')
-		requireAutomation(removed.eventName == 'onConnecting', 'off scenario returned wrong eventName')
-		off(removed)
-		const forged : OpenIMSDKEventSubscription = { id: 'forged-openim-subscription', eventName: 'onConnecting' }
-		off(forged)
-		await switchAutomationPrimary(config, 'A_event_control_first')
-		requireAutomation(removedCount == 0, 'off delivered a removed subscription')
-		requireAutomation(selfRemovingCount == 1, 'snapshot dispatch/self removal count changed')
-		requireAutomation(survivorCount > 0, 'off blocked a sibling subscription')
-		recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence('off', 'exact-and-forged-handles-distinguished', 'removed-handler-not-dispatched', false), 'null')
-		recordAutomationCleanupEvidence('events', 'off', 'none', 'event-control-operation-is-terminal', 'no retained resource owned by off', 'no retained resource owned by off', true)
-		recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence('onConnecting', 'snapshot-dispatch-preserved', 'sibling-registry-entry-survived', true), stringifyAPIValue(survivor))
+		const connectionCompleted = onConnectSuccess(() => { connectionCompletedCount = connectionCompletedCount + 1 })
+		try {
+			requireAutomationString(removed.id, 'off scenario returned empty subscription id')
+			requireAutomation(removed.eventName == 'onConnecting', 'off scenario returned wrong eventName')
+			off(removed)
+			const forged : OpenIMSDKEventSubscription = { id: 'forged-openim-subscription', eventName: 'onConnecting' }
+			off(forged)
+			let completedBefore = connectionCompletedCount
+			await switchAutomationPrimary(config, 'A_event_control_first')
+			let waited = 0
+			while ((connectionCompletedCount <= completedBefore || selfRemovingCount < 1 || survivorCount < 1) && waited < 10000) {
+				await sleepAutomation(250)
+				waited = waited + 250
+			}
+			requireAutomation(connectionCompletedCount > completedBefore, 'login completed without onConnectSuccess delivery')
+			requireAutomation(removedCount == 0, 'off delivered a removed subscription')
+			requireAutomation(selfRemovingCount == 1, 'snapshot dispatch/self removal count changed')
+			requireAutomation(survivorCount > 0, 'off blocked a sibling subscription')
+			recordAutomationEvidenceStep('events', 'off', true, 'exact, forged, self-removal, and sibling delivery validated', mutationAutomationEvidence('off', 'exact-and-forged-handles-distinguished', 'removed-handler-not-dispatched', false), 'null', null)
+			recordAutomationCleanupEvidence('events', 'off', 'none', 'event-control-operation-is-terminal', 'no retained resource owned by off', 'no retained resource owned by off', true)
+			recordAutomationEvidenceStep('events', 'onConnecting', true, 'typed handle delivered once and self-removal affected only later dispatch', mutationAutomationEvidence('onConnecting', 'snapshot-dispatch-preserved', 'sibling-registry-entry-survived', true), stringifyAPIValue(survivor), null)
 
-		const survivorBeforeOffAll = survivorCount
-		offAll('onConnecting')
-		await switchAutomationSecondary(config, 'B_event_control_off_all')
-		requireAutomation(survivorCount == survivorBeforeOffAll, 'offAll retained an onConnecting subscription')
-		requireAutomation(selfRemovingCount == 1, 'offAll reactivated a removed subscription')
-		recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence('offAll', 'public-event-name-selected', 'all-matching-handlers-removed', false), 'null')
-		recordAutomationCleanupEvidence('events', 'offAll', 'none', 'event-control-operation-is-terminal', 'no retained resource owned by offAll', 'no retained resource owned by offAll', true)
-		registerSDKEvents()
-		await switchAutomationPrimary(config, 'A_event_control_restore')
+			const survivorBeforeOffAll = survivorCount
+			offAll('onConnecting')
+			postOffAllWitness = onConnecting(() => {
+				postOffAllWitnessCount = postOffAllWitnessCount + 1
+				if (postOffAllWitness != null) { off(postOffAllWitness as OpenIMSDKEventSubscription) }
+			})
+			completedBefore = connectionCompletedCount
+			await switchAutomationSecondary(config, 'B_event_control_off_all')
+			waited = 0
+			while ((connectionCompletedCount <= completedBefore || postOffAllWitnessCount < 1) && waited < 10000) {
+				await sleepAutomation(250)
+				waited = waited + 250
+			}
+			requireAutomation(connectionCompletedCount > completedBefore, 'account switch completed without onConnectSuccess delivery')
+			requireAutomation(postOffAllWitnessCount == 1, 'post-offAll event witness was not delivered exactly once')
+			requireAutomation(survivorCount == survivorBeforeOffAll, 'offAll retained an onConnecting subscription')
+			requireAutomation(selfRemovingCount == 1, 'offAll reactivated a removed subscription')
+			recordAutomationEvidenceStep('events', 'offAll', true, 'public eventName registry cleared without native-code aliasing', mutationAutomationEvidence('offAll', 'public-event-name-selected', 'all-matching-handlers-removed', false), 'null', null)
+			recordAutomationCleanupEvidence('events', 'offAll', 'none', 'event-control-operation-is-terminal', 'no retained resource owned by offAll', 'no retained resource owned by offAll', true)
+			registerSDKEvents()
+			await switchAutomationPrimary(config, 'A_event_control_restore')
+		} finally {
+			off(connectionCompleted)
+			if (postOffAllWitness != null) { off(postOffAllWitness as OpenIMSDKEventSubscription) }
+		}
 	}
 
 	async function sendAutomationCreatedMessage(stepName : string, message : OpenIMMessageItem | null, recvID : string, groupID : string, operationID : string, useNotOss : boolean | null = null) : Promise<OpenIMMessageItem | null> {
@@ -2276,7 +2315,7 @@
 		const options : OpenIMSendMessageOptions = { operationID: operationID, message: message as OpenIMMessageItem, recvID: recvID, groupID: groupID, isOnlineOnly: false }
 		const promise = useNotOss == true ? sendMessageNotOss(options) : sendMessage(options)
 		try {
-			return await runAutomationStepWithTimeout<OpenIMMessageItem>('message-create-send', stepName, promise, cacheSentAutomationMessage, automationSendStepTimeoutMilliseconds)
+			return await runAutomationStepWithTimeout<OpenIMMessageItem>('message-create-send', stepName, promise, cacheSentAutomationMessage, automationSendStepTimeoutMilliseconds, null)
 		} catch (error) {
 			return null
 		}
@@ -2439,11 +2478,12 @@
 	async function runAutomationSetupSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
 		automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
-		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence('initSDK', 'init-result-is-true'))
+		await runAutomationStepWithEvidence<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence('initSDK', 'init-result-is-true'))
+		await normalizeAutomationExistingSession()
 		await runAutomationEventControlScenario(config)
 		const dataPath = getOpenIMDataPath()
 		requireAutomationString(dataPath, 'getOpenIMDataPath returned empty path')
-		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence('getOpenIMDataPath', 'data-path-is-non-empty'), stringifyAPIValue(dataPath))
+		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence('getOpenIMDataPath', 'data-path-is-non-empty'), stringifyAPIValue(dataPath), null)
 		initializeAutomationLogFiles()
 		if (automationSuiteRequiresLocalFiles()) {
 			prepareAutomationLocalFiles()
@@ -2452,10 +2492,10 @@
 		}
 		recordAutomationEventSubscriptionCoverage()
 		await switchAutomationPrimary(config, 'A_setup')
-		recordAutomationEvidenceStep('setup', 'initSDK', true, 'successful login observed after init', mutationAutomationEvidence('initSDK', 'initialized-session-accepted-login', 'init-state-transition-observed', false))
+		recordAutomationEvidenceStep('setup', 'initSDK', true, 'successful login observed after init', mutationAutomationEvidence('initSDK', 'initialized-session-accepted-login', 'init-state-transition-observed', false), null, null)
 		const sdkVersion = getSdkVersion()
 		requireAutomationString(sdkVersion, 'getSdkVersion returned empty version')
-		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence('getSdkVersion', 'sdk-version-is-non-empty'), stringifyAPIValue(sdkVersion))
+		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence('getSdkVersion', 'sdk-version-is-non-empty'), stringifyAPIValue(sdkVersion), null)
 	}
 
 	async function runAutomationUserStatusSuite(config : OpenIMAutomationConfig) : Promise<void> {
@@ -2540,14 +2580,14 @@
 		const message = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessage from unixsdk public automation', 'uvue_auto_create_send_text'), cacheRequiredAutomationMessage)
 		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text', message: message as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const sendClientMsgID = message != null && message.clientMsgID != null ? message.clientMsgID as string : ''
-		beginAutomationOperation('sendMessage', sendClientMsgID)
+		beginAutomationOperation('sendMessage', sendClientMsgID, false)
 		const sent = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
 		const sentClientMsgID = sent.clientMsgID != null ? sent.clientMsgID as string : ''
 		completeAutomationOperation('sendMessage', sentClientMsgID)
 		const notOssMessage = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessageNotOss from unixsdk public automation', 'uvue_auto_create_send_not_oss_text'), cacheRequiredAutomationMessage)
 		const notOssOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text_not_oss', message: notOssMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const notOssClientMsgID = notOssMessage != null && notOssMessage.clientMsgID != null ? notOssMessage.clientMsgID as string : ''
-		beginAutomationOperation('sendMessageNotOss', notOssClientMsgID)
+		beginAutomationOperation('sendMessageNotOss', notOssClientMsgID, false)
 		const sentNotOss = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessageNotOss', sendMessageNotOss(notOssOptions), cacheSentAutomationMessage)
 		const sentNotOssClientMsgID = sentNotOss.clientMsgID != null ? sentNotOss.clientMsgID as string : ''
 		completeAutomationOperation('sendMessageNotOss', sentNotOssClientMsgID)
@@ -2858,11 +2898,11 @@
 	}
 
 	async function runAutomationAppSuite() : Promise<void> {
-		await runAutomationStep<string>('app', 'setAppBackgroundStatus', setAppBackgroundStatus(false, 'uvue_auto_app_background'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBackgroundStatus'))
-		await runAutomationStep<string>('app', 'setAppBadge', setAppBadge(0, 'uvue_auto_app_badge'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBadge'))
+		await runAutomationStepWithEvidence<string>('app', 'setAppBackgroundStatus', setAppBackgroundStatus(false, 'uvue_auto_app_background'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBackgroundStatus'))
+		await runAutomationStepWithEvidence<string>('app', 'setAppBadge', setAppBadge(0, 'uvue_auto_app_badge'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBadge'))
 		await runAutomationStep<string>('app', 'networkStatusChanged', networkStatusChanged('uvue_auto_network_changed'), noCache)
 		const params : OpenIMUpdateFcmTokenParams = { fcmToken: 'uvue-public-automation-fcm-token', expireTime: 0 }
-		await runAutomationStep<string>('app', 'updateFcmToken', updateFcmToken(params, 'uvue_auto_update_fcm'), noCache, serverAcknowledgedMutationAutomationEvidence('updateFcmToken'))
+		await runAutomationStepWithEvidence<string>('app', 'updateFcmToken', updateFcmToken(params, 'uvue_auto_update_fcm'), noCache, serverAcknowledgedMutationAutomationEvidence('updateFcmToken'))
 	}
 
 	async function runAutomationUploadSuite() : Promise<void> {
@@ -2874,7 +2914,7 @@
 		beginAutomationOperation('uploadFile', null, true)
 		const uploadResult = await runAutomationOptionalStep<OpenIMUploadFileResult | null>('upload', 'uploadFile', uploadFile(uploadParams, 'uvue_auto_upload_file'), noCache, 'uploadFile requires reachable object storage endpoint')
 		if (uploadResult != null) {
-			completeAutomationOperation('uploadFile')
+			completeAutomationOperation('uploadFile', null)
 			automationUploadFileProgressExpected = true
 			await waitAutomationEventCountIncrease('onUploadFileProgress', previousUploadProgressCount, 5000)
 		}
@@ -2882,7 +2922,7 @@
 		beginAutomationOperation('uploadLogs', null, true)
 		const uploadLogsResult = await runAutomationOptionalStep<string>('upload', 'uploadLogs', uploadLogs(uploadLogsParams, 'uvue_auto_upload_logs'), noCache, 'uploadLogs requires reachable object storage endpoint')
 		if (uploadLogsResult != null) {
-			completeAutomationOperation('uploadLogs')
+			completeAutomationOperation('uploadLogs', null)
 			automationUploadLogsProgressExpected = true
 		}
 	}
@@ -3293,13 +3333,13 @@
 			recordAutomationStep('cleanup', 'offAll', false, stringifyAPIValue(error))
 		}
 		if (automationLoggedIn) {
-			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_before_uninit'), (_value : string) => {
+			await runAutomationStepWithEvidence<string>('cleanup', 'logout', logout('uvue_auto_logout_before_uninit'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''
 			}, responseAutomationEvidence('logout', 'login-status-is-logged-out'))
-			const loggedOutStatus = await runAutomationStep<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence('getLoginStatus', 'login-status-readback-is-logged-out'))
+			const loggedOutStatus = await runAutomationStepWithEvidence<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence('getLoginStatus', 'login-status-readback-is-logged-out'))
 			requireAutomation(loggedOutStatus == 1, 'logout did not transition to logged-out state')
-			recordAutomationEvidenceStep('cleanup', 'logout', true, 'read-after-logout status is logged out', mutationAutomationEvidence('logout', 'logout-result-observed', 'logged-out-status-readback', false))
+			recordAutomationEvidenceStep('cleanup', 'logout', true, 'read-after-logout status is logged out', mutationAutomationEvidence('logout', 'logout-result-observed', 'logged-out-status-readback', false), null, null)
 			recordAutomationCleanupEvidence('cleanup', 'logout', 'none', 'logout-is-terminal', 'logged-out status', 'logged-out status', true)
 			recordAutomationCleanupEvidence('cleanup', 'login', 'logout()', 'authenticated-session-cleaned', 'logged-out status', 'logged-out status', true)
 		}
@@ -3314,19 +3354,19 @@
 			const readyConfig = config as OpenIMAutomationConfig
 			automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
 			automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
-			await runAutomationStep<boolean>('cleanup', 'initSDK', initSDK(buildAutomationInitConfig(readyConfig), 'uvue_auto_reinit_epoch_probe'), (value : boolean) => {
+			await runAutomationStepWithEvidence<boolean>('cleanup', 'initSDK', initSDK(buildAutomationInitConfig(readyConfig), 'uvue_auto_reinit_epoch_probe'), (value : boolean) => {
 				requireAutomation(value, 're-init after unInitSDK returned false')
 			}, responseAutomationEvidence('initSDK', 'reinit-result-is-true'))
 			await switchAutomationPrimary(readyConfig, 'A_epoch_probe')
 			await sleepAutomation(250)
 			requireAutomation(retainedConnectingCount == 1, 'registry/native epoch rebind delivered ' + retainedConnectingCount.toString() + ' connecting callbacks')
-			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence('unInitSDK', 'teardown-barrier-completed', 'clean-reinit-after-uninit', false), 'null')
+			recordAutomationEvidenceStep('cleanup', 'unInitSDK', true, 'teardown barrier allowed one clean re-init epoch and preserved registry', mutationAutomationEvidence('unInitSDK', 'teardown-barrier-completed', 'clean-reinit-after-uninit', false), 'null', null)
 			recordAutomationCleanupEvidence('cleanup', 'unInitSDK', 'none', 'teardown-operation-is-terminal', 'old native epoch inactive', 'old native epoch inactive', true)
 			recordAutomationCleanupEvidence('cleanup', 'initSDK', 'unInitSDK()', 'initialized-native-epoch-cleaned', 'old native epoch inactive', 'old native epoch inactive', true)
-			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence('onConnecting', 'subscription-survived-core-epoch', 'single-delivery-after-rebind', true))
+			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence('onConnecting', 'subscription-survived-core-epoch', 'single-delivery-after-rebind', true), null, null)
 			off(retained)
 			recordAutomationCleanupEvidence('cleanup', 'onConnecting', 'off(subscription)', 'retained-epoch-probe-subscription-removed', 'exact retained handle removed', 'exact retained handle removed', true)
-			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {
+			await runAutomationStepWithEvidence<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''
 			}, responseAutomationEvidence('logout', 'cleanup-login-status-is-logged-out'))

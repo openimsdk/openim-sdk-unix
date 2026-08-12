@@ -113,13 +113,13 @@ createTextMessage('hello OpenIM').then((message) => {
 
 ## 文件与媒体消息
 
-文件类 API 必须接收 App 可读的 POSIX 绝对路径。不要传 `uni.env.USER_DATA_PATH` 字面量、`unifile://usr/...` 或只相对于页面的路径。
+文件类 API 可以接收 App 可读的 POSIX 绝对路径，也可以接收由 `uni.env.USER_DATA_PATH` 生成的 `unifile://` 路径。插件会在调用 OpenIM Core 前将 UTS 虚拟路径转换为当前平台的原生绝对路径。不要传 `uni.env.USER_DATA_PATH` 字面量、仅相对于页面的路径、已不存在的文件或 App 无权读取的路径。
 
 ```uts
 import { createFileMessageFromFullPath, sendMessage } from '@/uni_modules/unix-openim-sdk'
 
 createFileMessageFromFullPath({
-  filePath: '/absolute/path/to/file.pdf',
+  filePath: `${uni.env.USER_DATA_PATH}/file.pdf`,
   fileName: 'file.pdf'
 }).then((message) => {
   if (message == null) return

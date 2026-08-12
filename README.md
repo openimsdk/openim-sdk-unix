@@ -148,7 +148,7 @@ createTextMessage('hello openim').then((message) => {
 
 ### 发送本地文件消息 📎
 
-本地媒体和文件消息需要向 FullPath API 传入真实可读的 POSIX 绝对路径。不要传 `uni.env.USER_DATA_PATH`、`unifile://usr/...` 或仅在 Vue 层有意义的路径。
+本地媒体、文件消息和 `uploadFile` 可以传 App 可读的 POSIX 绝对路径，也可以传 `uni.env.USER_DATA_PATH` 下生成的 `unifile://` 路径。插件会在进入 OpenIM Core 前通过当前平台的 UTS 路径转换能力规范化为原生绝对路径。路径仍必须指向真实存在、且 App 有权读取的文件。
 
 ```uts
 createFileMessageFromFullPath({
@@ -183,11 +183,22 @@ pages/index/index.uvue
 
 ### 自动化 smoke 测试
 
+Android 和 iOS 已提供不依赖云打包的本地编译、安装和自动化测试闭环：
+
+```bash
+npm run local:test:android
+npm run local:test:ios
+```
+
+完整输入、隔离开源 OpenIM Server、端口边界和本地基座说明见
+[`local-runtime/README.md`](local-runtime/README.md)。
+
 可以直接从本地 OpenIM 服务创建两名临时用户，并获取 Android/iOS token：
 
 ```bash
 OPENIM_API_BASE=http://127.0.0.1:10002 \
 OPENIM_WS_BASE=ws://127.0.0.1:10001 \
+IM_SECRET='<server-secret>' \
 PLATFORM_IDS=1,2 \
 node scripts/register-openim-test-accounts.mjs
 ```

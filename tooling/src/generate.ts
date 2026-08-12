@@ -78,9 +78,9 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'identity') return source
   if (field.codec === 'json') return `stringifyJSON(${source})`
   if (field.codec === 'file-json') return platform === 'ios' ? `stringifyOpenIMFileElem(${source})` : `stringifyJSON(${source})`
-  if (field.codec === 'file-message-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readFileMessagePath(${field.parameter}))` : `readFileMessagePath(${field.parameter})`
-  if (field.codec === 'image-source-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(${source})` : source
-  if (field.codec === 'local-media-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(${source})` : source
+  if (field.codec === 'file-message-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readFileMessagePath(${field.parameter}))` : `normalizeAndroidLocalMediaPath(readFileMessagePath(${field.parameter}))`
+  if (field.codec === 'image-source-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(${source})` : `normalizeAndroidLocalMediaPath(${source})`
+  if (field.codec === 'local-media-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(${source})` : `normalizeAndroidLocalMediaPath(${source})`
   if (field.codec === 'message-entity-list-json') return platform === 'ios' ? `stringifyOpenIMMessageEntityList(${source})` : `stringifyJSON(${source})`
   if (field.codec === 'message-json') return `stringifyOpenIMMessage(${source})`
   if (field.codec === 'message-list-json') return platform === 'ios' ? `stringifyOpenIMMessageList(${source})` : `stringifyOpenIMMessagePayload(${source})`
@@ -92,27 +92,17 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'set-group-member-info-json') return `stringifySetGroupMemberInfoPayload(${source})`
   if (field.codec === 'sound-json') return platform === 'ios' ? `stringifyOpenIMSoundElem(${source})` : `stringifyJSON(${source})`
   if (field.codec === 'stored-message-json') return platform === 'ios' ? `stringifyOpenIMMessage(${source})` : `stringifyOpenIMMessagePayload(${source})`
+  if (field.codec === 'upload-file-json') return platform === 'ios' ? `stringifyJSON(normalizeIOSUploadFileParams(${source}))` : `stringifyJSON(normalizeAndroidUploadFileParams(${source}))`
   if (field.codec === 'update-friend-json') return `stringifyUpdateFriendPayload(${source})`
   if (field.codec === 'update-friends-json') return `stringifyUpdateFriendsPayload(${source})`
   if (field.codec === 'fetch-surrounding-messages-json') return `stringifyFetchSurroundingMessagesPayload(${source})`
   if (field.codec === 'modify-message-json') return `stringifyModifyMessagePayload(${source})`
   if (field.codec === 'video-json') return platform === 'ios' ? `stringifyOpenIMVideoElem(${source})` : `stringifyJSON(${source})`
-  if (field.codec === 'video-message-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readVideoMessagePath(${field.parameter}))` : `readVideoMessagePath(${field.parameter})`
-  if (field.codec === 'video-snapshot-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readVideoSnapshotPath(${field.parameter}))` : `readVideoSnapshotPath(${field.parameter})`
+  if (field.codec === 'video-message-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readVideoMessagePath(${field.parameter}))` : `normalizeAndroidLocalMediaPath(readVideoMessagePath(${field.parameter}))`
+  if (field.codec === 'video-snapshot-path') return platform === 'ios' ? `normalizeIOSLocalMediaPath(readVideoSnapshotPath(${field.parameter}))` : `normalizeAndroidLocalMediaPath(readVideoSnapshotPath(${field.parameter}))`
   if (field.codec === 'offline-push-json') return `readOfflinePushInfo(${field.parameter})`
   if (field.codec === 'online-only') return `readIsOnlineOnly(${field.parameter})`
   throw new Error(`Unsupported Driver request field codec: ${field.codec}`)
-}
-
-function driverRequestFieldPreconditions(callable: ContractCallable, field: DriverRequestField, platform: 'android' | 'ios'): string[] {
-  if (platform !== 'ios') return []
-  let source: string
-  if (field.codec === 'local-media-path' || field.codec === 'image-source-path') source = driverRequestFieldSource(field)
-  else if (field.codec === 'file-message-path') source = `readFileMessagePath(${field.parameter})`
-  else if (field.codec === 'video-message-path') source = `readVideoMessagePath(${field.parameter})`
-  else if (field.codec === 'video-snapshot-path') source = `readVideoSnapshotPath(${field.parameter})`
-  else return []
-  return [`if (rejectUnsupportedIOSLocalMediaPath('${callable.name}', ${source}, reject)) { return };`]
 }
 
 function driverFieldsRequestPrelude(fields: DriverRequestField[], platform: 'android' | 'ios'): string {
@@ -327,7 +317,6 @@ function renderLoweredCallable(
     prelude.push(`const requestJSON = '{"userID":' + stringifyJSON(userID) + ',"token":' + stringifyJSON(token) + '}';`)
   } else if (typeof lowering.request === 'object' && lowering.request.kind === 'fields') {
     requestExpression = 'requestJSON'
-    for (const field of lowering.request.fields) prelude.push(...driverRequestFieldPreconditions(callable, field, platform))
     prelude.push(driverFieldsRequestPrelude(lowering.request.fields, platform))
   } else requestExpression = "'{}'"
   const requestPrelude = prelude.length === 0 ? '' : `${prelude.join(' ')} `

@@ -1,0 +1,37 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    id 'io.dcloud.uts.kotlin'
+}
+android {
+    namespace '__OPENIM_UNI_NAMESPACE__'
+    compileSdk 36
+
+    defaultConfig {
+        minSdk 21
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    aaptOptions {
+        additionalParameters '--auto-add-overlay'
+        ignoreAssetsPattern '!.svn:!.git:.*:!CVS:!thumbs.db:!picasa.ini:!*.scc:*~'
+    }
+}
+
+dependencies {
+    implementation project(':unix-openim-sdk')
+    compileOnly fileTree(dir: '../dcloud-libs', include: ['*.aar', '*.jar'])
+    compileOnly 'androidx.core:core-ktx:1.13.1'
+    compileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.2.20'
+    compileOnly 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    compileOnly 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    compileOnly 'com.alibaba:fastjson:1.2.83'
+}

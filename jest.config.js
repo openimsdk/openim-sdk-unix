@@ -8,7 +8,7 @@ module.exports = {
   moduleFileExtensions: ['js', 'json'],
   rootDir: __dirname,
   testMatch: [
-      "<rootDir>/pages/index/index.test.js"
+      "<rootDir>/pages/**/*test.[jt]s?(x)"
     ],
   testPathIgnorePatterns: ['/node_modules/']
 }

@@ -8347,7 +8347,7 @@
             {
               "name": "uploadParams",
               "parameter": "params",
-              "codec": "json",
+              "codec": "upload-file-json",
               "wireType": "string"
             }
           ]
@@ -8366,7 +8366,7 @@
           "symbol": "uploadFile"
         }
       },
-      "signatureHash": "1350dc6ebb63466357d1a48fca4552ebdc3a4c832e7e8469ec3a9eab94898d4f",
+      "signatureHash": "6ac53b0ea8e8dc63fdf5fb2aa926aa0dbc6fc60d88c9bea9663ac29ad00718aa",
       "testProfile": {
         "semanticProfile": "progress-terminal-correlation",
         "sideEffectProbe": "progress-and-result-observation"

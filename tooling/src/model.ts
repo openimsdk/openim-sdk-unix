@@ -47,6 +47,7 @@ export type DriverRequestFieldCodec =
   | 'set-group-member-info-json'
   | 'sound-json'
   | 'stored-message-json'
+  | 'upload-file-json'
   | 'update-friend-json'
   | 'update-friends-json'
   | 'fetch-surrounding-messages-json'

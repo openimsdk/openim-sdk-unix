@@ -12,7 +12,7 @@ const OPENIM_SDK_API_BASE = env.OPENIM_SDK_API_BASE || '';
 const OPENIM_SDK_WS_BASE = env.OPENIM_SDK_WS_BASE || '';
 
 const IM_ADMIN_USER_ID = env.IM_ADMIN_USER_ID || 'imAdmin';
-const IM_SECRET = env.IM_SECRET || 'openIM123';
+const IM_SECRET = env.IM_SECRET || '';
 
 const PLATFORM_IDS = parsePlatformIDs(env.PLATFORM_IDS || env.PLATFORM_ID || '1,2');
 const ACCOUNT_PREFIX = sanitizeAccountPrefix(env.ACCOUNT_PREFIX || 'unixagent');
@@ -25,6 +25,9 @@ const TIMEOUT_MS = Number(env.TIMEOUT_MS || '15000');
 
 if (typeof fetch !== 'function') {
   throw new Error('This script requires Node.js 18+ with global fetch support.');
+}
+if (IM_SECRET.length === 0) {
+  throw new Error('IM_SECRET is required to provision disposable OpenIM test users.');
 }
 
 function sanitizeAccountPrefix(value) {

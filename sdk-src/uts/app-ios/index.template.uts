@@ -1,3 +1,4 @@
+import { UTSiOS } from 'DCloudUTSFoundation'
 import { driverCallAsync, driverCallSync } from './platform-driver.uts'
 import {
   OpenIMMessageStatus,
@@ -278,18 +279,20 @@ function optionalBoolean(value ?: boolean | null) : boolean { return value != nu
 function optionalNumber(value ?: number | null) : number { return value != null ? value as number : 0 }
 
 function normalizeIOSLocalMediaPath(path : string) : string {
+  if (path.indexOf('unifile://') == 0 || path.indexOf('unifile:') == 0) {
+    return UTSiOS.convert2AbsFullPath(path)
+  }
   if (path.indexOf('file://') == 0) {
     return path.substring(7)
   }
   return path
 }
 
-function rejectUnsupportedIOSLocalMediaPath(apiName : string, path : string, reject : (reason : any | null) => void) : boolean { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-ANY UTS-COMPAT-CODEC-001
-  if (path.indexOf('unifile://') == 0 || path.indexOf('unifile:') == 0) {
-    rejectNativeError(reject, -1, apiName + ' requires a POSIX local path')
-    return true
-  }
-  return false
+function normalizeIOSUploadFileParams(params : OpenIMUploadFileParams) : OpenIMUploadFileParams {
+  const normalized : OpenIMUploadFileParams = { filepath: normalizeIOSLocalMediaPath(params.filepath), name: params.name, contentType: params.contentType, uuid: params.uuid }
+  if (params.cancelID != null) { normalized.cancelID = params.cancelID }
+  if (params.cause != null) { normalized.cause = params.cause }
+  return normalized
 }
 
 function readOfflinePushInfo(options : OpenIMSendMessageOptions) : string { return options.offlinePushInfo != null ? stringifyJSON(options.offlinePushInfo) : '{}' }

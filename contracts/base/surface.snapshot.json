@@ -2533,7 +2533,7 @@
       "id": 2160,
       "name": "uploadFile",
       "signature": "uploadFile(params:OpenIMUploadFileParams,operationID?:string|null):Promise<OpenIMUploadFileResult|null>",
-      "signatureHash": "1350dc6ebb63466357d1a48fca4552ebdc3a4c832e7e8469ec3a9eab94898d4f"
+      "signatureHash": "6ac53b0ea8e8dc63fdf5fb2aa926aa0dbc6fc60d88c9bea9663ac29ad00718aa"
     },
     {
       "id": 2161,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "d50e8875fa1787ab9821d823bdd98f57e546d30304d1eb572c1d42fbe1b7c76d"
+  "contractHash": "40caccb52499d169afe96ef8c4b1e667b40235bfe3fb43f51e833337d0f4ea57"
 }
