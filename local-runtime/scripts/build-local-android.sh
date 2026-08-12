@@ -29,7 +29,7 @@ mkdir -p "$NATIVE_ROOT"
 rsync -a --delete \
   --exclude '/.gradle/' \
   --exclude '/*/build/' \
-  --exclude '/gradle/' \
+  --exclude '/gradle/wrapper/' \
   --exclude '/gradlew' \
   --exclude '/gradlew.bat' \
   "$TEMPLATE_ROOT/" "$NATIVE_ROOT/"
