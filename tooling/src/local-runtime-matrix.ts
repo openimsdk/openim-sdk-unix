@@ -340,10 +340,10 @@ export function prepareStableProject(descriptor: ResolvedLocalProductDescriptor,
     writeStageMetadata(staging, descriptor, surface)
     if (existsSync(target)) renameSync(target, backup)
     renameSync(staging, target)
-    rmSync(backup, { recursive: true, force: true })
+    rmSync(backup, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
     return target
   } catch (error) {
-    rmSync(staging, { recursive: true, force: true })
+    rmSync(staging, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
     if (existsSync(backup) && !existsSync(target)) renameSync(backup, target)
     throw error
   }

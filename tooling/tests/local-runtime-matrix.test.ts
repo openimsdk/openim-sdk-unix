@@ -60,6 +60,13 @@ test('stable staging creates all three surfaces without mutating product sources
   assert.equal(execFileSync('git', ['-C', item.root, 'status', '--porcelain'], { encoding: 'utf8' }), before)
 })
 
+test('stable staging retries bounded cleanup for large native framework trees', () => {
+  const source = readFileSync(join(import.meta.dirname, '../src/local-runtime-matrix.ts'), 'utf8')
+
+  assert.match(source, /rmSync\(backup, \{ recursive: true, force: true, maxRetries: 5, retryDelay: 200 \}\)/)
+  assert.match(source, /rmSync\(staging, \{ recursive: true, force: true, maxRetries: 5, retryDelay: 200 \}\)/)
+})
+
 test('product descriptors resolve explicit environment-backed delivery inputs without persisting machine paths', () => {
   const item = fixture()
   const document = JSON.parse(readFileSync(item.descriptor, 'utf8'))
