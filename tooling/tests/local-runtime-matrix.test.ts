@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
-import { cleanupLocalRun, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
+import { archiveRuntimeArtifacts, cleanupLocalRun, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
 import { configureNativeAndroid } from '../../local-runtime/scripts/configure-native-android.mjs'
 
 function write(path: string, source: string): void {
@@ -109,6 +109,26 @@ test('run listing and cleanup are bounded by evidence identity', () => {
   mkdirSync(join(root, '.runs/not-a-run'), { recursive: true })
   assert.throws(() => cleanupLocalRun(root, 'not-a-run'), /unrecognized/)
   assert.throws(() => cleanupLocalRun(root, '../escape'), /Invalid runID/)
+})
+
+test('assembled APK and app evidence is archived below the immutable run directory', () => {
+  const root = mkdtempSync(join(tmpdir(), 'openim-local-artifact-archive-'))
+  const runRoot = join(root, 'run-a')
+  mkdirSync(runRoot, { recursive: true })
+  write(join(root, 'source.apk'), 'apk bytes')
+  write(join(root, 'Source.app/Info.plist'), 'app bytes')
+
+  const archived = archiveRuntimeArtifacts({
+    apkPath: join(root, 'source.apk'),
+    appPath: join(root, 'Source.app'),
+    apkSha256: 'fixture',
+  }, runRoot)
+
+  assert.equal(readFileSync(archived.apkPath!, 'utf8'), 'apk bytes')
+  assert.equal(readFileSync(join(archived.appPath!, 'Info.plist'), 'utf8'), 'app bytes')
+  assert.equal(archived.apkSha256, 'fixture')
+  assert.equal(archived.apkPath!.startsWith(join(runRoot, 'artifacts')), true)
+  assert.equal(archived.appPath!.startsWith(join(runRoot, 'artifacts')), true)
 })
 
 test('matrix tiers implement the promised compile, smoke and full coverage', () => {

@@ -17,7 +17,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 
@@ -447,6 +447,21 @@ function executeHost(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, optio
   return existsSync(artifactsPath) ? JSON.parse(readFileSync(artifactsPath, 'utf8')) as Record<string, string> : {}
 }
 
+export function archiveRuntimeArtifacts(artifacts: Record<string, string>, runRoot: string): Record<string, string> {
+  const archived = { ...artifacts }
+  const archiveRoot = join(resolve(runRoot), 'artifacts')
+  for (const key of ['apkPath', 'appPath'] as const) {
+    const source = artifacts[key]
+    if (source == null || !existsSync(source)) continue
+    mkdirSync(archiveRoot, { recursive: true })
+    const target = join(archiveRoot, `${key}-${basename(source)}`)
+    ensureInside(archiveRoot, target)
+    cpSync(source, target, { recursive: statSync(source).isDirectory(), preserveTimestamps: true })
+    archived[key] = target
+  }
+  return archived
+}
+
 function stateFor(command: LocalCommand, suite: string): LocalEvidenceState {
   if (command === 'build') return 'ASSEMBLE_PASS'
   if (command === 'run') return 'SMOKE_PASS'
@@ -508,7 +523,10 @@ export function runLocalRuntime(options: LocalRuntimeOptions): { project: string
   try {
     project = prepareStableProject(descriptor, options.surface, workspaceRoot)
     if (options.command !== 'doctor' && options.command !== 'prepare') {
-      evidence.artifacts = executeHost(options.command, options, descriptor, project, profile, runRoot)
+      evidence.artifacts = archiveRuntimeArtifacts(
+        executeHost(options.command, options, descriptor, project, profile, runRoot),
+        runRoot,
+      )
     }
     evidence.state = stateFor(options.command, options.suite)
     return { project, runRoot, evidence }
