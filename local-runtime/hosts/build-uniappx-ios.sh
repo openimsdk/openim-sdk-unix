@@ -93,6 +93,7 @@ test -f "$app/uni-app-x/apps/$app_id/www/manifest.json"
 test -f "$app/Frameworks/OpenIMCore.framework/OpenIMCore"
 test -f "$app/Frameworks/unimoduleUnixOpenimSdk.framework/unimoduleUnixOpenimSdk"
 test -f "$app/PrivacyInfo.xcprivacy"
+verify_required_ios_frameworks "$app"
 if find "$app/Frameworks" -maxdepth 1 -type d -name 'OpenIMCore.framework' | awk 'END { exit NR == 1 ? 0 : 1 }'; then :; else
   echo "Expected exactly one OpenIMCore.framework in the uni-app x iOS host" >&2
   exit 1

@@ -46,6 +46,12 @@ export interface LocalAndroidHostOptions {
   utsEasyCom?: Array<Record<string, string>>
 }
 
+export interface LocalIOSHostOptions {
+  deploymentTarget?: string
+  requiredFrameworks?: string[]
+  uniappxRequiredFrameworks?: string[]
+}
+
 export interface LocalAutomationAsset {
   source: string
   destination: string
@@ -68,7 +74,9 @@ export interface LocalProductDescriptor {
   automationAssets?: LocalAutomationAsset[]
   nativeArtifacts?: LocalNativeArtifact[]
   androidHost?: LocalAndroidHostOptions
+  iosHost?: LocalIOSHostOptions
   classicVideo?: boolean
+  classicAndroidLibraries?: string[]
   applicationIDs: Record<LocalSurface, string>
   dcloudAppIDs: Record<LocalSurface, string>
 }

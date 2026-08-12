@@ -176,3 +176,26 @@ ensure_ios_simulator() {
   xcrun simctl bootstatus "$simulator" -b
   printf '%s\n' "$simulator"
 }
+
+verify_required_ios_frameworks() {
+  local app="$1"
+  while IFS= read -r framework; do
+    [[ -z "$framework" ]] && continue
+    if [[ ! "$framework" =~ ^[A-Za-z0-9_+.-]+$ ]]; then
+      echo "Invalid required iOS framework name: $framework" >&2
+      return 1
+    fi
+    local count
+    count="$(find "$app/Frameworks" -maxdepth 1 -type d -name "$framework.framework" | wc -l | tr -d ' ')"
+    if [[ "$count" != "1" ]]; then
+      echo "Expected exactly one $framework.framework in the assembled iOS app, found $count" >&2
+      return 1
+    fi
+  done < <(node -e '
+    const fs = require("fs");
+    const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+    const required = [...(descriptor.iosHost?.requiredFrameworks ?? [])];
+    if (process.env.OPENIM_LOCAL_SURFACE === "uniappx") required.push(...(descriptor.iosHost?.uniappxRequiredFrameworks ?? []));
+    for (const framework of required) process.stdout.write(framework + "\n");
+  ')
+}

@@ -47,6 +47,7 @@ readonly app="$output_root/HBuilder.app"
 test -d "$app"
 test -f "$app/Pandora/apps/$app_id/www/manifest.json"
 test -f "$app/Frameworks/OpenIMCore.framework/OpenIMCore"
+verify_required_ios_frameworks "$app"
 codesign --verify --deep --strict "$app" 2>/dev/null || true
 node -e '
   const fs = require("fs"); const crypto = require("crypto"); const path = process.argv[1];

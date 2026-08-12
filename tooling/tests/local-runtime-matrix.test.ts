@@ -181,6 +181,10 @@ test('classic iOS host aligns every plugin to the product deployment target', ()
   assert.match(source, /descriptor\.iosHost\?\.deploymentTarget/)
   assert.match(source, /config\.deploymentTarget = deploymentTarget/)
   assert.match(source, /platform :ios, '\$\{deploymentTarget\}'/)
+  const common = readFileSync(new URL('../../local-runtime/scripts/common.sh', import.meta.url), 'utf8')
+  assert.match(common, /iosHost\?\.requiredFrameworks/)
+  assert.match(common, /iosHost\?\.uniappxRequiredFrameworks/)
+  assert.match(common, /Expected exactly one \$framework\.framework/)
 })
 
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
