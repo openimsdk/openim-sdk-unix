@@ -31,12 +31,12 @@ test('Public workspace exposes local build, run, and automation entrypoints for 
   }
   const scripts = packageDocument.scripts ?? {}
 
-  assert.equal(scripts['local:build:android'], 'bash local-runtime/scripts/build-local-android.sh')
-  assert.equal(scripts['local:run:android'], 'bash local-runtime/scripts/run-local-android.sh')
-  assert.equal(scripts['local:test:android'], 'bash local-runtime/scripts/test-local-android.sh')
-  assert.equal(scripts['local:build:ios'], 'bash local-runtime/scripts/build-local-ios.sh')
-  assert.equal(scripts['local:run:ios'], 'bash local-runtime/scripts/run-local-ios.sh')
-  assert.equal(scripts['local:test:ios'], 'bash local-runtime/scripts/test-local-ios.sh')
+  assert.equal(scripts['local:build:android'], 'npm run local -- build --product public --surface uniappx --platform android')
+  assert.equal(scripts['local:run:android'], 'npm run local -- run --product public --surface uniappx --platform android')
+  assert.equal(scripts['local:test:android'], 'npm run local -- test --product public --surface uniappx --platform android --suite full')
+  assert.equal(scripts['local:build:ios'], 'npm run local -- build --product public --surface uniappx --platform ios')
+  assert.equal(scripts['local:run:ios'], 'npm run local -- run --product public --surface uniappx --platform ios')
+  assert.equal(scripts['local:test:ios'], 'npm run local -- test --product public --surface uniappx --platform ios --suite full')
 })
 
 test('local runtime harness is source-only and carries every regenerable entrypoint', () => {
@@ -68,7 +68,7 @@ test('local runtime harness is source-only and carries every regenerable entrypo
     'native-android-template/app/src/main/AndroidManifest.xml',
     'native-android-template/app/src/main/res/drawable/icon.xml',
     'native-android-template/uniappx/build.gradle',
-    'native-android-template/unix-openim-sdk/build.gradle',
+    'native-android-template/plugin/build.gradle',
   ]
 
   for (const relativePath of required) {

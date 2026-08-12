@@ -10,7 +10,7 @@ Install and verify the four SDK archives once, then expose only the immutable
 profile document:
 
 ```bash
-export OPENIM_UNI_TOOLCHAIN_PROFILE=/Volumes/workspace/work/uni-toolchains/profiles/dcloud-5.23-v2/profile.json
+export OPENIM_UNI_TOOLCHAIN_PROFILE=/path/to/dcloud-5.23-v2/profile.json
 npm run uni:toolchain -- verify --profile "$OPENIM_UNI_TOOLCHAIN_PROFILE"
 ```
 
@@ -37,7 +37,7 @@ through the IM server. Credentials, tokens, and server addresses are never
 written to matrix evidence.
 
 Stable generated projects live below
-`/Volumes/workspace/work/openim-uni-runtime-workspaces/<product>/<surface>`.
+`$OPENIM_LOCAL_WORKSPACE_ROOT/<product>/<surface>`.
 Runs are serialized by a PID-owned global lock and evidence is immutable below
 `.runs/<runID>`. Cleanup accepts only a specific directory containing an
 evidence record; it never removes a repository or SDK profile.
