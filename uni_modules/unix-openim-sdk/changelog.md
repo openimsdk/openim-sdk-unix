@@ -13,7 +13,6 @@
 - Android 原生依赖升级并固定为 `io.openim:core-sdk:3.8.3-patch15`。
 - iOS 原生依赖升级并固定为 `OpenIMSDKCore 3.8.3-hotfix.15-dynamic.1`。
 - App iOS 最低支持版本调整为 iOS 14；App Android 最低支持 Android 5.0 / API 21。
-- Public 市场包仅提供 Android、iOS 公共 IM 能力，不包含 HarmonyOS、商业信令、企业原生制品或 AV Runtime。
 
 ### 修复
 

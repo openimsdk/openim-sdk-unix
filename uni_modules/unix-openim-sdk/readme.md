@@ -155,12 +155,6 @@ createFileMessageFromFullPath({
 - SDK 数据默认保存在 App 沙盒内。
 - 插件本身不会主动弹出系统权限申请。业务使用相册、相机、麦克风或文件能力时，宿主 App 必须根据实际功能声明并申请权限。
 
-## Public、Private 与 AV Runtime 的边界
-
-- 本市场包只提供 Public OpenIM Android / iOS 能力。
-- HarmonyOS、商业信令和 `OpenIMSDKSessionSnapshot` 属于商业版 unixsdk，不在本包中。
-- `openim-av-runtime` 依赖商业版 unixsdk，不能与本 Public 市场包组合使用。
-
 ## 常见问题
 
 ### 为什么标准基座调用失败？
