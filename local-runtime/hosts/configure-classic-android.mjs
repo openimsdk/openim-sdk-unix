@@ -20,6 +20,7 @@ if (!Number.isInteger(minSdk) || minSdk < 21) throw new Error(`Invalid classic A
 const appKey = process.env.OPENIM_DCLOUD_APP_KEY_ANDROID || 'LOCAL_BUILD_REQUIRES_RUNTIME_APP_KEY'
 
 const escapeSingle = (value) => value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")
+const gradleBuildConfigString = (value) => `'\\"${JSON.stringify(value).replaceAll('"', '\\\\\\"')}\\"'`
 const pluginDocuments = new Map(descriptor.plugins.map((plugin) => [plugin.id, plugin]))
 const exportedPluginsRoot = join(exported, 'uni_modules')
 const pluginIDs = existsSync(exportedPluginsRoot)
@@ -83,9 +84,16 @@ ${projectDependencies.join('\n')}
 
 const appGradlePath = join(host, 'app/build.gradle')
 let appGradle = readFileSync(appGradlePath, 'utf8')
+const registerComponents = gradleBuildConfigString(descriptor.androidHost?.utsRegisterComponents ?? [])
+const easyCom = gradleBuildConfigString(descriptor.androidHost?.utsEasyCom ?? [])
 appGradle = appGradle
   .replace("namespace 'com.android.UniPlugin'", `namespace '${escapeSingle(applicationID)}'`)
   .replace('applicationId "com.android.UniPlugin"', `applicationId '${escapeSingle(applicationID)}'`)
+  .replace(/defaultConfig\s*\{/, `buildFeatures { buildConfig true }
+    defaultConfig {
+        buildConfigField 'String', 'UTSRegisterComponents', ${registerComponents}
+        buildConfigField 'String[]', 'UTSHooksClassArray', '{}'
+        buildConfigField 'String', 'UTSEasyCom', ${easyCom}`)
   .replace(/minSdkVersion\s+\d+/, `minSdkVersion ${minSdk}`)
   .replace(/\n\s*implementation project\(':[^']+'\)/g, '')
   .replace(/\n}\s*$/, `\n${pluginIDs.map((id) => `    implementation project(':${escapeSingle(id)}')`).join('\n')}\n}\n`)
