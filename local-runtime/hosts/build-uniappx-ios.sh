@@ -59,12 +59,36 @@ readonly info_plist="$native_root/UniAppXDemo/UniAppXDemo/Info.plist"
 readonly app="$output_root/UniAppX.app"
 test -d "$app"
 mkdir -p "$app/Frameworks"
-for framework in \
-  "$output_root/unimoduleUnixOpenimSdk.framework" \
-  "$native_root/DerivedData/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/unimoduleUnixOpenimSdk/OpenIMCore.framework"; do
+embed_framework() {
+  local framework="$1"
+  local target="$app/Frameworks/$(basename "$framework")"
   test -d "$framework"
-  ditto "$framework" "$app/Frameworks/$(basename "$framework")"
-done
+  if [[ -e "$target" ]]; then
+    echo "Duplicate embedded framework: $(basename "$framework")" >&2
+    exit 1
+  fi
+  ditto "$framework" "$target"
+}
+
+while IFS=$'\t' read -r plugin_id pod_name; do
+  wrapper="$output_root/$pod_name.framework"
+  if [[ ! -d "$wrapper" ]]; then
+    echo "Expected generated iOS wrapper framework for $plugin_id: $wrapper" >&2
+    exit 1
+  fi
+  embed_framework "$wrapper"
+  intermediates="$native_root/DerivedData/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/$pod_name"
+  if [[ -d "$intermediates" ]]; then
+    while IFS= read -r framework; do
+      embed_framework "$framework"
+    done < <(find "$intermediates" -maxdepth 1 -type d -name '*.framework' -print | sort)
+  fi
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  const camelize = (name) => name.split(/[^A-Za-z0-9]+/).filter(Boolean).map((part) => part[0].toUpperCase() + part.slice(1)).join("");
+  for (const plugin of descriptor.plugins) process.stdout.write(`${plugin.id}\tunimodule${camelize(plugin.id)}\n`);
+')
 test -f "$app/uni-app-x/apps/$app_id/www/manifest.json"
 test -f "$app/Frameworks/OpenIMCore.framework/OpenIMCore"
 test -f "$app/Frameworks/unimoduleUnixOpenimSdk.framework/unimoduleUnixOpenimSdk"

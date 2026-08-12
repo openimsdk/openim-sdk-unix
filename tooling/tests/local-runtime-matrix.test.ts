@@ -158,6 +158,10 @@ test('uni-app x iOS host builds only the simulator architecture exported by HBui
   assert.match(source, /lipo -archs/)
   assert.match(source, /ARCHS="\$exported_archs"/)
   assert.match(source, /ONLY_ACTIVE_ARCH=YES/)
+  assert.match(source, /descriptor\.plugins/)
+  assert.match(source, /XCFrameworkIntermediates\/\$pod_name/)
+  assert.match(source, /Duplicate embedded framework/)
+  assert.match(source, /Expected generated iOS wrapper framework/)
 })
 
 test('classic Android host removes legacy manifest package declarations from generated plugins', () => {
