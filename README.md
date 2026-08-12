@@ -1,6 +1,6 @@
-# uni-app x OpenIM SDK 👨‍💻💬
+# uni-app / uni-app x OpenIM SDK 👨‍💻💬
 
-使用本 SDK 可以为 uni-app x 应用快速接入即时通讯能力。通过连接自部署的 [OpenIM](https://docs.openim.io/) 服务端，你可以在 Android 和 iOS App 中使用类型化的 UTS API 调用原生 OpenIM SDK 能力。
+使用本 SDK 可以为传统 uni-app（Vue 2 / Vue 3）和 uni-app x 应用快速接入即时通讯能力。通过连接自部署的 [OpenIM](https://docs.openim.io/) 服务端，你可以在 Android 和 iOS App 中调用原生 OpenIM SDK 能力。
 
 底层 IM 能力来自 [OpenIM SDK Core](https://github.com/openimsdk/openim-sdk-core)。本项目将 OpenIM 移动端原生 SDK 封装为 uni-app x 的 `unix-openim-sdk` UTS 插件，提供 Promise 风格 API、类型化事件订阅和 Android/iOS 原生桥接实现。
 
@@ -14,9 +14,8 @@ OpenIM 服务端、REST API 和 SDK 文档请访问 [https://docs.openim.io/](ht
 
 本插件相关文档：
 
-- 插件 README：[`uni_modules/unix-openim-sdk/README.md`](uni_modules/unix-openim-sdk/README.md)
-- 插件市场使用说明：[`uni_modules/unix-openim-sdk/MARKET_USAGE.md`](uni_modules/unix-openim-sdk/MARKET_USAGE.md)
-- 更新日志：[`uni_modules/unix-openim-sdk/CHANGELOG.md`](uni_modules/unix-openim-sdk/CHANGELOG.md)
+- 插件市场说明：[`uni_modules/unix-openim-sdk/readme.md`](uni_modules/unix-openim-sdk/readme.md)
+- 更新日志：[`uni_modules/unix-openim-sdk/changelog.md`](uni_modules/unix-openim-sdk/changelog.md)
 
 ## 安装 💻
 
@@ -36,7 +35,7 @@ OpenIM 服务端、REST API 和 SDK 文档请访问 [https://docs.openim.io/](ht
 
 ### 添加 uni_modules 插件
 
-将 `unix-openim-sdk` 插件复制或安装到你的 uni-app x 项目中：
+将 `unix-openim-sdk` 插件复制或安装到你的 uni-app 或 uni-app x 项目中：
 
 ```text
 uni_modules/unix-openim-sdk
@@ -54,6 +53,8 @@ uni_modules/unix-openim-sdk
 发布门禁会分别校验 Public 与 Enterprise 的兼容债务。Public 发布还要求上述 Maven AAR 的 SHA-256 与锁定源码产物一致、Pod XCFramework 的解包 inventory SHA-256 与锁定源码产物一致；在 `toolchain.lock.json` 记录完整等价证据前，`npm run verify:release-policy` 会明确阻断发布。
 
 `npm run verify:release-integrity` 会从 `package-lock.json`、插件元数据和受控原生组件清单生成 CycloneDX 1.6 SBOM，同时执行 SPDX license allowlist 与 Git 跟踪文本 secret scan，报告写入 `test-results/release/`。发布流水线使用 `--release` 额外要求 `dirty=false` 并上传该报告。
+
+Public 插件市场发布使用临时 `release/public-<version>` 分支和不可变 Tag，不维护长期市场分支。`npm run marketplace:build` 会根据插件 `package.json.files` 生成确定性 ZIP、逐文件 manifest 和 `SHA256SUMS`，并拒绝 HarmonyOS、商业原生制品、账号凭据、本机路径和未提交工作区。完整流程见 [`PUBLIC_MARKETPLACE_RELEASE.md`](PUBLIC_MARKETPLACE_RELEASE.md)。
 
 由于本插件依赖原生 SDK，请使用自定义基座或正式打包产物验证原生能力。标准基座可以用于页面编译和渲染验证，但无法实际调用依赖原生 SDK 的能力。
 

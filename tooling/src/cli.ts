@@ -21,6 +21,7 @@ import {
 } from './public-contract-import.js'
 import { withLocalNativeProfile } from './native-profile.js'
 import { verifyEventControlConsumerCompile } from './consumer-compile.js'
+import { verifyTraditionalUniAppConsumerCompile } from './uniapp-consumer-compile.js'
 import { buildEnterpriseStableIDRegistry, writeEnterpriseStableIDRegistry } from './enterprise-integrity.js'
 import {
   applyEnterpriseMigration,
@@ -337,6 +338,15 @@ switch (command) {
       if (platform === 'harmony') throw new Error('Public consumer compile supports Android and iOS only')
       await verifyEventControlConsumerCompile(root, platform)
       console.log(`${platform} positive consumer compiled and removed export failed compilation as expected.`)
+    }
+    break
+  }
+  case 'verify:consumer:uniapp': {
+    const platforms = requestedPlatforms()
+    for (const platform of platforms) {
+      if (platform === 'harmony') throw new Error('Traditional uni-app consumer compile supports Android and iOS only')
+      await verifyTraditionalUniAppConsumerCompile(root, platform)
+      console.log(`${platform} traditional uni-app Vue 2/Vue 3 consumers compiled and the contract resolver rejected the removed export.`)
     }
     break
   }
