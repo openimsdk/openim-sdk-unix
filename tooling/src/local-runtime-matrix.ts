@@ -402,6 +402,8 @@ function executeHost(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, optio
     closeSync(stderr)
   }
   assert(result.status === 0, `${command} ${options.platform} failed with exit ${String(result.status)}`)
+  const compilerOutput = `${readFileSync(stdoutPath, 'utf8')}\n${readFileSync(stderrPath, 'utf8')}`
+  assert(!/(?:\[tsl\]\s+ERROR|项目\s+\S+\s+编译失败|项目\s+\S+\s+导出失败|BUILD FAILED)/.test(compilerOutput), `${command} ${options.platform} reported a compiler failure despite exiting successfully`)
   const artifactsPath = join(runRoot, 'artifacts.json')
   return existsSync(artifactsPath) ? JSON.parse(readFileSync(artifactsPath, 'utf8')) as Record<string, string> : {}
 }

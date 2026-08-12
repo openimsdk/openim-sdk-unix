@@ -93,3 +93,10 @@ test('matrix tiers implement the promised compile, smoke and full coverage', () 
     assert.equal(cells.filter((cell) => cell.surface !== 'uniapp-vue2').every((cell) => cell.command === 'test' && cell.suite === 'full'), true)
   }
 })
+
+test('runner source rejects HBuilder and native compiler failures hidden behind exit zero', () => {
+  const source = readFileSync(new URL('../src/local-runtime-matrix.ts', import.meta.url), 'utf8')
+  assert.match(source, /\\\[tsl\\\]\\s\+ERROR/)
+  assert.match(source, /BUILD FAILED/)
+  assert.match(source, /reported a compiler failure despite exiting successfully/)
+})
