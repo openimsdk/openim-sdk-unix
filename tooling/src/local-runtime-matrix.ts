@@ -172,7 +172,12 @@ function sourceIdentity(repository: string): { revision: string; dirty: boolean 
 }
 
 function resolveDescriptorRelative(descriptorPath: string, value: string): string {
-  return realpathSync(resolve(dirname(descriptorPath), value))
+  const expanded = value.replace(/\$\{([A-Z0-9_]+)\}/g, (_match, name: string) => {
+    const replacement = process.env[name]
+    assert(replacement != null && replacement !== '', `Missing descriptor environment variable ${name}`)
+    return replacement
+  })
+  return realpathSync(resolve(dirname(descriptorPath), expanded))
 }
 
 export function resolveProductDescriptor(path: string): ResolvedLocalProductDescriptor {

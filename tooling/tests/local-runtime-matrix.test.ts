@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -58,6 +58,20 @@ test('stable staging creates all three surfaces without mutating product sources
     assert.equal(readFileSync(join(project, 'uni_modules/unix-openim-sdk/package.json'), 'utf8').includes('unix-openim-sdk'), true)
   }
   assert.equal(execFileSync('git', ['-C', item.root, 'status', '--porcelain'], { encoding: 'utf8' }), before)
+})
+
+test('product descriptors resolve explicit environment-backed delivery inputs without persisting machine paths', () => {
+  const item = fixture()
+  const document = JSON.parse(readFileSync(item.descriptor, 'utf8'))
+  document.plugins[0].source = '${OPENIM_TEST_PLUGIN_SOURCE}'
+  writeFileSync(item.descriptor, `${JSON.stringify(document, null, 2)}\n`)
+  process.env.OPENIM_TEST_PLUGIN_SOURCE = join(item.root, 'uni_modules/unix-openim-sdk')
+  try {
+    const descriptor = resolveProductDescriptor(item.descriptor)
+    assert.equal(descriptor.plugins[0]!.source, realpathSync(process.env.OPENIM_TEST_PLUGIN_SOURCE!))
+  } finally {
+    delete process.env.OPENIM_TEST_PLUGIN_SOURCE
+  }
 })
 
 test('global lock refuses live ownership and reclaims only a dead PID', () => {
