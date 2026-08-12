@@ -333,6 +333,7 @@ function openAutomationProject() {
   }
 }
 
+openAutomationProject();
 disableAutomationProtocolDebug();
 assertManifestWebSocket();
 assertStaticAutomationIsPassive();
@@ -364,7 +365,6 @@ if (deviceID.length > 0) {
   args.push('--device_id', deviceID);
 }
 
-openAutomationProject();
 console.log(`[openim-runner] starting ${target} (${requestedVapor ? 'vapor-bytecode' : 'classic'})${deviceID.length > 0 ? ` on ${deviceID}` : ''}`);
 const child = spawn(cliPath, args, {
   cwd: projectRoot,

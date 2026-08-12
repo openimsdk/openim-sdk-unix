@@ -318,6 +318,7 @@ test('automation imports the generated staging project before invoking uniapp.te
   assert.match(runner, /\['project', 'close', '--path', projectRoot\]/)
   assert.match(runner, /\['project', 'open', '--path', projectRoot\]/)
   assert.match(runner, /closeAutomationProject\(\)/)
+  assert.ok(runner.indexOf('openAutomationProject();') < runner.indexOf('assertCustomBase(platform);'))
 })
 
 test('Android automation runner rebuilds the static VDOM host for the allocated port', () => {
