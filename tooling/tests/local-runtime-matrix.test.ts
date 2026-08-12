@@ -208,6 +208,8 @@ test('classic Android host removes legacy manifest package declarations from gen
   assert.match(source, /UTSHooksClassArray/)
   assert.match(source, /UTSRegisterComponents/)
   assert.match(source, /UTSEasyCom/)
+  assert.match(source, /useLegacyPackaging true/)
+  assert.match(source, /android:extractNativeLibs="true"/)
   const build = readFileSync(new URL('../../local-runtime/hosts/build-classic-android.sh', import.meta.url), 'utf8')
   assert.match(build, /classicAndroidLibraries/)
   assert.match(build, /Required classic Android library is missing/)

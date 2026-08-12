@@ -89,6 +89,8 @@ const easyCom = gradleBuildConfigString(descriptor.androidHost?.utsEasyCom ?? []
 appGradle = appGradle
   .replace("namespace 'com.android.UniPlugin'", `namespace '${escapeSingle(applicationID)}'`)
   .replace('applicationId "com.android.UniPlugin"', `applicationId '${escapeSingle(applicationID)}'`)
+  .replace(/android\s*\{/, `android {
+    packagingOptions { jniLibs { useLegacyPackaging true } }`)
   .replace(/defaultConfig\s*\{/, `buildFeatures { buildConfig true }
     defaultConfig {
         buildConfigField 'String', 'UTSRegisterComponents', ${registerComponents}
@@ -101,7 +103,9 @@ writeFileSync(appGradlePath, appGradle)
 
 const manifestPath = join(host, 'app/src/main/AndroidManifest.xml')
 let manifest = readFileSync(manifestPath, 'utf8')
-manifest = manifest.replace('开发者需登录https://dev.dcloud.net.cn/申请签名', appKey)
+manifest = manifest
+  .replace('开发者需登录https://dev.dcloud.net.cn/申请签名', appKey)
+  .replace(/<application\b/, '<application android:extractNativeLibs="true"')
 writeFileSync(manifestPath, manifest)
 
 const appsRoot = join(host, 'app/src/main/assets/apps')
