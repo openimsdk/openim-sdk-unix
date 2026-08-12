@@ -25,6 +25,32 @@ for (const sibling of ['SDK', 'TemporarySampleFramework']) {
 }
 rmSync(join(demoRoot, 'UniAppXDemo.xcworkspace'), { recursive: true, force: true })
 
+const viewControllerPath = join(demoRoot, 'UniAppXDemo/ViewController.m')
+let viewControllerSource = readFileSync(viewControllerPath, 'utf8')
+if (viewControllerSource.includes('- (void)viewDidAppear:')) {
+  throw new Error('The uni-app x iOS SDK sample now owns viewDidAppear; update the local auto-start integration explicitly')
+}
+const implementationEnd = viewControllerSource.lastIndexOf('\n@end')
+if (implementationEnd < 0) throw new Error('Unable to locate the uni-app x iOS sample ViewController implementation boundary')
+const autoStart = `
+
+- (void)openimLocalRuntimeAutoStart {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self pushWithDefaultAnimation];
+    });
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    static BOOL openimLocalRuntimeStarted = NO;
+    if (openimLocalRuntimeStarted) return;
+    openimLocalRuntimeStarted = YES;
+    [self openimLocalRuntimeAutoStart];
+}
+`
+viewControllerSource = `${viewControllerSource.slice(0, implementationEnd)}${autoStart}${viewControllerSource.slice(implementationEnd)}`
+writeFileSync(viewControllerPath, viewControllerSource)
+
 const apps = join(demoRoot, 'UniAppXDemo/uni-app-x/apps')
 rmSync(apps, { recursive: true, force: true })
 mkdirSync(apps, { recursive: true })
