@@ -63,6 +63,7 @@ export interface LocalProductDescriptor {
   displayName: string
   repositoryRoot: string
   uniappxSource: string
+  surfaceSources?: Partial<Record<LocalSurface, string>>
   plugins: LocalProductPlugin[]
   automationAssets?: LocalAutomationAsset[]
   nativeArtifacts?: LocalNativeArtifact[]
@@ -71,10 +72,11 @@ export interface LocalProductDescriptor {
   dcloudAppIDs: Record<LocalSurface, string>
 }
 
-export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescriptor, 'repositoryRoot' | 'uniappxSource' | 'plugins' | 'automationAssets' | 'nativeArtifacts'> {
+export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescriptor, 'repositoryRoot' | 'uniappxSource' | 'surfaceSources' | 'plugins' | 'automationAssets' | 'nativeArtifacts'> {
   descriptorPath: string
   repositoryRoot: string
   uniappxSource: string
+  surfaceSources: Partial<Record<LocalSurface, string>>
   plugins: Array<{ id: string; source: string; dependencies?: string[]; androidNamespace?: string; androidGradleTemplate?: string }>
   automationAssets: Array<{ source: string; destination: string; surfaces?: LocalSurface[] }>
   nativeArtifacts: Array<{ id: string; path: string }>
@@ -194,6 +196,7 @@ export function resolveProductDescriptor(path: string): ResolvedLocalProductDesc
     descriptorPath,
     repositoryRoot: resolveDescriptorRelative(descriptorPath, document.repositoryRoot),
     uniappxSource: resolveDescriptorRelative(descriptorPath, document.uniappxSource),
+    surfaceSources: Object.fromEntries(Object.entries(document.surfaceSources ?? {}).map(([surface, source]) => [surface, resolveDescriptorRelative(descriptorPath, source)])),
     plugins: document.plugins.map((plugin) => ({
       id: plugin.id,
       source: resolveDescriptorRelative(descriptorPath, plugin.source),
@@ -218,6 +221,16 @@ function ensureInside(root: string, target: string): void {
 
 function copyUniAppXSource(source: string, target: string): void {
   const entries = ['App.uvue', 'main.uts', 'manifest.json', 'pages.json', 'pages', 'static', 'uni.scss']
+  for (const name of entries) {
+    const input = join(source, name)
+    if (existsSync(input)) cpSync(input, join(target, name), { recursive: true, dereference: false })
+  }
+}
+
+function copySurfaceSource(source: string, target: string, surface: LocalSurface): void {
+  const entries = surface === 'uniappx'
+    ? ['App.uvue', 'main.uts', 'manifest.json', 'pages.json', 'pages', 'static', 'uni.scss']
+    : ['App.vue', 'main.js', 'manifest.json', 'pages.json', 'pages', 'static', 'uni.scss']
   for (const name of entries) {
     const input = join(source, name)
     if (existsSync(input)) cpSync(input, join(target, name), { recursive: true, dereference: false })
@@ -307,7 +320,9 @@ export function prepareStableProject(descriptor: ResolvedLocalProductDescriptor,
   const staging = mkdtempSync(join(productRoot, `.${surface}.staging-`))
   const backup = join(productRoot, `.${surface}.backup-${process.pid}-${randomUUID()}`)
   try {
-    if (surface === 'uniappx') copyUniAppXSource(descriptor.uniappxSource, staging)
+    const surfaceSource = descriptor.surfaceSources[surface]
+    if (surfaceSource != null) copySurfaceSource(surfaceSource, staging, surface)
+    else if (surface === 'uniappx') copyUniAppXSource(descriptor.uniappxSource, staging)
     else writeTraditionalFixture(staging, surface)
     copyAutomationAssets(staging, descriptor, surface)
     mkdirSync(join(staging, 'uni_modules'), { recursive: true })

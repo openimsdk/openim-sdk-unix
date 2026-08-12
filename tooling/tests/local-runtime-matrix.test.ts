@@ -74,6 +74,21 @@ test('product descriptors resolve explicit environment-backed delivery inputs wi
   }
 })
 
+test('product descriptors may supply canonical traditional surface sources', () => {
+  const item = fixture()
+  write(join(item.root, 'canonical-vue3/App.vue'), '<template><view>canonical AV host</view></template>\n')
+  write(join(item.root, 'canonical-vue3/main.js'), 'export function createApp() {}\n')
+  write(join(item.root, 'canonical-vue3/manifest.json'), '{"appid":"__UNI__SOURCE","app-android":{},"app-ios":{}}\n')
+  write(join(item.root, 'canonical-vue3/pages.json'), '{"pages":[]}\n')
+  const document = JSON.parse(readFileSync(item.descriptor, 'utf8'))
+  document.surfaceSources = { 'uniapp-vue3': '../../canonical-vue3' }
+  writeFileSync(item.descriptor, `${JSON.stringify(document, null, 2)}\n`)
+  const descriptor = resolveProductDescriptor(item.descriptor)
+  const project = prepareStableProject(descriptor, 'uniapp-vue3', item.workspace)
+  assert.match(readFileSync(join(project, 'App.vue'), 'utf8'), /canonical AV host/)
+  assert.equal(JSON.parse(readFileSync(join(project, 'manifest.json'), 'utf8')).vueVersion, '3')
+})
+
 test('global lock refuses live ownership and reclaims only a dead PID', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-lock-'))
   const document = { schemaVersion: 1 as const, pid: process.pid, runID: 'first', product: 'public', surface: 'uniappx' as const, platform: 'android' as const, deviceID: null, startedAt: new Date().toISOString() }
