@@ -129,6 +129,7 @@ test('runner source rejects HBuilder and native compiler failures hidden behind 
   assert.match(source, /\\\[tsl\\\]\\s\+ERROR/)
   assert.match(source, /BUILD FAILED/)
   assert.match(source, /reported a compiler failure despite exiting successfully/)
+  assert.match(source, /OPENIM_LOCAL_CLASSIC_VIDEO: descriptor\.classicVideo === true \? '1' : '0'/)
 })
 
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {

@@ -68,6 +68,7 @@ export interface LocalProductDescriptor {
   automationAssets?: LocalAutomationAsset[]
   nativeArtifacts?: LocalNativeArtifact[]
   androidHost?: LocalAndroidHostOptions
+  classicVideo?: boolean
   applicationIDs: Record<LocalSurface, string>
   dcloudAppIDs: Record<LocalSurface, string>
 }
@@ -432,6 +433,7 @@ function executeHost(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, optio
         OPENIM_UNI_TOOLCHAIN_PROFILE: profile.profilePath,
         OPENIM_TEST_DEVICE_ID: options.deviceID ?? '',
         OPENIM_CLOUD_PACKAGING: 'false',
+        OPENIM_LOCAL_CLASSIC_VIDEO: descriptor.classicVideo === true ? '1' : '0',
       },
     })
   } finally {
