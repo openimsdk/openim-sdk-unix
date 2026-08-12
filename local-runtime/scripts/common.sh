@@ -178,7 +178,7 @@ ensure_ios_simulator() {
 }
 
 verify_required_ios_frameworks() {
-  local app="$1"
+  local app_bundle="$1"
   while IFS= read -r framework; do
     [[ -z "$framework" ]] && continue
     if [[ ! "$framework" =~ ^[A-Za-z0-9_+.-]+$ ]]; then
@@ -186,7 +186,7 @@ verify_required_ios_frameworks() {
       return 1
     fi
     local count
-    count="$(find "$app/Frameworks" -maxdepth 1 -type d -name "$framework.framework" | wc -l | tr -d ' ')"
+    count="$(find "$app_bundle/Frameworks" -maxdepth 1 -type d -name "$framework.framework" | wc -l | tr -d ' ')"
     if [[ "$count" != "1" ]]; then
       echo "Expected exactly one $framework.framework in the assembled iOS app, found $count" >&2
       return 1

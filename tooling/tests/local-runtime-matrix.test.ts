@@ -185,6 +185,7 @@ test('classic iOS host aligns every plugin to the product deployment target', ()
   assert.match(common, /iosHost\?\.requiredFrameworks/)
   assert.match(common, /iosHost\?\.uniappxRequiredFrameworks/)
   assert.match(common, /Expected exactly one \$framework\.framework/)
+  assert.doesNotMatch(common, /verify_required_ios_frameworks\(\) \{\n\s+local app=/)
 })
 
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
