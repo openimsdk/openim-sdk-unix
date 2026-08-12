@@ -115,9 +115,10 @@ test('write-only app mutations are required and carry server acknowledgement evi
   for (const apiName of ['setAppBackgroundStatus', 'setAppBadge', 'updateFcmToken']) {
     assert.match(
       suite,
-      new RegExp(`runAutomationStepWithEvidence<string>\\('app', '${apiName}'[^\\n]+serverAcknowledgedMutationAutomationEvidence\\('${apiName}'\\)`),
+      new RegExp(`runAutomationStep<string>\\('app', '${apiName}'[^\\n]+serverAcknowledgedMutationAutomationEvidence\\('${apiName}'\\)`),
     )
   }
+  assert.doesNotMatch(page, /runAutomationStepWithEvidence/)
   assert.doesNotMatch(suite, /runAutomationOptionalStep<string>\('app', 'updateFcmToken'/)
 })
 

@@ -2189,10 +2189,10 @@
 			automationLoggedIn = true
 			automationActiveUserID = userID
 		})
-		await runAutomationStepWithEvidence<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), (value : OpenIMLoginStatus) => {
+		await runAutomationStep<OpenIMLoginStatus>('setup', 'getLoginStatus', getLoginStatus('uvue_auto_login_status_' + label), (value : OpenIMLoginStatus) => {
 			requireAutomation(value == 3, 'getLoginStatus did not report logged-in state')
 		}, responseAutomationEvidence('getLoginStatus', 'login-status-is-logged'))
-		await runAutomationStepWithEvidence<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
+		await runAutomationStep<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
 			requireAutomation(value == userID, 'getLoginUserID returned ' + value + ', expected ' + userID)
 		}, responseAutomationEvidence('getLoginUserID', 'login-user-id-matches-active-user'))
 		recordAutomationEvidenceStep('setup', 'login', true, 'read-after-login status and userID matched ' + userID, mutationAutomationEvidence('login', 'authenticated-user-observed', 'login-readback-observed', false), null, null)
@@ -2478,7 +2478,7 @@
 	async function runAutomationSetupSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
 		automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
-		await runAutomationStepWithEvidence<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence('initSDK', 'init-result-is-true'))
+		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence('initSDK', 'init-result-is-true'))
 		await normalizeAutomationExistingSession()
 		await runAutomationEventControlScenario(config)
 		const dataPath = getOpenIMDataPath()
@@ -2898,11 +2898,11 @@
 	}
 
 	async function runAutomationAppSuite() : Promise<void> {
-		await runAutomationStepWithEvidence<string>('app', 'setAppBackgroundStatus', setAppBackgroundStatus(false, 'uvue_auto_app_background'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBackgroundStatus'))
-		await runAutomationStepWithEvidence<string>('app', 'setAppBadge', setAppBadge(0, 'uvue_auto_app_badge'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBadge'))
+		await runAutomationStep<string>('app', 'setAppBackgroundStatus', setAppBackgroundStatus(false, 'uvue_auto_app_background'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBackgroundStatus'))
+		await runAutomationStep<string>('app', 'setAppBadge', setAppBadge(0, 'uvue_auto_app_badge'), noCache, serverAcknowledgedMutationAutomationEvidence('setAppBadge'))
 		await runAutomationStep<string>('app', 'networkStatusChanged', networkStatusChanged('uvue_auto_network_changed'), noCache)
 		const params : OpenIMUpdateFcmTokenParams = { fcmToken: 'uvue-public-automation-fcm-token', expireTime: 0 }
-		await runAutomationStepWithEvidence<string>('app', 'updateFcmToken', updateFcmToken(params, 'uvue_auto_update_fcm'), noCache, serverAcknowledgedMutationAutomationEvidence('updateFcmToken'))
+		await runAutomationStep<string>('app', 'updateFcmToken', updateFcmToken(params, 'uvue_auto_update_fcm'), noCache, serverAcknowledgedMutationAutomationEvidence('updateFcmToken'))
 	}
 
 	async function runAutomationUploadSuite() : Promise<void> {
@@ -3333,11 +3333,11 @@
 			recordAutomationStep('cleanup', 'offAll', false, stringifyAPIValue(error))
 		}
 		if (automationLoggedIn) {
-			await runAutomationStepWithEvidence<string>('cleanup', 'logout', logout('uvue_auto_logout_before_uninit'), (_value : string) => {
+			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_before_uninit'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''
 			}, responseAutomationEvidence('logout', 'login-status-is-logged-out'))
-			const loggedOutStatus = await runAutomationStepWithEvidence<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence('getLoginStatus', 'login-status-readback-is-logged-out'))
+			const loggedOutStatus = await runAutomationStep<OpenIMLoginStatus>('cleanup', 'getLoginStatus', getLoginStatus('uvue_auto_logout_status'), noCache, responseAutomationEvidence('getLoginStatus', 'login-status-readback-is-logged-out'))
 			requireAutomation(loggedOutStatus == 1, 'logout did not transition to logged-out state')
 			recordAutomationEvidenceStep('cleanup', 'logout', true, 'read-after-logout status is logged out', mutationAutomationEvidence('logout', 'logout-result-observed', 'logged-out-status-readback', false), null, null)
 			recordAutomationCleanupEvidence('cleanup', 'logout', 'none', 'logout-is-terminal', 'logged-out status', 'logged-out status', true)
@@ -3354,7 +3354,7 @@
 			const readyConfig = config as OpenIMAutomationConfig
 			automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
 			automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
-			await runAutomationStepWithEvidence<boolean>('cleanup', 'initSDK', initSDK(buildAutomationInitConfig(readyConfig), 'uvue_auto_reinit_epoch_probe'), (value : boolean) => {
+			await runAutomationStep<boolean>('cleanup', 'initSDK', initSDK(buildAutomationInitConfig(readyConfig), 'uvue_auto_reinit_epoch_probe'), (value : boolean) => {
 				requireAutomation(value, 're-init after unInitSDK returned false')
 			}, responseAutomationEvidence('initSDK', 'reinit-result-is-true'))
 			await switchAutomationPrimary(readyConfig, 'A_epoch_probe')
@@ -3366,7 +3366,7 @@
 			recordAutomationEvidenceStep('cleanup', 'onConnecting', true, 'subscription survived Core epoch and delivered once after rebind', mutationAutomationEvidence('onConnecting', 'subscription-survived-core-epoch', 'single-delivery-after-rebind', true), null, null)
 			off(retained)
 			recordAutomationCleanupEvidence('cleanup', 'onConnecting', 'off(subscription)', 'retained-epoch-probe-subscription-removed', 'exact retained handle removed', 'exact retained handle removed', true)
-			await runAutomationStepWithEvidence<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {
+			await runAutomationStep<string>('cleanup', 'logout', logout('uvue_auto_logout_final'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''
 			}, responseAutomationEvidence('logout', 'cleanup-login-status-is-logged-out'))
