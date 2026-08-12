@@ -12,6 +12,7 @@ readonly app_id="${OPENIM_LOCAL_DCLOUD_APP_ID:?}"
 readonly hbuilder_cli="$(resolve_hbuilder_cli)"
 readonly pod_bin="$(read_json "$profile" hostTools.cocoapods.path)"
 readonly output_root="$PROJECT_ROOT/unpackage/debug/ios-${OPENIM_LOCAL_PRODUCT}-${OPENIM_LOCAL_SURFACE}"
+readonly deployment_target="$(node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(String(d.iosHost?.deploymentTarget ?? "14.0"))' "$OPENIM_LOCAL_PRODUCT_DESCRIPTOR")"
 verify_hbuilder_cli "$hbuilder_cli"
 test -x "$pod_bin"
 
@@ -39,6 +40,7 @@ OPENIM_LOCAL_NATIVE_HOST="$native_root" OPENIM_LOCAL_UNIAPP_IOS_SDK="$sdk_root" 
     ONLY_ACTIVE_ARCH=YES \
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]=arm64' \
     CODE_SIGNING_ALLOWED=NO \
+    IPHONEOS_DEPLOYMENT_TARGET="$deployment_target" \
     PRODUCT_BUNDLE_IDENTIFIER="${OPENIM_LOCAL_APPLICATION_ID:?}" \
     CONFIGURATION_BUILD_DIR="$output_root" \
     build
