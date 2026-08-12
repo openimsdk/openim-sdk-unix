@@ -181,21 +181,11 @@ if [[ ! -x "$java_runtime/bin/java" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$NATIVE_ROOT/gradle/wrapper/gradle-wrapper.jar" || ! -x "$NATIVE_ROOT/gradlew" ]]; then
-  gradle_bootstrap="$(resolve_gradle_bootstrap)"
-  (
-    cd "$NATIVE_ROOT"
-    JAVA_HOME="$java_runtime" ANDROID_HOME="$ANDROID_SDK" \
-      "$gradle_bootstrap" wrapper \
-        --gradle-version "$(read_json "$HARNESS_LOCK" android.gradleVersion)" \
-        --distribution-type bin
-  )
-fi
-
+gradle_bootstrap="$(resolve_gradle_bootstrap)"
 (
   cd "$NATIVE_ROOT"
   JAVA_HOME="$java_runtime" ANDROID_HOME="$ANDROID_SDK" \
-    ./gradlew --no-daemon --stacktrace --rerun-tasks :app:assembleDebug
+    "$gradle_bootstrap" --no-daemon --stacktrace --rerun-tasks :app:assembleDebug
 )
 
 built_apk="$NATIVE_ROOT/app/build/outputs/apk/debug/app-debug.apk"

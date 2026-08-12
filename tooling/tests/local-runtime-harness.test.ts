@@ -93,11 +93,13 @@ test('local Android SDK host is classified as VDOM when websocket and UniAppActi
   })
 })
 
-test('local Android template sync preserves the version catalog while reusing the Gradle wrapper', () => {
+test('local Android template sync uses the verified Gradle distribution without probing a remote wrapper URL', () => {
   const source = readFileSync(resolve(root, 'local-runtime/scripts/build-local-android.sh'), 'utf8')
 
   assert.doesNotMatch(source, /--exclude '\/gradle\/'/)
-  assert.match(source, /--exclude '\/gradle\/wrapper\/'/)
+  assert.match(source, /gradle_bootstrap="\$\(resolve_gradle_bootstrap\)"/)
+  assert.match(source, /"\$gradle_bootstrap" --no-daemon --stacktrace --rerun-tasks :app:assembleDebug/)
+  assert.doesNotMatch(source, /\$gradle_bootstrap" wrapper/)
 })
 
 test('local Android host embeds the DCloud automation pull activity used by uniapp.test', () => {
