@@ -14,7 +14,8 @@ function parseManifest(path) {
   return JSON.parse(readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
 }
 function gradleBuildConfigString(value) {
-  return `'${JSON.stringify(JSON.stringify(value)).replaceAll("'", "\\'")}'`
+  const escapedJSON = JSON.stringify(value).replaceAll('"', '\\\\\\"')
+  return `'\\"${escapedJSON}\\"'`
 }
 
 export function configureNativeAndroid({ manifest, root, descriptor = null, environment = process.env }) {
