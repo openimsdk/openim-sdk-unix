@@ -89,6 +89,20 @@ test('product descriptors may supply canonical traditional surface sources', () 
   assert.equal(JSON.parse(readFileSync(join(project, 'manifest.json'), 'utf8')).vueVersion, '3')
 })
 
+test('Public descriptor never aliases the uni-app x page into a traditional Vue page', () => {
+  const descriptor = JSON.parse(
+    readFileSync(join(import.meta.dirname, '../..', 'local-runtime/products/public.json'), 'utf8'),
+  ) as {
+    automationAssets?: Array<{ source?: string; destination?: string; surfaces?: string[] }>
+  }
+  const invalid = (descriptor.automationAssets ?? []).filter((asset) =>
+    asset.source?.endsWith('.uvue') === true
+      && asset.destination?.endsWith('.vue') === true
+      && (asset.surfaces ?? []).some((surface) => surface.startsWith('uniapp-vue')),
+  )
+  assert.deepEqual(invalid, [])
+})
+
 test('global lock refuses live ownership and reclaims only a dead PID', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-lock-'))
   const document = { schemaVersion: 1 as const, pid: process.pid, runID: 'first', product: 'public', surface: 'uniappx' as const, platform: 'android' as const, deviceID: null, startedAt: new Date().toISOString() }

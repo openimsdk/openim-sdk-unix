@@ -13,11 +13,6 @@
   ],
   "automationAssets": [
     {
-      "source": "../../pages/index/index.uvue",
-      "destination": "pages/index/index.vue",
-      "surfaces": ["uniapp-vue2", "uniapp-vue3"]
-    },
-    {
       "source": "../../pages/index/openim-automation-profiles.uts",
       "destination": "pages/index/openim-automation-profiles.uts"
     },
