@@ -13,6 +13,8 @@ const project = resolve(required('OPENIM_LOCAL_PROJECT_ROOT'))
 const host = resolve(required('OPENIM_LOCAL_NATIVE_HOST'))
 const sdkRoot = resolve(required('OPENIM_LOCAL_UNIAPP_IOS_SDK'))
 const descriptor = JSON.parse(readFileSync(required('OPENIM_LOCAL_PRODUCT_DESCRIPTOR'), 'utf8'))
+const deploymentTarget = String(descriptor.iosHost?.deploymentTarget ?? '14.0')
+if (!/^\d+\.\d+$/.test(deploymentTarget)) throw new Error(`Invalid classic iOS deployment target: ${deploymentTarget}`)
 const appID = required('OPENIM_LOCAL_DCLOUD_APP_ID')
 const exported = join(project, 'unpackage/resources')
 const pluginRoot = join(host, 'UTSPlugins')
@@ -28,6 +30,10 @@ for (const plugin of descriptor.plugins) {
   cpSync(appIOS, target, { recursive: true })
   const configPath = join(target, 'config.json')
   const config = existsSync(configPath) ? JSON.parse(readFileSync(configPath, 'utf8')) : {}
+  if (Number(config.deploymentTarget ?? 0) > Number(deploymentTarget)) {
+    throw new Error(`Plugin ${plugin.id} requires iOS ${config.deploymentTarget}, above host ${deploymentTarget}`)
+  }
+  config.deploymentTarget = deploymentTarget
   config.openimLocalPluginDependencies = (plugin.dependencies ?? []).map((dependency) => `unimodule${camelize(dependency)}`)
   writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`)
 }
@@ -41,7 +47,7 @@ writeFileSync(join(host, 'HBuilder-Hello/control.xml'), `<HBuilder debug="true" 
 const podfilePath = join(host, 'Podfile')
 let podfile = readFileSync(podfilePath, 'utf8')
 podfile = podfile
-  .replace("platform :ios, '13.0'", "platform :ios, '14.0'")
+  .replace("platform :ios, '13.0'", `platform :ios, '${deploymentTarget}'`)
   .replace("pod 'uniapp', :path => '..', :subspecs => uniapp_subspecs", `pod 'uniapp', :path => '${sdkRoot.replaceAll("'", "\\'")}', :subspecs => uniapp_subspecs`)
 if (process.env.OPENIM_LOCAL_CLASSIC_VIDEO === '1') podfile = podfile.replace("#   'Video',", "   'Video',")
 writeFileSync(podfilePath, podfile)

@@ -152,6 +152,13 @@ test('classic Android host removes legacy manifest package declarations from gen
   assert.match(build, /Required classic Android library is missing/)
 })
 
+test('classic iOS host aligns every plugin to the product deployment target', () => {
+  const source = readFileSync(new URL('../../local-runtime/hosts/configure-classic-ios.mjs', import.meta.url), 'utf8')
+  assert.match(source, /descriptor\.iosHost\?\.deploymentTarget/)
+  assert.match(source, /config\.deploymentTarget = deploymentTarget/)
+  assert.match(source, /platform :ios, '\$\{deploymentTarget\}'/)
+})
+
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-android-host-'))
   cpSync(new URL('../../local-runtime/native-android-template', import.meta.url), root, { recursive: true })
