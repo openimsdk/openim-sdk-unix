@@ -359,6 +359,7 @@ test('Android automation passes the descriptor package explicitly across HBuilde
   const source = readFileSync(resolve(root, 'local-runtime/scripts/test-local-android.sh'), 'utf8')
   assert.match(source, /PACKAGE_NAME="\$\(android_package_name\)"/)
   assert.match(source, /OPENIM_TEST_BASE_PACKAGE="\$PACKAGE_NAME"/)
+  assert.match(source, /OPENIM_AUTOMATION_RUNTIME_ROOT="\$LOCAL_RUNTIME_ROOT"/)
 })
 
 test('local automation disables HBuilderX protocol debug while credentials cross the bridge', () => {

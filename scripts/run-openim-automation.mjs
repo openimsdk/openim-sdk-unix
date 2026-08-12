@@ -390,7 +390,8 @@ function startAndroidAutomationRebuild() {
     return;
   }
   androidAutomationRebuildStarted = true;
-  const rebuildScript = resolve(projectRoot, 'local-runtime/scripts/rebuild-local-android-automation.sh');
+  const automationRuntimeRoot = resolve(process.env.OPENIM_AUTOMATION_RUNTIME_ROOT || resolve(projectRoot, 'local-runtime'));
+  const rebuildScript = resolve(automationRuntimeRoot, 'scripts/rebuild-local-android-automation.sh');
   console.log(`[openim-runner] rebuilding static Android automation host for port ${allocatedRuntimePort}`);
   androidAutomationRebuildProcess = spawn('bash', [rebuildScript, allocatedRuntimePort, deviceID], {
     cwd: projectRoot,
