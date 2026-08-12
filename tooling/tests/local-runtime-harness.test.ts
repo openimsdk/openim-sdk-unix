@@ -313,6 +313,13 @@ test('local automation pre-provisions accounts and requires an explicit server s
   assert.doesNotMatch(register, /openIM123/)
 })
 
+test('automation imports the generated staging project before invoking uniapp.test', () => {
+  const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
+  assert.match(runner, /\['project', 'close', '--path', projectRoot\]/)
+  assert.match(runner, /\['project', 'open', '--path', projectRoot\]/)
+  assert.match(runner, /closeAutomationProject\(\)/)
+})
+
 test('Android automation runner rebuilds the static VDOM host for the allocated port', () => {
   const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
   const androidTest = readFileSync(resolve(root, 'local-runtime/scripts/test-local-android.sh'), 'utf8')

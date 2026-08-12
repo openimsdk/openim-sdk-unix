@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import {
@@ -310,6 +310,29 @@ if (!existsSync(cliPath)) {
   fail(`HBuilderX CLI does not exist: ${cliPath}`);
 }
 
+function closeAutomationProject() {
+  spawnSync(cliPath, ['project', 'close', '--path', projectRoot], {
+    cwd: projectRoot,
+    env: process.env,
+    stdio: 'ignore',
+  });
+}
+
+function openAutomationProject() {
+  closeAutomationProject();
+  const result = spawnSync(cliPath, ['project', 'open', '--path', projectRoot], {
+    cwd: projectRoot,
+    env: process.env,
+    encoding: 'utf8',
+  });
+  if (result.error != null) {
+    fail(`failed to import the staging project into HBuilderX: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    fail(`failed to import the staging project into HBuilderX (exit ${String(result.status)})`);
+  }
+}
+
 disableAutomationProtocolDebug();
 assertManifestWebSocket();
 assertStaticAutomationIsPassive();
@@ -341,6 +364,7 @@ if (deviceID.length > 0) {
   args.push('--device_id', deviceID);
 }
 
+openAutomationProject();
 console.log(`[openim-runner] starting ${target} (${requestedVapor ? 'vapor-bytecode' : 'classic'})${deviceID.length > 0 ? ` on ${deviceID}` : ''}`);
 const child = spawn(cliPath, args, {
   cwd: projectRoot,
@@ -463,6 +487,7 @@ child.on('close', (code, signal) => {
   restoreAutomationEnvironment();
   restoreAutomationProtocolDebug();
   terminateProjectJestProcesses('runner exit cleanup');
+  closeAutomationProject();
   const passed = /Test Suites:\s+\d+ passed/i.test(outputTail) && /Tests:\s+\d+ passed/i.test(outputTail);
   let evidenceFailure = '';
   try {
