@@ -334,6 +334,19 @@ test('Android automation runner rebuilds the static VDOM host for the allocated 
   )
 })
 
+test('descriptor-driven Android runtime never falls back to the Public legacy APK name', () => {
+  for (const relativePath of [
+    'local-runtime/scripts/run-local-android.sh',
+    'local-runtime/scripts/test-local-android.sh',
+    'local-runtime/scripts/rebuild-local-android-automation.sh',
+  ]) {
+    const source = readFileSync(resolve(root, relativePath), 'utf8')
+    assert.match(source, /OPENIM_LOCAL_PRODUCT/)
+    assert.match(source, /OPENIM_LOCAL_SURFACE/)
+    assert.doesNotMatch(source, /unpackage\/debug\/unix-openim-sdk-local\.apk/)
+  }
+})
+
 test('local automation disables HBuilderX protocol debug while credentials cross the bridge', () => {
   const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
 

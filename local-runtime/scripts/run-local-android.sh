@@ -5,7 +5,7 @@ source "$(cd "$(dirname "$0")" && pwd)/common.sh"
 
 "$LOCAL_RUNTIME_ROOT/scripts/build-local-android.sh"
 
-readonly APK="$PROJECT_ROOT/unpackage/debug/unix-openim-sdk-local.apk"
+readonly APK="$PROJECT_ROOT/unpackage/debug/${OPENIM_LOCAL_PRODUCT:-unix-openim-sdk}-${OPENIM_LOCAL_SURFACE:-uniappx}-local.apk"
 readonly ADB="$(resolve_adb)"
 readonly DEVICE_ID="$(resolve_android_device "$ADB")"
 readonly PACKAGE_NAME="$(android_package_name)"

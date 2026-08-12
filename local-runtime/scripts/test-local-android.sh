@@ -30,7 +30,7 @@ trap restore_local_automation_environment EXIT
 "$LOCAL_RUNTIME_ROOT/scripts/prepare-automation-test-runtime.sh"
 "$LOCAL_RUNTIME_ROOT/scripts/run-local-android.sh"
 
-readonly APK="$PROJECT_ROOT/unpackage/debug/unix-openim-sdk-local.apk"
+readonly APK="$PROJECT_ROOT/unpackage/debug/${OPENIM_LOCAL_PRODUCT:-unix-openim-sdk}-${OPENIM_LOCAL_SURFACE:-uniappx}-local.apk"
 readonly ADB="$(resolve_adb)"
 readonly DEVICE_ID="$(cat "$PROJECT_ROOT/unpackage/local-runtime/android-device-id")"
 readonly OS_VERSION="$("$ADB" -s "$DEVICE_ID" shell getprop ro.build.version.release | tr -d '\r')"
