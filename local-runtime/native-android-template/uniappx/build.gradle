@@ -8,7 +8,7 @@ android {
     compileSdk 36
 
     defaultConfig {
-        minSdk 21
+        minSdk __OPENIM_ANDROID_MIN_SDK__
     }
 
     compileOptions {
@@ -27,7 +27,7 @@ android {
 }
 
 dependencies {
-    implementation project(':unix-openim-sdk')
+    // __OPENIM_PAGE_PLUGIN_PROJECT_DEPENDENCIES__
     compileOnly fileTree(dir: '../dcloud-libs', include: ['*.aar', '*.jar'])
     compileOnly 'androidx.core:core-ktx:1.13.1'
     compileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.2.20'

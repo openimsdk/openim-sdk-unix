@@ -53,6 +53,7 @@ export function configureNativeAndroid({ manifest, root, descriptor = null, envi
   replacements.set('__OPENIM_UTS_EASY_COM__', gradleBuildConfigString(host.utsEasyCom ?? []))
   replacements.set('// __OPENIM_PLUGIN_INCLUDES__', pluginIncludes)
   replacements.set('    // __OPENIM_PLUGIN_PROJECT_DEPENDENCIES__', projectDependencies)
+  replacements.set('    // __OPENIM_PAGE_PLUGIN_PROJECT_DEPENDENCIES__', projectDependencies)
   replacements.set('    // __OPENIM_PLUGIN_FILE_DEPENDENCIES__', fileDependencies)
   for (const relativePath of [
     'app/build.gradle',
