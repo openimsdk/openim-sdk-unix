@@ -140,6 +140,12 @@ test('uni-app x iOS host builds only the simulator architecture exported by HBui
   assert.match(source, /ONLY_ACTIVE_ARCH=YES/)
 })
 
+test('classic Android host removes legacy manifest package declarations from generated plugins', () => {
+  const source = readFileSync(new URL('../../local-runtime/hosts/configure-classic-android.mjs', import.meta.url), 'utf8')
+  assert.match(source, /replace\(\/\\s\+package=/)
+  assert.match(source, /src\/main\/AndroidManifest\.xml/)
+})
+
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-android-host-'))
   cpSync(new URL('../../local-runtime/native-android-template', import.meta.url), root, { recursive: true })

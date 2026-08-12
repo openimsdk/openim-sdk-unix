@@ -37,8 +37,12 @@ for (const id of pluginIDs) {
   cpSync(join(source, 'src'), join(target, 'src/main/java'), { recursive: true })
   if (existsSync(join(source, 'res'))) cpSync(join(source, 'res'), join(target, 'src/main/res'), { recursive: true })
   if (existsSync(join(source, 'libs'))) cpSync(join(source, 'libs'), join(target, 'libs'), { recursive: true })
-  if (existsSync(join(source, 'AndroidManifest.xml'))) cpSync(join(source, 'AndroidManifest.xml'), join(target, 'src/main/AndroidManifest.xml'))
-  else writeFileSync(join(target, 'src/main/AndroidManifest.xml'), '<manifest xmlns:android="http://schemas.android.com/apk/res/android" />\n')
+  const pluginManifestPath = join(target, 'src/main/AndroidManifest.xml')
+  if (existsSync(join(source, 'AndroidManifest.xml'))) {
+    const pluginManifest = readFileSync(join(source, 'AndroidManifest.xml'), 'utf8')
+      .replace(/\s+package=(["'])[^"']*\1/, '')
+    writeFileSync(pluginManifestPath, pluginManifest)
+  } else writeFileSync(pluginManifestPath, '<manifest xmlns:android="http://schemas.android.com/apk/res/android" />\n')
   writeFileSync(join(target, 'proguard-rules.pro'), '')
   const dependencies = pluginDocuments.get(id)?.dependencies ?? []
   const projectDependencies = dependencies.filter((dependency) => pluginIDs.includes(dependency)).map((dependency) => `    implementation project(':${escapeSingle(dependency)}')`)
