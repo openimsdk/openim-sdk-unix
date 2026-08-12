@@ -17,6 +17,8 @@
     "verify:runtime-evidence": "tsx tooling/src/cli.ts verify:runtime-evidence",
     "verify:consumer:android": "tsx tooling/src/cli.ts verify:consumer --platform android",
     "verify:consumer:ios": "tsx tooling/src/cli.ts verify:consumer --platform ios",
+    "verify:consumer:uniapp:android": "tsx tooling/src/cli.ts verify:consumer:uniapp --platform android",
+    "verify:consumer:uniapp:ios": "tsx tooling/src/cli.ts verify:consumer:uniapp --platform ios",
     "native:import": "tsx tooling/src/cli.ts native:import",
     "native:verify": "tsx tooling/src/cli.ts native:verify",
     "enterprise:import": "tsx tooling/src/cli.ts enterprise:import",

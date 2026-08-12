@@ -61,6 +61,8 @@ jobs:
         run: |
           npm run verify:consumer:android
           npm run verify:consumer:ios
+          npm run verify:consumer:uniapp:android
+          npm run verify:consumer:uniapp:ios
       - name: Compile release dependency profiles
         run: npm run compile:public
 

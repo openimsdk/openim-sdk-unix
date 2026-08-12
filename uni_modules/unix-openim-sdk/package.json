@@ -2,44 +2,45 @@
   "id": "unix-openim-sdk",
   "displayName": "Unix OpenIM SDK",
   "version": "0.2.0",
-  "description": "OpenIM：由IM技术专家打造的基于 Go 实现的即时通讯（IM）项目，从服务端到客户端SDK开源即时通讯（IM）整体解决方案，可以轻松替代第三方IM云服务，打造具备聊天、社交功能的app。",
+  "description": "OpenIM Public UTS 原生插件，为 uni-app 和 uni-app x 的 Android、iOS App 提供即时通讯能力。",
   "keywords": [
     "即时通讯",
     "IM",
-    "uni-app-x",
-    "Chat",
-    "OpenIM"
+    "OpenIM",
+    "uni-app",
+    "uni-app x"
   ],
   "license": "AGPL-3.0-only",
   "files": [
-    "LICENSE",
-    "README.md",
-    "CHANGELOG.md",
-    "MARKET_USAGE.md",
+    "license.md",
+    "readme.md",
+    "changelog.md",
     "utssdk"
   ],
   "engines": {
     "HBuilderX": ">=5.23.2026080313-alpha",
-    "uni-app": "",
+    "uni-app": "^5.23",
     "uni-app-x": "^5.23"
   },
   "uni_modules": {
     "platforms": {
-      "app-android": "y",
-      "app-ios": "y",
-      "web": "n",
-      "mp-weixin": "n",
       "cloud": {
         "tcb": "x",
         "aliyun": "x",
         "alipay": "x"
       },
       "client": {
-        "uni-app-x": {
+        "uni-app": {
+          "vue": {
+            "vue2": "√",
+            "vue3": "√"
+          },
           "app": {
+            "vue": "√",
+            "nvue": "x",
             "android": {
               "extVersion": "0.2.0",
-              "minVersion": "21"
+              "minVersion": "5.0"
             },
             "harmony": "x",
             "ios": {
@@ -48,7 +49,29 @@
             }
           },
           "mp": {
-            "weixin": "x"
+            "weixin": "x",
+            "alipay": "x"
+          },
+          "web": {
+            "chrome": "x",
+            "safari": "x"
+          }
+        },
+        "uni-app-x": {
+          "app": {
+            "android": {
+              "extVersion": "0.2.0",
+              "minVersion": "5.0"
+            },
+            "harmony": "x",
+            "ios": {
+              "extVersion": "0.2.0",
+              "minVersion": "14"
+            }
+          },
+          "mp": {
+            "weixin": "x",
+            "alipay": "x"
           },
           "web": {
             "chrome": "x",
@@ -73,8 +96,8 @@
     },
     "declaration": {
       "ads": "无",
-      "data": "无",
-      "permissions": "无"
+      "data": "插件不会向插件作者或固定第三方服务上传数据；运行时连接宿主配置的 OpenIM API/WS，并在业务调用中处理用户 ID、IM Token、消息、会话、群组和关系数据。",
+      "permissions": "插件本身不主动申请权限；宿主使用相册、相机、麦克风或文件能力时，需按实际功能声明并申请对应系统权限。"
     },
     "npmurl": "",
     "darkmode": "x",

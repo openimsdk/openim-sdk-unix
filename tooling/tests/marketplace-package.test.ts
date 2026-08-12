@@ -33,8 +33,10 @@ test('Public marketplace package is deterministic and contains only the explicit
 
     const entries = execFileSync('unzip', ['-Z1', first.archivePath], { encoding: 'utf8' }).trim().split('\n')
     assert.ok(entries.includes('uni_modules/unix-openim-sdk/package.json'))
-    assert.ok(entries.includes('uni_modules/unix-openim-sdk/LICENSE'))
-    assert.ok(entries.includes('uni_modules/unix-openim-sdk/MARKET_USAGE.md'))
+    assert.ok(entries.includes('uni_modules/unix-openim-sdk/license.md'))
+    assert.ok(entries.includes('uni_modules/unix-openim-sdk/readme.md'))
+    assert.ok(entries.includes('uni_modules/unix-openim-sdk/changelog.md'))
+    assert.equal(entries.includes('uni_modules/unix-openim-sdk/MARKET_USAGE.md'), false)
     assert.ok(entries.includes('uni_modules/unix-openim-sdk/utssdk/interface.uts'))
     assert.ok(entries.includes('uni_modules/unix-openim-sdk/utssdk/unierror.uts'))
     assert.equal(entries.some((path) => /app-harmony|\/libs\/|\/Frameworks\/|\.aar$|\.har$|\.xcframework/i.test(path)), false)
@@ -50,7 +52,25 @@ test('Public marketplace package is deterministic and contains only the explicit
 
 test('Public marketplace plugin ships the repository license verbatim', () => {
   assert.equal(
-    readFileSync(join(root, 'uni_modules/unix-openim-sdk/LICENSE'), 'utf8'),
+    readFileSync(join(root, 'uni_modules/unix-openim-sdk/license.md'), 'utf8'),
     readFileSync(join(root, 'LICENSE'), 'utf8'),
   )
+})
+
+test('Public marketplace metadata declares both traditional uni-app and uni-app x', () => {
+  const pluginPackage = JSON.parse(readFileSync(join(root, 'uni_modules/unix-openim-sdk/package.json'), 'utf8'))
+  assert.equal(pluginPackage.engines['uni-app'], '^5.23')
+  assert.equal(pluginPackage.engines['uni-app-x'], '^5.23')
+  assert.deepEqual(pluginPackage.files, ['license.md', 'readme.md', 'changelog.md', 'utssdk'])
+
+  const traditional = pluginPackage.uni_modules.platforms.client['uni-app']
+  assert.deepEqual(traditional.vue, { vue2: '√', vue3: '√' })
+  assert.equal(traditional.app.vue, '√')
+  assert.equal(traditional.app.nvue, 'x')
+  assert.equal(traditional.app.android.minVersion, '5.0')
+  assert.equal(traditional.app.ios.minVersion, '14')
+
+  const uniAppX = pluginPackage.uni_modules.platforms.client['uni-app-x']
+  assert.equal(uniAppX.app.android.minVersion, '5.0')
+  assert.equal(uniAppX.app.ios.minVersion, '14')
 })

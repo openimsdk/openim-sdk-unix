@@ -28,7 +28,9 @@ test('Public package requires iOS 14 consistently', () => {
 
   assert.equal(lock.minimumPlatforms.ios, '14.0')
   assert.equal(iosConfig.deploymentTarget, '14.0')
-  assert.equal(pluginPackage.uni_modules.platforms.client['uni-app-x'].app.ios.minVersion, '14')
+  for (const clientName of ['uni-app', 'uni-app-x']) {
+    assert.equal(pluginPackage.uni_modules.platforms.client[clientName].app.ios.minVersion, '14')
+  }
 })
 
 test('Public native dependencies use the approved patch.15 release coordinates', () => {
@@ -65,11 +67,12 @@ test('package candidate version is consistent across platform metadata', () => {
     root,
     'uni_modules/unix-openim-sdk/package.json',
   ), 'utf8'))
-  const app = pluginPackage.uni_modules.platforms.client['uni-app-x'].app
-
   assert.match(pluginPackage.version, /^0\.2\.0(?:-rc\.\d+)?$/)
-  assert.equal(app.android.extVersion, pluginPackage.version)
-  assert.equal(app.ios.extVersion, pluginPackage.version)
+  for (const clientName of ['uni-app', 'uni-app-x']) {
+    const app = pluginPackage.uni_modules.platforms.client[clientName].app
+    assert.equal(app.android.extVersion, pluginPackage.version)
+    assert.equal(app.ios.extVersion, pluginPackage.version)
+  }
 })
 
 test('toolchain paths resolve from environment or verified siblings', () => {

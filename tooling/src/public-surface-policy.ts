@@ -25,7 +25,7 @@ export function verifyNoLegacyEventControl(root: string): void {
     'contracts/base/test-disposition.json',
     'sdk-src',
     'tooling/src',
-    'uni_modules/unix-openim-sdk/README.md',
+    'uni_modules/unix-openim-sdk/readme.md',
     'uni_modules/unix-openim-sdk/utssdk',
     'pages',
   ].flatMap((path) => sourceFiles(join(root, path)))

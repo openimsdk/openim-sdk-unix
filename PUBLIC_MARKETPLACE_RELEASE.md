@@ -16,10 +16,9 @@
 市场上传内容由 `uni_modules/unix-openim-sdk/package.json` 的 `files` allowlist控制：
 
 - `package.json`
-- `LICENSE`
-- `README.md`
-- `CHANGELOG.md`
-- `MARKET_USAGE.md`
+- `license.md`
+- `readme.md`（插件市场详情页读取此文件）
+- `changelog.md`（插件市场版本更新说明读取此文件）
 - `utssdk` 中的 Public Android/iOS/common/interface/unierror 源码
 
 以下内容必须始终排除：
@@ -51,6 +50,8 @@ npm run verify:policy
 npm run verify:release-integrity -- --release
 npm run verify:release-policy
 npm run compile:public
+npm run verify:consumer:uniapp:android
+npm run verify:consumer:uniapp:ios
 npm run marketplace:build
 ```
 
@@ -69,7 +70,8 @@ ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_module
 - Public 合同、生成、policy、SBOM、license、secret scan 全绿。
 - Maven AAR 与锁定 Public Core AAR SHA-256 一致。
 - CocoaPods XCFramework 与锁定 Public Core inventory SHA-256 一致。
-- Android/iOS release dependency profile 编译和 consumer compile/link 通过。
+- Android/iOS release dependency profile、uni-app x consumer compile/link 通过。
+- 传统 uni-app Vue 2 / Vue 3 的 Android、iOS 正向编译通过，Public 导出合同解析器必须稳定拒绝已移除导出的负向 canary。
 - Android arm64 物理设备连续三次 clean Release 自动化通过。
 - iOS 物理设备连续三次 clean Release 自动化通过。
 - 两平台证据均绑定最终 merge commit，`dirty=false`，无 skip 或已知问题豁免。
@@ -82,7 +84,7 @@ ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_module
 3. 从 Tag 的两个 clean checkout 各生成一次候选并比较 SHA-256。
 4. 创建 GitHub Release，附 ZIP、manifest、`SHA256SUMS` 和 SBOM。
 5. 在同一 Tag checkout 中通过 HBuilderX 更新 DCloud 插件 ID `unix-openim-sdk`。
-6. 从插件市场重新导入到空白 uni-app x 工程，制作本地自定义基座并完成安装/初始化/登录/消息收发冒烟。
+6. 从插件市场重新导入到空白 uni-app 和 uni-app x 工程，制作本地自定义基座并完成安装/初始化/登录/消息收发冒烟。
 7. 删除临时 release 分支。
 
 回滚时发布更高 patch 版本恢复上一稳定实现，不移动或覆盖已经发布的 Tag 和市场版本。

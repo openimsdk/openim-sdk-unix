@@ -75,12 +75,18 @@ function validatePluginPackage(pluginPackage, files) {
     throw new Error(`Marketplace plugin version must be stable semver, got ${String(pluginPackage.version)}`)
   }
   if (pluginPackage.dcloudext?.type !== 'uts') throw new Error('Marketplace dcloudext.type must remain uts')
-  const app = pluginPackage.uni_modules?.platforms?.client?.['uni-app-x']?.app
-  if (app?.harmony !== 'x') throw new Error('Public marketplace package must declare HarmonyOS unsupported')
-  if (app.android?.extVersion !== pluginPackage.version || app.ios?.extVersion !== pluginPackage.version) {
-    throw new Error('Marketplace version and Android/iOS extVersion must match')
+  if (pluginPackage.engines?.['uni-app'] !== '^5.23' || pluginPackage.engines?.['uni-app-x'] !== '^5.23') {
+    throw new Error('Marketplace package must require uni-app and uni-app-x 5.23')
   }
-  const requiredEntries = ['LICENSE', 'README.md', 'CHANGELOG.md', 'MARKET_USAGE.md', 'utssdk']
+  for (const clientName of ['uni-app', 'uni-app-x']) {
+    const client = pluginPackage.uni_modules?.platforms?.client?.[clientName]
+    const app = client?.app
+    if (app?.harmony !== 'x') throw new Error(`Public marketplace package must declare HarmonyOS unsupported for ${clientName}`)
+    if (app.android?.extVersion !== pluginPackage.version || app.ios?.extVersion !== pluginPackage.version) {
+      throw new Error(`Marketplace version and ${clientName} Android/iOS extVersion must match`)
+    }
+  }
+  const requiredEntries = ['license.md', 'readme.md', 'changelog.md', 'utssdk']
   if (JSON.stringify(files) !== JSON.stringify(requiredEntries)) {
     throw new Error(`Marketplace files allowlist must be exactly ${requiredEntries.join(', ')}`)
   }
@@ -132,7 +138,7 @@ export function buildMarketplacePackage(options = {}) {
   const files = Array.isArray(pluginPackage.files) ? pluginPackage.files : []
   validatePluginPackage(pluginPackage, files)
   const sourceFiles = packageFiles(files)
-  for (const required of ['package.json', 'LICENSE', 'README.md', 'CHANGELOG.md', 'MARKET_USAGE.md', 'utssdk/interface.uts', 'utssdk/unierror.uts']) {
+  for (const required of ['package.json', 'license.md', 'readme.md', 'changelog.md', 'utssdk/interface.uts', 'utssdk/unierror.uts']) {
     if (!sourceFiles.includes(required)) throw new Error(`Marketplace package is missing required file: ${required}`)
   }
   validateSourceFiles(sourceFiles)

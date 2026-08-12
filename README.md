@@ -1,6 +1,6 @@
-# uni-app x OpenIM SDK 👨‍💻💬
+# uni-app / uni-app x OpenIM SDK 👨‍💻💬
 
-使用本 SDK 可以为 uni-app x 应用快速接入即时通讯能力。通过连接自部署的 [OpenIM](https://docs.openim.io/) 服务端，你可以在 Android 和 iOS App 中使用类型化的 UTS API 调用原生 OpenIM SDK 能力。
+使用本 SDK 可以为传统 uni-app（Vue 2 / Vue 3）和 uni-app x 应用快速接入即时通讯能力。通过连接自部署的 [OpenIM](https://docs.openim.io/) 服务端，你可以在 Android 和 iOS App 中调用原生 OpenIM SDK 能力。
 
 底层 IM 能力来自 [OpenIM SDK Core](https://github.com/openimsdk/openim-sdk-core)。本项目将 OpenIM 移动端原生 SDK 封装为 uni-app x 的 `unix-openim-sdk` UTS 插件，提供 Promise 风格 API、类型化事件订阅和 Android/iOS 原生桥接实现。
 
@@ -14,9 +14,8 @@ OpenIM 服务端、REST API 和 SDK 文档请访问 [https://docs.openim.io/](ht
 
 本插件相关文档：
 
-- 插件 README：[`uni_modules/unix-openim-sdk/README.md`](uni_modules/unix-openim-sdk/README.md)
-- 插件市场使用说明：[`uni_modules/unix-openim-sdk/MARKET_USAGE.md`](uni_modules/unix-openim-sdk/MARKET_USAGE.md)
-- 更新日志：[`uni_modules/unix-openim-sdk/CHANGELOG.md`](uni_modules/unix-openim-sdk/CHANGELOG.md)
+- 插件市场说明：[`uni_modules/unix-openim-sdk/readme.md`](uni_modules/unix-openim-sdk/readme.md)
+- 更新日志：[`uni_modules/unix-openim-sdk/changelog.md`](uni_modules/unix-openim-sdk/changelog.md)
 
 ## 安装 💻
 
@@ -36,7 +35,7 @@ OpenIM 服务端、REST API 和 SDK 文档请访问 [https://docs.openim.io/](ht
 
 ### 添加 uni_modules 插件
 
-将 `unix-openim-sdk` 插件复制或安装到你的 uni-app x 项目中：
+将 `unix-openim-sdk` 插件复制或安装到你的 uni-app 或 uni-app x 项目中：
 
 ```text
 uni_modules/unix-openim-sdk
