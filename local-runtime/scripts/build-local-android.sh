@@ -54,10 +54,11 @@ if [[ ! -d "$EXPORT_ROOT/$app_id/www" ]]; then
 fi
 
 sync_plugin() {
-  local source_root="$EXPORT_ROOT/uni_modules/unix-openim-sdk/utssdk/app-android"
-  local target_root="$NATIVE_ROOT/unix-openim-sdk"
+  local plugin_id="$1"
+  local source_root="$EXPORT_ROOT/uni_modules/$plugin_id/utssdk/app-android"
+  local target_root="$NATIVE_ROOT/$plugin_id"
   if [[ ! -d "$source_root/src" || ! -d "$source_root/libs" ]]; then
-    echo "Exported unix-openim-sdk Android module is incomplete" >&2
+    echo "Exported $plugin_id Android module is incomplete" >&2
     exit 1
   fi
   mkdir -p "$target_root/src/main/java" "$target_root/src/main/res" "$target_root/libs"
@@ -91,7 +92,13 @@ fi
 rsync -a --delete \
   "$EXPORT_ROOT/$app_id/" \
   "$NATIVE_ROOT/uniappx/src/main/assets/apps/$app_id/"
-sync_plugin
+while IFS= read -r plugin_id; do
+  sync_plugin "$plugin_id"
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  for (const plugin of descriptor.plugins) process.stdout.write(plugin.id + "\n");
+')
 
 expected_openim_aar_sha="$(node -e '
   const crypto = require("crypto");
@@ -141,6 +148,13 @@ dcloud_lib_names=(
   uni-theme-release.aar
   uni-websocket-release.aar
 )
+while IFS= read -r extra_lib; do
+  [[ -n "$extra_lib" ]] && dcloud_lib_names+=("$extra_lib")
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  for (const library of descriptor.androidHost?.dcloudLibraries ?? []) process.stdout.write(library + "\n");
+')
 
 for existing in "$NATIVE_ROOT/dcloud-libs"/*; do
   [[ -f "$existing" ]] && unlink "$existing"

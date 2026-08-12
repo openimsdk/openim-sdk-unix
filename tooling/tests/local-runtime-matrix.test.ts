@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
 import { cleanupLocalRun, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
+import { configureNativeAndroid } from '../../local-runtime/scripts/configure-native-android.mjs'
 
 function write(path: string, source: string): void {
   mkdirSync(join(path, '..'), { recursive: true })
@@ -99,4 +100,38 @@ test('runner source rejects HBuilder and native compiler failures hidden behind 
   assert.match(source, /\\\[tsl\\\]\\s\+ERROR/)
   assert.match(source, /BUILD FAILED/)
   assert.match(source, /reported a compiler failure despite exiting successfully/)
+})
+
+test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
+  const root = mkdtempSync(join(tmpdir(), 'openim-local-android-host-'))
+  cpSync(new URL('../../local-runtime/native-android-template', import.meta.url), root, { recursive: true })
+  const avTemplate = join(root, 'av-template.gradle')
+  writeFileSync(avTemplate, readFileSync(join(root, 'plugin/build.gradle'), 'utf8'))
+  configureNativeAndroid({
+    manifest: { appid: '__UNI__MULTI' },
+    root,
+    descriptor: {
+      androidHost: {
+        minSdk: 24,
+        abiFilters: ['arm64-v8a'],
+        utsRegisterComponents: [{ name: 'video', class: 'example.VideoComponent' }],
+      },
+      plugins: [
+        { id: 'unix-openim-sdk', androidNamespace: 'uts.sdk.modules.unixOpenimSdk' },
+        { id: 'openim-av-runtime', androidNamespace: 'uts.sdk.modules.openimAvRuntime', dependencies: ['unix-openim-sdk'], androidGradleTemplate: avTemplate },
+      ],
+    },
+    environment: { OPENIM_ANDROID_PACKAGE: 'io.openim.local.imav.uniappx' },
+  })
+  const settings = readFileSync(join(root, 'settings.gradle'), 'utf8')
+  const app = readFileSync(join(root, 'app/build.gradle'), 'utf8')
+  const av = readFileSync(join(root, 'openim-av-runtime/build.gradle'), 'utf8')
+  assert.match(settings, /include ':unix-openim-sdk'/)
+  assert.match(settings, /include ':openim-av-runtime'/)
+  assert.match(app, /minSdk 24/)
+  assert.match(app, /abiFilters 'arm64-v8a'/)
+  assert.match(app, /implementation project\(':openim-av-runtime'\)/)
+  assert.match(app, /example\.VideoComponent/)
+  assert.match(av, /namespace 'uts\.sdk\.modules\.openimAvRuntime'/)
+  assert.match(av, /implementation project\(':unix-openim-sdk'\)/)
 })

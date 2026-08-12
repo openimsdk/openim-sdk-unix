@@ -7,7 +7,8 @@
   "plugins": [
     {
       "id": "unix-openim-sdk",
-      "source": "../../uni_modules/unix-openim-sdk"
+      "source": "../../uni_modules/unix-openim-sdk",
+      "androidNamespace": "uts.sdk.modules.unixOpenimSdk"
     }
   ],
   "automationAssets": [

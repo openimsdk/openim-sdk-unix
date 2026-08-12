@@ -21,7 +21,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'unix-openim-sdk-local-host'
+rootProject.name = 'openim-local-host'
 include ':app'
 include ':uniappx'
-include ':unix-openim-sdk'
+// __OPENIM_PLUGIN_INCLUDES__

@@ -34,6 +34,16 @@ export interface LocalProductPlugin {
   id: string
   source: string
   dependencies?: string[]
+  androidNamespace?: string
+  androidGradleTemplate?: string
+}
+
+export interface LocalAndroidHostOptions {
+  minSdk?: number
+  abiFilters?: string[]
+  dcloudLibraries?: string[]
+  utsRegisterComponents?: Array<Record<string, string>>
+  utsEasyCom?: Array<Record<string, string>>
 }
 
 export interface LocalAutomationAsset {
@@ -56,6 +66,7 @@ export interface LocalProductDescriptor {
   plugins: LocalProductPlugin[]
   automationAssets?: LocalAutomationAsset[]
   nativeArtifacts?: LocalNativeArtifact[]
+  androidHost?: LocalAndroidHostOptions
   applicationIDs: Record<LocalSurface, string>
   dcloudAppIDs: Record<LocalSurface, string>
 }
@@ -64,7 +75,7 @@ export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescrip
   descriptorPath: string
   repositoryRoot: string
   uniappxSource: string
-  plugins: Array<{ id: string; source: string; dependencies?: string[] }>
+  plugins: Array<{ id: string; source: string; dependencies?: string[]; androidNamespace?: string; androidGradleTemplate?: string }>
   automationAssets: Array<{ source: string; destination: string; surfaces?: LocalSurface[] }>
   nativeArtifacts: Array<{ id: string; path: string }>
 }
@@ -178,7 +189,13 @@ export function resolveProductDescriptor(path: string): ResolvedLocalProductDesc
     descriptorPath,
     repositoryRoot: resolveDescriptorRelative(descriptorPath, document.repositoryRoot),
     uniappxSource: resolveDescriptorRelative(descriptorPath, document.uniappxSource),
-    plugins: document.plugins.map((plugin) => ({ id: plugin.id, source: resolveDescriptorRelative(descriptorPath, plugin.source), ...(plugin.dependencies != null ? { dependencies: plugin.dependencies } : {}) })),
+    plugins: document.plugins.map((plugin) => ({
+      id: plugin.id,
+      source: resolveDescriptorRelative(descriptorPath, plugin.source),
+      ...(plugin.dependencies != null ? { dependencies: plugin.dependencies } : {}),
+      ...(plugin.androidNamespace != null ? { androidNamespace: plugin.androidNamespace } : {}),
+      ...(plugin.androidGradleTemplate != null ? { androidGradleTemplate: resolveDescriptorRelative(descriptorPath, plugin.androidGradleTemplate) } : {}),
+    })),
     automationAssets: (document.automationAssets ?? []).map((asset) => ({
       source: resolveDescriptorRelative(descriptorPath, asset.source),
       destination: asset.destination,
