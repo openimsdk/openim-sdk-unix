@@ -20,6 +20,11 @@ function functionSource(name: string): string {
     : page.slice(start, start + declaration![0].length + nextFunction)
 }
 
+test('Jest failure narrative reads the report status field emitted by the UTS page', () => {
+  assert.match(pageTest, /item\.status === 'failed'/)
+  assert.doesNotMatch(pageTest, /item\.ok === false/)
+})
+
 test('runtime cases carry explicit contract evidence instead of deriving validation from Promise success', () => {
   for (const field of [
     'invoked',
@@ -110,7 +115,7 @@ test('write-only app mutations are required and carry server acknowledgement evi
   for (const apiName of ['setAppBackgroundStatus', 'setAppBadge', 'updateFcmToken']) {
     assert.match(
       suite,
-      new RegExp(`runAutomationStep<string>\\('app', '${apiName}'[^\\n]+serverAcknowledgedMutationAutomationEvidence\\('${apiName}'\\)`),
+      new RegExp(`runAutomationStepWithEvidence<string>\\('app', '${apiName}'[^\\n]+serverAcknowledgedMutationAutomationEvidence\\('${apiName}'\\)`),
     )
   }
   assert.doesNotMatch(suite, /runAutomationOptionalStep<string>\('app', 'updateFcmToken'/)
@@ -131,6 +136,31 @@ test('runtime response evidence carries the resolved wire value separately from 
   assert.doesNotMatch(functionSource('recordAutomationStep'), /detail, detail\)/)
 })
 
+test('automation fixtures use the guaranteed user-data root without creating a virtual subdirectory', () => {
+  const prepare = functionSource('prepareAutomationLocalFiles')
+  assert.match(prepare, /const fileSystemBasePath = uni\.env\.USER_DATA_PATH/)
+  assert.match(prepare, /automationAssetDirFileSystemPath = fileSystemBasePath/)
+  assert.match(prepare, /automationAssetDirFullPath = fileSystemBasePath/)
+  assert.match(prepare, /automationFixedImageFullPath = imageFileSystemPath/)
+  assert.match(prepare, /automationFixedSoundFullPath = soundFileSystemPath/)
+  assert.match(prepare, /automationFixedVideoFullPath = videoFileSystemPath/)
+  assert.match(prepare, /automationFixedVideoSnapshotFullPath = videoSnapshotFileSystemPath/)
+  assert.match(prepare, /automationFixedFileFullPath = fileFileSystemPath/)
+  assert.match(prepare, /openim-automation-image\.jpg/)
+  assert.match(prepare, /openim-automation-sound\.wav/)
+  assert.match(prepare, /openim-automation-video\.mp4/)
+  assert.doesNotMatch(prepare, /ensureAutomationDirectory/)
+  assert.doesNotMatch(prepare, /openim-automation-assets/)
+})
+
+test('automation errors retain a non-empty native fallback when Error.message is blank', () => {
+  const stringify = functionSource('stringifyAPIValue')
+  assert.match(stringify, /const errorMessage = value\.message/)
+  assert.match(stringify, /if \(errorMessage\.length > 0\)/)
+  assert.match(stringify, /const errorFallback = value\.toString\(\)/)
+  assert.match(stringify, /return errorFallback\.length > 0 \? errorFallback : 'Error'/)
+})
+
 test('event subscriptions prove handle semantics and registry side effects separately', () => {
   const recorder = functionSource('recordAutomationEventSubscriptionCoverage')
   assert.match(recorder, /const handleMatched = subscription\.id\.length > 0/)
@@ -148,6 +178,25 @@ test('lifecycle and event-control scenarios run cleanup and registry probes with
   assert.match(page, /(?:survivor|second)Count/)
   assert.match(page, /offAll\('[A-Za-z]+/)
   assert.match(page, /registry\/native epoch rebind delivered/)
+})
+
+test('event-control assertions wait for an independent connection-complete witness', () => {
+  const scenario = functionSource('runAutomationEventControlScenario')
+  assert.match(scenario, /const connectionCompleted = onConnectSuccess/)
+  assert.match(scenario, /connectionCompletedCount = connectionCompletedCount \+ 1/)
+  assert.match(scenario, /while \(\(connectionCompletedCount <= completedBefore/)
+  assert.match(scenario, /await sleepAutomation\(250\)/)
+  assert.match(scenario, /off\(connectionCompleted\)/)
+})
+
+test('setup normalizes a native login session retained across HBuilder hot reloads', () => {
+  const normalize = functionSource('normalizeAutomationExistingSession')
+  assert.match(normalize, /getLoginStatus\('uvue_auto_existing_login_status'\)/)
+  assert.match(normalize, /if \(status == 3\)/)
+  assert.match(normalize, /getLoginUserID\(\)/)
+  assert.match(normalize, /logout\('uvue_auto_existing_logout'\)/)
+  assert.match(normalize, /automationLoggedIn = false/)
+  assert.match(functionSource('runAutomationSetupSuite'), /await normalizeAutomationExistingSession\(\)/)
 })
 
 test('event reports distinguish typed delivery from semantic, ordering, and epoch proof', () => {
@@ -283,7 +332,10 @@ test('suiteFilter runs one public automation suite without applying full-run cov
   assert.match(pageTest, /expect\(summary\.contractEvidence\.checkedCallables\)\.toBeGreaterThan\(0\)/)
   assert.match(automationRunner, /const requestedSuiteFilter = String\(process\.env\.OPENIM_AUTOMATION_SUITE \|\| ''\)\.trim\(\)/)
   assert.match(automationRunner, /fixture\.suiteFilter = requestedSuiteFilter/)
-  assert.match(automationRunner, /process\.on\('exit', restoreAutomationFixture\)/)
+  assert.match(
+    automationRunner,
+    /process\.on\('exit', \(\) => \{[\s\S]*restoreAutomationFixture\(\)[\s\S]*\}\)/,
+  )
   assert.match(automationRunner, /const fullRun = requestedSuiteFilter\.length === 0/)
   assert.match(automationRunner, /if \(fullRun && !evidence\.contractEvidence\.passed\)/)
 })

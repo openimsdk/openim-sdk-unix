@@ -18,6 +18,8 @@ test('Public runner makes contract evidence part of the process success gate', (
   assert.match(source, /!evidence\.contractEvidence\.passed/)
   assert.match(source, /passed && evidenceFailure\.length === 0/)
   assert.match(source, /runUnderAutomationRunnerLock\(\{ projectRoot \}\)/)
+  assert.match(source, /restoreJestConfig/)
+  assert.match(source, /process\.on\('exit',[\s\S]*restoreJestConfig\(\)/)
   assert.ok(source.indexOf('runUnderAutomationRunnerLock({ projectRoot })') < source.indexOf('assertManifestWebSocket();'))
 })
 
@@ -168,6 +170,28 @@ test('Public runner evidence redacts credentials and payload identities', async 
   })
   assert.match(evidence.redactedReport.token, /^<redacted:/)
   assert.match(evidence.redactedReport.userID, /^<redacted:/)
+})
+
+test('Public runner evidence redacts disposable user IDs embedded in narrative strings', async () => {
+  const { createAutomationEvidenceRecord } = await import(modulePath.href)
+  const root = projectRoot()
+  const evidence = createAutomationEvidenceRecord({
+    projectRoot: root,
+    platform: 'android',
+    report: {
+      cases: [{
+        group: 'setup',
+        name: 'login',
+        message: 'read-after-login matched unixagent260812022313vi62eza before cleanup',
+      }],
+      events: [],
+    },
+    reportPath: resolve(root, 'test-results/openim-automation/openim-automation-1.json'),
+    manifestOverride: manifest(),
+  })
+  const encoded = JSON.stringify(evidence.redactedReport)
+  assert.doesNotMatch(encoded, /unixagent260812022313vi62eza/)
+  assert.match(encoded, /<redacted:/)
 })
 
 test('Public runner evidence recursively redacts encoded response payloads', async () => {

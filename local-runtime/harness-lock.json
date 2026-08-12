@@ -1,0 +1,29 @@
+{
+  "schema": "io.openim.sdk.public.local-runtime/v1",
+  "toolchainLock": "../toolchain.lock.json",
+  "hbuilderx": {
+    "version": "5.23.2026080313-alpha",
+    "cliSha256": "a22292b1d595c50dd764196233ebff8cedad74af783896876c17880279b69977"
+  },
+  "android": {
+    "dcloudSDKVersion": "Android-uni-app-x-SDK@14987-5.23",
+    "dcloudSDKZipSha256": "5543143ed70af016b162059820b7f7cb57e2280acfd3ec4cba7329d22c42b87a",
+    "gradleVersion": "8.14.3",
+    "utsKotlinCompilerPluginSha256": "e679da5bc13170f93dc8d1b2b04dec28f5126ba11f8672ee79747a9e5df98840",
+    "utsKotlinGradlePluginSha256": "0e9902e0cd56c9a300374c9d9a4d7bfb9009762042fd441c8d3a9c3d9e269fb8",
+    "minimumAPI": 21,
+    "abis": [
+      "arm64-v8a",
+      "x86_64"
+    ]
+  },
+  "ios": {
+    "minimumVersion": "14.0",
+    "defaultSimulatorBundleID": "io.dcloud.uniappx"
+  },
+  "automation": {
+    "hbuilderxPlugin": "hbuilderx-for-uniapp-test",
+    "pluginVersion": "5.2.1",
+    "testLibraryVersion": "2.0.0"
+  }
+}

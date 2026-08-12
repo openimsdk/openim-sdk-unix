@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
 import { execFileSync, spawn } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import {
   evidenceFailureMessage,
   writeLatestAutomationEvidence,
 } from './lib/openim-runner-evidence.mjs';
 import { runUnderAutomationRunnerLock } from './lib/automation-runner-lock.mjs';
+import {
+  automationTarget,
+  inspectAndroidBase,
+  iosBaseHasWebSocket,
+} from './lib/local-base-inspection.mjs';
 
 const projectRoot = resolve(new URL('..', import.meta.url).pathname);
 const platform = process.argv[2] || '';
@@ -17,8 +22,18 @@ const hardTimeoutMs = Number(process.env.OPENIM_TEST_PROCESS_TIMEOUT_MS || 30 * 
 const requestedVapor = process.env.OPENIM_TEST_VAPOR !== 'false' && process.env.OPENIM_TEST_VAPOR !== '0';
 const runStartedAtMs = Date.now();
 const requestedSuiteFilter = String(process.env.OPENIM_AUTOMATION_SUITE || '').trim();
+const jestConfigPath = resolve(projectRoot, 'jest.config.js');
+const originalJestConfig = existsSync(jestConfigPath) ? readFileSync(jestConfigPath) : null;
 const automationFixturePath = resolve(projectRoot, '.openim-test-accounts.json');
+const automationEnvPath = resolve(projectRoot, 'env.js');
+const originalAutomationEnv = existsSync(automationEnvPath) ? readFileSync(automationEnvPath) : null;
+const automationDebugConfigKey = 'hbuilderx-for-uniapp-test.isDebug';
+let jestConfigRestored = false;
+let automationEnvironmentRestored = false;
+let automationFixtureOwned = false;
 let originalAutomationFixture = null;
+let originalAutomationDebugValue = '';
+let automationDebugModified = false;
 
 function stageAutomationSuiteFilter() {
   if (!existsSync(automationFixturePath)) {
@@ -40,6 +55,95 @@ function restoreAutomationFixture() {
   writeFileSync(automationFixturePath, originalAutomationFixture, { mode: 0o600 });
   originalAutomationFixture = null;
 }
+
+function restoreJestConfig() {
+  if (jestConfigRestored || originalJestConfig == null) {
+    return;
+  }
+  jestConfigRestored = true;
+  if (!existsSync(jestConfigPath) || !readFileSync(jestConfigPath).equals(originalJestConfig)) {
+    writeFileSync(jestConfigPath, originalJestConfig);
+  }
+}
+
+function cleanupAutomationAccountFixture() {
+  if (!automationFixtureOwned) {
+    return;
+  }
+  automationFixtureOwned = false;
+  rmSync(automationFixturePath, { force: true });
+}
+
+function restoreAutomationEnvironment() {
+  if (automationEnvironmentRestored) {
+    return;
+  }
+  automationEnvironmentRestored = true;
+  if (originalAutomationEnv == null) {
+    rmSync(automationEnvPath, { force: true });
+  } else if (!existsSync(automationEnvPath) || !readFileSync(automationEnvPath).equals(originalAutomationEnv)) {
+    writeFileSync(automationEnvPath, originalAutomationEnv);
+  }
+}
+
+function readAutomationProtocolDebug() {
+  const output = execFileSync(cliPath, ['config', 'get', '--key', automationDebugConfigKey], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  return output.trim().split(/\r?\n/).filter(Boolean).at(-1) || '';
+}
+
+function writeAutomationProtocolDebug(value) {
+  execFileSync(
+    cliPath,
+    ['config', 'set', '--key', automationDebugConfigKey, '--value', value, '--type', 'boolean'],
+    { stdio: ['ignore', 'ignore', 'pipe'] },
+  );
+}
+
+function disableAutomationProtocolDebug() {
+  if (process.env.OPENIM_AUTOMATION_ALLOW_PROTOCOL_DEBUG === '1') {
+    fail('OPENIM_AUTOMATION_ALLOW_PROTOCOL_DEBUG is forbidden because protocol traces expose temporary IM credentials');
+  }
+  try {
+    originalAutomationDebugValue = readAutomationProtocolDebug();
+    if (originalAutomationDebugValue !== 'true' && originalAutomationDebugValue !== 'false') {
+      fail(`unable to determine ${automationDebugConfigKey}; refusing to pass credentials through an unverified logger`);
+    }
+    if (originalAutomationDebugValue === 'true') {
+      writeAutomationProtocolDebug('false');
+      automationDebugModified = true;
+    }
+    if (readAutomationProtocolDebug() !== 'false') {
+      fail(`failed to disable ${automationDebugConfigKey}; refusing to expose temporary IM credentials`);
+    }
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    fail(`failed to disable HBuilderX automation protocol debug: ${detail}`);
+  }
+}
+
+function restoreAutomationProtocolDebug() {
+  if (!automationDebugModified) {
+    return;
+  }
+  automationDebugModified = false;
+  try {
+    writeAutomationProtocolDebug(originalAutomationDebugValue);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error(`[openim-runner] failed to restore ${automationDebugConfigKey}: ${detail}`);
+  }
+}
+
+process.on('exit', () => {
+  restoreJestConfig();
+  restoreAutomationFixture();
+  cleanupAutomationAccountFixture();
+  restoreAutomationEnvironment();
+  restoreAutomationProtocolDebug();
+});
 
 function readArgument(name) {
   const index = process.argv.indexOf(name);
@@ -145,35 +249,6 @@ function assertStaticAutomationIsPassive() {
   }
 }
 
-function inspectAndroidBase(basePath) {
-  const entries = execFileSync('zipinfo', ['-1', basePath], { encoding: 'utf8' });
-  const dexFiles = entries.split(/\r?\n/).filter((entry) => /^classes\d*\.dex$/.test(entry));
-  let hasWebSocket = false;
-  let hasVaporRuntime = false;
-  let hasClassicRuntime = false;
-  for (const dexFile of dexFiles) {
-    const dex = execFileSync('unzip', ['-p', basePath, dexFile], {
-      encoding: null,
-      maxBuffer: 128 * 1024 * 1024,
-    });
-    if (dex.includes(Buffer.from('Luts/sdk/modules/DCloudUniWebsocket/'))) {
-      hasWebSocket = true;
-    }
-    hasVaporRuntime = hasVaporRuntime || dex.includes(Buffer.from('Lio/dcloud/uniappxv/UniAppActivity;'));
-    hasClassicRuntime = hasClassicRuntime || dex.includes(Buffer.from('Lio/dcloud/uniapp/UniAppActivity;'));
-  }
-  return { hasWebSocket, hasVaporRuntime, hasClassicRuntime };
-}
-
-function iosBaseHasWebSocket(basePath) {
-  const dependencyPath = resolve(basePath, 'HXDependencies/uniapp-x-uts.json');
-  if (!existsSync(dependencyPath)) {
-    return false;
-  }
-  const dependency = JSON.parse(readFileSync(dependencyPath, 'utf8'));
-  return Array.isArray(dependency.duts) && dependency.duts.includes('uni-websocket');
-}
-
 function assertCustomBase(platformName) {
   const basePath = readConfiguredBasePath(platformName);
   if (basePath.length === 0) {
@@ -197,6 +272,37 @@ function assertCustomBase(platformName) {
   console.log(`[openim-runner] custom base preflight passed: ${basePath}`);
 }
 
+function prepareAutomationAccountFixture() {
+  if (process.env.OPENIM_AUTOMATION_PREPROVISION !== '1') {
+    return;
+  }
+  for (const name of ['OPENIM_API_BASE', 'OPENIM_WS_BASE', 'IM_SECRET']) {
+    if (String(process.env[name] || '').length === 0) {
+      fail(`${name} is required when OPENIM_AUTOMATION_PREPROVISION=1`);
+    }
+  }
+  const provisioner = resolve(projectRoot, 'scripts/register-openim-test-accounts.mjs');
+  try {
+    execFileSync(process.execPath, [provisioner], {
+      cwd: projectRoot,
+      env: {
+        ...process.env,
+        OUTPUT: automationFixturePath,
+        STATIC_OUTPUT: 'false',
+        PLATFORM_IDS: process.env.PLATFORM_IDS || '1,2',
+      },
+      stdio: ['ignore', 'ignore', 'pipe'],
+      timeout: 60 * 1000,
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    fail(`failed to provision disposable OpenIM test users: ${detail}`);
+  }
+  chmodSync(automationFixturePath, 0o600);
+  automationFixtureOwned = true;
+  console.log('[openim-runner] disposable OpenIM test users provisioned');
+}
+
 if (platform !== 'android' && platform !== 'ios') {
   fail('Usage: node scripts/run-openim-automation.mjs <android|ios> [--device-id <id>]');
 }
@@ -204,14 +310,15 @@ if (!existsSync(cliPath)) {
   fail(`HBuilderX CLI does not exist: ${cliPath}`);
 }
 
+disableAutomationProtocolDebug();
 assertManifestWebSocket();
 assertStaticAutomationIsPassive();
 assertCustomBase(platform);
 terminateProjectJestProcesses('stale preflight process');
+prepareAutomationAccountFixture();
 stageAutomationSuiteFilter();
-process.on('exit', restoreAutomationFixture);
 
-const target = platform === 'android' ? 'app-android' : 'app-ios-simulator';
+const target = automationTarget(platform, process.env.OPENIM_IOS_TARGET || 'simulator');
 const deviceID = readArgument('--device-id') || process.env.OPENIM_TEST_DEVICE_ID || '';
 const runtime = {
   target,
@@ -246,10 +353,47 @@ let connected = false;
 let terminating = false;
 let failureMarker = '';
 let outputTail = '';
+let allocatedRuntimePort = '';
+let androidAutomationRebuildStarted = false;
+let androidAutomationRebuildProcess = null;
+
+function startAndroidAutomationRebuild() {
+  if (platform !== 'android' || process.env.OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD !== '1' || androidAutomationRebuildStarted) {
+    return;
+  }
+  if (allocatedRuntimePort.length === 0 || deviceID.length === 0) {
+    terminate('Android automation resource sync arrived without an allocated port or device');
+    return;
+  }
+  androidAutomationRebuildStarted = true;
+  const rebuildScript = resolve(projectRoot, 'local-runtime/scripts/rebuild-local-android-automation.sh');
+  console.log(`[openim-runner] rebuilding static Android automation host for port ${allocatedRuntimePort}`);
+  androidAutomationRebuildProcess = spawn('bash', [rebuildScript, allocatedRuntimePort, deviceID], {
+    cwd: projectRoot,
+    env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  androidAutomationRebuildProcess.stdout.on('data', (chunk) => process.stdout.write(chunk));
+  androidAutomationRebuildProcess.stderr.on('data', (chunk) => process.stderr.write(chunk));
+  androidAutomationRebuildProcess.on('error', (error) => terminate(`Android automation host rebuild failed to start: ${error.message}`));
+  androidAutomationRebuildProcess.on('close', (code) => {
+    androidAutomationRebuildProcess = null;
+    if (code !== 0) {
+      terminate(`Android automation host rebuild failed with exit code ${String(code)}`);
+    }
+  });
+}
 
 function inspectOutput(chunk) {
   const text = chunk.toString();
   outputTail = `${outputTail}${text}`.slice(-64 * 1024);
+  const portMatch = outputTail.match(/automator:runtime[^\n]*port=(\d+)|分配测试端口:\s*(\d+)/);
+  if (portMatch != null) {
+    allocatedRuntimePort = portMatch[1] || portMatch[2];
+  }
+  if (outputTail.includes('发送同步资源数据')) {
+    startAndroidAutomationRebuild();
+  }
   if (text.includes('[openim-test] automator connected')) {
     connected = true;
     clearTimeout(startupTimer);
@@ -276,6 +420,9 @@ function terminate(reason) {
   terminating = true;
   failureMarker = reason;
   console.error(`[openim-runner] ${reason}`);
+  if (androidAutomationRebuildProcess != null) {
+    androidAutomationRebuildProcess.kill('SIGTERM');
+  }
   try {
     process.kill(-child.pid, 'SIGTERM');
   } catch {
@@ -310,6 +457,11 @@ child.on('close', (code, signal) => {
   clearTimeout(startupTimer);
   clearTimeout(hardTimer);
   clearInterval(heartbeat);
+  restoreJestConfig();
+  restoreAutomationFixture();
+  cleanupAutomationAccountFixture();
+  restoreAutomationEnvironment();
+  restoreAutomationProtocolDebug();
   terminateProjectJestProcesses('runner exit cleanup');
   const passed = /Test Suites:\s+\d+ passed/i.test(outputTail) && /Tests:\s+\d+ passed/i.test(outputTail);
   let evidenceFailure = '';

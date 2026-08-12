@@ -297,7 +297,7 @@ test('in-memory message creators cross the same structured PlatformDriver seam',
   }
 })
 
-test('full-path message creators keep iOS compatibility behind generated path codecs', () => {
+test('full-path message creators normalize app virtual paths before native Core calls', () => {
   for (const [name, id, pathCount] of PATH_MESSAGE_CREATORS) {
     const callable = contract.callables.find((candidate) => candidate.name === name)
     assert.equal(callable?.id, id)
@@ -317,13 +317,34 @@ test('full-path message creators keep iOS compatibility behind generated path co
   for (const [name, id, pathCount] of PATH_MESSAGE_CREATORS) {
     assert.match(androidAdapter, new RegExp(`(?:case )?${id}`))
     assert.match(iosAdapter, new RegExp(`case ${id}`))
-    const iosPreflight = new RegExp(`rejectUnsupportedIOSLocalMediaPath\\('${name}'`, 'g')
-    assert.equal([...iosFacade.matchAll(iosPreflight)].length, pathCount)
     assert.match(iosFacade, new RegExp(`driverCallAsync\\(${id},`))
     assert.match(androidFacade, new RegExp(`driverCallAsync\\(${id},`))
   }
   assert.doesNotMatch(androidFacade, /normalizeIOSLocalMediaPath/)
+  assert.match(androidFacade, /function normalizeAndroidLocalMediaPath\(path : string\) : string/)
+  assert.match(androidFacade, /UTSAndroid\.convert2AbsFullPath\(path\)/)
+  assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(imageFullPath\)/)
+  assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(params\.soundPath\)/)
+  assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(params\.videoPath\)/)
+  assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(params\.snapshotPath\)/)
+  assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(params\.filePath\)/)
   assert.match(iosFacade, /normalizeIOSLocalMediaPath/)
+  assert.match(iosFacade, /UTSiOS\.convert2AbsFullPath\(path\)/)
+  assert.doesNotMatch(iosFacade, /rejectUnsupportedIOSLocalMediaPath/)
+})
+
+test('uploadFile normalizes its virtual file path before serializing the native request', () => {
+  const callable = contract.callables.find((candidate) => candidate.name === 'uploadFile')
+  assert.equal(callable?.lowering?.kind, 'platform-driver')
+  if (callable?.lowering?.kind !== 'platform-driver' || typeof callable.lowering.request === 'string') return
+  assert.equal(callable.lowering.request.fields[0]?.codec, 'upload-file-json')
+
+  const androidFacade = generateIndex(root, contract, 'android')
+  const iosFacade = generateIndex(root, contract, 'ios')
+  assert.match(androidFacade, /normalizeAndroidUploadFileParams\(params\)/)
+  assert.match(androidFacade, /filepath: normalizeAndroidLocalMediaPath\(params\.filepath\)/)
+  assert.match(iosFacade, /normalizeIOSUploadFileParams\(params\)/)
+  assert.match(iosFacade, /filepath: normalizeIOSLocalMediaPath\(params\.filepath\)/)
 })
 
 test('conversation string operations are generated from structured invocation data', () => {
@@ -486,7 +507,7 @@ test('group, status, and upload operations complete native dispatch coverage', (
   assert.deepEqual(fieldCodecs('setGroupInfo'), ['set-group-info-json'])
   assert.deepEqual(fieldCodecs('setGroupMemberInfo'), ['set-group-member-info-json'])
   assert.deepEqual(fieldCodecs('joinGroup'), ['identity', 'identity', 'identity', 'optional-string'])
-  assert.deepEqual(fieldCodecs('uploadFile'), ['json'])
+  assert.deepEqual(fieldCodecs('uploadFile'), ['upload-file-json'])
 
   for (const platform of ['android', 'ios'] as const) {
     const adapter = renderNativeCoreAdapter(contract, platform)
@@ -757,4 +778,14 @@ test('Android wire validators use Java wrapper classes instead of unsupported ty
   assert.match(source, /UTSAndroid\.getJavaClass\(value\)\.name/)
   assert.match(source, /isNativeNumberValue\(raw\)/)
   assert.doesNotMatch(source, /typeof raw/)
+})
+
+test('checkFriend treats the Core result discriminator as a required numeric field', () => {
+  for (const platform of ['app-android', 'app-ios']) {
+    const source = readFileSync(
+      resolve(root, `uni_modules/unix-openim-sdk/utssdk/${platform}/native-call.uts`),
+      'utf8',
+    )
+    assert.match(source, /key == 'result'/, platform)
+  }
 })

@@ -49,11 +49,17 @@ function redactString(key, value) {
   if (sensitiveKeyPattern.test(key)) {
     return stableRedaction(value)
   }
-  if (/^eyJ[A-Za-z0-9_-]+\./.test(value) || /^unixagent/i.test(value)) {
-    return stableRedaction(value)
-  }
   if (/^https?:\/\//i.test(value)) {
     return redactURL(value)
+  }
+  const embeddedRedacted = value
+    .replace(/\bunixagent[A-Za-z0-9_-]{8,}\b/gi, (match) => stableRedaction(match))
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, (match) => stableRedaction(match))
+  if (embeddedRedacted !== value) {
+    return embeddedRedacted
+  }
+  if (/^eyJ[A-Za-z0-9_-]+\./.test(value) || /^unixagent/i.test(value)) {
+    return stableRedaction(value)
   }
   return value
 }
