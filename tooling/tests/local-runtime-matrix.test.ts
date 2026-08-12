@@ -187,6 +187,8 @@ test('uni-app x iOS host builds only the simulator architecture exported by HBui
   assert.match(configure, /s\.exclude_files = \['src\/Tests\/\*\*\/\*'\]/)
   assert.match(configure, /openimLocalRuntimeAutoStart/)
   assert.match(configure, /pushWithDefaultAnimation/)
+  assert.match(configure, /OTHER_LDFLAGS/)
+  assert.match(configure, /\$\(inherited\) -ObjC/)
   assert.match(source, /current ar archive/)
   assert.match(source, /Removed static framework from generated app bundle/)
   assert.match(source, /codesign --force --sign - "\$framework"/)

@@ -51,6 +51,16 @@ const autoStart = `
 viewControllerSource = `${viewControllerSource.slice(0, implementationEnd)}${autoStart}${viewControllerSource.slice(implementationEnd)}`
 writeFileSync(viewControllerPath, viewControllerSource)
 
+const xcodeProjectPath = join(demoRoot, 'UniAppXDemo.xcodeproj/project.pbxproj')
+let xcodeProjectSource = readFileSync(xcodeProjectPath, 'utf8')
+const localLinkerFlags = 'OTHER_LDFLAGS = "-ObjC";'
+const localLinkerFlagCount = xcodeProjectSource.split(localLinkerFlags).length - 1
+if (localLinkerFlagCount !== 2) {
+  throw new Error(`Expected two uni-app x iOS sample linker flag declarations, got ${localLinkerFlagCount}`)
+}
+xcodeProjectSource = xcodeProjectSource.replaceAll(localLinkerFlags, 'OTHER_LDFLAGS = "$(inherited) -ObjC";')
+writeFileSync(xcodeProjectPath, xcodeProjectSource)
+
 const apps = join(demoRoot, 'UniAppXDemo/uni-app-x/apps')
 rmSync(apps, { recursive: true, force: true })
 mkdirSync(apps, { recursive: true })
