@@ -110,6 +110,7 @@ export interface LocalEvidenceV1 {
   startedAt: string
   finishedAt: string
   source: { revision: string; dirty: boolean }
+  runner: { revision: string; dirty: boolean }
   product: string
   surface: LocalSurface
   platform: LocalPlatform
@@ -514,6 +515,7 @@ export function runLocalRuntime(options: LocalRuntimeOptions): { project: string
     startedAt,
     finishedAt: startedAt,
     source: identity,
+    runner: sourceIdentity(runnerRoot),
     product: descriptor.id,
     surface: options.surface,
     platform: options.platform,

@@ -152,6 +152,11 @@ test('assembled APK and app evidence is archived below the immutable run directo
   assert.equal(archived.appPath!.startsWith(join(runRoot, 'artifacts')), true)
 })
 
+test('evidence binds both product source and the shared runner revision', () => {
+  const source = readFileSync(new URL('../src/local-runtime-matrix.ts', import.meta.url), 'utf8')
+  assert.match(source, /runner: sourceIdentity\(runnerRoot\)/)
+})
+
 test('matrix tiers implement the promised compile, smoke and full coverage', () => {
   const pr = localMatrixCells('pr')
   assert.equal(pr.length, 6)
