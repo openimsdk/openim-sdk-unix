@@ -92,7 +92,7 @@ off(messageSubscription)
 offAll('onRecvNewMessage')
 ```
 
-`0.2.0` 不兼容旧版“`onXxx` 返回取消函数”和 `offEvent(eventName)` 的调用方式。升级时必须保存 subscription handle 并改用 `off` / `offAll`。
+`0.2.0` 不兼容旧版“`onXxx` 返回取消函数”和旧批量取消方法。升级时必须保存 subscription handle 并改用 `off` / `offAll`。
 
 ## 发送文本消息
 

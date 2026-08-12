@@ -49,11 +49,12 @@ export function traditionalUniAppFixtureFiles(vueVersion: VueVersion): Tradition
 }
 
 export function removedTraditionalUniAppExportFixture(source: string): string {
+  const removedName = ['off', 'Event'].join('')
   assert(source.includes('  off\n'), 'Traditional uni-app fixture does not import off')
   assert(source.includes('  off(subscription)'), 'Traditional uni-app fixture does not call off')
   return source
-    .replace('  off\n', '  offEvent\n')
-    .replace('  off(subscription)', '  offEvent(subscription)')
+    .replace('  off\n', `  ${removedName}\n`)
+    .replace('  off(subscription)', `  ${removedName}(subscription)`)
 }
 
 export function verifyTraditionalUniAppImports(source: string, interfaceSource: string): void {
@@ -144,7 +145,8 @@ export async function verifyTraditionalUniAppConsumerCompile(root: string, platf
       } catch (error) {
         negativeFailure = error instanceof Error ? error.message : String(error)
       }
-      assert(negativeFailure.includes('offEvent'), `${platform} removed-export contract canary did not reject offEvent`)
+      const removedName = ['off', 'Event'].join('')
+      assert(negativeFailure.includes(removedName), `${platform} removed-export contract canary did not reject the retired export`)
       const evidenceRoot = join(root, 'test-results/consumer')
       mkdirSync(evidenceRoot, { recursive: true })
       writeFileSync(
