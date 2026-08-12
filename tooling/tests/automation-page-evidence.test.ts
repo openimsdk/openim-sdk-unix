@@ -195,3 +195,44 @@ test('callable event correlations retain operation order, epoch, and payload mat
   assert.match(functionSource('recordSDKEventDelivery'), /sequence: automationEvidenceSequenceCounter/)
   assert.match(functionSource('recordAutomationCase'), /eventCorrelations: eventCorrelations == null \? \[\]/)
 })
+
+test('sendMessageNotOss delivery does not require a progress event', () => {
+  const suite = functionSource('runAutomationEventDeliverySuite')
+  assert.match(suite, /recordAutomationCallableEventCorrelations\('sendMessageNotOss', \['onRecvNewMessage'\]\)/)
+  assert.doesNotMatch(suite, /recordAutomationCallableEventCorrelations\('sendMessageNotOss', \[[^\]]*onSendMessageProgress/)
+  assert.match(suite, /recordAutomationCallableEventCorrelations\('sendMessage', \['onSendMessageProgress', 'onRecvNewMessage'\]\)/)
+})
+
+test('conversation and draft mutations are read back and restore the original state', () => {
+  const suite = functionSource('runAutomationConversationSuite')
+  assert.match(suite, /const originalConversation = await runAutomationStep<OpenIMConversationItem \| null>/)
+  assert.match(suite, /setConversation\(setConversationParams, 'uvue_auto_set_conversation'\)/)
+  assert.match(suite, /setConversationDraft\(draftParams, 'uvue_auto_set_draft'\)/)
+  assert.match(suite, /waitAutomationConversationMutation\(conversationParams, setConversationParams\.isPinned as boolean, setConversationParams\.ex as string, draftParams\.draftText/)
+  assert.match(suite, /setConversation\(restoreConversationParams, 'uvue_auto_restore_conversation'\)/)
+  assert.match(suite, /setConversationDraft\(restoreDraftParams, 'uvue_auto_restore_draft'\)/)
+  assert.match(suite, /waitAutomationConversationMutation\(conversationParams, originalConversation\.isPinned, originalConversationEx, originalConversationDraft/)
+  assert.match(suite, /recordAutomationCleanupEvidence\('conversation', 'setConversation', 'restore-via-read-before-write'/)
+  assert.match(suite, /recordAutomationCleanupEvidence\('conversation', 'setConversationDraft', 'restore-via-read-before-write'/)
+  assert.match(functionSource('waitAutomationConversationMutation'), /getOneConversation\(params, operationID \+ '_' \+ attempt\.toString\(\)\)/)
+})
+
+test('suiteFilter runs one public automation suite without applying full-run coverage gates', () => {
+  assert.match(page, /suiteFilter : string/)
+  assert.match(functionSource('normalizeAutomationConfig'), /suiteFilter: readAutomationString\(value, 'suiteFilter'\)/)
+  assert.match(functionSource('applyConfiguredAutomationSuiteFilter'), /automationSuiteFilter = config\.suiteFilter\.trim\(\)/)
+
+  const guardedSuites = functionSource('runAutomationGuardedSuites')
+  assert.match(guardedSuites, /if \(automationSuiteFilter\.length > 0\)/)
+  assert.match(guardedSuites, /Unknown automation suite filter/)
+  assert.match(guardedSuites, /await runAutomationGuardedSuite\(automationSuiteFilter, config\)/)
+
+  const summary = functionSource('buildAutomationSummary')
+  assert.match(summary, /const fullAutomationRun = automationSuiteFilter\.length == 0/)
+  assert.match(summary, /const coverageMissing = fullAutomationRun \? collectAutomationCoverageMissing\(\) : \[\]/)
+  assert.match(summary, /const validatedMissing = fullAutomationRun \? collectAutomationValidatedMissing\(\) : \[\]/)
+
+  assert.match(page, /const suiteFilter = options\["suiteFilter"\] \?\? ""/)
+  assert.match(page, /if \(suiteFilter\.length > 0\) \{\s*automationSuiteFilter = suiteFilter\.trim\(\)/)
+  assert.match(functionSource('handleRunAutomation'), /if \(automationSuiteFilter\.length == 0\) \{\s*runAutomationCoverageSuite\(\)/)
+})
