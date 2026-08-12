@@ -6,6 +6,7 @@ const require = createRequire(import.meta.url)
 const { validateAutomationEvidence } = require('../runtime/automation-evidence.cjs') as {
   validateAutomationEvidence: (input: Record<string, unknown>) => {
     passed: boolean
+    checkedCallables: number
     checkedEvents: number
     passedEvents: number
     acceptedEvents: number
@@ -13,6 +14,53 @@ const { validateAutomationEvidence } = require('../runtime/automation-evidence.c
     issues: Array<{ caseId: string; axis: string; rule: string }>
   }
 }
+
+test('filtered runs ignore incidental infrastructure evidence but still validate selected suite cases', () => {
+  const selectedCase = {
+    group: 'app',
+    apiName: 'updateFcmToken',
+    status: 'passed',
+    ok: true,
+    invoked: true,
+    resolved: true,
+    responseEvidence: true,
+    structureValidated: true,
+    semanticValidated: true,
+    assertions: [{
+      axis: 'semantic',
+      profile: 'push-token-updated',
+      rule: 'server-acknowledged',
+      expected: 'accepted',
+      actual: 'accepted',
+      ok: true,
+    }],
+  }
+  const filteredManifest = manifest()
+  const validate = (selected: Record<string, unknown>) => validateAutomationEvidence({
+    manifest: filteredManifest,
+    platform: 'android',
+    fullRun: false,
+    report: {
+      suiteFilter: 'app',
+      executedSuites: ['app'],
+      cases: [
+        selected,
+        { group: 'cleanup', apiName: 'speechToText', invoked: true, resolved: false },
+        { group: 'setup', apiName: 'sendMessage', invoked: true, resolved: true },
+      ],
+      events: [{ name: 'onRecvNewMessage', count: 1, deliveryValidated: true }],
+    },
+  })
+
+  const passed = validate(selectedCase)
+  assert.equal(passed.passed, true, JSON.stringify(passed.issues))
+  assert.equal(passed.checkedCallables, 1)
+  assert.equal(passed.checkedEvents, 0)
+
+  const incomplete = validate({ ...selectedCase, structureValidated: false })
+  assert.equal(incomplete.passed, false)
+  assert.deepEqual(incomplete.issues.map((item) => item.axis), ['structure'])
+})
 
 function manifest() {
   return {
@@ -47,6 +95,7 @@ function manifest() {
         apiName: 'updateFcmToken',
         priority: 'P1',
         platforms: { android: 'required', ios: 'required', harmony: 'platform-unsupported' },
+        semanticProfile: 'push-token-updated',
         negativeProfiles: ['uninitialized', 'invalid-input', 'platform-unsupported'],
         cleanupAction: 'none',
         validationAxes: ['completion', 'structure', 'semantic'],

@@ -591,6 +591,9 @@ function validateAutomationEvidence(input) {
   const fullRun = input.fullRun !== false
   const reportCases = Array.isArray(report.cases) ? report.cases.filter(isRecord) : []
   const reportEvents = Array.isArray(report.events) ? report.events.filter(isRecord) : []
+  const filteredSuiteGroups = !fullRun && typeof report.suiteFilter === 'string' && report.suiteFilter.length > 0 && Array.isArray(report.executedSuites)
+    ? new Set(report.executedSuites.filter((item) => typeof item === 'string' && item.length > 0))
+    : null
   const issues = []
   const knownIssueWaivers = []
   let checkedCallables = 0
@@ -608,7 +611,8 @@ function validateAutomationEvidence(input) {
     if (disposition === 'not-in-edition') {
       continue
     }
-    const candidates = reportCases.filter((item) => callableEvidenceName(item) === contractCase.apiName)
+    const candidates = reportCases.filter((item) => callableEvidenceName(item) === contractCase.apiName
+      && (filteredSuiteGroups == null || filteredSuiteGroups.has(item.group)))
     if (!fullRun && candidates.length === 0) {
       continue
     }
@@ -732,7 +736,11 @@ function validateAutomationEvidence(input) {
       continue
     }
     const requiresNegativeEvidence = disposition === 'platform-unsupported' || disposition === 'capability-negative'
-    const caseCandidates = reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName)
+    if (filteredSuiteGroups != null && !filteredSuiteGroups.has('event-delivery')) {
+      continue
+    }
+    const caseCandidates = reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName
+      && (filteredSuiteGroups == null || filteredSuiteGroups.has(item.group)))
     const eventCandidates = reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
     const candidates = requiresNegativeEvidence ? caseCandidates : eventCandidates
     const allCandidates = [...eventCandidates, ...caseCandidates]
