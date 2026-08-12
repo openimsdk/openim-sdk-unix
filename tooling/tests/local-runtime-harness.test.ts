@@ -355,6 +355,12 @@ test('descriptor-driven Android runtime never falls back to the Public legacy AP
   }
 })
 
+test('Android automation passes the descriptor package explicitly across HBuilder project import', () => {
+  const source = readFileSync(resolve(root, 'local-runtime/scripts/test-local-android.sh'), 'utf8')
+  assert.match(source, /PACKAGE_NAME="\$\(android_package_name\)"/)
+  assert.match(source, /OPENIM_TEST_BASE_PACKAGE="\$PACKAGE_NAME"/)
+})
+
 test('local automation disables HBuilderX protocol debug while credentials cross the bridge', () => {
   const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
 
