@@ -108,7 +108,12 @@ expected_openim_aar_sha="$(node -e '
   const descriptor = JSON.parse(fs.readFileSync(descriptorPath, "utf8"));
   const plugin = descriptor.plugins.find((item) => item.id === "unix-openim-sdk");
   if (!plugin) throw new Error("unix-openim-sdk is absent from the product descriptor");
-  const artifact = path.resolve(path.dirname(descriptorPath), plugin.source, "utssdk/app-android/libs/open_im_sdk.aar");
+  const source = plugin.source.replace(/\$\{([A-Z0-9_]+)\}/g, (_match, name) => {
+    const value = process.env[name];
+    if (!value) throw new Error(`Missing descriptor environment variable ${name}`);
+    return value;
+  });
+  const artifact = path.resolve(path.dirname(descriptorPath), source, "utssdk/app-android/libs/open_im_sdk.aar");
   process.stdout.write(crypto.createHash("sha256").update(fs.readFileSync(artifact)).digest("hex"));
 ')"
 exported_openim_aar="$NATIVE_ROOT/unix-openim-sdk/libs/open_im_sdk.aar"
