@@ -46,15 +46,17 @@ for (const id of pluginIDs) {
     writeFileSync(pluginManifestPath, pluginManifest)
   } else writeFileSync(pluginManifestPath, '<manifest xmlns:android="http://schemas.android.com/apk/res/android" />\n')
   writeFileSync(join(target, 'proguard-rules.pro'), '')
-  const dependencies = pluginDocuments.get(id)?.dependencies ?? []
+  const pluginDocument = pluginDocuments.get(id)
+  const dependencies = pluginDocument?.dependencies ?? []
   const projectDependencies = dependencies.filter((dependency) => pluginIDs.includes(dependency)).map((dependency) => `    implementation project(':${escapeSingle(dependency)}')`)
+  const namespace = pluginDocument?.androidNamespace ?? `io.openim.local.generated.${id.replaceAll('-', '')}`
   writeFileSync(join(target, 'build.gradle'), `plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace '${escapeSingle(`io.openim.local.generated.${id.replaceAll('-', '')}`)}'
+    namespace '${escapeSingle(namespace)}'
     compileSdkVersion 35
     defaultConfig { minSdkVersion ${minSdk} }
     compileOptions {

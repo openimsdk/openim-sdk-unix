@@ -23,6 +23,20 @@ mkdir -p "$(dirname "$native_root")"
 ditto "$sdk_root/UniPlugin-Hello-AS" "$native_root"
 OPENIM_LOCAL_NATIVE_HOST="$native_root" node "$runner_root/local-runtime/hosts/configure-classic-android.mjs"
 
+while IFS= read -r library; do
+  [[ -z "$library" ]] && continue
+  source_library="$sdk_root/SDK/libs/$library"
+  if [[ ! -f "$source_library" ]]; then
+    echo "Required classic Android library is missing: $source_library" >&2
+    exit 1
+  fi
+  cp "$source_library" "$native_root/app/libs/$library"
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  for (const library of descriptor.classicAndroidLibraries ?? []) process.stdout.write(library + "\n");
+')
+
 if [[ "${OPENIM_LOCAL_CLASSIC_VIDEO:-0}" == "1" ]]; then
   for library in weex_videoplayer-release.aar media-release.aar; do
     source_library="$sdk_root/SDK/libs/$library"
