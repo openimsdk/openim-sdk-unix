@@ -175,6 +175,7 @@ test('runner source rejects HBuilder and native compiler failures hidden behind 
 
 test('uni-app x iOS host builds only the simulator architecture exported by HBuilderX', () => {
   const source = readFileSync(new URL('../../local-runtime/hosts/build-uniappx-ios.sh', import.meta.url), 'utf8')
+  const configure = readFileSync(new URL('../../local-runtime/hosts/configure-uniappx-ios.mjs', import.meta.url), 'utf8')
   assert.match(source, /DCloudUTSExtAPI\.framework\/DCloudUTSExtAPI/)
   assert.match(source, /lipo -archs/)
   assert.match(source, /ARCHS="\$exported_archs"/)
@@ -183,6 +184,13 @@ test('uni-app x iOS host builds only the simulator architecture exported by HBui
   assert.match(source, /XCFrameworkIntermediates\/\$pod_name/)
   assert.match(source, /Duplicate embedded framework/)
   assert.match(source, /Expected generated iOS wrapper framework/)
+  assert.match(configure, /s\.exclude_files = \['src\/Tests\/\*\*\/\*'\]/)
+  assert.match(source, /current ar archive/)
+  assert.match(source, /Removed static framework from generated app bundle/)
+  assert.match(source, /codesign --force --sign - "\$framework"/)
+  assert.match(source, /codesign --force --deep --sign - "\$app"/)
+  assert.match(source, /codesign --verify --deep --strict "\$app"/)
+  assert.doesNotMatch(source, /codesign --verify --deep --strict "\$app"[^\n]*\|\| true/)
 })
 
 test('classic Android host removes legacy manifest package declarations from generated plugins', () => {

@@ -67,6 +67,7 @@ for (const plugin of descriptor.plugins) {
     "  s.platform = :ios, '14.0'",
     "  s.source = { :http => 'file:///dev/null' }",
     "  s.source_files = ['src/**/*.{h,m,mm,swift,c,cc,cpp}']",
+    "  s.exclude_files = ['src/Tests/**/*']",
     "  s.resources = ['Resources/**/*', 'EmbedResources/**/*', 'config.json', 'PrivacyInfo.xcprivacy']",
     "  s.vendored_frameworks = 'Frameworks/*.{framework,xcframework}'",
     "  s.vendored_libraries = 'Libs/**/*.a'",

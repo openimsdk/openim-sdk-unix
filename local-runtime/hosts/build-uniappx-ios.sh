@@ -98,7 +98,23 @@ if find "$app/Frameworks" -maxdepth 1 -type d -name 'OpenIMCore.framework' | awk
   echo "Expected exactly one OpenIMCore.framework in the uni-app x iOS host" >&2
   exit 1
 fi
-codesign --verify --deep --strict "$app" 2>/dev/null || true
+while IFS= read -r framework; do
+  framework_name="$(basename "$framework" .framework)"
+  framework_binary="$framework/$framework_name"
+  if [[ -f "$framework_binary" ]] && file "$framework_binary" | grep -Fq 'current ar archive'; then
+    rm -rf "$framework"
+    echo "Removed static framework from generated app bundle: $(basename "$framework")"
+  fi
+done < <(find "$app/Frameworks" -maxdepth 1 -type d -name '*.framework' -print | sort)
+if find "$app/Frameworks" -maxdepth 2 -type f -print0 | xargs -0 file | grep -Fq 'current ar archive'; then
+  echo "Static framework remained in the generated uni-app x iOS app" >&2
+  exit 1
+fi
+while IFS= read -r framework; do
+  codesign --force --sign - "$framework"
+done < <(find "$app/Frameworks" -maxdepth 1 -type d -name '*.framework' -print | sort)
+codesign --force --deep --sign - "$app"
+codesign --verify --deep --strict "$app"
 node -e '
   const fs = require("fs"); const crypto = require("crypto"); const path = process.argv[1];
   const files = []; const walk = (d) => fs.readdirSync(d).sort().forEach((n) => { const p = `${d}/${n}`; fs.statSync(p).isDirectory() ? walk(p) : files.push(p) }); walk(path);
