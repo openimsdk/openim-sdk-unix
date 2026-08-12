@@ -216,13 +216,17 @@ mkdir -p "$(dirname "$LOCAL_APK")"
 ditto "$built_apk" "$LOCAL_APK"
 
 apk_entries="$(zipinfo -1 "$LOCAL_APK")"
-for abi in arm64-v8a x86_64; do
+while IFS= read -r abi; do
   count="$(printf '%s\n' "$apk_entries" | awk -v path="lib/$abi/libgojni.so" '$0 == path {count++} END {print count+0}')"
   if [[ "$count" != "1" ]]; then
     echo "Expected exactly one $abi libgojni.so in local APK, found $count" >&2
     exit 1
   fi
-done
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  for (const abi of descriptor.androidHost?.abiFilters ?? ["arm64-v8a", "x86_64"]) process.stdout.write(abi + "\n");
+')
 if ! printf '%s\n' "$apk_entries" | rg -q '^classes[0-9]*\.dex$'; then
   echo "Local APK contains no DEX files" >&2
   exit 1

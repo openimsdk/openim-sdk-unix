@@ -112,6 +112,7 @@ test('local Android host embeds the DCloud automation pull activity used by unia
   assert.match(source, /uni-showLoading-release\.aar/)
   assert.match(source, /uni-modal-release\.aar/)
   assert.match(source, /uni-actionSheet-release\.aar/)
+  assert.match(source, /descriptor\.androidHost\?\.abiFilters \?\? \["arm64-v8a", "x86_64"\]/)
   assert.match(rebuild, /cache\/\.app-android\/src\/index\.kt/)
   assert.match(rebuild, /OPENIM_AUTOMATOR_PORT/)
   assert.match(rebuild, /install -r -g/)
