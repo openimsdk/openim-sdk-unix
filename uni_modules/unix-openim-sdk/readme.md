@@ -1,8 +1,8 @@
 # Unix OpenIM SDK
 
-`unix-openim-sdk` 是 OpenIM 的 Public UTS 原生插件，支持在传统 **uni-app（Vue 2 / Vue 3）** 和 **uni-app x** 的 Android、iOS App 中调用 OpenIM 原生 SDK。
+`unix-openim-sdk` 是 OpenIM UTS 原生插件，支持在传统 **uni-app（Vue 2 / Vue 3）** 和 **uni-app x** 的 Android、iOS App 中调用 OpenIM 原生 SDK。
 
-插件提供 Promise 风格 API、类型化数据模型和可精确取消的事件订阅。公开市场包不包含 HarmonyOS 商业实现、商业信令、音视频或会议 UI。
+插件提供 Promise 风格 API、类型化数据模型和可精确取消的事件订阅。
 
 ## 平台与环境
 
@@ -12,7 +12,7 @@
 | uni-app App iOS（Vue 2 / Vue 3） | 支持 | iOS 14 |
 | uni-app x App Android | 支持 | Android 5.0 / API 21 |
 | uni-app x App iOS | 支持 | iOS 14 |
-| HarmonyOS | Public 包不支持 | — |
+| HarmonyOS | 不支持 | — |
 | Web / 小程序 | 不支持 | — |
 
 开发环境要求：
