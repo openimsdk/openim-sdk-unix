@@ -67,7 +67,7 @@ test('package candidate version is consistent across platform metadata', () => {
   ), 'utf8'))
   const app = pluginPackage.uni_modules.platforms.client['uni-app-x'].app
 
-  assert.match(pluginPackage.version, /^0\.2\.0-rc\.\d+$/)
+  assert.match(pluginPackage.version, /^0\.2\.0(?:-rc\.\d+)?$/)
   assert.equal(app.android.extVersion, pluginPackage.version)
   assert.equal(app.ios.extVersion, pluginPackage.version)
 })

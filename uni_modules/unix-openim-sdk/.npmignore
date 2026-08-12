@@ -7,3 +7,10 @@ utssdk/app-android/libs/
 utssdk/app-ios/Frameworks/
 **/*.aar
 **/*.xcframework/
+
+# Development and release evidence never belongs to the market upload.
+**/.DS_Store
+**/*.log
+**/*.zip
+**/*.apk
+**/*.ipa

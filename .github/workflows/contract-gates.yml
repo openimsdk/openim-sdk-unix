@@ -91,6 +91,13 @@ jobs:
           git diff --exit-code
           npm run generate
           git diff --exit-code
+      - name: Build deterministic DCloud marketplace candidate
+        run: npm run marketplace:build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unix-openim-sdk-public-marketplace
+          path: dist/public-marketplace/*
+          if-no-files-found: error
       - name: Require three clean platform-bound runtime passes
         env:
           ANDROID_EVIDENCE_1: ${{ vars.OPENIM_PUBLIC_ANDROID_EVIDENCE_1 }}

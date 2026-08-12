@@ -55,6 +55,8 @@ uni_modules/unix-openim-sdk
 
 `npm run verify:release-integrity` 会从 `package-lock.json`、插件元数据和受控原生组件清单生成 CycloneDX 1.6 SBOM，同时执行 SPDX license allowlist 与 Git 跟踪文本 secret scan，报告写入 `test-results/release/`。发布流水线使用 `--release` 额外要求 `dirty=false` 并上传该报告。
 
+Public 插件市场发布使用临时 `release/public-<version>` 分支和不可变 Tag，不维护长期市场分支。`npm run marketplace:build` 会根据插件 `package.json.files` 生成确定性 ZIP、逐文件 manifest 和 `SHA256SUMS`，并拒绝 HarmonyOS、商业原生制品、账号凭据、本机路径和未提交工作区。完整流程见 [`PUBLIC_MARKETPLACE_RELEASE.md`](PUBLIC_MARKETPLACE_RELEASE.md)。
+
 由于本插件依赖原生 SDK，请使用自定义基座或正式打包产物验证原生能力。标准基座可以用于页面编译和渲染验证，但无法实际调用依赖原生 SDK 的能力。
 
 ## 使用 🚀

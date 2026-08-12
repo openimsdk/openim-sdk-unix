@@ -1,5 +1,13 @@
 # 更新日志
 
+## 0.2.0（2026-08-12）
+- 正式发布类型化事件订阅合同：`onXxx` 返回 `OpenIMSDKEventSubscription`，使用 `off(subscription)` 精确取消，使用 `offAll(eventName)` 按事件名批量取消。
+- Android 原生依赖固定为 `io.openim:core-sdk:3.8.3-patch15`；iOS 原生依赖固定为 `OpenIMSDKCore 3.8.3-hotfix.15-dynamic.1`。
+- App iOS 最低支持版本提高到 iOS 14；App Android 最低支持 API 21。
+- 修复 iOS Foundation JSON 数组及布尔值解析兼容问题，并收敛 Android/iOS 原生回调生命周期。
+- 完善本地自定义基座、双账号自动化、筛选套件、合同证据及会话状态恢复验证。
+- Public 插件市场包仅包含 Android/iOS 公共能力，不包含 HarmonyOS、商业信令、企业原生制品或 AV Runtime。
+
 ## 0.2.0-rc.2（2026-08-11）
 - 事件订阅改为返回可跨 UTS 桥传递的 `OpenIMSDKEventSubscription`（包含 `id` 与 `eventName`），使用 `off(subscription)` 精确取消单个监听。
 - 将事件批量取消统一为 `offAll(eventName)`；保留 `off(subscription)` 精确取消，不提供旧名称兼容导出。
