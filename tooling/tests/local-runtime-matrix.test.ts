@@ -132,6 +132,14 @@ test('runner source rejects HBuilder and native compiler failures hidden behind 
   assert.match(source, /OPENIM_LOCAL_CLASSIC_VIDEO: descriptor\.classicVideo === true \? '1' : '0'/)
 })
 
+test('uni-app x iOS host builds only the simulator architecture exported by HBuilderX', () => {
+  const source = readFileSync(new URL('../../local-runtime/hosts/build-uniappx-ios.sh', import.meta.url), 'utf8')
+  assert.match(source, /DCloudUTSExtAPI\.framework\/DCloudUTSExtAPI/)
+  assert.match(source, /lipo -archs/)
+  assert.match(source, /ARCHS="\$exported_archs"/)
+  assert.match(source, /ONLY_ACTIVE_ARCH=YES/)
+})
+
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-android-host-'))
   cpSync(new URL('../../local-runtime/native-android-template', import.meta.url), root, { recursive: true })

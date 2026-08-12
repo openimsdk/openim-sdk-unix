@@ -6,6 +6,10 @@ source "$runner_root/local-runtime/scripts/common.sh"
 
 readonly profile="${OPENIM_UNI_TOOLCHAIN_PROFILE:?}"
 readonly sdk_root="$(read_json "$profile" sdks.uniappx.ios.sdkRoot)"
+readonly ext_api_binary="$sdk_root/TemporarySampleFramework/DCloudUTSExtAPI.xcframework/ios-x86_64-simulator/DCloudUTSExtAPI.framework/DCloudUTSExtAPI"
+test -f "$ext_api_binary"
+readonly exported_archs="$(lipo -archs "$ext_api_binary")"
+test -n "$exported_archs"
 readonly native_root="$PROJECT_ROOT/unpackage/local-runtime/uniappx-ios-host"
 readonly export_root="$PROJECT_ROOT/unpackage/resources/app-ios"
 readonly app_id="${OPENIM_LOCAL_DCLOUD_APP_ID:?}"
@@ -47,6 +51,8 @@ readonly info_plist="$native_root/UniAppXDemo/UniAppXDemo/Info.plist"
     -derivedDataPath "$native_root/DerivedData" \
     CODE_SIGNING_ALLOWED=NO \
     IPHONEOS_DEPLOYMENT_TARGET=14.0 \
+    ARCHS="$exported_archs" \
+    ONLY_ACTIVE_ARCH=YES \
     CONFIGURATION_BUILD_DIR="$output_root" \
     build
 )
