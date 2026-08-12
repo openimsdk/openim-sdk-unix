@@ -79,8 +79,11 @@ function readAutomationConfig() {
 }
 
 function provisionAutomationConfig() {
-  if (process.env.OPENIM_AUTOMATION_REUSE === '1' && fs.existsSync(configPath)) {
-    return
+  if (fs.existsSync(configPath)) {
+    const existing = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+    if (Object.prototype.hasOwnProperty.call(existing, 'suiteFilter') || process.env.OPENIM_AUTOMATION_REUSE === '1') {
+      return
+    }
   }
   execFileSync(process.execPath, [fixtureScriptPath], {
     cwd: projectRoot,
@@ -139,12 +142,12 @@ function writeAutomationArtifacts(baseName, summary) {
   return { jsonPath, logPath }
 }
 
-function validateReportAgainstContract(summary) {
+function validateReportAgainstContract(summary, fullRun) {
   const uniOSName = String(process.env.UNI_OS_NAME || '').toLowerCase()
   const platform = uniOSName === 'ios' ? 'ios' : 'android'
   const manifest = JSON.parse(fs.readFileSync(testDispositionPath, 'utf8'))
   const responseSchemas = JSON.parse(fs.readFileSync(responseSchemasPath, 'utf8'))
-  return validateAutomationEvidence({ manifest, responseSchemas, report: summary, platform, fullRun: true })
+  return validateAutomationEvidence({ manifest, responseSchemas, report: summary, platform, fullRun })
 }
 
 async function writeAutomationScreenshot(baseName) {
@@ -190,7 +193,8 @@ describe('OpenIM SDK demo automation', () => {
     }
 
     console.log('[openim-test] automator connected; starting OpenIM flow')
-    const automationConfig = { ...config, autorun: 'false' }
+    const requestedSuiteFilter = String(config.suiteFilter || '').trim()
+    const automationConfig = { ...config, autorun: 'false', suiteFilter: requestedSuiteFilter }
     await program.callUniMethod('setStorageSync', 'openim-test-config', automationConfig)
     try {
       const page = await program.reLaunch('/pages/index/index')
@@ -203,22 +207,26 @@ describe('OpenIM SDK demo automation', () => {
       }
 
       expect(summary).toBeTruthy()
-      summary.contractEvidence = validateReportAgainstContract(summary)
+      summary.contractEvidence = validateReportAgainstContract(summary, requestedSuiteFilter.length === 0)
       const artifacts = writeAutomationArtifacts(baseName, summary)
       await writeAutomationScreenshot(baseName)
       if (summary.failed !== 0) {
         const failures = Array.isArray(summary.cases)
           ? summary.cases
-            .filter((item) => item && item.ok === false && item.skipped !== true)
+            .filter((item) => item && item.status === 'failed')
             .map((item) => `${item.group || item.suite}/${item.name}: ${item.message || item.detail || 'no detail'}`)
           : []
         throw new Error(`OpenIM automation reported ${summary.failed} failure(s): ${failures.join('; ') || 'no case details'}; artifacts: ${artifacts.jsonPath}, ${artifacts.logPath}`)
       }
-      if (!summary.contractEvidence.passed) {
+      if (requestedSuiteFilter.length === 0 && !summary.contractEvidence.passed) {
         throw new Error(`OpenIM automation contract evidence failed: ${formatAutomationEvidenceIssues(summary.contractEvidence)}; artifacts: ${artifacts.jsonPath}, ${artifacts.logPath}`)
       }
       expect(summary.failed).toBe(0)
-      expect(summary.contractEvidence.passed).toBe(true)
+      if (requestedSuiteFilter.length === 0) {
+        expect(summary.contractEvidence.passed).toBe(true)
+      } else {
+        expect(summary.contractEvidence.checkedCallables).toBeGreaterThan(0)
+      }
       expect(summary.passed).toBeGreaterThan(0)
       expect(summary.coverageMissing).toEqual([])
       expect(summary.unexpectedSkipped).toEqual([])

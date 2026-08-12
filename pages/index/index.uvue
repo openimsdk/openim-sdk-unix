@@ -911,6 +911,7 @@
 
 	type OpenIMAutomationConfig = {
 		autorun : string
+		suiteFilter : string
 		apiAddr : string
 		wsAddr : string
 		platformID : number
@@ -1030,6 +1031,8 @@
 	type OpenIMAutomationSummary = {
 		headline : string
 		summaryText : string
+		suiteFilter : string
+		executedSuites : Array<string>
 		total : number
 		passed : number
 		failed : number
@@ -1054,6 +1057,8 @@
 
 	let automationRunning = false
 	let automationEventSuppressed = false
+	let automationSuiteFilter = ''
+	let automationQuerySuiteFilter = ''
 	let automationLoggedIn = false
 	let automationActiveUserID = ''
 	let automationConversationID = ''
@@ -1082,7 +1087,11 @@
 
 	const automationDefaultStepTimeoutMilliseconds = 60000
 	const automationSendStepTimeoutMilliseconds = 30000
+	const automationSideEffectTimeoutMilliseconds = 10000
+	const automationSideEffectReadTimeoutMilliseconds = 2000
+	const automationSideEffectPollMilliseconds = 100
 	const automationSuiteOrder : Array<string> = ['setup', 'events', 'user-status', 'message-create', 'message-create-send', 'message-send', 'conversation', 'message-storage', 'friend', 'group', 'app', 'upload', 'conversation-mutation', 'event-delivery', 'coverage', 'cleanup', 'artifact']
+	const automationSelectableSuiteNames : Array<string> = ['user-status', 'message-create', 'message-send', 'conversation', 'message-storage', 'friend', 'group', 'app', 'upload', 'conversation-mutation', 'event-delivery']
 	const automationAllowedSkipCaseKeys : Array<string> = []
 	const automationAllowedValidatedMissingNames : Array<string> = []
 	const automationRequiredDeliveredEventNames : Array<string> = ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish', 'onSendMessageProgress', 'onUploadFileProgress', 'onUploadLogsProgress']
@@ -1183,6 +1192,7 @@
 	function normalizeAutomationConfig(value : UTSJSONObject) : OpenIMAutomationConfig {
 		const config : OpenIMAutomationConfig = {
 			autorun: readAutomationString(value, 'autorun'),
+			suiteFilter: readAutomationString(value, 'suiteFilter'),
 			apiAddr: readAutomationString(value, 'apiAddr'),
 			wsAddr: readAutomationString(value, 'wsAddr'),
 			platformID: readAutomationNumber(value, 'platformID'),
@@ -1256,6 +1266,14 @@
 			(config as OpenIMAutomationConfig).secondaryToken.length > 0
 	}
 
+	function applyConfiguredAutomationSuiteFilter(config : OpenIMAutomationConfig | null) {
+		if (automationQuerySuiteFilter.length > 0) {
+			automationSuiteFilter = automationQuerySuiteFilter
+			return
+		}
+		automationSuiteFilter = config == null ? '' : config.suiteFilter.trim()
+	}
+
 	function readAutomationConfig() : OpenIMAutomationConfig | null {
 		const raw = uni.getStorageSync('openim-test-config')
 		if (raw instanceof UTSJSONObject) {
@@ -1295,6 +1313,7 @@
 	}
 
 	function resetAutomationCache() {
+		automationSuiteFilter = ''
 		cachedConversation = null
 		cachedGroupID = ''
 		cachedGroup = null
@@ -1398,7 +1417,7 @@
 		return null
 	}
 
-	function beginAutomationOperation(apiName : string, payloadNeedle ?: string | null, exclusiveOperation ?: boolean | null) {
+	function beginAutomationOperation(apiName : string, payloadNeedle : string | null = null, exclusiveOperation : boolean | null = null) {
 		automationEvidenceSequenceCounter = automationEvidenceSequenceCounter + 1
 		let exclusive = exclusiveOperation == true
 		let index = 0
@@ -1429,7 +1448,7 @@
 		return null
 	}
 
-	function completeAutomationOperation(apiName : string, resultIdentity ?: string | null) {
+	function completeAutomationOperation(apiName : string, resultIdentity : string | null = null) {
 		const window = findLatestAutomationOperation(apiName)
 		if (window == null || window.terminalSequence > 0) { return }
 		automationEvidenceSequenceCounter = automationEvidenceSequenceCounter + 1
@@ -1973,7 +1992,7 @@
 		}
 	}
 
-	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence ?: OpenIMAutomationEvidence | null, apiName ?: string | null, invoked ?: boolean | null, resolved ?: boolean | null, responseDetail ?: string | null, eventCorrelations ?: Array<OpenIMAutomationEventCorrelation> | null) {
+	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence : OpenIMAutomationEvidence | null = null, apiName : string | null = null, invoked : boolean | null = null, resolved : boolean | null = null, responseDetail : string | null = null, eventCorrelations : Array<OpenIMAutomationEventCorrelation> | null = null) {
 		markAutomationAPICovered(name)
 		const checked = evidence == null ? emptyAutomationEvidence() : evidence as OpenIMAutomationEvidence
 		if (status == 'passed' && (checked.structureValidated || checked.semanticValidated || checked.sideEffectValidated || checked.eventCorrelated)) {
@@ -2008,19 +2027,19 @@
 	}
 
 	function recordAutomationStep(group : string, name : string, ok : boolean, detail : string) {
-		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), null, name, true, ok)
+		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), null, name, true, ok, null, null)
 	}
 
-	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence, responseDetail ?: string | null, eventCorrelations ?: Array<OpenIMAutomationEventCorrelation> | null) {
+	function recordAutomationEvidenceStep(group : string, name : string, ok : boolean, detail : string, evidence : OpenIMAutomationEvidence, responseDetail : string | null = null, eventCorrelations : Array<OpenIMAutomationEventCorrelation> | null = null) {
 		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok, responseDetail, eventCorrelations)
 	}
 
 	function recordAutomationCleanupEvidence(group : string, apiName : string, cleanupAction : string, rule : string, expected : string, actual : string, ok : boolean) {
-		recordAutomationCase(group, apiName, ok ? 'passed' : 'failed', rule + ': expected ' + expected + ', actual ' + actual, new Date().getTime(), cleanupAutomationEvidence(cleanupAction, rule, expected, actual, ok), apiName, true, ok)
+		recordAutomationCase(group, apiName, ok ? 'passed' : 'failed', rule + ': expected ' + expected + ', actual ' + actual, new Date().getTime(), cleanupAutomationEvidence(cleanupAction, rule, expected, actual, ok), apiName, true, ok, null, null)
 	}
 
 	function recordAutomationSkip(group : string, name : string, detail : string) {
-		recordAutomationCase(group, name, 'skipped', detail, new Date().getTime())
+		recordAutomationCase(group, name, 'skipped', detail, new Date().getTime(), null, name, false, false, null, null)
 	}
 
 	function prepareAutomationLocalFiles() {
@@ -2054,6 +2073,10 @@
 		fileManager.writeFileSync(videoFileSystemPath, 'AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgAAAAFtZGF0AAAAAAAAAdkAAAA7BgUyR1ZK3FxMQz+U78URPNFDqAEAAAMAAQMAAAMAAQIAAeYACwAAAwAAAwAAAwEsDAOJEQQN/////4AAAABgJbggH/OE2wf7G6BilVOQltbo87Dd82hFMEqlLT5a6/u56Md6qBSSFXchCwiC2bWQr9ABEIDyDZ1jR1RfLkt6R7XKQrBx+Fo80jnWO4waIc7rbWiiiEGYIfV4BejiXasgAAAAJSHhEF/Tawpc9JZ8Q8Al1sG1AlVA7e+JpX6CnpRUWKQBxW9PQmgAAAAgIaiChL/mWdziwCDB9Vgx2a8xlDHZgm431pzMTTLf44AAAAAbAajBj//uQ7TOISLcqJiC22ewgGwpH2NuDf6mAAAAEQGow4v/TNJHAA6a/pUQ9OyoAAAAMiHjIaIif5YSgvVi5onPAv/wCXNRyXgXbQiGYChEyN53/+b+5Si2xGTFumonRcG4YZIcAAAAFyGpBoRf/thmYTbpmnqETikwEWupnHi4AAAAGwGpRYv/7LNplEJFw+xvN+nn7Eiocx80ScRnXgAAABEBqUeL/0zSRwAOmv6VEPTsqAAAABwh5SWiIv9gdB4ag/X0Achy5kcD/rjnypPfzqtiAAADTG1vb3YAAABsbXZoZAAAAADmbleb5m5XnAAAAlgAAAJYAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAALYdHJhawAAAFx0a2hkAAAAAeZuV5zmblecAAAAAQAAAAAAAAJYAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAQAAAAEAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAACWAAAAHgAAQAAAAACUG1kaWEAAAAgbWRoZAAAAADmblec5m5XnAAAAlgAAAJYVcQAAAAAADFoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAQ29yZSBNZWRpYSBWaWRlbwAAAAH3bWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAABt3N0YmwAAAChc3RzZAAAAAAAAAABAAAAkWF2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAEAAQAEgAAABIAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY//8AAAAnYXZjQwFkAAv/4QAMJ2QAC6xWUMN4FmClAQAEKO48sP34+AAAAAAKZmllbAEAAAAACmNocm0AAAAAABhzdHRzAAAAAAAAAAEAAAAKAAAAPAAAAGBjdHRzAAAAAAAAAAoAAAABAAAAeAAAAAEAAAEsAAAAAQAAAHgAAAABAAAAAAAAAAEAAAA8AAAAAQAAASwAAAABAAAAeAAAAAEAAAAAAAAAAQAAADwAAAABAAAAeAAAABRzdHNzAAAAAAAAAAEAAAABAAAAFnNkdHAAAAAAIBAQGBgQEBgYEAAAABxzdHNjAAAAAAAAAAEAAAABAAAACgAAAAEAAAA8c3RzegAAAAAAAAAAAAAACgAAAKMAAAApAAAAJAAAAB8AAAAVAAAANgAAABsAAAAfAAAAFQAAACAAAAAUc3RjbwAAAAAAAAABAAAALA==', 'base64')
 		fileManager.writeFileSync(fileFileSystemPath, '%PDF-1.1\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n', 'utf-8')
 		recordAutomationStep('setup', 'prepareLocalFiles', true, nativeDirPath)
+	}
+
+	function automationSuiteRequiresLocalFiles() : boolean {
+		return automationSuiteFilter.length == 0 || automationSuiteFilter == 'message-create' || automationSuiteFilter == 'upload' || automationSuiteFilter == 'event-delivery'
 	}
 
 	function writeAutomationUniqueUploadFile(fileName : string, marker : string) : string {
@@ -2098,7 +2121,7 @@
 		})
 	}
 
-	async function runAutomationStepWithTimeout<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, timeoutMilliseconds : number, evidence ?: OpenIMAutomationEvidence | null) : Promise<T> {
+	async function runAutomationStepWithTimeout<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, timeoutMilliseconds : number, evidence : OpenIMAutomationEvidence | null = null) : Promise<T> {
 		statusText.value = 'Automation: ' + group + ' / ' + name
 		const startedAt = new Date().getTime()
 		let resolvedValueText = ''
@@ -2106,16 +2129,16 @@
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, timeoutMilliseconds)
 			resolvedValueText = stringifyAPIValue(value)
 			onSuccess(value)
-			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt, evidence, name, true, true, resolvedValueText)
+			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt, evidence, name, true, true, resolvedValueText, null)
 			return value
 		} catch (error) {
 			const errorText = stringifyAPIValue(error)
-			recordAutomationCase(group, name, 'failed', resolvedValueText.length > 0 ? 'value=' + resolvedValueText + '; error=' + errorText : errorText, startedAt, null, name, true, false)
+			recordAutomationCase(group, name, 'failed', resolvedValueText.length > 0 ? 'value=' + resolvedValueText + '; error=' + errorText : errorText, startedAt, null, name, true, false, null, null)
 			throw error
 		}
 	}
 
-	async function runAutomationStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, evidence ?: OpenIMAutomationEvidence | null) : Promise<T> {
+	async function runAutomationStep<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, evidence : OpenIMAutomationEvidence | null = null) : Promise<T> {
 		return await runAutomationStepWithTimeout<T>(group, name, promise, onSuccess, automationDefaultStepTimeoutMilliseconds, evidence)
 	}
 
@@ -2134,10 +2157,10 @@
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, automationDefaultStepTimeoutMilliseconds)
 			onSuccess(value)
 			const responseDetail = stringifyAPIValue(value)
-			recordAutomationCase(group, name, 'passed', responseDetail, startedAt, null, name, true, true, responseDetail)
+			recordAutomationCase(group, name, 'passed', responseDetail, startedAt, null, name, true, true, responseDetail, null)
 			return value
 		} catch (error) {
-			recordAutomationCase(group, name, 'skipped', reason + ': ' + stringifyAPIValue(error), startedAt, null, name, true, false)
+			recordAutomationCase(group, name, 'skipped', reason + ': ' + stringifyAPIValue(error), startedAt, null, name, true, false, null, null)
 			return null
 		}
 	}
@@ -2197,7 +2220,7 @@
 			const handleMatched = subscription.id.length > 0 && automationStringArrayContains(sdkRegisteredEventNames, eventName)
 			const registryObserved = automationStringArrayContains(sdkEventSubscriptionNames, eventName)
 			const valid = handleMatched && registryObserved
-			recordAutomationCase('events', eventName, valid ? 'passed' : 'failed', valid ? 'exact subscription handle and registry entry observed' : 'event subscription handle or registry entry missing', new Date().getTime(), subscriptionAutomationEvidence(eventName, handleMatched, registryObserved), eventName, true, valid, valid ? stringifyAPIValue(subscription) : null)
+			recordAutomationCase('events', eventName, valid ? 'passed' : 'failed', valid ? 'exact subscription handle and registry entry observed' : 'event subscription handle or registry entry missing', new Date().getTime(), subscriptionAutomationEvidence(eventName, handleMatched, registryObserved), eventName, true, valid, valid ? stringifyAPIValue(subscription) : null, null)
 			index = index + 1
 		}
 		index = 0
@@ -2245,7 +2268,7 @@
 		await switchAutomationPrimary(config, 'A_event_control_restore')
 	}
 
-	async function sendAutomationCreatedMessage(stepName : string, message : OpenIMMessageItem | null, recvID : string, groupID : string, operationID : string, useNotOss ?: boolean | null) : Promise<OpenIMMessageItem | null> {
+	async function sendAutomationCreatedMessage(stepName : string, message : OpenIMMessageItem | null, recvID : string, groupID : string, operationID : string, useNotOss : boolean | null = null) : Promise<OpenIMMessageItem | null> {
 		if (message == null) {
 			recordAutomationSkip('message-create-send', stepName, 'create step returned null or was skipped')
 			return null
@@ -2422,7 +2445,11 @@
 		requireAutomationString(dataPath, 'getOpenIMDataPath returned empty path')
 		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence('getOpenIMDataPath', 'data-path-is-non-empty'), stringifyAPIValue(dataPath))
 		initializeAutomationLogFiles()
-		prepareAutomationLocalFiles()
+		if (automationSuiteRequiresLocalFiles()) {
+			prepareAutomationLocalFiles()
+		} else {
+			recordAutomationStep('setup', 'prepareLocalFiles', true, 'not required for filtered suite ' + automationSuiteFilter)
+		}
 		recordAutomationEventSubscriptionCoverage()
 		await switchAutomationPrimary(config, 'A_setup')
 		recordAutomationEvidenceStep('setup', 'initSDK', true, 'successful login observed after init', mutationAutomationEvidence('initSDK', 'initialized-session-accepted-login', 'init-state-transition-observed', false))
@@ -2530,20 +2557,78 @@
 		}
 	}
 
+	async function waitAutomationConversationMutation(params : OpenIMGetOneConversationParams, expectedPinned : boolean, expectedEx : string, expectedDraft : string, operationID : string) : Promise<OpenIMConversationItem> {
+		const startedAt = Date.now()
+		let attempt = 0
+		while (true) {
+			const remainingMilliseconds = automationSideEffectTimeoutMilliseconds - (Date.now() - startedAt)
+			if (remainingMilliseconds <= 0) { break }
+			const attemptTimeoutMilliseconds = remainingMilliseconds < automationSideEffectReadTimeoutMilliseconds ? remainingMilliseconds : automationSideEffectReadTimeoutMilliseconds
+			try {
+				const value = await withAutomationTimeout<OpenIMConversationItem | null>(getOneConversation(params, operationID + '_' + attempt.toString()), 'conversation/getOneConversation', attemptTimeoutMilliseconds)
+				if (value != null) {
+					const conversation = value as OpenIMConversationItem
+					if (conversation.isPinned == expectedPinned && conversation.ex == expectedEx && conversation.draftText == expectedDraft) {
+						return conversation
+					}
+				}
+			} catch (error) {
+				console.log('conversation mutation readback pending')
+			}
+			attempt = attempt + 1
+			const pollRemainingMilliseconds = automationSideEffectTimeoutMilliseconds - (Date.now() - startedAt)
+			if (pollRemainingMilliseconds <= 0) { break }
+			const pollMilliseconds = pollRemainingMilliseconds < automationSideEffectPollMilliseconds ? pollRemainingMilliseconds : automationSideEffectPollMilliseconds
+			await sleepAutomation(pollMilliseconds)
+		}
+		throw new Error('conversation mutation did not become observable before timeout')
+	}
+
 	async function runAutomationConversationSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await switchAutomationPrimary(config, 'A_conversation')
-		const idParams : OpenIMGetOneConversationParams = { sourceID: config.secondaryUserID, sessionType: OpenIMSessionTypeSingle }
-		await runAutomationStep<string>('conversation', 'getConversationIDBySessionType', getConversationIDBySessionType(idParams, 'uvue_auto_conversation_id'), cacheAutomationConversationID)
-		await runAutomationStep<OpenIMConversationItem | null>('conversation', 'getOneConversation', getOneConversation(idParams, 'uvue_auto_one_conversation'), (value : OpenIMConversationItem | null) => { if (value != null) { cachedConversation = value } })
+		const conversationParams : OpenIMGetOneConversationParams = { sourceID: config.secondaryUserID, sessionType: OpenIMSessionTypeSingle }
+		await runAutomationStep<string>('conversation', 'getConversationIDBySessionType', getConversationIDBySessionType(conversationParams, 'uvue_auto_conversation_id'), cacheAutomationConversationID)
+		const originalConversation = await runAutomationStep<OpenIMConversationItem | null>('conversation', 'getOneConversation', getOneConversation(conversationParams, 'uvue_auto_one_conversation'), (value : OpenIMConversationItem | null) => { if (value != null) { cachedConversation = value } })
+		if (originalConversation == null) { throw new Error('getOneConversation returned null before conversation mutation') }
 		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'getMultipleConversation', getMultipleConversation([automationConversationID], 'uvue_auto_multiple_conversation'), cacheConversationList)
 		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'getConversationListSplit', getConversationListSplit(defaultPageParams(), 'uvue_auto_conversation_page'), cacheConversationList)
 		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'getAllConversationList', getAllConversationList('uvue_auto_all_conversations'), cacheConversationList)
 		await runAutomationStep<OpenIMConversationListResult | null>('conversation', 'searchConversation', searchConversation(config.secondaryUserID, 'uvue_auto_search_conversation'), cacheConversationList)
 		await runAutomationStep<number | null>('conversation', 'getTotalUnreadMsgCount', getTotalUnreadMsgCount('uvue_auto_total_unread'), noCache)
-		const setParams : OpenIMSetConversationParams = { conversationID: automationConversationID, isPinned: false, ex: 'uvue-public-automation' }
-		await runAutomationOptionalStep<string>('conversation', 'setConversation', setConversation(setParams, 'uvue_auto_set_conversation'), noCache, 'conversation sync service returned transient empty response')
+		const originalConversationEx = originalConversation.ex
+		const originalConversationDraft = originalConversation.draftText
+		const setConversationParams : OpenIMSetConversationParams = { conversationID: automationConversationID, isPinned: !originalConversation.isPinned, ex: 'uvue-public-automation-' + new Date().getTime().toString() }
 		const draftParams : OpenIMSetConversationDraftParams = { conversationID: automationConversationID, draftText: 'draft from unixsdk public automation' }
-		await runAutomationStep<string>('conversation', 'setConversationDraft', setConversationDraft(draftParams, 'uvue_auto_set_draft'), noCache)
+		const restoreConversationParams : OpenIMSetConversationParams = { conversationID: automationConversationID, isPinned: originalConversation.isPinned, ex: originalConversationEx }
+		const restoreDraftParams : OpenIMSetConversationDraftParams = { conversationID: automationConversationID, draftText: originalConversationDraft }
+		let conversationMutationStarted = false
+		try {
+			conversationMutationStarted = true
+			await runAutomationStep<string>('conversation', 'setConversation', setConversation(setConversationParams, 'uvue_auto_set_conversation'), noCache)
+			const conversationFieldsReadback = await waitAutomationConversationMutation(conversationParams, setConversationParams.isPinned as boolean, setConversationParams.ex as string, originalConversationDraft, 'uvue_auto_set_conversation_readback')
+			cachedConversation = conversationFieldsReadback
+			recordAutomationEvidenceStep('conversation', 'setConversation', true, 'getOneConversation returned expected ex and isPinned before draft mutation', mutationAutomationEvidence('setConversation', 'conversation-fields-updated', 'read-after-write-observed', false))
+
+			await runAutomationStep<string>('conversation', 'setConversationDraft', setConversationDraft(draftParams, 'uvue_auto_set_draft'), noCache)
+			const conversationDraftReadback = await waitAutomationConversationMutation(conversationParams, setConversationParams.isPinned as boolean, setConversationParams.ex as string, draftParams.draftText, 'uvue_auto_set_draft_readback')
+			cachedConversation = conversationDraftReadback
+			recordAutomationEvidenceStep('conversation', 'setConversationDraft', true, 'getOneConversation returned expected draftText after draft mutation', mutationAutomationEvidence('setConversationDraft', 'conversation-draft-updated', 'read-after-write-observed', false))
+		} finally {
+			if (conversationMutationStarted) {
+				let restoreMatched = false
+				try {
+					await runAutomationStep<string>('conversation', 'setConversationRestore', setConversation(restoreConversationParams, 'uvue_auto_restore_conversation'), noCache)
+					await runAutomationStep<string>('conversation', 'setConversationDraftRestore', setConversationDraft(restoreDraftParams, 'uvue_auto_restore_draft'), noCache)
+					const restoredConversation = await waitAutomationConversationMutation(conversationParams, originalConversation.isPinned, originalConversationEx, originalConversationDraft, 'uvue_auto_restore_conversation_readback')
+					cachedConversation = restoredConversation
+					restoreMatched = restoredConversation.isPinned == originalConversation.isPinned && restoredConversation.ex == originalConversationEx && restoredConversation.draftText == originalConversationDraft
+				} finally {
+					recordAutomationCleanupEvidence('conversation', 'setConversation', 'restore-via-read-before-write', 'conversation-fields-restored', 'original isPinned/ex', restoreMatched ? 'original isPinned/ex' : 'restore not observed', restoreMatched)
+					recordAutomationCleanupEvidence('conversation', 'setConversationDraft', 'restore-via-read-before-write', 'conversation-draft-restored', 'original draftText', restoreMatched ? 'original draftText' : 'restore not observed', restoreMatched)
+				}
+				if (!restoreMatched) { throw new Error('conversation cleanup did not restore the original state') }
+			}
+		}
 		const inputParams : OpenIMInputStateParams = { conversationID: automationConversationID, userID: config.secondaryUserID, focus: true }
 		await runAutomationStep<string>('conversation', 'changeInputStates', changeInputStates(inputParams, 'uvue_auto_change_input'), noCache)
 		const historyParams : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: automationConversationID, startClientMsgID: '', count: 20 }
@@ -2867,7 +2952,7 @@
 		}
 		recordAutomationCallableEventCorrelations('login', ['onConnecting', 'onConnectSuccess', 'onSyncServerStart', 'onSyncServerFinish'])
 		recordAutomationCallableEventCorrelations('sendMessage', ['onSendMessageProgress', 'onRecvNewMessage'])
-		recordAutomationCallableEventCorrelations('sendMessageNotOss', ['onSendMessageProgress', 'onRecvNewMessage'])
+		recordAutomationCallableEventCorrelations('sendMessageNotOss', ['onRecvNewMessage'])
 		recordAutomationCallableEventCorrelations('uploadFile', ['onUploadFileProgress'])
 		recordAutomationCallableEventCorrelations('uploadLogs', ['onUploadLogsProgress'])
 		let trackedIndex = 0
@@ -3013,6 +3098,28 @@
 		return lines
 	}
 
+	function automationSuitePrerequisites(suite : string) : Array<string> {
+		if (suite == 'conversation') {
+			return ['message-send']
+		}
+		if (suite == 'event-delivery') {
+			return ['message-create', 'message-send', 'upload']
+		}
+		return []
+	}
+
+	function buildAutomationExecutedSuites() : Array<string> {
+		if (automationSuiteFilter.length == 0) {
+			return automationSelectableSuiteNames
+		}
+		const suites = automationSuitePrerequisites(automationSuiteFilter)
+		if (automationSuiteFilter == 'message-create' || automationStringArrayContains(suites, 'message-create')) {
+			suites.push('message-create-send')
+		}
+		suites.push(automationSuiteFilter)
+		return suites
+	}
+
 	function buildAutomationSummary() : OpenIMAutomationSummary {
 		let passed = 0
 		let failed = 0
@@ -3029,8 +3136,9 @@
 			caseLines.push('[' + item.status + '] [' + item.group + '] ' + item.name + ' ' + item.message)
 		})
 		const groups = buildAutomationGroups()
-		const coverageMissing = collectAutomationCoverageMissing()
-		const validatedMissing = collectAutomationValidatedMissing()
+		const fullAutomationRun = automationSuiteFilter.length == 0
+		const coverageMissing = fullAutomationRun ? collectAutomationCoverageMissing() : []
+		const validatedMissing = fullAutomationRun ? collectAutomationValidatedMissing() : []
 		const allowedSkipped = collectAutomationSkipKeys(true)
 		const unexpectedSkipped = collectAutomationSkipKeys(false)
 		const validatedAllowedMissing = filterAutomationValidatedMissing(validatedMissing, true)
@@ -3042,9 +3150,12 @@
 			}
 		})
 		const headline = failed == 0 && unexpectedSkipped.length == 0 && coverageMissing.length == 0 && validatedUnexpectedMissing.length == 0 ? 'Automation passed' : 'Automation failed'
-		const coverageText = 'Coverage recorded: ' + automationCoveredAPINames.length.toString() + ' / ' + automationPublicAPINames.length.toString()
+		const coverageTotal = automationPublicAPINames.length
+		const coverageRecorded = automationCoveredAPINames.length
+		const validatedRecorded = automationValidatedAPINames.length
+		const coverageText = 'Coverage recorded: ' + coverageRecorded.toString() + ' / ' + coverageTotal.toString()
 		const coverageMissingText = coverageMissing.length == 0 ? 'Coverage missing: none' : 'Coverage missing: ' + coverageMissing.join(', ')
-		const validatedText = 'Validated: ' + automationValidatedAPINames.length.toString() + ' / ' + automationPublicAPINames.length.toString()
+		const validatedText = 'Validated: ' + validatedRecorded.toString() + ' / ' + coverageTotal.toString()
 		const validatedMissingText = validatedMissing.length == 0 ? 'Validated missing: none' : 'Validated missing: ' + validatedMissing.join(', ')
 		const skipGateText = 'Unexpected skipped: ' + (unexpectedSkipped.length == 0 ? 'none' : unexpectedSkipped.join(', '))
 		const validatedGateText = 'Unexpected validated missing: ' + (validatedUnexpectedMissing.length == 0 ? 'none' : validatedUnexpectedMissing.join(', '))
@@ -3052,15 +3163,17 @@
 		const summary : OpenIMAutomationSummary = {
 			headline: headline,
 			summaryText: summaryText,
+			suiteFilter: automationSuiteFilter,
+			executedSuites: buildAutomationExecutedSuites(),
 			total: automationStepResults.length,
 			passed: passed,
 			failed: failed,
 			skipped: skipped,
-			coverageTotal: automationPublicAPINames.length,
-			coverageRecorded: automationCoveredAPINames.length,
+			coverageTotal: coverageTotal,
+			coverageRecorded: coverageRecorded,
 			coverageMissing: coverageMissing,
-			validatedTotal: automationPublicAPINames.length,
-			validatedRecorded: automationValidatedAPINames.length,
+			validatedTotal: coverageTotal,
+			validatedRecorded: validatedRecorded,
 			validatedMissing: validatedMissing,
 			allowedSkipped: allowedSkipped,
 			unexpectedSkipped: unexpectedSkipped,
@@ -3137,10 +3250,24 @@
 	}
 
 	async function runAutomationGuardedSuites(config : OpenIMAutomationConfig) : Promise<void> {
-		const suites : Array<string> = ['user-status', 'message-create', 'message-send', 'conversation', 'message-storage', 'friend', 'group', 'app', 'upload', 'conversation-mutation', 'event-delivery']
+		if (automationSuiteFilter.length > 0) {
+			if (!automationStringArrayContains(automationSelectableSuiteNames, automationSuiteFilter)) {
+				throw new Error('Unknown automation suite filter: ' + automationSuiteFilter)
+			}
+			recordAutomationStep('setup', 'suiteFilter', true, automationSuiteFilter)
+			const prerequisites = automationSuitePrerequisites(automationSuiteFilter)
+			let index = 0
+			while (index < prerequisites.length) {
+				recordAutomationStep('setup', 'suite prerequisite', true, automationSuiteFilter + ' requires ' + prerequisites[index])
+				await runAutomationGuardedSuite(prerequisites[index], config)
+				index = index + 1
+			}
+			await runAutomationGuardedSuite(automationSuiteFilter, config)
+			return
+		}
 		let index = 0
-		while (index < suites.length) {
-			await runAutomationGuardedSuite(suites[index], config)
+		while (index < automationSelectableSuiteNames.length) {
+			await runAutomationGuardedSuite(automationSelectableSuiteNames[index], config)
 			index = index + 1
 		}
 	}
@@ -3211,6 +3338,7 @@
 
 	async function runAutomationFlow(config : OpenIMAutomationConfig | null) : Promise<void> {
 		try {
+			applyConfiguredAutomationSuiteFilter(config)
 			if (!isAutomationConfigReady(config)) {
 				recordAutomationStep('setup', 'readConfig', false, 'Missing openim-test-config storage/static data. Run scripts/register-openim-test-accounts.mjs first.')
 			} else {
@@ -3241,7 +3369,9 @@
 				runAutomationCleanupBeforeSummary(config).catch((error : any | null) : void => {
 					recordAutomationStep('cleanup', 'cleanup runner', false, stringifyAPIValue(error))
 				}).then((_cleanupValue : void) => {
-					runAutomationCoverageSuite()
+					if (automationSuiteFilter.length == 0) {
+						runAutomationCoverageSuite()
+					}
 					const summary = writeAutomationSummaryFiles(buildAutomationSummary())
 					statusText.value = summary.headline
 					setResult(summary.summaryText)
@@ -3281,6 +3411,10 @@
 	onLoad((options : OnLoadOptions) => {
 		const openimAutomation = options["openimAutomation"] ?? ""
 		const autorun = options["autorun"] ?? ""
+		const suiteFilter = options["suiteFilter"] ?? ""
+		if (suiteFilter.length > 0) {
+			automationQuerySuiteFilter = suiteFilter.trim()
+		}
 		automationAutorunRequested = isAutomationAutorunValue(openimAutomation) || isAutomationAutorunValue(autorun)
 	})
 

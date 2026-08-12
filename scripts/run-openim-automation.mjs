@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync, spawn } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import {
   evidenceFailureMessage,
@@ -16,6 +16,30 @@ const startupTimeoutMs = Number(process.env.OPENIM_TEST_STARTUP_TIMEOUT_MS || 5 
 const hardTimeoutMs = Number(process.env.OPENIM_TEST_PROCESS_TIMEOUT_MS || 30 * 60 * 1000);
 const requestedVapor = process.env.OPENIM_TEST_VAPOR !== 'false' && process.env.OPENIM_TEST_VAPOR !== '0';
 const runStartedAtMs = Date.now();
+const requestedSuiteFilter = String(process.env.OPENIM_AUTOMATION_SUITE || '').trim();
+const automationFixturePath = resolve(projectRoot, '.openim-test-accounts.json');
+let originalAutomationFixture = null;
+
+function stageAutomationSuiteFilter() {
+  if (!existsSync(automationFixturePath)) {
+    if (requestedSuiteFilter.length > 0) {
+      fail('OPENIM_AUTOMATION_SUITE requires a pre-provisioned .openim-test-accounts.json fixture');
+    }
+    return;
+  }
+  originalAutomationFixture = readFileSync(automationFixturePath);
+  const fixture = JSON.parse(originalAutomationFixture.toString('utf8'));
+  fixture.suiteFilter = requestedSuiteFilter;
+  writeFileSync(automationFixturePath, `${JSON.stringify(fixture, null, 2)}\n`, { mode: 0o600 });
+}
+
+function restoreAutomationFixture() {
+  if (originalAutomationFixture == null) {
+    return;
+  }
+  writeFileSync(automationFixturePath, originalAutomationFixture, { mode: 0o600 });
+  originalAutomationFixture = null;
+}
 
 function readArgument(name) {
   const index = process.argv.indexOf(name);
@@ -184,6 +208,8 @@ assertManifestWebSocket();
 assertStaticAutomationIsPassive();
 assertCustomBase(platform);
 terminateProjectJestProcesses('stale preflight process');
+stageAutomationSuiteFilter();
+process.on('exit', restoreAutomationFixture);
 
 const target = platform === 'android' ? 'app-android' : 'app-ios-simulator';
 const deviceID = readArgument('--device-id') || process.env.OPENIM_TEST_DEVICE_ID || '';
@@ -288,7 +314,7 @@ child.on('close', (code, signal) => {
   const passed = /Test Suites:\s+\d+ passed/i.test(outputTail) && /Tests:\s+\d+ passed/i.test(outputTail);
   let evidenceFailure = '';
   try {
-    const fullRun = String(process.env.OPENIM_AUTOMATION_SUITE || '').length === 0;
+    const fullRun = requestedSuiteFilter.length === 0;
     const { evidence, evidencePath } = writeLatestAutomationEvidence({
       projectRoot,
       platform,
@@ -302,7 +328,7 @@ child.on('close', (code, signal) => {
       series,
     });
     console.log(`[openim-runner] automation evidence: ${evidencePath}`);
-    if (!evidence.contractEvidence.passed) {
+    if (fullRun && !evidence.contractEvidence.passed) {
       evidenceFailure = evidenceFailureMessage(evidence);
     }
   } catch (error) {
