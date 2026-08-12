@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "rootEnvironmentVariable": "OPENIM_UNI_TOOLCHAINS_ROOT",
+  "profileEnvironmentVariable": "OPENIM_DCLOUD_OFFLINE_SDK_PROFILE",
+  "profiles": {
+    "5.23.2026080313-alpha": {
+      "hbuilderxVersion": "5.23.2026080313-alpha",
+      "distribution": "alpha",
+      "officialDocumentation": {
+        "android": "https://nativesupport.dcloud.net.cn/AppDocs/download/android.html",
+        "ios": "https://nativesupport.dcloud.net.cn/AppDocs/download/ios.html"
+      },
+      "android": {
+        "publishedDate": "2026-08-04",
+        "archiveFileName": "Android-SDK@5.23.82669_20260804.zip",
+        "archiveRoot": "Android-SDK@5.23.82669_20260804",
+        "sha256": "5dde0fdce0c8d628f5e2df7f734a97b0296fd213ae33532ebadc7af7671403a1"
+      },
+      "ios": {
+        "publishedDate": "2026-08-03",
+        "archiveFileName": "SDK.zip",
+        "archiveRoot": "SDK",
+        "sha256": "03159319399d362def41be64ee3f584aa7021050063fe58c0653a5ff7944234a"
+      }
+    }
+  }
+}

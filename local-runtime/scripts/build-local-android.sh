@@ -6,14 +6,20 @@ source "$(cd "$(dirname "$0")" && pwd)/common.sh"
 readonly NATIVE_ROOT="$PROJECT_ROOT/unpackage/local-runtime/android-host"
 readonly TEMPLATE_ROOT="$LOCAL_RUNTIME_ROOT/native-android-template"
 readonly EXPORT_ROOT="$PROJECT_ROOT/unpackage/resources/app-android"
-readonly LOCAL_APK="$PROJECT_ROOT/unpackage/debug/unix-openim-sdk-local.apk"
+readonly LOCAL_APK="$PROJECT_ROOT/unpackage/debug/${OPENIM_LOCAL_PRODUCT:-unix-openim-sdk}-${OPENIM_LOCAL_SURFACE:-uniappx}-local.apk"
 readonly HBUILDER_CLI="$(resolve_hbuilder_cli)"
 readonly ANDROID_SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
-readonly SDK_ROOT="${OPENIM_DCLOUD_ANDROID_SDK_ROOT:-$HOME/Library/Caches/DCloud/uni-app-x-sdk/5.23/Android-uni-app-x-SDK@14987-5.23}"
-readonly SDK_ZIP="${OPENIM_DCLOUD_ANDROID_SDK_ZIP:-${SDK_ROOT}.zip}"
+if [[ -z "${OPENIM_UNI_TOOLCHAIN_PROFILE:-}" || ! -f "$OPENIM_UNI_TOOLCHAIN_PROFILE" ]]; then
+  echo "OPENIM_UNI_TOOLCHAIN_PROFILE is required" >&2
+  exit 1
+fi
+readonly SDK_ROOT="$(read_json "$OPENIM_UNI_TOOLCHAIN_PROFILE" sdks.uniappx.android.sdkRoot)"
+readonly SDK_ZIP="$(read_json "$OPENIM_UNI_TOOLCHAIN_PROFILE" sdks.uniappx.android.archivePath)"
 
 verify_hbuilder_cli "$HBUILDER_CLI"
-node "$LOCAL_RUNTIME_ROOT/scripts/prepare-local-native-artifacts.mjs" android
+if [[ "$PROJECT_ROOT" == "$RUNNER_PROJECT_ROOT" ]]; then
+  node "$LOCAL_RUNTIME_ROOT/scripts/prepare-local-native-artifacts.mjs" android
+fi
 
 expected_sdk_sha="$(read_json "$HARNESS_LOCK" android.dcloudSDKZipSha256)"
 if [[ ! -d "$SDK_ROOT/SDK/libs" || ! -d "$SDK_ROOT/plugins" || ! -f "$SDK_ZIP" ]]; then
@@ -223,4 +229,14 @@ if ! rg -q 'Lio/dcloud/debug/PullDebugActivity;' "$dex_strings"; then
 fi
 
 shasum -a 256 "$LOCAL_APK"
+if [[ -n "${OPENIM_LOCAL_RUN_ROOT:-}" ]]; then
+  node -e '
+    const fs = require("fs");
+    const crypto = require("crypto");
+    const path = process.argv[1];
+    const output = process.argv[2];
+    const bytes = fs.readFileSync(path);
+    fs.writeFileSync(output, JSON.stringify({ apkPath: path, apkSha256: crypto.createHash("sha256").update(bytes).digest("hex"), apkBytes: String(bytes.length) }, null, 2) + "\n");
+  ' "$LOCAL_APK" "$OPENIM_LOCAL_RUN_ROOT/artifacts.json"
+fi
 echo "Local Android APK ready: $LOCAL_APK"

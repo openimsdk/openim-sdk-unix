@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "public",
+  "displayName": "OpenIM Public SDK",
+  "repositoryRoot": "../..",
+  "uniappxSource": "../..",
+  "plugins": [
+    {
+      "id": "unix-openim-sdk",
+      "source": "../../uni_modules/unix-openim-sdk"
+    }
+  ],
+  "automationAssets": [
+    {
+      "source": "../../pages/index/index.uvue",
+      "destination": "pages/index/index.vue",
+      "surfaces": ["uniapp-vue2", "uniapp-vue3"]
+    },
+    {
+      "source": "../../pages/index/openim-automation-profiles.uts",
+      "destination": "pages/index/openim-automation-profiles.uts"
+    },
+    {
+      "source": "../../pages/index/index.test.js",
+      "destination": "pages/index/index.test.js"
+    },
+    {
+      "source": "../../scripts",
+      "destination": "scripts"
+    },
+    {
+      "source": "../../contracts/base",
+      "destination": "contracts/base"
+    },
+    {
+      "source": "../../tooling/runtime",
+      "destination": "tooling/runtime"
+    },
+    {
+      "source": "../../jest.config.js",
+      "destination": "jest.config.js"
+    },
+    {
+      "source": "../../package.json",
+      "destination": "package.json"
+    }
+  ],
+  "nativeArtifacts": [
+    {
+      "id": "openim-android-aar",
+      "path": "../../uni_modules/unix-openim-sdk/utssdk/app-android/libs/open_im_sdk.aar"
+    },
+    {
+      "id": "openim-ios-xcframework",
+      "path": "../../uni_modules/unix-openim-sdk/utssdk/app-ios/Frameworks/OpenIMCore.xcframework"
+    }
+  ],
+  "applicationIDs": {
+    "uniapp-vue2": "io.openim.local.pub.uniappvue2",
+    "uniapp-vue3": "io.openim.local.pub.uniappvue3",
+    "uniappx": "io.openim.local.pub.uniappx"
+  },
+  "dcloudAppIDs": {
+    "uniapp-vue2": "__UNI__B3F7C44",
+    "uniapp-vue3": "__UNI__B3F7C44",
+    "uniappx": "__UNI__B3F7C44"
+  }
+}

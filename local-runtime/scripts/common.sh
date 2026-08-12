@@ -3,9 +3,10 @@
 set -euo pipefail
 
 readonly LOCAL_RUNTIME_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-readonly PROJECT_ROOT="$(cd "$LOCAL_RUNTIME_ROOT/.." && pwd)"
+readonly RUNNER_PROJECT_ROOT="$(cd "$LOCAL_RUNTIME_ROOT/.." && pwd)"
+readonly PROJECT_ROOT="$(cd "${OPENIM_LOCAL_PROJECT_ROOT:-$RUNNER_PROJECT_ROOT}" && pwd)"
 readonly HARNESS_LOCK="$LOCAL_RUNTIME_ROOT/harness-lock.json"
-readonly TOOLCHAIN_LOCK="$PROJECT_ROOT/toolchain.lock.json"
+readonly TOOLCHAIN_LOCK="$RUNNER_PROJECT_ROOT/toolchain.lock.json"
 
 read_json() {
   node -e '
@@ -112,10 +113,10 @@ android_package_name() {
 }
 
 resolve_android_device() {
-  local adb="$1"
+  local adb_bin="$1"
   local requested="${OPENIM_TEST_DEVICE_ID:-${OPENIM_ANDROID_DEVICE_ID:-}}"
   if [[ -n "$requested" ]]; then
-    if [[ "$("$adb" -s "$requested" get-state 2>/dev/null || true)" != "device" ]]; then
+    if [[ "$("$adb_bin" -s "$requested" get-state 2>/dev/null || true)" != "device" ]]; then
       echo "Android device is not ready: $requested" >&2
       return 1
     fi
@@ -123,7 +124,7 @@ resolve_android_device() {
     return
   fi
   local device
-  device="$("$adb" devices | awk 'NR > 1 && $2 == "device" {print $1; exit}')"
+  device="$("$adb_bin" devices | awk 'NR > 1 && $2 == "device" {print $1; exit}')"
   if [[ -z "$device" ]]; then
     echo "No connected Android device or emulator was found" >&2
     return 1

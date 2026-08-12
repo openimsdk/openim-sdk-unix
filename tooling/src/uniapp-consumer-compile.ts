@@ -43,8 +43,8 @@ export function traditionalUniAppFixtureFiles(vueVersion: VueVersion): Tradition
     }, null, 2)}\n`,
     app: `<script>\nexport default {\n  onLaunch() {}\n}\n</script>\n\n<style>\npage { background: #ffffff; }\n</style>\n`,
     main,
-    page: `<template>\n  <view><text>{{ status }}</text></view>\n</template>\n\n<script>\nimport { runOpenIMCompileProbe } from '@/sdk-probe.uts'\n\nexport default {\n  data() {\n    return { status: 'ready' }\n  },\n  mounted() {\n    runOpenIMCompileProbe().then((value) => {\n      this.status = value\n    })\n  }\n}\n</script>\n`,
-    probe: `import {\n  OpenIMPlatformAndroid,\n  OpenIMPlatformIOS,\n  initSDK,\n  getLoginStatus,\n  createTextMessage,\n  onConnectSuccess,\n  off\n} from '@/uni_modules/unix-openim-sdk'\n\nexport function runOpenIMCompileProbe(): Promise<string> {\n  const subscription = onConnectSuccess(() => {})\n  off(subscription)\n  return getLoginStatus().then((loginStatus) => {\n    return createTextMessage('compile probe').then((message) => {\n      return [\n        OpenIMPlatformAndroid.toString(),\n        OpenIMPlatformIOS.toString(),\n        typeof initSDK,\n        loginStatus.toString(),\n        (message == null).toString()\n      ].join(':')\n    })\n  })\n}\n`,
+    page: `<template>\n  <view><text>{{ status }}</text></view>\n</template>\n\n<script>\nimport { runOpenIMCompileProbe } from '@/sdk-probe.js'\n\nexport default {\n  data() {\n    return { status: 'ready' }\n  },\n  mounted() {\n    runOpenIMCompileProbe().then((value) => {\n      this.status = value\n    })\n  }\n}\n</script>\n`,
+    probe: `import {\n  OpenIMPlatformAndroid,\n  OpenIMPlatformIOS,\n  initSDK,\n  getLoginStatus,\n  createTextMessage,\n  onConnectSuccess,\n  off\n} from '@/uni_modules/unix-openim-sdk'\n\nexport function runOpenIMCompileProbe() {\n  const subscription = onConnectSuccess(() => {})\n  off(subscription)\n  return getLoginStatus().then((loginStatus) => {\n    return createTextMessage('compile probe').then((message) => {\n      return [\n        OpenIMPlatformAndroid.toString(),\n        OpenIMPlatformIOS.toString(),\n        typeof initSDK,\n        loginStatus.toString(),\n        (message == null).toString()\n      ].join(':')\n    })\n  })\n}\n`,
   }
 }
 
@@ -76,7 +76,7 @@ function writeFixture(root: string, vueVersion: VueVersion, pluginRoot: string):
   writeFileSync(join(root, 'pages.json'), fixture.pages)
   writeFileSync(join(root, 'App.vue'), fixture.app)
   writeFileSync(join(root, 'main.js'), fixture.main)
-  writeFileSync(join(root, 'sdk-probe.uts'), fixture.probe)
+  writeFileSync(join(root, 'sdk-probe.js'), fixture.probe)
   writeFileSync(join(root, 'pages/index/index.vue'), fixture.page)
   cpSync(pluginRoot, join(root, 'uni_modules/unix-openim-sdk'), { recursive: true })
 }
@@ -129,7 +129,7 @@ export async function verifyTraditionalUniAppConsumerCompile(root: string, platf
     const fixtureRoot = mkdtempSync(join(tmpdir(), `openim-uniapp-vue${vueVersion}-${platform}-`))
     try {
       writeFixture(fixtureRoot, vueVersion, pluginRoot)
-      const probePath = join(fixtureRoot, 'sdk-probe.uts')
+      const probePath = join(fixtureRoot, 'sdk-probe.js')
       const probeSource = readFileSync(probePath, 'utf8')
       verifyTraditionalUniAppImports(probeSource, interfaceSource)
       await withLocalNativeProfile(

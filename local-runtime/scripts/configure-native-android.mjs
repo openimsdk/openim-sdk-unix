@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const localRuntimeRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const projectRoot = resolve(localRuntimeRoot, '..')
+const projectRoot = resolve(process.env.OPENIM_LOCAL_PROJECT_ROOT || resolve(localRuntimeRoot, '..'))
 const nativeRoot = resolve(process.env.OPENIM_NATIVE_ANDROID_ROOT || `${projectRoot}/unpackage/local-runtime/android-host`)
 const manifestPath = resolve(projectRoot, 'manifest.json')
 
