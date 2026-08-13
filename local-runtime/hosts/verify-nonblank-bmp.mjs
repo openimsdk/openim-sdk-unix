@@ -32,5 +32,5 @@ for (let y = contentStart; y < contentEnd; y += 2) {
   }
 }
 const ratio = nonBlank / sampled
-if (ratio < 0.01) throw new Error(`iOS runtime rendered a blank page (content ratio ${ratio.toFixed(5)})`)
-process.stdout.write(`iOS runtime content ratio ${ratio.toFixed(5)}\n`)
+if (ratio < 0.01) throw new Error(`runtime rendered a blank page (content ratio ${ratio.toFixed(5)})`)
+process.stdout.write(`runtime content ratio ${ratio.toFixed(5)}\n`)

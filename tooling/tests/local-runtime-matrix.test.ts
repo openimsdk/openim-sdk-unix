@@ -215,6 +215,14 @@ test('iOS runtime smoke rejects a launched process that still renders a blank pa
   assert.match(source, /verify-nonblank-bmp\.mjs/)
 })
 
+test('Android runtime smoke waits for rendered product content', () => {
+  const source = readFileSync(new URL('../../local-runtime/hosts/run-android.sh', import.meta.url), 'utf8')
+  assert.match(source, /OPENIM_LOCAL_ANDROID_READY_TIMEOUT_SECONDS:-20/)
+  assert.match(source, /OPENIM_LOCAL_ANDROID_READY_POLL_SECONDS:-2/)
+  assert.match(source, /exec-out screencap -p/)
+  assert.match(source, /verify-nonblank-bmp\.mjs/)
+})
+
 test('iOS runtime screenshot classifier rejects blank content and accepts rendered content', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-bmp-'))
   const makeBMP = (path: string, content: boolean, systemChrome = false): void => {
