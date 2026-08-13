@@ -26,7 +26,6 @@ import {
   OpenIMUpdateFriendBoolean,
   OpenIMGroupNeedVerification,
   OpenIMGroupOption,
-  OpenIMGroupDisplayIsRead,
   OpenIMGroupMemberRoleLevel,
   OpenIMSetConversationParams,
   OpenIMSetSelfInfoParams,
@@ -408,22 +407,32 @@ function readOfflinePushInfo(options : OpenIMSendMessageOptions) : string { retu
 function readIsOnlineOnly(options : OpenIMSendMessageOptions) : boolean { return options.isOnlineOnly != null ? options.isOnlineOnly as boolean : false }
 function readOperationID(options : OpenIMSendMessageOptions) : string { return options.operationID != null ? options.operationID as string : '' }
 function appendPayloadField(payload : string, field : string) : string { return payload.length > 0 ? payload + ',' + field : field }
-function stringifyUpdateFriendsPayload(params : OpenIMUpdateFriendsParams) : string {
+function stringifyUpdateFriendsPayload(params : UTSJSONObject) : string { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT
   let payload = ''
-  payload = appendPayloadField(payload, '"friendUserIDs":' + stringifyJSON(params.friendUserIDs))
-  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
-  if (params.remark != null) { payload = appendPayloadField(payload, '"remark":' + stringifyJSON(params.remark)) }
-  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  const friendUserIDs = params.getArray<string>('friendUserIDs')
+  const isPinned = params.getBoolean('isPinned')
+  const remark = params.getString('remark')
+  const ex = params.getString('ex')
+  payload = appendPayloadField(payload, '"friendUserIDs":' + stringifyJSON(friendUserIDs))
+  if (isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(isPinned)) }
+  if (remark != null) { payload = appendPayloadField(payload, '"remark":' + stringifyJSON(remark)) }
+  if (ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(ex)) }
   return '{' + payload + '}'
 }
-function stringifySetConversationPayload(params : OpenIMSetConversationParams) : string {
+function stringifySetConversationPayload(params : UTSJSONObject) : string { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT
   let payload = ''
-  if (params.recvMsgOpt != null) { payload = appendPayloadField(payload, '"recvMsgOpt":' + stringifyJSON(params.recvMsgOpt)) }
-  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
-  if (params.isPrivateChat != null) { payload = appendPayloadField(payload, '"isPrivateChat":' + stringifyJSON(params.isPrivateChat)) }
-  if (params.burnDuration != null) { payload = appendPayloadField(payload, '"burnDuration":' + stringifyJSON(params.burnDuration)) }
-  if (params.groupAtType != null) { payload = appendPayloadField(payload, '"groupAtType":' + stringifyJSON(params.groupAtType)) }
-  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  const recvMsgOpt = params.getNumber('recvMsgOpt')
+  const isPinned = params.getBoolean('isPinned')
+  const isPrivateChat = params.getBoolean('isPrivateChat')
+  const burnDuration = params.getNumber('burnDuration')
+  const groupAtType = params.getNumber('groupAtType')
+  const ex = params.getString('ex')
+  if (recvMsgOpt != null) { payload = appendPayloadField(payload, '"recvMsgOpt":' + stringifyJSON(recvMsgOpt)) }
+  if (isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(isPinned)) }
+  if (isPrivateChat != null) { payload = appendPayloadField(payload, '"isPrivateChat":' + stringifyJSON(isPrivateChat)) }
+  if (burnDuration != null) { payload = appendPayloadField(payload, '"burnDuration":' + stringifyJSON(burnDuration)) }
+  if (groupAtType != null) { payload = appendPayloadField(payload, '"groupAtType":' + stringifyJSON(groupAtType)) }
+  if (ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(ex)) }
   return '{' + payload + '}'
 }
 function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : string {
@@ -437,7 +446,6 @@ function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : strin
   if (params.needVerification != null) { payload = appendPayloadField(payload, '"needVerification":' + stringifyJSON(params.needVerification)) }
   if (params.lookMemberInfo != null) { payload = appendPayloadField(payload, '"lookMemberInfo":' + stringifyJSON(params.lookMemberInfo)) }
   if (params.applyMemberFriend != null) { payload = appendPayloadField(payload, '"applyMemberFriend":' + stringifyJSON(params.applyMemberFriend)) }
-  if (params.displayIsRead != null) { payload = appendPayloadField(payload, '"displayIsRead":' + stringifyJSON(params.displayIsRead)) }
   return '{' + payload + '}'
 }
 function stringifySetGroupMemberInfoPayload(params : OpenIMSetGroupMemberInfoParams) : string {
@@ -659,7 +667,7 @@ export const markConversationMessageAsRead = function (conversationID : string, 
 export const getGroupMemberList = function (params : OpenIMGetGroupMemberListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative('getGroupMemberList', (resolve, reject) => { const requestJSON = '{"groupID":' + stringifyJSON(params.groupID) + ',"filter":' + stringifyJSON(params.filter) + ',"offset":' + stringifyJSON(params.offset) + ',"count":' + stringifyJSON(params.count) + '}'; driverCallAsync(2065, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setMessageLocalEx = function (params : OpenIMSetMessageLocalExParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"clientMsgID":' + stringifyJSON(params.clientMsgID) + ',"localEx":' + stringifyJSON(params.localEx) + '}'; driverCallAsync(2066, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const revokeMessage = function (params : OpenIMMessageKeyParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"clientMsgID":' + stringifyJSON(params.clientMsgID) + '}'; driverCallAsync(2067, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
-export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"conversationInfo":' + stringifyJSON(stringifySetConversationPayload(params)) + '}'; driverCallAsync(2068, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
+export const setConversation = function (params : UTSJSONObject, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.getString("conversationID")) + ',"conversationInfo":' + stringifyJSON(stringifySetConversationPayload(params)) + '}'; driverCallAsync(2068, normalizeOperationID(operationID), requestJSON, resolve, reject) }) } // UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT
 export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"isBackground":' + stringifyJSON(data) + '}'; driverCallAsync(2069, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"count":' + stringifyJSON(appUnreadCount) + '}'; driverCallAsync(2070, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { driverCallAsync(2071, normalizeOperationID(operationID), '{}', resolve, reject) }) }
@@ -693,7 +701,7 @@ export const getFriendApplicationListAsApplicant = function (params ?: OpenIMApp
 export const getFriendApplicationUnhandledCount = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<number | null> { return resolveNumberNative('getFriendApplicationUnhandledCount', (resolve, reject) => { const requestJSON = '{"page":' + stringifyJSON(stringifyJSON(params)) + '}'; driverCallAsync(2099, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const getFriendList = function (filterBlack ?: boolean | null, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return resolveFriendListNative('getFriendList', (resolve, reject) => { const requestJSON = '{"filterBlack":' + stringifyJSON(optionalBoolean(filterBlack)) + '}'; driverCallAsync(2100, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const getFriendListPage = function (params : OpenIMPageParams, operationID ?: string | null) : Promise<OpenIMFriendListResult | null> { return resolveFriendListNative('getFriendListPage', (resolve, reject) => { const requestJSON = '{"offset":' + stringifyJSON(params.offset) + ',"count":' + stringifyJSON(params.count) + ',"filterBlack":' + stringifyJSON(false) + '}'; driverCallAsync(2101, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
-export const updateFriends = function (params : OpenIMUpdateFriendsParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"friendInfo":' + stringifyJSON(stringifyUpdateFriendsPayload(params)) + '}'; driverCallAsync(2102, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
+export const updateFriends = function (params : UTSJSONObject, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"friendInfo":' + stringifyJSON(stringifyUpdateFriendsPayload(params)) + '}'; driverCallAsync(2102, normalizeOperationID(operationID), requestJSON, resolve, reject) }) } // UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT
 export const checkFriend = function (data : Array<string>, operationID ?: string | null) : Promise<OpenIMCheckFriendResult | null> { return resolveCheckFriendNative('checkFriend', (resolve, reject) => { const requestJSON = '{"userIDList":' + stringifyJSON(stringifyJSON(data)) + '}'; driverCallAsync(2103, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const acceptFriendApplication = function (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"application":' + stringifyJSON(stringifyJSON(params)) + '}'; driverCallAsync(2104, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const refuseFriendApplication = function (params : OpenIMFriendApplicationHandleParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"application":' + stringifyJSON(stringifyJSON(params)) + '}'; driverCallAsync(2105, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }

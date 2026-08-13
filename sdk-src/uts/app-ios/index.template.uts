@@ -25,7 +25,6 @@ import {
   OpenIMUpdateFriendBoolean,
   OpenIMGroupNeedVerification,
   OpenIMGroupOption,
-  OpenIMGroupDisplayIsRead,
   OpenIMGroupMemberRoleLevel,
   OpenIMSetConversationParams,
   OpenIMSetSelfInfoParams,
@@ -299,22 +298,32 @@ function readOfflinePushInfo(options : OpenIMSendMessageOptions) : string { retu
 function readIsOnlineOnly(options : OpenIMSendMessageOptions) : boolean { return options.isOnlineOnly != null ? options.isOnlineOnly as boolean : false }
 function readOperationID(options : OpenIMSendMessageOptions) : string { return options.operationID != null ? options.operationID as string : '' }
 function appendPayloadField(payload : string, field : string) : string { return payload.length > 0 ? payload + ',' + field : field }
-function stringifyUpdateFriendsPayload(params : OpenIMUpdateFriendsParams) : string {
+function stringifyUpdateFriendsPayload(params : UTSJSONObject) : string { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT
   let payload = ''
-  payload = appendPayloadField(payload, '"friendUserIDs":' + stringifyJSON(params.friendUserIDs))
-  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
-  if (params.remark != null) { payload = appendPayloadField(payload, '"remark":' + stringifyJSON(params.remark)) }
-  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  const friendUserIDs = params.getArray<string>('friendUserIDs')
+  const isPinned = params.getBoolean('isPinned')
+  const remark = params.getString('remark')
+  const ex = params.getString('ex')
+  payload = appendPayloadField(payload, '"friendUserIDs":' + stringifyJSON(friendUserIDs))
+  if (isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(isPinned)) }
+  if (remark != null) { payload = appendPayloadField(payload, '"remark":' + stringifyJSON(remark)) }
+  if (ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(ex)) }
   return '{' + payload + '}'
 }
-function stringifySetConversationPayload(params : OpenIMSetConversationParams) : string {
+function stringifySetConversationPayload(params : UTSJSONObject) : string { // UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT
   let payload = ''
-  if (params.recvMsgOpt != null) { payload = appendPayloadField(payload, '"recvMsgOpt":' + stringifyJSON(params.recvMsgOpt)) }
-  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
-  if (params.isPrivateChat != null) { payload = appendPayloadField(payload, '"isPrivateChat":' + stringifyJSON(params.isPrivateChat)) }
-  if (params.burnDuration != null) { payload = appendPayloadField(payload, '"burnDuration":' + stringifyJSON(params.burnDuration)) }
-  if (params.groupAtType != null) { payload = appendPayloadField(payload, '"groupAtType":' + stringifyJSON(params.groupAtType)) }
-  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  const recvMsgOpt = params.getNumber('recvMsgOpt')
+  const isPinned = params.getBoolean('isPinned')
+  const isPrivateChat = params.getBoolean('isPrivateChat')
+  const burnDuration = params.getNumber('burnDuration')
+  const groupAtType = params.getNumber('groupAtType')
+  const ex = params.getString('ex')
+  if (recvMsgOpt != null) { payload = appendPayloadField(payload, '"recvMsgOpt":' + stringifyJSON(recvMsgOpt)) }
+  if (isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(isPinned)) }
+  if (isPrivateChat != null) { payload = appendPayloadField(payload, '"isPrivateChat":' + stringifyJSON(isPrivateChat)) }
+  if (burnDuration != null) { payload = appendPayloadField(payload, '"burnDuration":' + stringifyJSON(burnDuration)) }
+  if (groupAtType != null) { payload = appendPayloadField(payload, '"groupAtType":' + stringifyJSON(groupAtType)) }
+  if (ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(ex)) }
   return '{' + payload + '}'
 }
 function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : string {
@@ -328,7 +337,6 @@ function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : strin
   if (params.needVerification != null) { payload = appendPayloadField(payload, '"needVerification":' + stringifyJSON(params.needVerification)) }
   if (params.lookMemberInfo != null) { payload = appendPayloadField(payload, '"lookMemberInfo":' + stringifyJSON(params.lookMemberInfo)) }
   if (params.applyMemberFriend != null) { payload = appendPayloadField(payload, '"applyMemberFriend":' + stringifyJSON(params.applyMemberFriend)) }
-  if (params.displayIsRead != null) { payload = appendPayloadField(payload, '"displayIsRead":' + stringifyJSON(params.displayIsRead)) }
   return '{' + payload + '}'
 }
 function stringifySetGroupMemberInfoPayload(params : OpenIMSetGroupMemberInfoParams) : string {

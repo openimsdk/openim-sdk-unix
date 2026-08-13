@@ -49,8 +49,8 @@ export type DriverRequestFieldCodec =
   | 'sound-json'
   | 'stored-message-json'
   | 'upload-file-json'
-  | 'update-friend-json'
   | 'update-friends-json'
+  | 'edition-json-writer'
   | 'fetch-surrounding-messages-json'
   | 'modify-message-json'
   | 'video-json'
@@ -66,6 +66,25 @@ export interface DriverRequestField {
   value?: string | number | boolean
   codec: DriverRequestFieldCodec
   wireType: 'string' | 'number' | 'boolean'
+}
+
+export interface ImplementationBoundaryAuthorityEntry {
+  callable: string
+  signature: string
+  platform: Platform
+  parameter: string
+  implementationType: string
+  requestField: string
+  codec: DriverRequestFieldCodec
+  writer: string
+}
+
+export interface ImplementationBoundaryAuthority {
+  entries: ImplementationBoundaryAuthorityEntry[]
+}
+
+export interface HashedImplementationBoundaryAuthority extends ImplementationBoundaryAuthority {
+  sha256: string
 }
 
 export type DriverRequest =
@@ -127,6 +146,7 @@ export type CallableLowering =
     kind: 'platform-driver'
     transport: 'async' | 'sync'
     operationID: 'parameter' | 'send-options' | 'empty'
+    parameterTypes?: Partial<Record<Platform, Record<string, string>>>
     request: DriverRequest
     nativeInvocation?: DriverNativeInvocation
     precondition?: 'logged-in-create'
@@ -263,6 +283,7 @@ export interface EnterpriseDeltaDocument {
       successHook: DriverSuccessHook
     }>
   }
+  rawIOSImplementationBoundaries?: HashedImplementationBoundaryAuthority
   constants: ContractConstant[]
   types: ContractType[]
   typeExtensions: EnterpriseTypeExtension[]

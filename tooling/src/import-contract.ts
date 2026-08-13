@@ -9,6 +9,7 @@ import type {
   ContractEvent,
   ContractType,
   EventDecoder,
+  ImplementationBoundaryAuthority,
   NativeBinding,
   SourceByPlatform,
 } from './model.js'
@@ -33,6 +34,11 @@ import {
 } from './contract-integrity.js'
 import { INDEX_MARKERS, makeIndexTemplate } from './template-authority.js'
 import { inferCallableTestProfile } from './test-profile.js'
+import {
+  implementationParameterTypes,
+  implementationSignature,
+  validateImplementationBoundaryAuthority,
+} from './platform-implementation-types.js'
 
 const EXPECTED_PUBLIC = { constants: 109, types: 160, callables: 161, events: 48 } as const
 
@@ -146,8 +152,12 @@ export function pairValues(android: ExportedValue[], ios: ExportedValue[]): Arra
   return result
 }
 
-export function importPublicContract(root: string): ContractDocument {
+export function importPublicContract(
+  root: string,
+  implementationBoundaries: ImplementationBoundaryAuthority,
+): ContractDocument {
   const existingContract = JSON.parse(readFileSync(join(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
+  validateImplementationBoundaryAuthority(existingContract, implementationBoundaries)
   const plugin = join(root, 'uni_modules/unix-openim-sdk/utssdk')
   const interfacePath = join(plugin, 'interface.uts')
   const androidIndexPath = join(plugin, 'app-android/index.uts')
@@ -203,7 +213,10 @@ export function importPublicContract(root: string): ContractDocument {
   stableIDs = callableIDs.registry
   const existingCallableByName = new Map(existingContract.callables.map((value) => [value.name, value]))
   const callables: ContractCallable[] = callablePairs.map(([android, ios], index) => {
-    if (android.signature !== ios.signature) {
+    const existingCallable = existingCallableByName.get(android.name)
+    const iosParameterTypes = existingCallable == null ? {} : implementationParameterTypes(existingCallable, 'ios', implementationBoundaries)
+    const expectedIOSSignature = implementationSignature(android.signature, iosParameterTypes)
+    if (expectedIOSSignature !== ios.signature) {
       throw new Error(`Callable ${android.name} differs by platform:\n${android.signature}\n${ios.signature}`)
     }
     const isEvent = eventNameSet.has(android.name)
@@ -218,7 +231,10 @@ export function importPublicContract(root: string): ContractDocument {
       errorPolicy: android.returnType.startsWith('Promise<') ? 'frozen-native-rejection' : 'none',
       rawString: android.returnType === 'string' || android.returnType === 'Promise<string>',
       role,
-      testProfile: existingCallableByName.get(android.name)?.testProfile ?? inferCallableTestProfile(identity),
+      testProfile: existingCallable?.testProfile ?? inferCallableTestProfile(identity),
+      ...(Object.keys(iosParameterTypes).length === 0 || existingCallable?.lowering == null
+        ? {}
+        : { lowering: structuredClone(existingCallable.lowering) }),
       declaration: { android: android.declaration, ios: ios.declaration },
       binding: {
         android: bindingFor(android.declaration, eventNameSet, android.name),

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import type { ContractCallable, ContractDocument, EnterpriseDeltaDocument } from '../src/model.js'
-import { preserveEnterpriseCallableAuthority } from '../src/enterprise-contract.js'
+import {
+  preserveEnterpriseCallableAuthority,
+  validateEnterpriseImplementationBoundaryAuthority,
+} from '../src/enterprise-contract.js'
 import {
   callableOverrideHash,
   composeEnterpriseContract,
@@ -240,8 +243,8 @@ test('edition extensions lower local promises, synthetic events, and lifecycle h
 
   const contract = composeEnterpriseContract(base, delta, harmony)
   const template = '// <openim-generated:constants>\n// <openim-generated:event-callables>\n// <openim-generated:operations>\n'
-  const android = generateIndexFromTemplate(template, contract, 'android')
-  const harmonySource = generateIndexFromTemplate(template, contract, 'harmony')
+  const android = generateIndexFromTemplate(template, contract, 'android', { entries: [] })
+  const harmonySource = generateIndexFromTemplate(template, contract, 'harmony', { entries: [] })
   assert.match(android, /return readLocalStateLocal\(\)/)
   assert.match(android, /@UTSJS\.keepAlive[\s\S]*return registerLocalStateChanged\(handler\)/)
   assert.match(android, /recordLocalState\(userID, data\)/)
@@ -385,4 +388,29 @@ test('Enterprise facade import keeps local and synthetic bindings under edition 
     } as ContractCallable
     assert.deepEqual(preserveEnterpriseCallableAuthority(existing, extracted).binding, existing.binding)
   }
+})
+
+test('Enterprise verifier rejects a stale raw iOS implementation boundary hash before generation', () => {
+  const base = baseContract()
+  const entries = [{
+    callable: 'editionOperation',
+    signature: 'editionOperation(params:EditionParams,operationID?:string|null):Promise<string>',
+    platform: 'ios' as const,
+    parameter: 'params',
+    implementationType: 'UTSJSONObject',
+    requestField: 'editionInfo',
+    codec: 'edition-json-writer' as const,
+    writer: 'stringifyEditionOperationPayload',
+  }]
+  const delta = {
+    schemaVersion: 2,
+    edition: 'enterprise-delta',
+    approvedBaseCallableOverrides: [],
+    callables: [],
+    rawIOSImplementationBoundaries: { entries, sha256: '0'.repeat(64) },
+  } as unknown as EnterpriseDeltaDocument
+  assert.throws(
+    () => validateEnterpriseImplementationBoundaryAuthority(base, delta),
+    /Invalid implementation boundary authority hash/,
+  )
 })

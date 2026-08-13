@@ -26,7 +26,6 @@ import {
   OpenIMUpdateFriendBoolean,
   OpenIMGroupNeedVerification,
   OpenIMGroupOption,
-  OpenIMGroupDisplayIsRead,
   OpenIMGroupMemberRoleLevel,
   OpenIMSetConversationParams,
   OpenIMSetSelfInfoParams,
@@ -430,7 +429,6 @@ function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : strin
   if (params.needVerification != null) { payload = appendPayloadField(payload, '"needVerification":' + stringifyJSON(params.needVerification)) }
   if (params.lookMemberInfo != null) { payload = appendPayloadField(payload, '"lookMemberInfo":' + stringifyJSON(params.lookMemberInfo)) }
   if (params.applyMemberFriend != null) { payload = appendPayloadField(payload, '"applyMemberFriend":' + stringifyJSON(params.applyMemberFriend)) }
-  if (params.displayIsRead != null) { payload = appendPayloadField(payload, '"displayIsRead":' + stringifyJSON(params.displayIsRead)) }
   return '{' + payload + '}'
 }
 function stringifySetGroupMemberInfoPayload(params : OpenIMSetGroupMemberInfoParams) : string {

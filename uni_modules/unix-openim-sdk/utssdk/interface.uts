@@ -240,7 +240,6 @@ export type OpenIMSetGroupInfoParams = {
   needVerification ?: OpenIMGroupNeedVerification | null
   lookMemberInfo ?: OpenIMGroupOption | null
   applyMemberFriend ?: OpenIMGroupOption | null
-  displayIsRead ?: OpenIMGroupDisplayIsRead | null
 }
 
 export type OpenIMSetGroupMemberInfoParams = {
