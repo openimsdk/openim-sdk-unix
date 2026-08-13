@@ -269,6 +269,17 @@ test('Public descriptor never aliases the uni-app x page into a traditional Vue 
   assert.deepEqual(invalid, [])
 })
 
+test('product descriptors stage the internal automation environment helper explicitly', () => {
+  const descriptor = JSON.parse(
+    readFileSync(join(import.meta.dirname, '../..', 'local-runtime/products/public.json'), 'utf8'),
+  ) as { automationAssets?: Array<{ source?: string; destination?: string }> }
+  const helpers = (descriptor.automationAssets ?? []).filter((asset) =>
+    asset.destination === 'scripts/configure-automation-env.mjs',
+  )
+  assert.equal(helpers.length, 1, 'public descriptor must stage one automation environment helper')
+  assert.equal(helpers[0]?.source, '../scripts/configure-automation-env.mjs')
+})
+
 test('global lock refuses live ownership and reclaims only a dead PID', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-lock-'))
   const document = { schemaVersion: 1 as const, pid: process.pid, runID: 'first', product: 'public', surface: 'uniappx' as const, platform: 'android' as const, deviceID: null, startedAt: new Date().toISOString() }

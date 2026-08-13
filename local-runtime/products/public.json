@@ -25,6 +25,10 @@
       "destination": "scripts"
     },
     {
+      "source": "../scripts/configure-automation-env.mjs",
+      "destination": "scripts/configure-automation-env.mjs"
+    },
+    {
       "source": "../../contracts/base",
       "destination": "contracts/base"
     },
