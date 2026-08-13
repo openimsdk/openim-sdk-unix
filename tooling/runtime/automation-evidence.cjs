@@ -36,6 +36,16 @@ function callableEvidenceName(item) {
   return typeof item.name === 'string' ? item.name : ''
 }
 
+// The page-side UTS report deliberately calls this field `suite`; legacy
+// host-side fixtures used `group`. Treat them as the same report contract so
+// a selected-suite run is evaluated from the evidence it actually emitted.
+function callableEvidenceSuite(item) {
+  if (typeof item.group === 'string' && item.group.length > 0) {
+    return item.group
+  }
+  return typeof item.suite === 'string' ? item.suite : ''
+}
+
 function eventEvidenceName(item) {
   if (typeof item.eventName === 'string' && item.eventName.length > 0) {
     return item.eventName
@@ -612,7 +622,7 @@ function validateAutomationEvidence(input) {
       continue
     }
     const candidates = reportCases.filter((item) => callableEvidenceName(item) === contractCase.apiName
-      && (filteredSuiteGroups == null || filteredSuiteGroups.has(item.group)))
+      && (filteredSuiteGroups == null || filteredSuiteGroups.has(callableEvidenceSuite(item))))
     if (!fullRun && candidates.length === 0) {
       continue
     }
@@ -740,7 +750,7 @@ function validateAutomationEvidence(input) {
       continue
     }
     const caseCandidates = reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName
-      && (filteredSuiteGroups == null || filteredSuiteGroups.has(item.group)))
+      && (filteredSuiteGroups == null || filteredSuiteGroups.has(callableEvidenceSuite(item))))
     const eventCandidates = reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
     const candidates = requiresNegativeEvidence ? caseCandidates : eventCandidates
     const allCandidates = [...eventCandidates, ...caseCandidates]

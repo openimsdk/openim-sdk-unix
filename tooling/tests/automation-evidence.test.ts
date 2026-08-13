@@ -62,6 +62,40 @@ test('filtered runs ignore incidental infrastructure evidence but still validate
   assert.deepEqual(incomplete.issues.map((item) => item.axis), ['structure'])
 })
 
+test('filtered runs accept the suite field emitted by the uni-app x automation page', () => {
+  const result = validateAutomationEvidence({
+    manifest: manifest(),
+    platform: 'android',
+    fullRun: false,
+    report: {
+      suiteFilter: 'app',
+      executedSuites: ['app'],
+      cases: [{
+        suite: 'app',
+        apiName: 'updateFcmToken',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        structureValidated: true,
+        semanticValidated: true,
+        assertions: [{
+          axis: 'semantic',
+          profile: 'push-token-updated',
+          rule: 'server-acknowledged',
+          expected: 'accepted',
+          actual: 'accepted',
+          ok: true,
+        }],
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, true, JSON.stringify(result.issues))
+  assert.equal(result.checkedCallables, 1)
+})
+
 function manifest() {
   return {
     schemaVersion: 2,
