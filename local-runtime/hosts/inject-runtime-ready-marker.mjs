@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
@@ -20,4 +21,15 @@ const original = readFileSync(path, 'utf8')
 const source = original.replace(blockPattern, '').replace(/\s*$/, '\n')
 const injected = `${source}${begin}\nconsole.log(${JSON.stringify(marker)})\n${end}\n`
 writeFileSync(path, injected)
+
+const pagePath = join(project, 'pages/index', surface === 'uniappx' ? 'index.uvue' : 'index.vue')
+const pageMarkerPattern = /\s*<view\s+class="openim-local-runtime-ready-marker"[^>]*><\/view>\s*/g
+let page = readFileSync(pagePath, 'utf8').replace(pageMarkerPattern, '\n')
+const rootView = /(<template>\s*<view\b[^>]*>)/
+if (!rootView.test(page)) throw new Error('Runtime index page must have a root view')
+const digest = createHash('sha256').update(marker).digest()
+const [red, green, blue] = [digest[0], digest[1], digest[2]].map((value) => 32 + (value % 192))
+const renderedMarker = `<view class="openim-local-runtime-ready-marker" style="position: fixed; right: 1px; bottom: 1px; width: 8px; height: 8px; background-color: rgb(${red}, ${green}, ${blue}); z-index: 2147483647;"></view>`
+page = page.replace(rootView, `$1\n    ${renderedMarker}`)
+writeFileSync(pagePath, page)
 process.stdout.write(`staged runtime marker injected for ${product}/${surface}\n`)

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -55,8 +56,12 @@ test('staging-only marker injector supports classic and uni-app x without touchi
   const uniappx = join(temporary, 'uniappx')
   mkdirSync(classic)
   mkdirSync(uniappx)
+  mkdirSync(join(classic, 'pages/index'), { recursive: true })
+  mkdirSync(join(uniappx, 'pages/index'), { recursive: true })
   writeFileSync(join(classic, 'main.js'), "import App from './App'\nexport default App\n")
   writeFileSync(join(uniappx, 'main.uts'), "import App from './App.uvue'\nexport default App\n")
+  writeFileSync(join(classic, 'pages/index/index.vue'), '<template>\n  <view class="page">content</view>\n</template>\n')
+  writeFileSync(join(uniappx, 'pages/index/index.uvue'), '<template>\n  <view class="page">content</view>\n</template>\n')
 
   execFileSync(process.execPath, [injector, classic, 'private', 'uniapp-vue2'])
   execFileSync(process.execPath, [injector, uniappx, 'im-av', 'uniappx'])
@@ -68,7 +73,35 @@ test('staging-only marker injector supports classic and uni-app x without touchi
   assert.match(classicSource, /OPENIM_LOCAL_RUNTIME_READY:v1:private:uniapp-vue2/)
   assert.equal(uniappxSource.match(/OPENIM_LOCAL_RUNTIME_READY/g)?.length, 1)
   assert.match(uniappxSource, /OPENIM_LOCAL_RUNTIME_READY:v1:im-av:uniappx/)
+  const classicPage = readFileSync(join(classic, 'pages/index/index.vue'), 'utf8')
+  const uniappxPage = readFileSync(join(uniappx, 'pages/index/index.uvue'), 'utf8')
+  assert.match(classicPage, /openim-local-runtime-ready-marker/)
+  assert.match(uniappxPage, /openim-local-runtime-ready-marker/)
+  assert.equal(classicPage.match(/openim-local-runtime-ready-marker/g)?.length, 1)
   assert.equal(readFileSync(join(classic, 'main.js'), 'utf8').includes('token'), false)
+})
+
+test('rendered marker gate accepts only the product and surface encoded color', () => {
+  const checker = resolve(root, 'local-runtime/hosts/verify-runtime-marker-bmp.mjs')
+  const temporary = mkdtempSync(join(tmpdir(), 'openim-runtime-rendered-marker-'))
+  const screenshot = join(temporary, 'marker.bmp')
+  const marker = 'OPENIM_LOCAL_RUNTIME_READY:v1:im-av:uniapp-vue2'
+  const digest = createHash('sha256').update(marker).digest()
+  const [red, green, blue] = [digest[0]!, digest[1]!, digest[2]!].map((value) => 32 + (value % 192)) as [number, number, number]
+  writeBMP(screenshot, (bytes, offset, width, height) => {
+    for (let y = height - 8; y < height; y += 1) {
+      for (let x = width - 8; x < width; x += 1) {
+        const pixel = offset + (y * width + x) * 4
+        bytes[pixel] = blue
+        bytes[pixel + 1] = green
+        bytes[pixel + 2] = red
+      }
+    }
+  })
+  assert.match(execFileSync(process.execPath, [checker, screenshot, 'im-av', 'uniapp-vue2'], { encoding: 'utf8' }), /rendered product marker verified/)
+  const rejected = spawnSync(process.execPath, [checker, screenshot, 'private', 'uniapp-vue2'], { encoding: 'utf8' })
+  assert.notEqual(rejected.status, 0)
+  assert.match(rejected.stderr, /rendered product marker is missing/)
 })
 
 test('two-frame stability gate accepts a settled page and rejects a page transition', () => {
@@ -98,18 +131,17 @@ test('Android and iOS runtime smoke require the exact staged marker and two stab
   const buildIOS = readFileSync(resolve(root, 'local-runtime/hosts/build-ios.sh'), 'utf8')
 
   for (const source of [android, ios]) {
-    assert.match(source, /OPENIM_LOCAL_RUNTIME_READY:v1:/)
-    assert.match(source, /verify-runtime-ready\.mjs/)
     assert.match(source, /verify-stable-bmp\.mjs/)
     assert.match(source, /product-launch\.previous\.bmp/)
     assert.match(source, /product-ready marker was not observed/)
   }
+  assert.match(android, /OPENIM_LOCAL_RUNTIME_READY:v1:/)
+  assert.match(android, /verify-runtime-ready\.mjs/)
   assert.match(android, /logcat -c/)
   assert.match(android, /logcat -d/)
   assert.match(ios, /simctl launch --stdout=/)
   assert.match(ios, /simctl launch --stdout=.*--stderr=/)
-  assert.match(ios, /simctl spawn .* log show/)
-  assert.match(ios, /runtime_unified/)
+  assert.match(ios, /verify-runtime-marker-bmp\.mjs/)
   assert.match(ios, /mktemp -d/)
   assert.match(buildAndroid, /inject-runtime-ready-marker\.mjs/)
   assert.match(buildIOS, /inject-runtime-ready-marker\.mjs/)

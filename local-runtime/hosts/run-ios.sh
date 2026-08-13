@@ -12,7 +12,6 @@ readonly runtime_log_root="$(mktemp -d "${TMPDIR:-/tmp}/openim-local-ios-runtime
 trap 'rm -rf "$runtime_log_root"' EXIT
 readonly runtime_stdout="$runtime_log_root/stdout.log"
 readonly runtime_stderr="$runtime_log_root/stderr.log"
-readonly runtime_unified="$runtime_log_root/unified.log"
 readonly launch_output="$(xcrun simctl launch --stdout="$runtime_stdout" --stderr="$runtime_stderr" "$device" "$OPENIM_LOCAL_APPLICATION_ID")"
 readonly launch_pid="${launch_output##*: }"
 if ! [[ "$launch_pid" =~ ^[0-9]+$ ]]; then
@@ -26,7 +25,6 @@ if ! kill -0 "$launch_pid" 2>/dev/null; then
 fi
 test -d "$(xcrun simctl get_app_container "$device" "$OPENIM_LOCAL_APPLICATION_ID" app)"
 readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
-readonly ready_marker="OPENIM_LOCAL_RUNTIME_READY:v1:${OPENIM_LOCAL_PRODUCT:?}:${OPENIM_LOCAL_SURFACE:?}"
 readonly ready_timeout="${OPENIM_LOCAL_IOS_READY_TIMEOUT_SECONDS:-20}"
 readonly ready_poll="${OPENIM_LOCAL_IOS_READY_POLL_SECONDS:-2}"
 if ! [[ "$ready_timeout" =~ ^[0-9]+$ ]] || (( ready_timeout < 1 )); then
@@ -46,15 +44,12 @@ while true; do
     echo "Launched iOS process exited during runtime smoke verification" >&2
     exit 1
   fi
-  xcrun simctl spawn "$device" log show --style compact --last 2m \
-    --predicate "processIdentifier == $launch_pid AND eventMessage CONTAINS \"$ready_marker\"" \
-    >"$runtime_unified" 2>/dev/null || true
-  if node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" \
-    --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr" "$runtime_unified" >/dev/null 2>&1; then
-    marker_seen=1
-  fi
   xcrun simctl io "$device" screenshot "$screenshots/product-launch.png" >/dev/null
   sips -s format bmp "$screenshots/product-launch.png" --out "$screenshots/product-launch.bmp" >/dev/null
+  if node "$runner_root/local-runtime/hosts/verify-runtime-marker-bmp.mjs" \
+    "$screenshots/product-launch.bmp" "$OPENIM_LOCAL_PRODUCT" "$OPENIM_LOCAL_SURFACE" >/dev/null 2>&1; then
+    marker_seen=1
+  fi
   frame_ready=0
   if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1 && \
     [[ -f "$screenshots/product-launch.previous.bmp" ]] && \
@@ -63,8 +58,8 @@ while true; do
     frame_ready=1
   fi
   if (( marker_seen == 1 && frame_ready == 1 )); then
-    node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" \
-      --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr" "$runtime_unified"
+    node "$runner_root/local-runtime/hosts/verify-runtime-marker-bmp.mjs" \
+      "$screenshots/product-launch.bmp" "$OPENIM_LOCAL_PRODUCT" "$OPENIM_LOCAL_SURFACE"
     node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
     node "$runner_root/local-runtime/hosts/verify-stable-bmp.mjs" \
       "$screenshots/product-launch.previous.bmp" "$screenshots/product-launch.bmp"
