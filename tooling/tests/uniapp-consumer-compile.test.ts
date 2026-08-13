@@ -14,6 +14,8 @@ for (const vueVersion of ['2', '3'] as const) {
     assert.equal(manifest['app-android'].minSdkVersion, 21)
     assert.equal(manifest['app-ios'].deploymentTarget, '14.0')
     assert.match(fixture.page, /runOpenIMCompileProbe/)
+    assert.match(fixture.page, /typeof runOpenIMCompileProbe/)
+    assert.doesNotMatch(fixture.page, /runOpenIMCompileProbe\s*\(\s*\)/)
     assert.match(fixture.probe, /OpenIMPlatformAndroid/)
     assert.match(fixture.probe, /OpenIMPlatformIOS/)
     assert.match(fixture.probe, /initSDK/)
