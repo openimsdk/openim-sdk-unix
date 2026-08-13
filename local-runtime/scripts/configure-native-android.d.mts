@@ -15,6 +15,12 @@ export interface NativeAndroidProductDescriptor {
   }
 }
 
+export function resolveNativeAndroidDescriptorPath(
+  value: string,
+  descriptorPath: string,
+  environment?: Record<string, string | undefined>,
+): string
+
 export function configureNativeAndroid(options: {
   manifest: { appid?: string }
   root: string

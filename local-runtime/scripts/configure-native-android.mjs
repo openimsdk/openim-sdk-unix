@@ -10,6 +10,15 @@ const nativeRoot = resolve(process.env.OPENIM_NATIVE_ANDROID_ROOT || `${projectR
 const manifestPath = resolve(projectRoot, 'manifest.json')
 const descriptorPath = process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR
 
+export function resolveNativeAndroidDescriptorPath(value, descriptor, environment = process.env) {
+  const expanded = value.replace(/\$\{([A-Z0-9_]+)\}/g, (_match, name) => {
+    const replacement = environment[name]
+    if (!replacement) throw new Error(`Missing descriptor environment variable ${name}`)
+    return replacement
+  })
+  return resolve(dirname(resolve(descriptor)), expanded)
+}
+
 function parseManifest(path) {
   return JSON.parse(readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
 }
@@ -86,7 +95,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const descriptor = descriptorPath ? JSON.parse(readFileSync(resolve(descriptorPath), 'utf8')) : null
   if (descriptor != null) {
     for (const plugin of descriptor.plugins ?? []) {
-      if (plugin.androidGradleTemplate != null) plugin.androidGradleTemplate = resolve(dirname(resolve(descriptorPath)), plugin.androidGradleTemplate)
+      if (plugin.androidGradleTemplate != null) {
+        plugin.androidGradleTemplate = resolveNativeAndroidDescriptorPath(
+          plugin.androidGradleTemplate,
+          descriptorPath,
+        )
+      }
     }
   }
   const result = configureNativeAndroid({ manifest: parseManifest(manifestPath), root: nativeRoot, descriptor })

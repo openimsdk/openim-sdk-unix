@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 
 import { archiveRuntimeArtifacts, cleanupLocalRun, dcloudAppKeyEnvironmentName, listLocalRuns, localMatrixCells, LocalRuntimeLock, preflightEvidenceIdentity, prepareHostProject, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
-import { configureNativeAndroid } from '../../local-runtime/scripts/configure-native-android.mjs'
+import { configureNativeAndroid, resolveNativeAndroidDescriptorPath } from '../../local-runtime/scripts/configure-native-android.mjs'
 
 function write(path: string, source: string): void {
   mkdirSync(join(path, '..'), { recursive: true })
@@ -580,4 +580,15 @@ test('uni-app x Android host derives a multi-plugin dependency graph from the pr
   assert.match(app, /\\\\\\"name/)
   assert.match(av, /namespace 'uts\.sdk\.modules\.openimAvRuntime'/)
   assert.match(av, /implementation project\(':unix-openim-sdk'\)/)
+})
+
+test('native Android plugin templates expand descriptor environment paths before staging', () => {
+  assert.equal(
+    resolveNativeAndroidDescriptorPath(
+      '${OPENIM_AV_INTERNAL_SOURCE_ROOT}/native/openim-av-runtime.gradle',
+      '/tmp/private/local-runtime/products/im-av-delivery.json',
+      { OPENIM_AV_INTERNAL_SOURCE_ROOT: '/tmp/av-source' },
+    ),
+    '/tmp/av-source/native/openim-av-runtime.gradle',
+  )
 })
