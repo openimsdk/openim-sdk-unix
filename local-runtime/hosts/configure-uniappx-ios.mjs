@@ -109,7 +109,7 @@ for (const plugin of descriptor.plugins) {
     "  s.vendored_libraries = 'Libs/**/*.a'",
     `  s.frameworks = ${JSON.stringify(['DCloudUTSFoundation', ...frameworks])}`,
     `  s.libraries = ${JSON.stringify(libraries)}`,
-    `  s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '$(inherited) \\\"${ruby(simulatorFoundation)}\\\"' }`,
+    `  s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '$(inherited) \\\"${ruby(simulatorFoundation)}\\\"', 'OTHER_LDFLAGS' => '$(inherited) -ObjC' }`,
     ...dependencyNames.map((dependency) => `  s.dependency '${dependency}'`),
     'end',
     '',

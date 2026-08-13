@@ -239,6 +239,11 @@ test('uni-app x iOS host builds only the simulator architecture exported by HBui
   assert.doesNotMatch(source, /codesign --verify --deep --strict "\$app"[^\n]*\|\| true/)
 })
 
+test('uni-app x iOS plugin wrappers retain Objective-C categories from static frameworks', () => {
+  const source = readFileSync(new URL('../../local-runtime/hosts/configure-uniappx-ios.mjs', import.meta.url), 'utf8')
+  assert.match(source, /pod_target_xcconfig.*OTHER_LDFLAGS.*\$\(inherited\) -ObjC/)
+})
+
 test('iOS runtime smoke rejects a launched process that still renders a blank page', () => {
   const source = readFileSync(new URL('../../local-runtime/hosts/run-ios.sh', import.meta.url), 'utf8')
   assert.match(source, /launch_output=.*simctl launch/)
