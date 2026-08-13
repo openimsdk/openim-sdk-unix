@@ -139,10 +139,9 @@ test('Android and iOS runtime smoke require the exact staged marker and two stab
     assert.match(source, /product-launch\.previous\.bmp/)
     assert.match(source, /product-ready marker was not observed/)
   }
-  assert.match(android, /OPENIM_LOCAL_RUNTIME_READY:v1:/)
-  assert.match(android, /verify-runtime-ready\.mjs/)
+  assert.match(android, /verify-runtime-marker-bmp\.mjs/)
+  assert.doesNotMatch(android, /verify-runtime-ready\.mjs/)
   assert.match(android, /logcat -c/)
-  assert.match(android, /logcat -d/)
   assert.match(ios, /simctl launch --stdout=/)
   assert.match(ios, /simctl launch --stdout=.*--stderr=/)
   assert.match(ios, /verify-runtime-marker-bmp\.mjs/)

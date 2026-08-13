@@ -23,7 +23,6 @@ node "$PROJECT_ROOT/scripts/configure-automation-env.mjs" \
 mkdir -p "$PROJECT_ROOT/unpackage/local-runtime"
 printf '%s\n' "$device" > "$PROJECT_ROOT/unpackage/local-runtime/android-device-id"
 readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
-readonly ready_marker="OPENIM_LOCAL_RUNTIME_READY:v1:${OPENIM_LOCAL_PRODUCT:?}:${OPENIM_LOCAL_SURFACE:?}"
 readonly ready_timeout="${OPENIM_LOCAL_ANDROID_READY_TIMEOUT_SECONDS:-20}"
 readonly ready_poll="${OPENIM_LOCAL_ANDROID_READY_POLL_SECONDS:-2}"
 if ! [[ "$ready_timeout" =~ ^[0-9]+$ ]] || (( ready_timeout < 1 )); then
@@ -40,12 +39,12 @@ readonly ready_deadline=$((SECONDS + ready_timeout))
 marker_seen=0
 while true; do
   test -n "$("$adb" -s "$device" shell pidof "$package" | tr -d '\r')"
-  if "$adb" -s "$device" logcat -d -v brief 2>/dev/null | \
-    node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" --marker "$ready_marker" >/dev/null 2>&1; then
-    marker_seen=1
-  fi
   "$adb" -s "$device" exec-out screencap -p >"$screenshots/product-launch.png"
   sips -s format bmp "$screenshots/product-launch.png" --out "$screenshots/product-launch.bmp" >/dev/null
+  if node "$runner_root/local-runtime/hosts/verify-runtime-marker-bmp.mjs" \
+    "$screenshots/product-launch.bmp" "$OPENIM_LOCAL_PRODUCT" "$OPENIM_LOCAL_SURFACE" >/dev/null 2>&1; then
+    marker_seen=1
+  fi
   frame_ready=0
   if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1 && \
     [[ -f "$screenshots/product-launch.previous.bmp" ]] && \
@@ -54,8 +53,8 @@ while true; do
     frame_ready=1
   fi
   if (( marker_seen == 1 && frame_ready == 1 )); then
-    "$adb" -s "$device" logcat -d -v brief 2>/dev/null | \
-      node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" --marker "$ready_marker"
+    node "$runner_root/local-runtime/hosts/verify-runtime-marker-bmp.mjs" \
+      "$screenshots/product-launch.bmp" "$OPENIM_LOCAL_PRODUCT" "$OPENIM_LOCAL_SURFACE"
     node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
     node "$runner_root/local-runtime/hosts/verify-stable-bmp.mjs" \
       "$screenshots/product-launch.previous.bmp" "$screenshots/product-launch.bmp"
