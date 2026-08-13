@@ -36,6 +36,11 @@ readonly DEVICE_ID="$(cat "$PROJECT_ROOT/unpackage/local-runtime/android-device-
 readonly PACKAGE_NAME="$(android_package_name)"
 readonly OS_VERSION="$("$ADB" -s "$DEVICE_ID" shell getprop ro.build.version.release | tr -d '\r')"
 readonly ARCHITECTURE="$("$ADB" -s "$DEVICE_ID" shell getprop ro.product.cpu.abi | tr -d '\r')"
+if [[ "${OPENIM_LOCAL_SURFACE:-uniappx}" == "uniappx" ]]; then
+  readonly AUTOMATION_REBUILD=1
+else
+  readonly AUTOMATION_REBUILD=0
+fi
 
 OPENIM_TEST_CUSTOM_BASE="$APK" \
 OPENIM_TEST_BASE_PACKAGE="$PACKAGE_NAME" \
@@ -47,5 +52,5 @@ OPENIM_TEST_BUILD_CONFIGURATION=Debug \
 OPENIM_TEST_VAPOR=false \
 OPENIM_AUTOMATION_PREPROVISION=1 \
 OPENIM_AUTOMATION_RUNTIME_ROOT="$LOCAL_RUNTIME_ROOT" \
-OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD=1 \
+OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD="$AUTOMATION_REBUILD" \
   node "$PROJECT_ROOT/scripts/run-openim-automation.mjs" android --device-id "$DEVICE_ID"

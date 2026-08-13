@@ -344,6 +344,38 @@ test('Android runtime smoke waits for rendered product content', () => {
   assert.match(source, /verify-nonblank-bmp\.mjs/)
 })
 
+test('Android full automation preserves the selected surface host and resource layout', () => {
+  const compatibilityRun = readFileSync(
+    new URL('../../local-runtime/scripts/run-local-android.sh', import.meta.url),
+    'utf8',
+  )
+  const testHost = readFileSync(
+    new URL('../../local-runtime/hosts/test-android.sh', import.meta.url),
+    'utf8',
+  )
+  const automation = readFileSync(
+    new URL('../../local-runtime/scripts/test-local-android.sh', import.meta.url),
+    'utf8',
+  )
+  const classicBuild = readFileSync(
+    new URL('../../local-runtime/hosts/build-classic-android.sh', import.meta.url),
+    'utf8',
+  )
+  const uniAppXBuild = readFileSync(
+    new URL('../../local-runtime/scripts/build-local-android.sh', import.meta.url),
+    'utf8',
+  )
+
+  assert.match(compatibilityRun, /hosts\/run-android\.sh/)
+  assert.doesNotMatch(compatibilityRun, /scripts\/build-local-android\.sh/)
+  assert.match(testHost, /OPENIM_LOCAL_SUITE:-smoke[\s\S]*run-android\.sh[\s\S]*exit 0/)
+  assert.match(automation, /OPENIM_LOCAL_SURFACE[\s\S]*OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD/)
+  assert.match(classicBuild, /unpackage\/resources["']?\s*$/m)
+  assert.match(classicBuild, /\$export_root\/\$app_id\/www/)
+  assert.match(uniAppXBuild, /unpackage\/resources\/app-android/)
+  assert.match(uniAppXBuild, /\$EXPORT_ROOT\/\$app_id\/www/)
+})
+
 test('iOS runtime screenshot classifier rejects blank content and accepts rendered content', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-bmp-'))
   const makeBMP = (path: string, content: boolean, systemChrome = false): void => {

@@ -18,6 +18,10 @@ fi
 "$adb" -s "$device" logcat -c </dev/null
 "$adb" -s "$device" shell am start -W -n "$package/$activity" </dev/null
 test -n "$("$adb" -s "$device" shell pidof "$package" | tr -d '\r')"
+node "$PROJECT_ROOT/scripts/configure-automation-env.mjs" \
+  android "$apk" "$device" "$package" >/dev/null
+mkdir -p "$PROJECT_ROOT/unpackage/local-runtime"
+printf '%s\n' "$device" > "$PROJECT_ROOT/unpackage/local-runtime/android-device-id"
 readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
 readonly ready_marker="OPENIM_LOCAL_RUNTIME_READY:v1:${OPENIM_LOCAL_PRODUCT:?}:${OPENIM_LOCAL_SURFACE:?}"
 readonly ready_timeout="${OPENIM_LOCAL_ANDROID_READY_TIMEOUT_SECONDS:-20}"

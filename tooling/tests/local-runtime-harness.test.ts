@@ -345,7 +345,9 @@ test('Android automation runner rebuilds the static VDOM host for the allocated 
     'utf8',
   )
 
-  assert.match(androidTest, /OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD=1/)
+  assert.match(androidTest, /OPENIM_LOCAL_SURFACE:-uniappx[\s\S]*AUTOMATION_REBUILD=1/)
+  assert.match(androidTest, /else[\s\S]*AUTOMATION_REBUILD=0/)
+  assert.match(androidTest, /OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD="\$AUTOMATION_REBUILD"/)
   assert.match(runner, /OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD/)
   assert.match(runner, /rebuild-local-android-automation\.sh/)
   assert.match(runner, /allocatedRuntimePort/)
@@ -363,7 +365,6 @@ test('Android automation runner rebuilds the static VDOM host for the allocated 
 
 test('descriptor-driven Android runtime never falls back to the Public legacy APK name', () => {
   for (const relativePath of [
-    'local-runtime/scripts/run-local-android.sh',
     'local-runtime/scripts/test-local-android.sh',
     'local-runtime/scripts/rebuild-local-android-automation.sh',
   ]) {
@@ -372,6 +373,15 @@ test('descriptor-driven Android runtime never falls back to the Public legacy AP
     assert.match(source, /OPENIM_LOCAL_SURFACE/)
     assert.doesNotMatch(source, /unpackage\/debug\/unix-openim-sdk-local\.apk/)
   }
+  const compatibilityRun = readFileSync(
+    resolve(root, 'local-runtime/scripts/run-local-android.sh'),
+    'utf8',
+  )
+  const hostRun = readFileSync(resolve(root, 'local-runtime/hosts/run-android.sh'), 'utf8')
+  assert.match(compatibilityRun, /hosts\/run-android\.sh/)
+  assert.match(hostRun, /OPENIM_LOCAL_APPLICATION_ID/)
+  assert.match(hostRun, /artifacts\.json/)
+  assert.doesNotMatch(compatibilityRun, /unpackage\/debug\/unix-openim-sdk-local\.apk/)
 })
 
 test('Android automation passes the descriptor package explicitly across HBuilder project import', () => {

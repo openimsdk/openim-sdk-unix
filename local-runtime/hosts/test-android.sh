@@ -2,8 +2,8 @@
 
 set -euo pipefail
 readonly runner_root="$(cd "$(dirname "$0")/../.." && pwd)"
-bash "$runner_root/local-runtime/hosts/run-android.sh"
 if [[ "${OPENIM_LOCAL_SUITE:-smoke}" == "smoke" ]]; then
+  bash "$runner_root/local-runtime/hosts/run-android.sh"
   exit 0
 fi
 if [[ -z "${OPENIM_API_BASE:-}" || -z "${OPENIM_WS_BASE:-}" || -z "${IM_SECRET:-}" ]]; then
