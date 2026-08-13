@@ -239,6 +239,19 @@ test('local runtime sources contain no tracked binaries, credentials, fixed serv
   }
 })
 
+test('local runtime is documented as internal infrastructure and never as a customer deliverable', () => {
+  const boundary = 'INTERNAL DEVELOPMENT INFRASTRUCTURE — NOT A CUSTOMER DELIVERABLE'
+  const repositoryReadme = readFileSync(resolve(root, 'README.md'), 'utf8')
+  const harnessReadme = readFileSync(resolve(root, 'local-runtime/README.md'), 'utf8')
+  const matrixReadme = readFileSync(resolve(root, 'local-runtime/README-MATRIX-V2.md'), 'utf8')
+  const marketplaceReadme = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/readme.md'), 'utf8')
+
+  assert.match(repositoryReadme, /团队内部开发与验证基础设施，不属于客户交付物/)
+  assert.match(harnessReadme, new RegExp(boundary))
+  assert.match(matrixReadme, new RegExp(boundary))
+  assert.doesNotMatch(marketplaceReadme, /npm run local|local-runtime\//)
+})
+
 test('isolated Public server harness cannot stop or reuse the commercial deployment', () => {
   const provision = readFileSync(resolve(root, 'local-runtime/scripts/provision-isolated-openim-server.sh'), 'utf8')
   const configure = readFileSync(resolve(root, 'local-runtime/server/configure-isolated-openim-server.rb'), 'utf8')

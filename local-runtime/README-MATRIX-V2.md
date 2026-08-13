@@ -1,5 +1,12 @@
 # Local native runtime matrix v2
 
+> **INTERNAL DEVELOPMENT INFRASTRUCTURE — NOT A CUSTOMER DELIVERABLE**
+>
+> The matrix runner is the shared team/CI verification engine for Public,
+> Private, and IM+AV source trees. It is never assembled into a customer
+> delivery bundle. Product delivery contains plugins, licensed native
+> artifacts, examples, and integration documentation only.
+
 This runner builds local native hosts from verified DCloud offline SDKs. It does
 not call DCloud cloud packaging. Maven, Gradle, CocoaPods, and the configured IM
 server may still use the network.

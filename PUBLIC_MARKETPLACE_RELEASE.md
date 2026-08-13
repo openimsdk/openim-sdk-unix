@@ -27,6 +27,7 @@
 - AAR、HAR、JAR、XCFramework、Framework、SO 和本地 `libs`/`Frameworks`
 - Enterprise 合同、商业信令、Session Snapshot、AV Runtime
 - 测试账号、Token、服务器地址、日志、截图和自动化证据
+- 顶层 `local-runtime`、`tooling`、宿主模板、测试 fixture 和离线 SDK profile；这些仅用于团队内部开发、CI 与发布验证
 - `node_modules`、`unpackage`、`.hbuilderx`、本机绝对路径
 
 Android 和 iOS 原生 SDK 由市场插件配置引用远端制品，不随源码包内嵌：

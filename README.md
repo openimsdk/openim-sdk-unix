@@ -181,9 +181,11 @@ pages/index/index.uvue
 
 使用精确锁定的 `HBuilderX 5.23.2026080313-alpha` 打开项目，替换 demo 中的 OpenIM 服务地址和账号占位值，然后使用自定义基座或正式包验证原生 SDK 行为。其他 HBuilderX 构建只能用于诊断，不能作为本仓库的发布认证结果。
 
-### 自动化 smoke 测试
+### 团队内部自动化验证（非客户交付）
 
-Android 和 iOS 已提供不依赖云打包的本地编译、安装和自动化测试闭环：
+`local-runtime` 是团队内部开发与验证基础设施，不属于客户交付物，也不会进入 DCloud 插件市场包。客户集成只需要 `unix-openim-sdk` 插件及其插件文档；以下命令仅供本仓库维护者和 CI 使用。
+
+Android 和 iOS 已提供不依赖云打包的内部本地编译、安装和自动化测试闭环：
 
 ```bash
 npm run local:test:android

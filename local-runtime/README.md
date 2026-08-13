@@ -1,5 +1,13 @@
 # Public unix-openim-sdk local runtime harness
 
+> **INTERNAL DEVELOPMENT INFRASTRUCTURE — NOT A CUSTOMER DELIVERABLE**
+>
+> This directory is maintained for OpenIM team development, CI, and release
+> verification. It is excluded from Public marketplace artifacts and from
+> Private or IM+AV customer delivery bundles. Customers should follow the
+> integration documentation shipped with the plugin instead of copying or
+> depending on this runner.
+
 This source-only harness builds, installs, launches, and tests the Public
 `unix-openim-sdk` uni-app x project without invoking DCloud cloud packaging.
 

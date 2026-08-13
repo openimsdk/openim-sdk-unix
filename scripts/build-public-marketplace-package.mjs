@@ -160,6 +160,8 @@ export function buildMarketplacePackage(options = {}) {
 
     const manifest = {
       schemaVersion: 1,
+      artifactKind: 'dcloud-plugin',
+      developmentInfrastructureIncluded: false,
       pluginID: pluginPackage.id,
       version: pluginPackage.version,
       repository: pluginPackage.repository,
