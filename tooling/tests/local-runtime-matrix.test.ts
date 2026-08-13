@@ -217,7 +217,7 @@ test('iOS runtime smoke rejects a launched process that still renders a blank pa
 
 test('iOS runtime screenshot classifier rejects blank content and accepts rendered content', () => {
   const root = mkdtempSync(join(tmpdir(), 'openim-local-bmp-'))
-  const makeBMP = (path: string, content: boolean): void => {
+  const makeBMP = (path: string, content: boolean, systemChrome = false): void => {
     const width = 32
     const height = 32
     const offset = 54
@@ -231,16 +231,28 @@ test('iOS runtime screenshot classifier rejects blank content and accepts render
     bytes.writeUInt16LE(1, 26)
     bytes.writeUInt16LE(32, 28)
     if (content) bytes.fill(20, offset + width * 8 * 4, offset + width * 24 * 4)
+    if (systemChrome) {
+      for (let y = 0; y < height; y += 1) {
+        bytes.fill(20, offset + (y * width) * 4, offset + (y * width + 2) * 4)
+        bytes.fill(20, offset + (y * width + width - 2) * 4, offset + (y * width + width) * 4)
+      }
+      bytes.fill(20, offset + width * (height - 2) * 4)
+    }
     writeFileSync(path, bytes)
   }
   const blank = join(root, 'blank.bmp')
+  const chromeOnly = join(root, 'chrome-only.bmp')
   const content = join(root, 'content.bmp')
   makeBMP(blank, false)
+  makeBMP(chromeOnly, false, true)
   makeBMP(content, true)
   const checker = new URL('../../local-runtime/hosts/verify-nonblank-bmp.mjs', import.meta.url)
   const rejected = spawnSync(process.execPath, [checker.pathname, blank], { encoding: 'utf8' })
   assert.notEqual(rejected.status, 0)
   assert.match(rejected.stderr, /blank page/)
+  const chromeRejected = spawnSync(process.execPath, [checker.pathname, chromeOnly], { encoding: 'utf8' })
+  assert.notEqual(chromeRejected.status, 0)
+  assert.match(chromeRejected.stderr, /blank page/)
   assert.match(execFileSync(process.execPath, [checker.pathname, content], { encoding: 'utf8' }), /content ratio/)
 })
 

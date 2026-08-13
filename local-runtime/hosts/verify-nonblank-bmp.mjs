@@ -14,11 +14,14 @@ if (width <= 0 || signedHeight === 0 || bitsPerPixel !== 32) throw new Error('Ex
 const height = Math.abs(signedHeight)
 const topDown = signedHeight < 0
 const contentStart = Math.floor(height * 0.15)
+const contentEnd = Math.ceil(height * 0.90)
+const contentLeft = Math.floor(width * 0.10)
+const contentRight = Math.ceil(width * 0.90)
 let nonBlank = 0
 let sampled = 0
-for (let y = contentStart; y < height; y += 2) {
+for (let y = contentStart; y < contentEnd; y += 2) {
   const storedY = topDown ? y : height - 1 - y
-  for (let x = 0; x < width; x += 2) {
+  for (let x = contentLeft; x < contentRight; x += 2) {
     const pixel = offset + (storedY * width + x) * 4
     const blue = bytes[pixel]
     const green = bytes[pixel + 1]
