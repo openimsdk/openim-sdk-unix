@@ -112,3 +112,32 @@ test('Android and iOS runtime smoke require the exact staged marker and two stab
   assert.match(buildAndroid, /inject-runtime-ready-marker\.mjs/)
   assert.match(buildIOS, /inject-runtime-ready-marker\.mjs/)
 })
+
+test('classic iOS host emits readiness only after the expected PDR app loads', () => {
+  const injector = resolve(root, 'local-runtime/hosts/inject-classic-ios-ready-marker.mjs')
+  const temporary = mkdtempSync(join(tmpdir(), 'openim-classic-ios-ready-'))
+  const appDelegate = join(temporary, 'AppDelegate.m')
+  writeFileSync(appDelegate, `#import "PDRCore.h"
+#import "PDRCoreAppManager.h"
+
+@implementation AppDelegate
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    BOOL ret = [PDRCore initEngineWihtOptions:launchOptions
+                                  withRunMode:PDRCoreRunModeNormal withDelegate:self];
+    return ret;
+}
+@end
+`)
+
+  const argumentsList = [appDelegate, 'private', 'uniapp-vue2', '__UNI__B3F7C44']
+  execFileSync(process.execPath, [injector, ...argumentsList])
+  execFileSync(process.execPath, [injector, ...argumentsList])
+  const source = readFileSync(appDelegate, 'utf8')
+  assert.match(source, /PDRCoreAppDidLoadNotificationKey/)
+  assert.match(source, /getAppid/)
+  assert.match(source, /__UNI__B3F7C44/)
+  assert.match(source, /fprintf\(stderr/)
+  assert.match(source, /OPENIM_LOCAL_RUNTIME_READY:v1:private:uniapp-vue2/)
+  assert.equal(source.match(/OPENIM_LOCAL_RUNTIME_READY:v1:/g)?.length, 1)
+})

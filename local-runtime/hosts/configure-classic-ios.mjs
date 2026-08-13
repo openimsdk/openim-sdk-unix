@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+import { execFileSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 function required(name) {
   const value = process.env[name]
@@ -16,6 +18,8 @@ const descriptor = JSON.parse(readFileSync(required('OPENIM_LOCAL_PRODUCT_DESCRI
 const deploymentTarget = String(descriptor.iosHost?.deploymentTarget ?? '14.0')
 if (!/^\d+\.\d+$/.test(deploymentTarget)) throw new Error(`Invalid classic iOS deployment target: ${deploymentTarget}`)
 const appID = required('OPENIM_LOCAL_DCLOUD_APP_ID')
+const product = required('OPENIM_LOCAL_PRODUCT')
+const surface = required('OPENIM_LOCAL_SURFACE')
 const appKey = process.env.OPENIM_DCLOUD_APP_KEY_IOS || 'LOCAL_BUILD_REQUIRES_RUNTIME_APP_KEY'
 const exported = join(project, 'unpackage/resources')
 const pluginRoot = join(host, 'UTSPlugins')
@@ -44,6 +48,16 @@ rmSync(apps, { recursive: true, force: true })
 mkdirSync(apps, { recursive: true })
 cpSync(join(exported, appID), join(apps, appID), { recursive: true })
 writeFileSync(join(host, 'HBuilder-Hello/control.xml'), `<HBuilder debug="true" version="1.9.9.81702"><apps><app appid="${appID}" appver="1.0.0"/></apps></HBuilder>\n`)
+
+const runnerRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+const readinessInjector = join(runnerRoot, 'local-runtime/hosts/inject-classic-ios-ready-marker.mjs')
+execFileSync(process.execPath, [
+  readinessInjector,
+  join(host, 'HBuilder-Hello/AppDelegate.m'),
+  product,
+  surface,
+  appID,
+], { stdio: 'inherit' })
 
 const infoPlistPath = join(host, 'HBuilder-Hello/HBuilder-Hello-Info.plist')
 let infoPlist = readFileSync(infoPlistPath, 'utf8')
