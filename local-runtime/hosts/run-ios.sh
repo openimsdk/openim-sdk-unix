@@ -10,9 +10,28 @@ xcrun simctl install "$device" "$app"
 xcrun simctl terminate "$device" "${OPENIM_LOCAL_APPLICATION_ID:?}" 2>/dev/null || true
 xcrun simctl launch "$device" "$OPENIM_LOCAL_APPLICATION_ID" >/dev/null
 test -d "$(xcrun simctl get_app_container "$device" "$OPENIM_LOCAL_APPLICATION_ID" app)"
-sleep "${OPENIM_LOCAL_IOS_SETTLE_SECONDS:-5}"
 readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
+readonly ready_timeout="${OPENIM_LOCAL_IOS_READY_TIMEOUT_SECONDS:-20}"
+readonly ready_poll="${OPENIM_LOCAL_IOS_READY_POLL_SECONDS:-2}"
+if ! [[ "$ready_timeout" =~ ^[0-9]+$ ]] || (( ready_timeout < 1 )); then
+  echo "OPENIM_LOCAL_IOS_READY_TIMEOUT_SECONDS must be a positive integer" >&2
+  exit 64
+fi
+if ! [[ "$ready_poll" =~ ^[0-9]+$ ]] || (( ready_poll < 1 )); then
+  echo "OPENIM_LOCAL_IOS_READY_POLL_SECONDS must be a positive integer" >&2
+  exit 64
+fi
 mkdir -p "$screenshots"
-xcrun simctl io "$device" screenshot "$screenshots/product-launch.png" >/dev/null
-sips -s format bmp "$screenshots/product-launch.png" --out "$screenshots/product-launch.bmp" >/dev/null
-node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
+readonly ready_deadline=$((SECONDS + ready_timeout))
+while true; do
+  xcrun simctl io "$device" screenshot "$screenshots/product-launch.png" >/dev/null
+  sips -s format bmp "$screenshots/product-launch.png" --out "$screenshots/product-launch.bmp" >/dev/null
+  if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1; then
+    node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
+    break
+  fi
+  if (( SECONDS >= ready_deadline )); then
+    node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
+  fi
+  sleep "$ready_poll"
+done

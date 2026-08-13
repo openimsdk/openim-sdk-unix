@@ -207,7 +207,10 @@ test('uni-app x iOS host builds only the simulator architecture exported by HBui
 
 test('iOS runtime smoke rejects a launched process that still renders a blank page', () => {
   const source = readFileSync(new URL('../../local-runtime/hosts/run-ios.sh', import.meta.url), 'utf8')
-  assert.match(source, /OPENIM_LOCAL_IOS_SETTLE_SECONDS:-5/)
+  assert.match(source, /OPENIM_LOCAL_IOS_READY_TIMEOUT_SECONDS:-20/)
+  assert.match(source, /OPENIM_LOCAL_IOS_READY_POLL_SECONDS:-2/)
+  assert.match(source, /while true/)
+  assert.match(source, /SECONDS >= ready_deadline/)
   assert.match(source, /simctl io.*screenshot/)
   assert.match(source, /verify-nonblank-bmp\.mjs/)
 })
