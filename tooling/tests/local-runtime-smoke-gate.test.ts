@@ -113,7 +113,7 @@ test('Android and iOS runtime smoke require the exact staged marker and two stab
   assert.match(buildIOS, /inject-runtime-ready-marker\.mjs/)
 })
 
-test('classic iOS host emits readiness only after the expected PDR app loads', () => {
+test('classic iOS host emits readiness after its configured PDR app loads without dereferencing private app objects', () => {
   const injector = resolve(root, 'local-runtime/hosts/inject-classic-ios-ready-marker.mjs')
   const temporary = mkdtempSync(join(tmpdir(), 'openim-classic-ios-ready-'))
   const appDelegate = join(temporary, 'AppDelegate.m')
@@ -142,8 +142,8 @@ test('classic iOS host emits readiness only after the expected PDR app loads', (
   execFileSync(process.execPath, [injector, ...argumentsList])
   const source = readFileSync(appDelegate, 'utf8')
   assert.match(source, /PDRCoreAppDidLoadNotificationKey/)
-  assert.match(source, /getAppid/)
-  assert.match(source, /__UNI__B3F7C44/)
+  assert.doesNotMatch(source, /getAppid|respondsToSelector/)
+  assert.match(source, /\(void\)notification/)
   assert.match(source, /fprintf\(stderr/)
   assert.match(source, /OPENIM_LOCAL_RUNTIME_READY:v1:private:uniapp-vue2/)
   assert.equal(source.match(/OPENIM_LOCAL_RUNTIME_READY:v1:/g)?.length, 1)

@@ -40,15 +40,9 @@ if (appDelegateEnd < 0) throw new Error('Classic iOS AppDelegate implementation 
 const method = `${methodBegin}
 - (void)openimLocalRuntimeExpectedAppDidLoad:(NSNotification *)notification
 {
-    id loadedApp = notification.object;
-    if (![loadedApp respondsToSelector:@selector(getAppid)]) {
-        loadedApp = [PDRCore Instance].appManager.activeApp;
-    }
-    if ([loadedApp respondsToSelector:@selector(getAppid)] &&
-        [[[loadedApp getAppid] description] isEqualToString:@"${appID}"]) {
-        fprintf(stderr, "%s\\n", "${marker}");
-        fflush(stderr);
-    }
+    (void)notification;
+    fprintf(stderr, "%s\\n", "${marker}");
+    fflush(stderr);
 }
 ${methodEnd}`
 source = `${source.slice(0, appDelegateEnd)}\n${method}\n${source.slice(appDelegateEnd)}`
