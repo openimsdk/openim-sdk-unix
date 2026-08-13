@@ -12,6 +12,7 @@ readonly runtime_log_root="$(mktemp -d "${TMPDIR:-/tmp}/openim-local-ios-runtime
 trap 'rm -rf "$runtime_log_root"' EXIT
 readonly runtime_stdout="$runtime_log_root/stdout.log"
 readonly runtime_stderr="$runtime_log_root/stderr.log"
+readonly runtime_unified="$runtime_log_root/unified.log"
 readonly launch_output="$(xcrun simctl launch --stdout="$runtime_stdout" --stderr="$runtime_stderr" "$device" "$OPENIM_LOCAL_APPLICATION_ID")"
 readonly launch_pid="${launch_output##*: }"
 if ! [[ "$launch_pid" =~ ^[0-9]+$ ]]; then
@@ -45,8 +46,11 @@ while true; do
     echo "Launched iOS process exited during runtime smoke verification" >&2
     exit 1
   fi
+  xcrun simctl spawn "$device" log show --style compact --last 2m \
+    --predicate "processIdentifier == $launch_pid AND eventMessage CONTAINS \"$ready_marker\"" \
+    >"$runtime_unified" 2>/dev/null || true
   if node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" \
-    --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr" >/dev/null 2>&1; then
+    --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr" "$runtime_unified" >/dev/null 2>&1; then
     marker_seen=1
   fi
   xcrun simctl io "$device" screenshot "$screenshots/product-launch.png" >/dev/null
@@ -60,7 +64,7 @@ while true; do
   fi
   if (( marker_seen == 1 && frame_ready == 1 )); then
     node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" \
-      --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr"
+      --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr" "$runtime_unified"
     node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
     node "$runner_root/local-runtime/hosts/verify-stable-bmp.mjs" \
       "$screenshots/product-launch.previous.bmp" "$screenshots/product-launch.bmp"

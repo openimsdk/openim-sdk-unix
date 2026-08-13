@@ -24,12 +24,22 @@ let source = readFileSync(sourcePath, 'utf8')
   .replace(registrationPattern, '\n')
   .replace(methodPattern, '\n')
 
+if (!source.includes('#import "PDRCoreAppFrame.h"')) {
+  const coreImport = /#import "PDRCore\.h"\r?\n/
+  if (!coreImport.test(source)) throw new Error('Classic iOS PDRCore import seam is missing')
+  source = source.replace(coreImport, (line) => `${line}#import "PDRCoreAppFrame.h"\n`)
+}
+
 const launchMethod = /(- \(BOOL\)application:\(UIApplication \*\)application didFinishLaunchingWithOptions:\(NSDictionary \*\)launchOptions\r?\n\{)/
 if (!launchMethod.test(source)) throw new Error('Classic iOS AppDelegate launch seam is missing')
 const registration = `${registrationBegin}
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(openimLocalRuntimeExpectedAppDidLoad:)
                                                  name:PDRCoreAppDidLoadNotificationKey
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(openimLocalRuntimeExpectedAppDidLoad:)
+                                                 name:PDRCoreAppFrameDidLoadNotificationKey
                                                object:nil];
 ${registrationEnd}`
 source = source.replace(launchMethod, `$1\n${registration}`)
@@ -41,8 +51,10 @@ const method = `${methodBegin}
 - (void)openimLocalRuntimeExpectedAppDidLoad:(NSNotification *)notification
 {
     (void)notification;
-    fprintf(stderr, "%s\\n", "${marker}");
+    NSString *readyMarker = @"${marker}";
+    fprintf(stderr, "%s\\n", readyMarker.UTF8String);
     fflush(stderr);
+    NSLog(@"%@", readyMarker);
 }
 ${methodEnd}`
 source = `${source.slice(0, appDelegateEnd)}\n${method}\n${source.slice(appDelegateEnd)}`
