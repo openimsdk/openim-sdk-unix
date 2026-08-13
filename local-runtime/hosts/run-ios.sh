@@ -8,7 +8,11 @@ readonly device="${OPENIM_TEST_DEVICE_ID:-$(xcrun simctl list devices booted -j 
 test -n "$device"
 xcrun simctl install "$device" "$app"
 xcrun simctl terminate "$device" "${OPENIM_LOCAL_APPLICATION_ID:?}" 2>/dev/null || true
-readonly launch_output="$(xcrun simctl launch "$device" "$OPENIM_LOCAL_APPLICATION_ID")"
+readonly runtime_log_root="$(mktemp -d "${TMPDIR:-/tmp}/openim-local-ios-runtime.XXXXXX")"
+trap 'rm -rf "$runtime_log_root"' EXIT
+readonly runtime_stdout="$runtime_log_root/stdout.log"
+readonly runtime_stderr="$runtime_log_root/stderr.log"
+readonly launch_output="$(xcrun simctl launch --stdout="$runtime_stdout" --stderr="$runtime_stderr" "$device" "$OPENIM_LOCAL_APPLICATION_ID")"
 readonly launch_pid="${launch_output##*: }"
 if ! [[ "$launch_pid" =~ ^[0-9]+$ ]]; then
   echo "Unable to determine launched iOS process ID" >&2
@@ -21,6 +25,7 @@ if ! kill -0 "$launch_pid" 2>/dev/null; then
 fi
 test -d "$(xcrun simctl get_app_container "$device" "$OPENIM_LOCAL_APPLICATION_ID" app)"
 readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
+readonly ready_marker="OPENIM_LOCAL_RUNTIME_READY:v1:${OPENIM_LOCAL_PRODUCT:?}:${OPENIM_LOCAL_SURFACE:?}"
 readonly ready_timeout="${OPENIM_LOCAL_IOS_READY_TIMEOUT_SECONDS:-20}"
 readonly ready_poll="${OPENIM_LOCAL_IOS_READY_POLL_SECONDS:-2}"
 if ! [[ "$ready_timeout" =~ ^[0-9]+$ ]] || (( ready_timeout < 1 )); then
@@ -32,20 +37,46 @@ if ! [[ "$ready_poll" =~ ^[0-9]+$ ]] || (( ready_poll < 1 )); then
   exit 64
 fi
 mkdir -p "$screenshots"
+rm -f "$screenshots/product-launch.previous.bmp"
 readonly ready_deadline=$((SECONDS + ready_timeout))
+marker_seen=0
 while true; do
   if ! kill -0 "$launch_pid" 2>/dev/null; then
     echo "Launched iOS process exited during runtime smoke verification" >&2
     exit 1
   fi
+  if node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" \
+    --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr" >/dev/null 2>&1; then
+    marker_seen=1
+  fi
   xcrun simctl io "$device" screenshot "$screenshots/product-launch.png" >/dev/null
   sips -s format bmp "$screenshots/product-launch.png" --out "$screenshots/product-launch.bmp" >/dev/null
-  if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1; then
+  frame_ready=0
+  if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1 && \
+    [[ -f "$screenshots/product-launch.previous.bmp" ]] && \
+    node "$runner_root/local-runtime/hosts/verify-stable-bmp.mjs" \
+      "$screenshots/product-launch.previous.bmp" "$screenshots/product-launch.bmp" >/dev/null 2>&1; then
+    frame_ready=1
+  fi
+  if (( marker_seen == 1 && frame_ready == 1 )); then
+    node "$runner_root/local-runtime/hosts/verify-runtime-ready.mjs" \
+      --marker "$ready_marker" "$runtime_stdout" "$runtime_stderr"
     node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
+    node "$runner_root/local-runtime/hosts/verify-stable-bmp.mjs" \
+      "$screenshots/product-launch.previous.bmp" "$screenshots/product-launch.bmp"
     break
   fi
   if (( SECONDS >= ready_deadline )); then
+    if (( marker_seen == 0 )); then
+      echo "runtime product-ready marker was not observed; refusing splash, HBuilder Hello, or loading UI" >&2
+      exit 1
+    fi
     node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
+    echo "runtime product frames did not settle before the readiness timeout" >&2
+    exit 1
+  fi
+  if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1; then
+    cp "$screenshots/product-launch.bmp" "$screenshots/product-launch.previous.bmp"
   fi
   sleep "$ready_poll"
 done

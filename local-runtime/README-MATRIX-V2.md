@@ -49,6 +49,14 @@ Runs are serialized by a PID-owned global lock and evidence is immutable below
 `.runs/<runID>`. Cleanup accepts only a specific directory containing an
 evidence record; it never removes a repository or SDK profile.
 
+Runtime smoke is fail-closed. The build injects a non-sensitive marker only
+into the generated staging project's `main.js` or `main.uts`. Android accepts
+that marker only from logcat cleared immediately before launch; iOS accepts it
+only from the launched process's temporary stdout/stderr. A smoke pass also
+requires two consecutive, materially stable non-blank screenshots. A DCloud
+splash, the SDK's bundled HBuilder Hello page, or a loading screen therefore
+cannot establish `SMOKE_PASS` by merely containing non-white pixels.
+
 Before a generated project is published atomically, the runner removes
 machine-local state from every surface and plugin copy. This includes
 `static/openim-test-config.json`, `.openim-test-accounts.json`, `env.js`,
