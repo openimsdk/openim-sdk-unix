@@ -15,17 +15,27 @@ test('Harmony live output keeps progress and plugin errors while suppressing war
   assert.equal(lines.some((line) => line.includes('uni_modules/unix-openim-sdk')), true)
 })
 
-test('streams child output before the command exits', async () => {
+test('streams child output before the command exits', { timeout: 5_000 }, async () => {
   const chunks: string[] = []
   let settled = false
+  let markStarted: () => void = () => {}
+  const startedOutput = new Promise<void>((resolve) => {
+    markStarted = resolve
+  })
   const execution = runStreamingCommand(
     process.execPath,
-    ['-e', "process.stdout.write('started\\n'); setTimeout(() => process.stdout.write('finished\\n'), 500)"],
+    [
+      '-e',
+      "setTimeout(() => { process.stdout.write('started\\n'); setTimeout(() => process.stdout.write('finished\\n'), 200) }, 450)",
+    ],
     {
       cwd: process.cwd(),
-      timeoutMs: 1_000,
+      timeoutMs: 3_000,
       heartbeatMs: 50,
-      onOutput: (_stream, chunk) => chunks.push(chunk),
+      onOutput: (_stream, chunk) => {
+        chunks.push(chunk)
+        if (chunks.join('').includes('started')) markStarted()
+      },
       onHeartbeat: () => {},
     },
   ).then((result) => {
@@ -33,10 +43,10 @@ test('streams child output before the command exits', async () => {
     return result
   })
 
-  const outputDeadline = Date.now() + 400
-  while (!chunks.join('').includes('started') && Date.now() < outputDeadline) {
-    await new Promise((resolve) => setTimeout(resolve, 10))
-  }
+  await Promise.race([
+    startedOutput,
+    execution.then(() => assert.fail('command exited before streaming its started output')),
+  ])
   assert.equal(settled, false)
   assert.match(chunks.join(''), /started/)
 
