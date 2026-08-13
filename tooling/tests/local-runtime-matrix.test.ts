@@ -60,6 +60,85 @@ test('stable staging creates all three surfaces without mutating product sources
   assert.equal(execFileSync('git', ['-C', item.root, 'status', '--porcelain'], { encoding: 'utf8' }), before)
 })
 
+test('stable staging excludes machine-local runtime state but retains customer-safe examples', () => {
+  const item = fixture()
+  const forbidden = [
+    'static/openim-test-config.json',
+    'pages/index/.openim-test-accounts.json',
+    'pages/index/env.js',
+    'pages/test-results/result.json',
+    'pages/.runs/run/evidence.json',
+    'pages/index/local-config.uts',
+    'uni_modules/unix-openim-sdk/.openim-test-accounts.json',
+    'uni_modules/unix-openim-sdk/env.js',
+    'uni_modules/unix-openim-sdk/test-results/result.json',
+    'uni_modules/unix-openim-sdk/.runs/run/evidence.json',
+    'uni_modules/unix-openim-sdk/local-config.js',
+  ]
+  for (const path of forbidden) write(join(item.root, path), 'synthetic machine-local state\n')
+  write(join(item.root, 'pages/index/local-config.example.uts'), "export const endpoint = '<server-url>'\n")
+  write(join(item.root, 'uni_modules/unix-openim-sdk/local-config.example.js'), "export const endpoint = '<server-url>'\n")
+
+  const project = prepareStableProject(resolveProductDescriptor(item.descriptor), 'uniappx', item.workspace)
+
+  for (const path of forbidden) assert.equal(existsSync(join(project, path)), false, path)
+  assert.equal(existsSync(join(project, 'pages/index/local-config.example.uts')), true)
+  assert.equal(existsSync(join(project, 'uni_modules/unix-openim-sdk/local-config.example.js')), true)
+})
+
+test('stable staging fails closed when copied source contains secret material', () => {
+  const item = fixture()
+  const syntheticJWT = ['eyJhbGciOiJIUzI1NiJ9', 'c3ludGhldGljLXJ1bnRpbWU', 'cGF5bG9hZA'].join('.')
+  write(join(item.root, 'pages/index/runtime.uts'), `export const credential = '${syntheticJWT}'\n`)
+
+  assert.throws(
+    () => prepareStableProject(resolveProductDescriptor(item.descriptor), 'uniappx', item.workspace),
+    /Unsafe local runtime staging content[\s\S]*pages\/index\/runtime\.uts[\s\S]*jwt/,
+  )
+  assert.equal(existsSync(join(item.workspace, 'public/uniappx')), false)
+})
+
+test('stable staging fails closed when copied source contains a concrete server address', () => {
+  const item = fixture()
+  write(join(item.root, 'pages/index/runtime.uts'), "export const apiAddr = 'http://192.0.2.10:10002'\n")
+
+  assert.throws(
+    () => prepareStableProject(resolveProductDescriptor(item.descriptor), 'uniappx', item.workspace),
+    /Unsafe local runtime staging content[\s\S]*pages\/index\/runtime\.uts[\s\S]*server-address/,
+  )
+  assert.equal(existsSync(join(item.workspace, 'public/uniappx')), false)
+})
+
+test('server-address safety gate does not treat customer documentation as runtime configuration', () => {
+  const item = fixture()
+  write(join(item.root, 'uni_modules/unix-openim-sdk/readme.md'), "Example: apiURL = 'http://192.0.2.10:10002'\n")
+
+  const project = prepareStableProject(resolveProductDescriptor(item.descriptor), 'uniappx', item.workspace)
+
+  assert.equal(existsSync(join(project, 'uni_modules/unix-openim-sdk/readme.md')), true)
+})
+
+test('stable staging rejects an opaque runtime credential without exposing its value', () => {
+  const item = fixture()
+  const environmentName = 'OPENIM_TEST_RUNTIME_TOKEN'
+  const syntheticCredential = 'synthetic-runtime-credential-value'
+  write(join(item.root, 'pages/index/runtime-state.txt'), `opaque=${syntheticCredential}\n`)
+  process.env[environmentName] = syntheticCredential
+  try {
+    assert.throws(
+      () => prepareStableProject(resolveProductDescriptor(item.descriptor), 'uniappx', item.workspace),
+      (error: unknown) => {
+        assert.ok(error instanceof Error)
+        assert.match(error.message, /pages\/index\/runtime-state\.txt: environment-secret/)
+        assert.doesNotMatch(error.message, new RegExp(syntheticCredential))
+        return true
+      },
+    )
+  } finally {
+    delete process.env[environmentName]
+  }
+})
+
 test('stable staging retries bounded cleanup for large native framework trees', () => {
   const source = readFileSync(join(import.meta.dirname, '../src/local-runtime-matrix.ts'), 'utf8')
 
@@ -106,22 +185,22 @@ test('product descriptors may supply canonical traditional surface sources', () 
 test('stable staging may override an automation asset from an explicit runtime-only environment source', () => {
   const item = fixture()
   write(join(item.root, 'config/example.uts'), "export const endpoint = 'example'\n")
-  const localConfig = join(item.workspace, 'local-config.uts')
-  write(localConfig, "export const endpoint = 'runtime-only'\n")
+  const runtimeProfile = join(item.workspace, 'automation-profile.uts')
+  write(runtimeProfile, "export const endpoint = 'runtime-only'\n")
   const document = JSON.parse(readFileSync(item.descriptor, 'utf8'))
   document.automationAssets = [{
     source: '../../config/example.uts',
-    destination: 'pages/index/local-config.uts',
+    destination: 'pages/index/automation-profile.uts',
     surfaces: ['uniappx'],
     sourceEnvironment: 'OPENIM_TEST_RUNTIME_CONFIG_SOURCE',
   }]
   writeFileSync(item.descriptor, `${JSON.stringify(document, null, 2)}\n`)
-  process.env.OPENIM_TEST_RUNTIME_CONFIG_SOURCE = localConfig
+  process.env.OPENIM_TEST_RUNTIME_CONFIG_SOURCE = runtimeProfile
   try {
     const descriptor = resolveProductDescriptor(item.descriptor)
     const project = prepareStableProject(descriptor, 'uniappx', item.workspace)
     assert.equal(
-      readFileSync(join(project, 'pages/index/local-config.uts'), 'utf8'),
+      readFileSync(join(project, 'pages/index/automation-profile.uts'), 'utf8'),
       "export const endpoint = 'runtime-only'\n",
     )
     assert.equal(readFileSync(join(item.root, 'config/example.uts'), 'utf8'), "export const endpoint = 'example'\n")

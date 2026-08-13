@@ -22,6 +22,7 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 
 import { traditionalUniAppFixtureFiles } from './uniapp-consumer-compile.js'
+import { scanReleaseSecrets } from './release-integrity.js'
 import { resolveUniToolchainProfile, type UniToolchainProfileV2 } from './uni-toolchain.js'
 
 export type LocalSurface = 'uniapp-vue2' | 'uniapp-vue3' | 'uniappx'
@@ -258,11 +259,105 @@ function ensureInside(root: string, target: string): void {
   assert(resolved.startsWith(prefix), `Refusing to operate outside local runtime root: ${resolved}`)
 }
 
+function isForbiddenStagingPath(path: string): boolean {
+  const segments = path.split(/[\\/]+/).filter((segment) => segment !== '' && segment !== '.')
+  const basename = segments.at(-1)?.toLowerCase() ?? ''
+  if (segments.some((segment) => segment === '.runs' || segment.toLowerCase() === 'test-results' || segment.toLowerCase() === 'local-config')) return true
+  if (basename === 'openim-test-config.json' || basename === '.openim-test-accounts.json' || basename === 'env.js') return true
+  return /^local-config\.(?:js|json|ts|uts)$/i.test(basename)
+}
+
+function copyIntoStaging(source: string, destination: string, stagingRoot: string): void {
+  cpSync(source, destination, {
+    recursive: true,
+    dereference: false,
+    filter: (_source, target) => !isForbiddenStagingPath(relative(stagingRoot, target)),
+  })
+}
+
+interface StagingSafetyFinding {
+  path: string
+  rule: string
+}
+
+function readStagingText(path: string): string | null {
+  const content = readFileSync(path)
+  const prefix = content.subarray(0, Math.min(content.length, 8192))
+  if (prefix.includes(0)) return null
+  return content.toString('utf8')
+}
+
+function containsConcreteServerAddress(content: string): boolean {
+  const assignment = /\b(?:api_?(?:addr|address|url|base)|ws_?(?:addr|address|url|base)|server_?(?:addr|address|url)|endpoint|meeting_?(?:api_?)?url)\b["']?\s*[:=]\s*["'`]([^"'`\r\n]+)["'`]/gi
+  for (const match of content.matchAll(assignment)) {
+    const value = (match[1] ?? '').trim()
+    if (value === '' || value.includes('<') || value.includes('${')) continue
+    let hostname = ''
+    try {
+      const url = new URL(value)
+      if (!['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol)) continue
+      hostname = url.hostname.toLowerCase()
+    } catch {
+      const host = value.match(/^(?:[a-z][a-z0-9+.-]*:\/\/)?([^/:\s]+)(?::\d+)?(?:\/|$)/i)?.[1]
+      if (host == null) continue
+      if (!/^(?:(?:\d{1,3}\.){3}\d{1,3}|(?:[a-z0-9-]+\.)+[a-z]{2,})$/i.test(host)) continue
+      hostname = host.toLowerCase()
+    }
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '::1') continue
+    if (hostname === 'example.com' || hostname.endsWith('.example') || hostname.endsWith('.invalid') || hostname.endsWith('.test')) continue
+    return true
+  }
+  return false
+}
+
+function runtimeEnvironmentSecrets(): string[] {
+  const sensitiveName = /^(?:OPENIM|IM|DCLOUD)_[A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|CREDENTIAL|API_KEY|APP_KEY)$/
+  return [...new Set(Object.entries(process.env)
+    .filter(([name, value]) => sensitiveName.test(name) && value != null && value.length >= 8)
+    .map(([, value]) => value as string))]
+}
+
+function isRuntimeConfigurationSource(path: string): boolean {
+  return /\.(?:json|js|cjs|mjs|ts|uts|vue|uvue|xml|plist|properties|gradle|sh|rb|java|kt|swift|h|m|mm)$/i.test(path)
+}
+
+export function assertLocalRuntimeStagingSafe(root: string): void {
+  const findings: StagingSafetyFinding[] = []
+  const environmentSecrets = runtimeEnvironmentSecrets()
+  const visit = (directory: string): void => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name)
+      const relativePath = relative(root, path).split(sep).join('/')
+      if (isForbiddenStagingPath(relativePath)) {
+        findings.push({ path: relativePath, rule: 'machine-local-state' })
+        continue
+      }
+      if (entry.isDirectory()) {
+        visit(path)
+        continue
+      }
+      if (!entry.isFile()) continue
+      const content = readStagingText(path)
+      if (content == null) continue
+      for (const finding of scanReleaseSecrets([{ path: relativePath, content }], []).findings) {
+        findings.push({ path: finding.path, rule: finding.rule })
+      }
+      if (environmentSecrets.some((secret) => content.includes(secret))) findings.push({ path: relativePath, rule: 'environment-secret' })
+      if (isRuntimeConfigurationSource(relativePath) && containsConcreteServerAddress(content)) {
+        findings.push({ path: relativePath, rule: 'server-address' })
+      }
+    }
+  }
+  visit(root)
+  findings.sort((left, right) => left.path.localeCompare(right.path) || left.rule.localeCompare(right.rule))
+  assert(findings.length === 0, `Unsafe local runtime staging content:\n${findings.map((finding) => `${finding.path}: ${finding.rule}`).join('\n')}`)
+}
+
 function copyUniAppXSource(source: string, target: string): void {
   const entries = ['App.uvue', 'main.uts', 'manifest.json', 'pages.json', 'pages', 'static', 'uni.scss']
   for (const name of entries) {
     const input = join(source, name)
-    if (existsSync(input)) cpSync(input, join(target, name), { recursive: true, dereference: false })
+    if (existsSync(input)) copyIntoStaging(input, join(target, name), target)
   }
 }
 
@@ -272,7 +367,7 @@ function copySurfaceSource(source: string, target: string, surface: LocalSurface
     : ['App.vue', 'main.js', 'manifest.json', 'pages.json', 'pages', 'static', 'uni.scss']
   for (const name of entries) {
     const input = join(source, name)
-    if (existsSync(input)) cpSync(input, join(target, name), { recursive: true, dereference: false })
+    if (existsSync(input)) copyIntoStaging(input, join(target, name), target)
   }
 }
 
@@ -327,12 +422,13 @@ function copyAutomationAssets(target: string, descriptor: ResolvedLocalProductDe
     if (asset.sourceEnvironment != null) {
       assert(/^[A-Z][A-Z0-9_]*$/.test(asset.sourceEnvironment), `Unsafe automation asset source environment: ${asset.sourceEnvironment}`)
     }
+    assert(!isForbiddenStagingPath(asset.destination), `Automation asset destination is machine-local runtime state: ${asset.destination}`)
     const configuredSource = asset.sourceEnvironment == null ? null : process.env[asset.sourceEnvironment]
     const source = configuredSource == null || configuredSource === '' ? asset.source : realpathSync(resolve(configuredSource))
     const destination = join(target, asset.destination)
     ensureInside(target, destination)
     mkdirSync(dirname(destination), { recursive: true })
-    cpSync(source, destination, { recursive: true, dereference: false })
+    copyIntoStaging(source, destination, target)
   }
 }
 
@@ -370,9 +466,10 @@ export function prepareStableProject(descriptor: ResolvedLocalProductDescriptor,
     else writeTraditionalFixture(staging, surface)
     copyAutomationAssets(staging, descriptor, surface)
     mkdirSync(join(staging, 'uni_modules'), { recursive: true })
-    for (const plugin of descriptor.plugins) cpSync(plugin.source, join(staging, 'uni_modules', plugin.id), { recursive: true, dereference: false })
+    for (const plugin of descriptor.plugins) copyIntoStaging(plugin.source, join(staging, 'uni_modules', plugin.id), staging)
     overlayManifest(staging, descriptor, surface)
     writeStageMetadata(staging, descriptor, surface)
+    assertLocalRuntimeStagingSafe(staging)
     if (existsSync(target)) renameSync(target, backup)
     renameSync(staging, target)
     rmSync(backup, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })

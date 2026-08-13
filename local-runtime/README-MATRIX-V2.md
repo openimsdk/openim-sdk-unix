@@ -49,6 +49,17 @@ Runs are serialized by a PID-owned global lock and evidence is immutable below
 `.runs/<runID>`. Cleanup accepts only a specific directory containing an
 evidence record; it never removes a repository or SDK profile.
 
+Before a generated project is published atomically, the runner removes
+machine-local state from every surface and plugin copy. This includes
+`static/openim-test-config.json`, `.openim-test-accounts.json`, `env.js`,
+`test-results/`, `.runs/`, and active `local-config.*` files. Example templates
+such as `local-config.example.uts` remain available. A final fail-closed scan
+then rejects recognizable secrets, values supplied through sensitive runtime
+environment variables, and concrete server addresses in executable/config
+sources. Findings contain only a relative path and rule name; they never echo
+the matched value. Runtime credentials and endpoints must cross an in-memory
+test seam instead of being compiled into the stable project.
+
 Evidence states are `NOT_RUN`, `COMPILE_PASS`, `ASSEMBLE_PASS`, `SMOKE_PASS`,
 `FULL_PASS`, and `BLOCKED`. Release evidence must come from a clean exact
 revision and include the toolchain, native artifact, APK/app, device, suite,
