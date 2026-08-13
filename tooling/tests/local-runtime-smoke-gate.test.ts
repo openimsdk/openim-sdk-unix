@@ -61,7 +61,10 @@ test('staging-only marker injector supports classic and uni-app x without touchi
   writeFileSync(join(classic, 'main.js'), "import App from './App'\nexport default App\n")
   writeFileSync(join(uniappx, 'main.uts'), "import App from './App.uvue'\nexport default App\n")
   writeFileSync(join(classic, 'pages/index/index.vue'), '<template>\n  <view class="page">content</view>\n</template>\n')
-  writeFileSync(join(uniappx, 'pages/index/index.uvue'), '<template>\n  <view class="page">content</view>\n</template>\n')
+  writeFileSync(
+    join(uniappx, 'pages/index/index.uvue'),
+    '<template>\n  <!-- #ifdef APP -->\n  <scroll-view class="page-scroll">\n  <!-- #endif -->\n    <view class="page">content</view>\n  <!-- #ifdef APP -->\n  </scroll-view>\n  <!-- #endif -->\n</template>\n',
+  )
 
   execFileSync(process.execPath, [injector, classic, 'private', 'uniapp-vue2'])
   execFileSync(process.execPath, [injector, uniappx, 'im-av', 'uniappx'])
@@ -77,6 +80,7 @@ test('staging-only marker injector supports classic and uni-app x without touchi
   const uniappxPage = readFileSync(join(uniappx, 'pages/index/index.uvue'), 'utf8')
   assert.match(classicPage, /openim-local-runtime-ready-marker/)
   assert.match(uniappxPage, /openim-local-runtime-ready-marker/)
+  assert.match(uniappxPage, /<scroll-view[^>]*>\s*<view class="openim-local-runtime-ready-marker"/)
   assert.equal(classicPage.match(/openim-local-runtime-ready-marker/g)?.length, 1)
   assert.equal(readFileSync(join(classic, 'main.js'), 'utf8').includes('token'), false)
 })
