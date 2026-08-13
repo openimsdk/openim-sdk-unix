@@ -48,7 +48,8 @@ if [[ "$IOS_TARGET" == "simulator" ]]; then
       }
     });
   ' "$DEVICE_ID")"
-  architecture="$(file "$APP_PATH/UniAppX" | rg -o 'arm64|x86_64' | head -n 1)"
+  executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_PATH/Info.plist")"
+  architecture="$(file "$APP_PATH/$executable_name" | rg -o 'arm64|x86_64' | head -n 1)"
   bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PATH/Info.plist")"
   xcrun simctl launch "$DEVICE_ID" "$bundle_id" >/dev/null
   device_kind=simulator

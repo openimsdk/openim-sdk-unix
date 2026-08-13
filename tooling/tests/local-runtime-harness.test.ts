@@ -427,6 +427,9 @@ test('iOS simulator automation primes the installed host before HBuilderX takes 
   const source = readFileSync(resolve(root, 'local-runtime/scripts/test-local-ios.sh'), 'utf8')
   assert.match(source, /OPENIM_TEST_VAPOR=false/)
   assert.doesNotMatch(source, /OPENIM_TEST_VAPOR=true/)
+  assert.match(source, /PlistBuddy.+CFBundleExecutable/)
+  assert.match(source, /file "\$APP_PATH\/\$executable_name"/)
+  assert.doesNotMatch(source, /\$APP_PATH\/UniAppX/)
   assert.match(source, /PlistBuddy.+CFBundleIdentifier/)
   assert.match(source, /xcrun simctl launch "\$DEVICE_ID" "\$bundle_id"/)
   assert.ok(
