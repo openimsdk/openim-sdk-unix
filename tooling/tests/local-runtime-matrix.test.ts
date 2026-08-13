@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
-import { archiveRuntimeArtifacts, cleanupLocalRun, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
+import { archiveRuntimeArtifacts, cleanupLocalRun, dcloudAppKeyEnvironmentName, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
 import { configureNativeAndroid } from '../../local-runtime/scripts/configure-native-android.mjs'
 
 function write(path: string, source: string): void {
@@ -65,6 +65,13 @@ test('stable staging retries bounded cleanup for large native framework trees', 
 
   assert.match(source, /rmSync\(backup, \{ recursive: true, force: true, maxRetries: 5, retryDelay: 200 \}\)/)
   assert.match(source, /rmSync\(staging, \{ recursive: true, force: true, maxRetries: 5, retryDelay: 200 \}\)/)
+})
+
+test('traditional runtime resolves a distinct DCloud AppKey for each surface and platform', () => {
+  assert.equal(dcloudAppKeyEnvironmentName('uniapp-vue2', 'android'), 'OPENIM_DCLOUD_APP_KEY_ANDROID_UNIAPP_VUE2')
+  assert.equal(dcloudAppKeyEnvironmentName('uniapp-vue3', 'android'), 'OPENIM_DCLOUD_APP_KEY_ANDROID_UNIAPP_VUE3')
+  assert.equal(dcloudAppKeyEnvironmentName('uniapp-vue2', 'ios'), 'OPENIM_DCLOUD_APP_KEY_IOS_UNIAPP_VUE2')
+  assert.equal(dcloudAppKeyEnvironmentName('uniapp-vue3', 'ios'), 'OPENIM_DCLOUD_APP_KEY_IOS_UNIAPP_VUE3')
 })
 
 test('product descriptors resolve explicit environment-backed delivery inputs without persisting machine paths', () => {
@@ -176,8 +183,8 @@ test('runner source rejects HBuilder and native compiler failures hidden behind 
   assert.match(source, /BUILD FAILED/)
   assert.match(source, /reported a compiler failure despite exiting successfully/)
   assert.match(source, /OPENIM_LOCAL_CLASSIC_VIDEO: descriptor\.classicVideo === true \? '1' : '0'/)
-  assert.match(source, /OPENIM_DCLOUD_APP_KEY_ANDROID/)
-  assert.match(source, /OPENIM_DCLOUD_APP_KEY_IOS/)
+  assert.match(source, /dcloudAppKeyEnvironmentName/)
+  assert.match(source, /genericDCloudAppKeyEnvironmentName/)
   assert.match(source, /required for traditional uni-app runtime acceptance/)
 })
 

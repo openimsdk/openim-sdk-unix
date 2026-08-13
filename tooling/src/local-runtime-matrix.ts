@@ -155,6 +155,22 @@ function assertPlatform(value: string): asserts value is LocalPlatform {
   assert(platforms.includes(value as LocalPlatform), `Unsupported platform: ${value}`)
 }
 
+export function dcloudAppKeyEnvironmentName(surface: Exclude<LocalSurface, 'uniappx'>, platform: LocalPlatform): string {
+  return `OPENIM_DCLOUD_APP_KEY_${platform.toUpperCase()}_${surface.replaceAll('-', '_').toUpperCase()}`
+}
+
+function genericDCloudAppKeyEnvironmentName(platform: LocalPlatform): string {
+  return `OPENIM_DCLOUD_APP_KEY_${platform.toUpperCase()}`
+}
+
+function resolveDCloudAppKey(surface: LocalSurface, platform: LocalPlatform): string | null {
+  if (surface === 'uniappx') return null
+  const specific = process.env[dcloudAppKeyEnvironmentName(surface, platform)]
+  if (specific != null && specific !== '') return specific
+  const generic = process.env[genericDCloudAppKeyEnvironmentName(platform)]
+  return generic != null && generic !== '' ? generic : null
+}
+
 function stripJSONComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
 }
@@ -422,6 +438,8 @@ function executeHost(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, optio
   const stderrPath = join(runRoot, `${command}.stderr.log`)
   const stdout = openSync(stdoutPath, 'wx', 0o600)
   const stderr = openSync(stderrPath, 'wx', 0o600)
+  const dcloudAppKey = resolveDCloudAppKey(options.surface, options.platform)
+  const genericDCloudAppKeyName = genericDCloudAppKeyEnvironmentName(options.platform)
   let result
   try {
     result = spawnSync('bash', [script], {
@@ -443,6 +461,7 @@ function executeHost(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, optio
         OPENIM_TEST_DEVICE_ID: options.deviceID ?? '',
         OPENIM_CLOUD_PACKAGING: 'false',
         OPENIM_LOCAL_CLASSIC_VIDEO: descriptor.classicVideo === true ? '1' : '0',
+        ...(dcloudAppKey != null ? { [genericDCloudAppKeyName]: dcloudAppKey } : {}),
       },
     })
   } finally {
@@ -532,8 +551,8 @@ export function runLocalRuntime(options: LocalRuntimeOptions): { project: string
   }
   try {
     if (options.surface !== 'uniappx' && (options.command === 'run' || options.command === 'test')) {
-      const credential = options.platform === 'android' ? 'OPENIM_DCLOUD_APP_KEY_ANDROID' : 'OPENIM_DCLOUD_APP_KEY_IOS'
-      assert(process.env[credential] != null && process.env[credential] !== '', `${credential} is required for traditional uni-app runtime acceptance`)
+      const credential = dcloudAppKeyEnvironmentName(options.surface, options.platform)
+      assert(resolveDCloudAppKey(options.surface, options.platform) != null, `${credential} is required for traditional uni-app runtime acceptance`)
     }
     project = prepareStableProject(descriptor, options.surface, workspaceRoot)
     if (options.command !== 'doctor' && options.command !== 'prepare') {
