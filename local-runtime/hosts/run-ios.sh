@@ -51,8 +51,7 @@ while true; do
     marker_seen=1
   fi
   frame_ready=0
-  if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1 && \
-    [[ -f "$screenshots/product-launch.previous.bmp" ]] && \
+  if [[ -f "$screenshots/product-launch.previous.bmp" ]] && \
     node "$runner_root/local-runtime/hosts/verify-stable-bmp.mjs" \
       "$screenshots/product-launch.previous.bmp" "$screenshots/product-launch.bmp" >/dev/null 2>&1; then
     frame_ready=1
@@ -60,7 +59,6 @@ while true; do
   if (( marker_seen == 1 && frame_ready == 1 )); then
     node "$runner_root/local-runtime/hosts/verify-runtime-marker-bmp.mjs" \
       "$screenshots/product-launch.bmp" "$OPENIM_LOCAL_PRODUCT" "$OPENIM_LOCAL_SURFACE"
-    node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
     node "$runner_root/local-runtime/hosts/verify-stable-bmp.mjs" \
       "$screenshots/product-launch.previous.bmp" "$screenshots/product-launch.bmp"
     break
@@ -70,12 +68,9 @@ while true; do
       echo "runtime product-ready marker was not observed; refusing splash, HBuilder Hello, or loading UI" >&2
       exit 1
     fi
-    node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
     echo "runtime product frames did not settle before the readiness timeout" >&2
     exit 1
   fi
-  if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1; then
-    cp "$screenshots/product-launch.bmp" "$screenshots/product-launch.previous.bmp"
-  fi
+  cp "$screenshots/product-launch.bmp" "$screenshots/product-launch.previous.bmp"
   sleep "$ready_poll"
 done

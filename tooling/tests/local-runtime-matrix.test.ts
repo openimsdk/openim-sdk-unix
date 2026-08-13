@@ -380,7 +380,7 @@ test('uni-app x iOS plugin wrappers retain Objective-C categories from static fr
   assert.match(source, /pod_target_xcconfig.*OTHER_LDFLAGS.*\$\(inherited\) -ObjC/)
 })
 
-test('iOS runtime smoke rejects a launched process that still renders a blank page', () => {
+test('iOS runtime smoke requires the exact rendered product marker and a settled process', () => {
   const source = readFileSync(new URL('../../local-runtime/hosts/run-ios.sh', import.meta.url), 'utf8')
   assert.match(source, /launch_output=.*simctl launch/)
   assert.match(source, /launch_pid/)
@@ -390,15 +390,17 @@ test('iOS runtime smoke rejects a launched process that still renders a blank pa
   assert.match(source, /while true/)
   assert.match(source, /SECONDS >= ready_deadline/)
   assert.match(source, /simctl io.*screenshot/)
-  assert.match(source, /verify-nonblank-bmp\.mjs/)
+  assert.match(source, /verify-runtime-marker-bmp\.mjs/)
+  assert.doesNotMatch(source, /verify-nonblank-bmp\.mjs/)
 })
 
-test('Android runtime smoke waits for rendered product content', () => {
+test('Android runtime smoke waits for the exact rendered product marker', () => {
   const source = readFileSync(new URL('../../local-runtime/hosts/run-android.sh', import.meta.url), 'utf8')
   assert.match(source, /OPENIM_LOCAL_ANDROID_READY_TIMEOUT_SECONDS:-20/)
   assert.match(source, /OPENIM_LOCAL_ANDROID_READY_POLL_SECONDS:-2/)
   assert.match(source, /exec-out screencap -p/)
-  assert.match(source, /verify-nonblank-bmp\.mjs/)
+  assert.match(source, /verify-runtime-marker-bmp\.mjs/)
+  assert.doesNotMatch(source, /verify-nonblank-bmp\.mjs/)
 })
 
 test('Android full automation preserves the selected surface host and resource layout', () => {
