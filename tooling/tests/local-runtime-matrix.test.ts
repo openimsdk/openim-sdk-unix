@@ -103,6 +103,33 @@ test('product descriptors may supply canonical traditional surface sources', () 
   assert.equal(JSON.parse(readFileSync(join(project, 'manifest.json'), 'utf8')).vueVersion, '3')
 })
 
+test('stable staging may override an automation asset from an explicit runtime-only environment source', () => {
+  const item = fixture()
+  write(join(item.root, 'config/example.uts'), "export const endpoint = 'example'\n")
+  const localConfig = join(item.workspace, 'local-config.uts')
+  write(localConfig, "export const endpoint = 'runtime-only'\n")
+  const document = JSON.parse(readFileSync(item.descriptor, 'utf8'))
+  document.automationAssets = [{
+    source: '../../config/example.uts',
+    destination: 'pages/index/local-config.uts',
+    surfaces: ['uniappx'],
+    sourceEnvironment: 'OPENIM_TEST_RUNTIME_CONFIG_SOURCE',
+  }]
+  writeFileSync(item.descriptor, `${JSON.stringify(document, null, 2)}\n`)
+  process.env.OPENIM_TEST_RUNTIME_CONFIG_SOURCE = localConfig
+  try {
+    const descriptor = resolveProductDescriptor(item.descriptor)
+    const project = prepareStableProject(descriptor, 'uniappx', item.workspace)
+    assert.equal(
+      readFileSync(join(project, 'pages/index/local-config.uts'), 'utf8'),
+      "export const endpoint = 'runtime-only'\n",
+    )
+    assert.equal(readFileSync(join(item.root, 'config/example.uts'), 'utf8'), "export const endpoint = 'example'\n")
+  } finally {
+    delete process.env.OPENIM_TEST_RUNTIME_CONFIG_SOURCE
+  }
+})
+
 test('Public descriptor never aliases the uni-app x page into a traditional Vue page', () => {
   const descriptor = JSON.parse(
     readFileSync(join(import.meta.dirname, '../..', 'local-runtime/products/public.json'), 'utf8'),

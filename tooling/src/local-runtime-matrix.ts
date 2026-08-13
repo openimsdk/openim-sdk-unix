@@ -56,6 +56,7 @@ export interface LocalAutomationAsset {
   source: string
   destination: string
   surfaces?: LocalSurface[]
+  sourceEnvironment?: string
 }
 
 export interface LocalNativeArtifact {
@@ -87,7 +88,7 @@ export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescrip
   uniappxSource: string
   surfaceSources: Partial<Record<LocalSurface, string>>
   plugins: Array<{ id: string; source: string; dependencies?: string[]; androidNamespace?: string; androidGradleTemplate?: string }>
-  automationAssets: Array<{ source: string; destination: string; surfaces?: LocalSurface[] }>
+  automationAssets: Array<{ source: string; destination: string; surfaces?: LocalSurface[]; sourceEnvironment?: string }>
   nativeArtifacts: Array<{ id: string; path: string }>
 }
 
@@ -234,6 +235,7 @@ export function resolveProductDescriptor(path: string): ResolvedLocalProductDesc
       source: resolveDescriptorRelative(descriptorPath, asset.source),
       destination: asset.destination,
       ...(asset.surfaces != null ? { surfaces: asset.surfaces } : {}),
+      ...(asset.sourceEnvironment != null ? { sourceEnvironment: asset.sourceEnvironment } : {}),
     })),
     nativeArtifacts: (document.nativeArtifacts ?? []).map((artifact) => ({ id: artifact.id, path: resolveDescriptorRelative(descriptorPath, artifact.path) })),
   }
@@ -311,10 +313,15 @@ function copyAutomationAssets(target: string, descriptor: ResolvedLocalProductDe
   for (const asset of descriptor.automationAssets) {
     if (asset.surfaces != null && !asset.surfaces.includes(surface)) continue
     assert(!asset.destination.startsWith('/') && !asset.destination.split('/').includes('..'), `Unsafe automation asset destination: ${asset.destination}`)
+    if (asset.sourceEnvironment != null) {
+      assert(/^[A-Z][A-Z0-9_]*$/.test(asset.sourceEnvironment), `Unsafe automation asset source environment: ${asset.sourceEnvironment}`)
+    }
+    const configuredSource = asset.sourceEnvironment == null ? null : process.env[asset.sourceEnvironment]
+    const source = configuredSource == null || configuredSource === '' ? asset.source : realpathSync(resolve(configuredSource))
     const destination = join(target, asset.destination)
     ensureInside(target, destination)
     mkdirSync(dirname(destination), { recursive: true })
-    cpSync(asset.source, destination, { recursive: true, dereference: false })
+    cpSync(source, destination, { recursive: true, dereference: false })
   }
 }
 
