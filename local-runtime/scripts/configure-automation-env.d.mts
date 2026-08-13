@@ -20,3 +20,5 @@ export function buildAutomationEnvironment(input: {
 }): AutomationEnvironmentState
 
 export function renderAutomationEnvironment(state: AutomationEnvironmentState): string
+
+export function resolveAutomationProjectRoot(environment?: Record<string, string | undefined>): string

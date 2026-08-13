@@ -20,6 +20,7 @@ import {
 import {
   buildAutomationEnvironment,
   renderAutomationEnvironment,
+  resolveAutomationProjectRoot,
 } from '../../local-runtime/scripts/configure-automation-env.mjs'
 import { runWithLocalNativeProfile } from '../../local-runtime/scripts/run-with-local-native-profile.mjs'
 
@@ -218,6 +219,13 @@ test('automation environment preserves Android and iOS bases without committing 
   assert.match(rendered, /android-base\.apk/)
   assert.match(rendered, /Pandora\.app/)
   assert.match(rendered, /is-custom-runtime/)
+})
+
+test('staged automation helper resolves the runner-selected project instead of its copied module parent', () => {
+  assert.equal(
+    resolveAutomationProjectRoot({ OPENIM_LOCAL_PROJECT_ROOT: '/tmp/openim-staged-project' }),
+    '/tmp/openim-staged-project',
+  )
 })
 
 test('local runtime sources contain no tracked binaries, credentials, fixed server, or machine path', () => {
