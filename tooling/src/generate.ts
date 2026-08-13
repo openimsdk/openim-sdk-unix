@@ -88,6 +88,7 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'optional-boolean') return `optionalBoolean(${source})`
   if (field.codec === 'optional-string') return `optionalString(${source})`
   if (field.codec === 'picture-json') return platform === 'ios' ? `stringifyOpenIMPicture(${source})` : `stringifyJSON(${source})`
+  if (field.codec === 'set-conversation-json') return `stringifySetConversationPayload(${source})`
   if (field.codec === 'set-group-info-json') return `stringifySetGroupInfoPayload(${source})`
   if (field.codec === 'set-group-member-info-json') return `stringifySetGroupMemberInfoPayload(${source})`
   if (field.codec === 'sound-json') return platform === 'ios' ? `stringifyOpenIMSoundElem(${source})` : `stringifyJSON(${source})`

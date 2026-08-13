@@ -365,7 +365,7 @@ test('conversation string operations are generated from structured invocation da
   if (setConversation?.lowering?.kind === 'platform-driver' && typeof setConversation.lowering.request === 'object') {
     assert.deepEqual(setConversation.lowering.request.fields.map(({ name, parameter, member, codec }) => ({ name, parameter, member, codec })), [
       { name: 'conversationID', parameter: 'params', member: 'conversationID', codec: 'identity' },
-      { name: 'conversationInfo', parameter: 'params', member: undefined, codec: 'json' },
+      { name: 'conversationInfo', parameter: 'params', member: undefined, codec: 'set-conversation-json' },
     ])
   }
 
@@ -391,6 +391,33 @@ test('conversation string operations are generated from structured invocation da
       ? /2084 -> \{\n\s+NativeOpenIMSDK\.hideAllConversations/
       : /case 2084:\n\s+NativeOpenIMSDK\.hideAllConversations/
     assert.match(adapter, emptyCase)
+  }
+})
+
+test('setConversation preserves optional patch key presence through an explicit payload writer', () => {
+  const patchFields = ['recvMsgOpt', 'isPinned', 'isPrivateChat', 'burnDuration', 'groupAtType', 'ex'] as const
+
+  for (const platform of ['android', 'ios'] as const) {
+    const facade = generateIndex(root, contract, platform)
+    const declaration = facade.split('\n').find((line) => line.startsWith('export const setConversation ='))
+    assert.notEqual(declaration, undefined)
+    assert.match(declaration!, /"conversationInfo":' \+ stringifyJSON\(stringifySetConversationPayload\(params\)\)/)
+
+    const writerStart = facade.indexOf('function stringifySetConversationPayload(')
+    assert.notEqual(writerStart, -1, `${platform} facade is missing the setConversation payload writer`)
+    const writerEnd = facade.indexOf('\n}', writerStart)
+    assert.notEqual(writerEnd, -1, `${platform} setConversation payload writer is incomplete`)
+    const writer = facade.slice(writerStart, writerEnd + 2)
+
+    for (const field of patchFields) {
+      assert.match(
+        writer,
+        new RegExp(`if \\(params\\.${field} != null\\) \\{ payload = appendPayloadField\\(payload, '\"${field}\":' \\+ stringifyJSON\\(params\\.${field}\\)\\) \\}`),
+        `${platform} writer must preserve explicit values and omit null for ${field}`,
+      )
+    }
+    assert.doesNotMatch(writer, /conversationID/)
+    assert.doesNotMatch(writer, /if \(params\.(?:isPinned|isPrivateChat)\)/)
   }
 })
 

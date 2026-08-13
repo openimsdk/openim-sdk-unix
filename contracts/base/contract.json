@@ -3907,7 +3907,7 @@
             {
               "name": "conversationInfo",
               "parameter": "params",
-              "codec": "json",
+              "codec": "set-conversation-json",
               "wireType": "string"
             }
           ]
@@ -3926,7 +3926,7 @@
           "symbol": "setConversation"
         }
       },
-      "signatureHash": "0f337b3cd59b01e3a8b2b59a31b93dfd366177eb83cb7ed844e15e61a65ae9bd",
+      "signatureHash": "3c06c8e287b960ec59a23ffe4fa5a85e071bc24e376f704dc94b95f9ea76a6c1",
       "testProfile": {
         "semanticProfile": "mutation-observation",
         "sideEffectProbe": "read-after-write"

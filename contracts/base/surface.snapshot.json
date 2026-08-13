@@ -1981,7 +1981,7 @@
       "id": 2068,
       "name": "setConversation",
       "signature": "setConversation(params:OpenIMSetConversationParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "0f337b3cd59b01e3a8b2b59a31b93dfd366177eb83cb7ed844e15e61a65ae9bd"
+      "signatureHash": "3c06c8e287b960ec59a23ffe4fa5a85e071bc24e376f704dc94b95f9ea76a6c1"
     },
     {
       "id": 2069,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "40caccb52499d169afe96ef8c4b1e667b40235bfe3fb43f51e833337d0f4ea57"
+  "contractHash": "2e9df0c91d3ac8433b57cc45f92a66f4fd7a0576b3f2d76ccdf698253bcd6507"
 }

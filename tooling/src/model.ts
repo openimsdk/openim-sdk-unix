@@ -43,6 +43,7 @@ export type DriverRequestFieldCodec =
   | 'optional-boolean'
   | 'optional-string'
   | 'picture-json'
+  | 'set-conversation-json'
   | 'set-group-info-json'
   | 'set-group-member-info-json'
   | 'sound-json'

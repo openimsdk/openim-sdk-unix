@@ -409,6 +409,16 @@ function stringifyUpdateFriendsPayload(params : OpenIMUpdateFriendsParams) : str
   if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
   return '{' + payload + '}'
 }
+function stringifySetConversationPayload(params : OpenIMSetConversationParams) : string {
+  let payload = ''
+  if (params.recvMsgOpt != null) { payload = appendPayloadField(payload, '"recvMsgOpt":' + stringifyJSON(params.recvMsgOpt)) }
+  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
+  if (params.isPrivateChat != null) { payload = appendPayloadField(payload, '"isPrivateChat":' + stringifyJSON(params.isPrivateChat)) }
+  if (params.burnDuration != null) { payload = appendPayloadField(payload, '"burnDuration":' + stringifyJSON(params.burnDuration)) }
+  if (params.groupAtType != null) { payload = appendPayloadField(payload, '"groupAtType":' + stringifyJSON(params.groupAtType)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  return '{' + payload + '}'
+}
 function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : string {
   let payload = ''
   payload = appendPayloadField(payload, '"groupID":' + stringifyJSON(params.groupID))
@@ -645,7 +655,7 @@ export const markConversationMessageAsRead = function (conversationID : string, 
 export const getGroupMemberList = function (params : OpenIMGetGroupMemberListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative('getGroupMemberList', (resolve, reject) => { const requestJSON = '{"groupID":' + stringifyJSON(params.groupID) + ',"filter":' + stringifyJSON(params.filter) + ',"offset":' + stringifyJSON(params.offset) + ',"count":' + stringifyJSON(params.count) + '}'; driverCallAsync(2065, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setMessageLocalEx = function (params : OpenIMSetMessageLocalExParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"clientMsgID":' + stringifyJSON(params.clientMsgID) + ',"localEx":' + stringifyJSON(params.localEx) + '}'; driverCallAsync(2066, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const revokeMessage = function (params : OpenIMMessageKeyParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"clientMsgID":' + stringifyJSON(params.clientMsgID) + '}'; driverCallAsync(2067, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
-export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"conversationInfo":' + stringifyJSON(stringifyJSON(params)) + '}'; driverCallAsync(2068, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
+export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"conversationInfo":' + stringifyJSON(stringifySetConversationPayload(params)) + '}'; driverCallAsync(2068, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"isBackground":' + stringifyJSON(data) + '}'; driverCallAsync(2069, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"count":' + stringifyJSON(appUnreadCount) + '}'; driverCallAsync(2070, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { driverCallAsync(2071, normalizeOperationID(operationID), '{}', resolve, reject) }) }

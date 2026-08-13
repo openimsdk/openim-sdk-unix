@@ -300,6 +300,16 @@ function stringifyUpdateFriendsPayload(params : OpenIMUpdateFriendsParams) : str
   if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
   return '{' + payload + '}'
 }
+function stringifySetConversationPayload(params : OpenIMSetConversationParams) : string {
+  let payload = ''
+  if (params.recvMsgOpt != null) { payload = appendPayloadField(payload, '"recvMsgOpt":' + stringifyJSON(params.recvMsgOpt)) }
+  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
+  if (params.isPrivateChat != null) { payload = appendPayloadField(payload, '"isPrivateChat":' + stringifyJSON(params.isPrivateChat)) }
+  if (params.burnDuration != null) { payload = appendPayloadField(payload, '"burnDuration":' + stringifyJSON(params.burnDuration)) }
+  if (params.groupAtType != null) { payload = appendPayloadField(payload, '"groupAtType":' + stringifyJSON(params.groupAtType)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  return '{' + payload + '}'
+}
 function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : string {
   let payload = ''
   payload = appendPayloadField(payload, '"groupID":' + stringifyJSON(params.groupID))
