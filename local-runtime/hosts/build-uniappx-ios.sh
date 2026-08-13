@@ -110,6 +110,9 @@ if find "$app/Frameworks" -maxdepth 2 -type f -print0 | xargs -0 file | grep -Fq
   echo "Static framework remained in the generated uni-app x iOS app" >&2
   exit 1
 fi
+readonly plugin_receipt="$OPENIM_LOCAL_RUN_ROOT/ios-product-plugins.json"
+node "$runner_root/local-runtime/hosts/verify-ios-product-plugins.mjs" \
+  "$OPENIM_LOCAL_PRODUCT_DESCRIPTOR" "$app" "$output_root" "$plugin_receipt"
 while IFS= read -r framework; do
   codesign --force --sign - "$framework"
 done < <(find "$app/Frameworks" -maxdepth 1 -type d -name '*.framework' -print | sort)
@@ -119,5 +122,6 @@ node -e '
   const fs = require("fs"); const crypto = require("crypto"); const path = process.argv[1];
   const files = []; const walk = (d) => fs.readdirSync(d).sort().forEach((n) => { const p = `${d}/${n}`; fs.statSync(p).isDirectory() ? walk(p) : files.push(p) }); walk(path);
   const hash = crypto.createHash("sha256"); for (const file of files) { hash.update(file.slice(path.length)); hash.update("\0"); hash.update(fs.readFileSync(file)); }
-  fs.writeFileSync(process.argv[2], JSON.stringify({ appPath: path, appPayloadSha256: hash.digest("hex"), appFileCount: String(files.length) }, null, 2) + "\n");
-' "$app" "$OPENIM_LOCAL_RUN_ROOT/artifacts.json"
+  const receiptBytes = fs.readFileSync(process.argv[3]); const receipt = JSON.parse(receiptBytes);
+  fs.writeFileSync(process.argv[2], JSON.stringify({ appPath: path, appPayloadSha256: hash.digest("hex"), appFileCount: String(files.length), iosProductPlugins: receipt.plugins.map((plugin) => plugin.id).join(","), iosPluginReceiptSha256: crypto.createHash("sha256").update(receiptBytes).digest("hex") }, null, 2) + "\n");
+' "$app" "$OPENIM_LOCAL_RUN_ROOT/artifacts.json" "$plugin_receipt"

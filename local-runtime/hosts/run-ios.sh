@@ -6,13 +6,32 @@ bash "$runner_root/local-runtime/hosts/build-ios.sh"
 readonly app="$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(p.appPath)' "$OPENIM_LOCAL_RUN_ROOT/artifacts.json")"
 readonly device="${OPENIM_TEST_DEVICE_ID:-$(xcrun simctl list devices booted -j | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>{const d=Object.values(JSON.parse(s).devices).flat().find(x=>x.state==="Booted"&&/iPhone/.test(x.name));if(d)process.stdout.write(d.udid)})')}"
 test -n "$device"
+readonly bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")"
+if [[ "$bundle_id" != "${OPENIM_LOCAL_APPLICATION_ID:?}" ]]; then
+  echo "Assembled iOS host bundle identifier does not match the product descriptor" >&2
+  exit 1
+fi
+node -e '
+  const fs = require("fs");
+  const path = process.argv[1];
+  const descriptor = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+  const artifacts = JSON.parse(fs.readFileSync(path, "utf8"));
+  const expected = descriptor.plugins.map((plugin) => plugin.id).sort();
+  const actual = String(artifacts.iosProductPlugins || "").split(",").filter(Boolean).sort();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error("Assembled iOS host plugin receipt does not match the product descriptor");
+  artifacts.deviceID = process.argv[3];
+  artifacts.bundleID = process.argv[4];
+  const temporary = `${path}.tmp-${process.pid}`;
+  fs.writeFileSync(temporary, `${JSON.stringify(artifacts, null, 2)}\n`, { mode: 0o600 });
+  fs.renameSync(temporary, path);
+' "$OPENIM_LOCAL_RUN_ROOT/artifacts.json" "$OPENIM_LOCAL_PRODUCT_DESCRIPTOR" "$device" "$bundle_id"
 xcrun simctl install "$device" "$app"
-xcrun simctl terminate "$device" "${OPENIM_LOCAL_APPLICATION_ID:?}" 2>/dev/null || true
+xcrun simctl terminate "$device" "$bundle_id" 2>/dev/null || true
 readonly runtime_log_root="$(mktemp -d "${TMPDIR:-/tmp}/openim-local-ios-runtime.XXXXXX")"
 trap 'rm -rf "$runtime_log_root"' EXIT
 readonly runtime_stdout="$runtime_log_root/stdout.log"
 readonly runtime_stderr="$runtime_log_root/stderr.log"
-readonly launch_output="$(xcrun simctl launch --stdout="$runtime_stdout" --stderr="$runtime_stderr" "$device" "$OPENIM_LOCAL_APPLICATION_ID")"
+readonly launch_output="$(xcrun simctl launch --stdout="$runtime_stdout" --stderr="$runtime_stderr" "$device" "$bundle_id")"
 readonly launch_pid="${launch_output##*: }"
 if ! [[ "$launch_pid" =~ ^[0-9]+$ ]]; then
   echo "Unable to determine launched iOS process ID" >&2
@@ -23,7 +42,9 @@ if ! kill -0 "$launch_pid" 2>/dev/null; then
   echo "Launched iOS process exited before runtime smoke verification" >&2
   exit 1
 fi
-test -d "$(xcrun simctl get_app_container "$device" "$OPENIM_LOCAL_APPLICATION_ID" app)"
+test -d "$(xcrun simctl get_app_container "$device" "$bundle_id" app)"
+node "$PROJECT_ROOT/scripts/configure-automation-env.mjs" \
+  ios "$app" "$device" "$bundle_id" >/dev/null
 readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
 readonly ready_timeout="${OPENIM_LOCAL_IOS_READY_TIMEOUT_SECONDS:-20}"
 readonly ready_poll="${OPENIM_LOCAL_IOS_READY_POLL_SECONDS:-2}"

@@ -31,8 +31,17 @@ trap restore_local_automation_environment EXIT
 "$LOCAL_RUNTIME_ROOT/scripts/run-local-ios.sh"
 
 readonly IOS_TARGET="${OPENIM_IOS_TARGET:-simulator}"
-readonly APP_PATH="$(cat "$PROJECT_ROOT/unpackage/local-runtime/ios-app-path")"
-readonly DEVICE_ID="$(cat "$PROJECT_ROOT/unpackage/local-runtime/ios-device-id")"
+readonly ARTIFACTS="$OPENIM_LOCAL_RUN_ROOT/artifacts.json"
+readonly APP_PATH="$(node -e 'const p=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));if(!p.appPath)process.exit(1);process.stdout.write(p.appPath)' "$ARTIFACTS")"
+readonly DEVICE_ID="$(node -e 'const p=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));if(!p.deviceID)process.exit(1);process.stdout.write(p.deviceID)' "$ARTIFACTS")"
+node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  const artifacts = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+  const expected = descriptor.plugins.map((plugin) => plugin.id).sort();
+  const actual = String(artifacts.iosProductPlugins || "").split(",").filter(Boolean).sort();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error("Assembled iOS host plugin receipt does not match the product descriptor");
+' "$OPENIM_LOCAL_PRODUCT_DESCRIPTOR" "$ARTIFACTS"
 
 if [[ "$IOS_TARGET" == "simulator" ]]; then
   os_version="$(xcrun simctl list devices -j | node -e '

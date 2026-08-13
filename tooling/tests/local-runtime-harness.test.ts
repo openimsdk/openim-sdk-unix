@@ -61,6 +61,7 @@ test('local runtime harness is source-only and carries every regenerable entrypo
     'hosts/inject-runtime-ready-marker.mjs',
     'hosts/verify-runtime-ready.mjs',
     'hosts/verify-stable-bmp.mjs',
+    'hosts/verify-ios-product-plugins.mjs',
     'server/configure-isolated-openim-server.rb',
     'server/start-isolated-openim-server.sh',
     'server/stop-isolated-openim-server.sh',
@@ -425,8 +426,19 @@ test('local test wrappers restore env.js across the entire build, install, and a
 
 test('iOS simulator automation primes the installed host before HBuilderX takes over relaunch', () => {
   const source = readFileSync(resolve(root, 'local-runtime/scripts/test-local-ios.sh'), 'utf8')
+  const host = readFileSync(resolve(root, 'local-runtime/hosts/test-ios.sh'), 'utf8')
+  const compatibilityRun = readFileSync(resolve(root, 'local-runtime/scripts/run-local-ios.sh'), 'utf8')
+  assert.match(host, /OPENIM_LOCAL_SUITE:-smoke[\s\S]*hosts\/run-ios\.sh[\s\S]*exit 0/)
+  assert.doesNotMatch(host, /bash "\$runner_root\/local-runtime\/hosts\/run-ios\.sh"\s*\nif/)
+  assert.match(compatibilityRun, /exec bash "\$LOCAL_RUNTIME_ROOT\/hosts\/run-ios\.sh"/)
+  assert.doesNotMatch(compatibilityRun, /build-local-ios\.sh/)
   assert.match(source, /OPENIM_TEST_VAPOR=false/)
   assert.doesNotMatch(source, /OPENIM_TEST_VAPOR=true/)
+  assert.match(source, /OPENIM_LOCAL_RUN_ROOT\/artifacts\.json/)
+  assert.match(source, /\.appPath/)
+  assert.match(source, /\.deviceID/)
+  assert.match(source, /iosProductPlugins/)
+  assert.doesNotMatch(source, /ios-app-path|ios-device-id/)
   assert.match(source, /PlistBuddy.+CFBundleExecutable/)
   assert.match(source, /file "\$APP_PATH\/\$executable_name"/)
   assert.doesNotMatch(source, /\$APP_PATH\/UniAppX/)
@@ -439,9 +451,9 @@ test('iOS simulator automation primes the installed host before HBuilderX takes 
 })
 
 test('local iOS simulator run always replaces the installed host with the freshly compiled app', () => {
-  const runner = readFileSync(resolve(root, 'local-runtime/scripts/run-local-ios.sh'), 'utf8')
-  assert.match(runner, /simctl terminate "\$DEVICE_ID" "\$BUNDLE_ID"/)
-  assert.match(runner, /simctl uninstall "\$DEVICE_ID" "\$BUNDLE_ID"/)
-  assert.match(runner, /simctl install "\$DEVICE_ID" "\$APP_PATH"/)
-  assert.doesNotMatch(runner, /if ! xcrun simctl get_app_container/)
+  const runner = readFileSync(resolve(root, 'local-runtime/hosts/run-ios.sh'), 'utf8')
+  assert.match(runner, /simctl terminate "\$device" "\$bundle_id"/)
+  assert.match(runner, /simctl install "\$device" "\$app"/)
+  assert.match(runner, /deviceID/)
+  assert.match(runner, /bundleID/)
 })

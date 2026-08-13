@@ -54,11 +54,15 @@ test -f "$app/Pandora/apps/$app_id/www/manifest.json"
 test -f "$app/Frameworks/OpenIMCore.framework/OpenIMCore"
 test -f "$app/Frameworks/DCloudUTSExtAPI.framework/DCloudUTSExtAPI"
 verify_required_ios_frameworks "$app"
+readonly plugin_receipt="$OPENIM_LOCAL_RUN_ROOT/ios-product-plugins.json"
+node "$runner_root/local-runtime/hosts/verify-ios-product-plugins.mjs" \
+  "$OPENIM_LOCAL_PRODUCT_DESCRIPTOR" "$app" "$output_root" "$plugin_receipt"
 codesign --force --deep --sign - "$app"
 codesign --verify --deep --strict "$app"
 node -e '
   const fs = require("fs"); const crypto = require("crypto"); const path = process.argv[1];
   const files = []; const walk = (d) => fs.readdirSync(d).sort().forEach((n) => { const p = `${d}/${n}`; fs.statSync(p).isDirectory() ? walk(p) : files.push(p) }); walk(path);
   const hash = crypto.createHash("sha256"); for (const file of files) { hash.update(file.slice(path.length)); hash.update("\0"); hash.update(fs.readFileSync(file)); }
-  fs.writeFileSync(process.argv[2], JSON.stringify({ appPath: path, appPayloadSha256: hash.digest("hex"), appFileCount: String(files.length) }, null, 2) + "\n");
-' "$app" "$OPENIM_LOCAL_RUN_ROOT/artifacts.json"
+  const receiptBytes = fs.readFileSync(process.argv[3]); const receipt = JSON.parse(receiptBytes);
+  fs.writeFileSync(process.argv[2], JSON.stringify({ appPath: path, appPayloadSha256: hash.digest("hex"), appFileCount: String(files.length), iosProductPlugins: receipt.plugins.map((plugin) => plugin.id).join(","), iosPluginReceiptSha256: crypto.createHash("sha256").update(receiptBytes).digest("hex") }, null, 2) + "\n");
+' "$app" "$OPENIM_LOCAL_RUN_ROOT/artifacts.json" "$plugin_receipt"
