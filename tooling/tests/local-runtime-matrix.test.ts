@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -203,6 +203,42 @@ test('uni-app x iOS host builds only the simulator architecture exported by HBui
   assert.match(source, /codesign --force --deep --sign - "\$app"/)
   assert.match(source, /codesign --verify --deep --strict "\$app"/)
   assert.doesNotMatch(source, /codesign --verify --deep --strict "\$app"[^\n]*\|\| true/)
+})
+
+test('iOS runtime smoke rejects a launched process that still renders a blank page', () => {
+  const source = readFileSync(new URL('../../local-runtime/hosts/run-ios.sh', import.meta.url), 'utf8')
+  assert.match(source, /OPENIM_LOCAL_IOS_SETTLE_SECONDS:-5/)
+  assert.match(source, /simctl io.*screenshot/)
+  assert.match(source, /verify-nonblank-bmp\.mjs/)
+})
+
+test('iOS runtime screenshot classifier rejects blank content and accepts rendered content', () => {
+  const root = mkdtempSync(join(tmpdir(), 'openim-local-bmp-'))
+  const makeBMP = (path: string, content: boolean): void => {
+    const width = 32
+    const height = 32
+    const offset = 54
+    const bytes = Buffer.alloc(offset + width * height * 4, 255)
+    bytes.write('BM')
+    bytes.writeUInt32LE(bytes.length, 2)
+    bytes.writeUInt32LE(offset, 10)
+    bytes.writeUInt32LE(40, 14)
+    bytes.writeInt32LE(width, 18)
+    bytes.writeInt32LE(-height, 22)
+    bytes.writeUInt16LE(1, 26)
+    bytes.writeUInt16LE(32, 28)
+    if (content) bytes.fill(20, offset + width * 8 * 4, offset + width * 24 * 4)
+    writeFileSync(path, bytes)
+  }
+  const blank = join(root, 'blank.bmp')
+  const content = join(root, 'content.bmp')
+  makeBMP(blank, false)
+  makeBMP(content, true)
+  const checker = new URL('../../local-runtime/hosts/verify-nonblank-bmp.mjs', import.meta.url)
+  const rejected = spawnSync(process.execPath, [checker.pathname, blank], { encoding: 'utf8' })
+  assert.notEqual(rejected.status, 0)
+  assert.match(rejected.stderr, /blank page/)
+  assert.match(execFileSync(process.execPath, [checker.pathname, content], { encoding: 'utf8' }), /content ratio/)
 })
 
 test('classic Android host removes legacy manifest package declarations from generated plugins', () => {

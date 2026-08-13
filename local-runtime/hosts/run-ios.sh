@@ -10,3 +10,9 @@ xcrun simctl install "$device" "$app"
 xcrun simctl terminate "$device" "${OPENIM_LOCAL_APPLICATION_ID:?}" 2>/dev/null || true
 xcrun simctl launch "$device" "$OPENIM_LOCAL_APPLICATION_ID" >/dev/null
 test -d "$(xcrun simctl get_app_container "$device" "$OPENIM_LOCAL_APPLICATION_ID" app)"
+sleep "${OPENIM_LOCAL_IOS_SETTLE_SECONDS:-5}"
+readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
+mkdir -p "$screenshots"
+xcrun simctl io "$device" screenshot "$screenshots/product-launch.png" >/dev/null
+sips -s format bmp "$screenshots/product-launch.png" --out "$screenshots/product-launch.bmp" >/dev/null
+node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp"
