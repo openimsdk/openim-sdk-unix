@@ -34,8 +34,9 @@ const registration = `${registrationBegin}
 ${registrationEnd}`
 source = source.replace(launchMethod, `$1\n${registration}`)
 
-const finalEnd = /\n@end\s*$/
-if (!finalEnd.test(source)) throw new Error('Classic iOS AppDelegate implementation terminator is missing')
+const appDelegateImplementation = source.indexOf('@implementation AppDelegate')
+const appDelegateEnd = appDelegateImplementation < 0 ? -1 : source.indexOf('\n@end', appDelegateImplementation)
+if (appDelegateEnd < 0) throw new Error('Classic iOS AppDelegate implementation terminator is missing')
 const method = `${methodBegin}
 - (void)openimLocalRuntimeExpectedAppDidLoad:(NSNotification *)notification
 {
@@ -50,6 +51,6 @@ const method = `${methodBegin}
     }
 }
 ${methodEnd}`
-source = source.replace(finalEnd, `\n${method}\n\n@end\n`)
+source = `${source.slice(0, appDelegateEnd)}\n${method}\n${source.slice(appDelegateEnd)}`
 writeFileSync(sourcePath, source)
 process.stdout.write(`classic iOS native readiness marker injected for ${product}/${surface}\n`)

@@ -128,6 +128,13 @@ test('classic iOS host emits readiness only after the expected PDR app loads', (
     return ret;
 }
 @end
+
+@implementation UINavigationController(Orient)
+- (BOOL)shouldAutorotate
+{
+    return YES;
+}
+@end
 `)
 
   const argumentsList = [appDelegate, 'private', 'uniapp-vue2', '__UNI__B3F7C44']
@@ -140,4 +147,9 @@ test('classic iOS host emits readiness only after the expected PDR app loads', (
   assert.match(source, /fprintf\(stderr/)
   assert.match(source, /OPENIM_LOCAL_RUNTIME_READY:v1:private:uniapp-vue2/)
   assert.equal(source.match(/OPENIM_LOCAL_RUNTIME_READY:v1:/g)?.length, 1)
+  const appDelegateEnd = source.indexOf('\n@end', source.indexOf('@implementation AppDelegate'))
+  const readyMethod = source.indexOf('- (void)openimLocalRuntimeExpectedAppDidLoad:')
+  const categoryStart = source.indexOf('@implementation UINavigationController(Orient)')
+  assert.ok(readyMethod > 0 && readyMethod < appDelegateEnd, 'readiness method must belong to AppDelegate')
+  assert.ok(appDelegateEnd < categoryStart, 'the AppDelegate must end before later categories')
 })
