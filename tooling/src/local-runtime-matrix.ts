@@ -52,6 +52,11 @@ export interface LocalIOSHostOptions {
   uniappxRequiredFrameworks?: string[]
 }
 
+export interface LocalHostPreparation {
+  script: string
+  surfaces?: LocalSurface[]
+}
+
 export interface LocalAutomationAsset {
   source: string
   destination: string
@@ -76,13 +81,14 @@ export interface LocalProductDescriptor {
   nativeArtifacts?: LocalNativeArtifact[]
   androidHost?: LocalAndroidHostOptions
   iosHost?: LocalIOSHostOptions
+  hostPreparation?: Partial<Record<LocalPlatform, LocalHostPreparation>>
   classicVideo?: boolean
   classicAndroidLibraries?: string[]
   applicationIDs: Record<LocalSurface, string>
   dcloudAppIDs: Record<LocalSurface, string>
 }
 
-export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescriptor, 'repositoryRoot' | 'uniappxSource' | 'surfaceSources' | 'plugins' | 'automationAssets' | 'nativeArtifacts'> {
+export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescriptor, 'repositoryRoot' | 'uniappxSource' | 'surfaceSources' | 'plugins' | 'automationAssets' | 'nativeArtifacts' | 'hostPreparation'> {
   descriptorPath: string
   repositoryRoot: string
   uniappxSource: string
@@ -90,6 +96,7 @@ export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescrip
   plugins: Array<{ id: string; source: string; dependencies?: string[]; androidNamespace?: string; androidGradleTemplate?: string }>
   automationAssets: Array<{ source: string; destination: string; surfaces?: LocalSurface[]; sourceEnvironment?: string }>
   nativeArtifacts: Array<{ id: string; path: string }>
+  hostPreparation: Partial<Record<LocalPlatform, LocalHostPreparation>>
 }
 
 export interface RuntimeLockDocument {
@@ -238,6 +245,10 @@ export function resolveProductDescriptor(path: string): ResolvedLocalProductDesc
       ...(asset.sourceEnvironment != null ? { sourceEnvironment: asset.sourceEnvironment } : {}),
     })),
     nativeArtifacts: (document.nativeArtifacts ?? []).map((artifact) => ({ id: artifact.id, path: resolveDescriptorRelative(descriptorPath, artifact.path) })),
+    hostPreparation: Object.fromEntries(Object.entries(document.hostPreparation ?? {}).map(([platform, preparation]) => [platform, {
+      ...preparation,
+      script: resolveDescriptorRelative(descriptorPath, preparation.script),
+    }])),
   }
 }
 
@@ -438,9 +449,66 @@ function hostScript(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, platfo
   return join(runnerRoot, 'local-runtime/hosts', `${command}-${platform}.sh`)
 }
 
+export function prepareHostProject(
+  descriptor: ResolvedLocalProductDescriptor,
+  surface: LocalSurface,
+  platform: LocalPlatform,
+  project: string,
+  runRoot: string,
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  const preparation = descriptor.hostPreparation[platform]
+  if (preparation == null || (preparation.surfaces != null && !preparation.surfaces.includes(surface))) return false
+  ensureInside(descriptor.repositoryRoot, preparation.script)
+  assert(existsSync(preparation.script), `Missing ${platform} host preparation script: ${preparation.script}`)
+  const stdoutPath = join(runRoot, `prepare-${platform}.stdout.log`)
+  const stderrPath = join(runRoot, `prepare-${platform}.stderr.log`)
+  const stdout = openSync(stdoutPath, 'wx', 0o600)
+  const stderr = openSync(stderrPath, 'wx', 0o600)
+  let result
+  try {
+    result = spawnSync('bash', [preparation.script], {
+      cwd: descriptor.repositoryRoot,
+      stdio: ['ignore', stdout, stderr],
+      env: {
+        ...environment,
+        OPENIM_LOCAL_PROJECT_ROOT: project,
+        OPENIM_LOCAL_PRODUCT_DESCRIPTOR: descriptor.descriptorPath,
+        OPENIM_LOCAL_PRODUCT: descriptor.id,
+        OPENIM_LOCAL_SURFACE: surface,
+        OPENIM_LOCAL_PLATFORM: platform,
+        OPENIM_LOCAL_RUN_ROOT: runRoot,
+      },
+    })
+  } finally {
+    closeSync(stdout)
+    closeSync(stderr)
+  }
+  assert(result.status === 0, `${platform} host preparation failed with exit ${String(result.status)}`)
+  return true
+}
+
 function executeHost(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, options: LocalRuntimeOptions, descriptor: ResolvedLocalProductDescriptor, project: string, profile: UniToolchainProfileV2, runRoot: string): Record<string, string> {
   const script = hostScript(command, options.platform)
   assert(existsSync(script), `Missing local runtime host adapter: ${script}`)
+  const hostEnvironment: NodeJS.ProcessEnv = {
+    ...process.env,
+    OPENIM_LOCAL_PROJECT_ROOT: project,
+    OPENIM_LOCAL_PRODUCT_DESCRIPTOR: descriptor.descriptorPath,
+    OPENIM_LOCAL_PRODUCT: descriptor.id,
+    OPENIM_LOCAL_SURFACE: options.surface,
+    OPENIM_LOCAL_PLATFORM: options.platform,
+    OPENIM_LOCAL_SUITE: options.suite,
+    OPENIM_LOCAL_RUN_ROOT: runRoot,
+    OPENIM_LOCAL_APPLICATION_ID: descriptor.applicationIDs[options.surface],
+    OPENIM_ANDROID_PACKAGE: descriptor.applicationIDs[options.surface],
+    OPENIM_LOCAL_DCLOUD_APP_ID: descriptor.dcloudAppIDs[options.surface],
+    OPENIM_UNI_TOOLCHAIN_PROFILE: profile.profilePath,
+    OPENIM_TEST_DEVICE_ID: options.deviceID ?? '',
+    OPENIM_CLOUD_PACKAGING: 'false',
+    OPENIM_LOCAL_CLASSIC_VIDEO: descriptor.classicVideo === true ? '1' : '0',
+  }
+  prepareHostProject(descriptor, options.surface, options.platform, project, runRoot, hostEnvironment)
   const stdoutPath = join(runRoot, `${command}.stdout.log`)
   const stderrPath = join(runRoot, `${command}.stderr.log`)
   const stdout = openSync(stdoutPath, 'wx', 0o600)
@@ -453,21 +521,7 @@ function executeHost(command: Exclude<LocalCommand, 'doctor' | 'prepare'>, optio
       cwd: runnerRoot,
       stdio: ['ignore', stdout, stderr],
       env: {
-        ...process.env,
-        OPENIM_LOCAL_PROJECT_ROOT: project,
-        OPENIM_LOCAL_PRODUCT_DESCRIPTOR: descriptor.descriptorPath,
-        OPENIM_LOCAL_PRODUCT: descriptor.id,
-        OPENIM_LOCAL_SURFACE: options.surface,
-        OPENIM_LOCAL_PLATFORM: options.platform,
-        OPENIM_LOCAL_SUITE: options.suite,
-        OPENIM_LOCAL_RUN_ROOT: runRoot,
-        OPENIM_LOCAL_APPLICATION_ID: descriptor.applicationIDs[options.surface],
-        OPENIM_ANDROID_PACKAGE: descriptor.applicationIDs[options.surface],
-        OPENIM_LOCAL_DCLOUD_APP_ID: descriptor.dcloudAppIDs[options.surface],
-        OPENIM_UNI_TOOLCHAIN_PROFILE: profile.profilePath,
-        OPENIM_TEST_DEVICE_ID: options.deviceID ?? '',
-        OPENIM_CLOUD_PACKAGING: 'false',
-        OPENIM_LOCAL_CLASSIC_VIDEO: descriptor.classicVideo === true ? '1' : '0',
+        ...hostEnvironment,
         ...(dcloudAppKey != null ? { [genericDCloudAppKeyName]: dcloudAppKey } : {}),
       },
     })

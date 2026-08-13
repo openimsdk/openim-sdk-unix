@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
-import { archiveRuntimeArtifacts, cleanupLocalRun, dcloudAppKeyEnvironmentName, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
+import { archiveRuntimeArtifacts, cleanupLocalRun, dcloudAppKeyEnvironmentName, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareHostProject, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
 import { configureNativeAndroid } from '../../local-runtime/scripts/configure-native-android.mjs'
 
 function write(path: string, source: string): void {
@@ -336,6 +336,33 @@ test('classic iOS host aligns every plugin to the product deployment target', ()
   assert.match(common, /iosHost\?\.uniappxRequiredFrameworks/)
   assert.match(common, /Expected exactly one \$framework\.framework/)
   assert.doesNotMatch(common, /verify_required_ios_frameworks\(\) \{\n\s+local app=/)
+})
+
+test('product host preparation runs only against the staged project', () => {
+  const root = mkdtempSync(join(tmpdir(), 'openim-local-host-preparation-'))
+  const repository = join(root, 'repository')
+  const project = join(root, 'workspace', 'example')
+  const runRoot = join(root, 'run')
+  mkdirSync(repository, { recursive: true })
+  mkdirSync(project, { recursive: true })
+  mkdirSync(runRoot, { recursive: true })
+  const sourceMarker = join(repository, 'source-marker.txt')
+  writeFileSync(sourceMarker, 'immutable\n')
+  const script = join(repository, 'prepare-ios.sh')
+  writeFileSync(script, `#!/usr/bin/env bash\nset -euo pipefail\nprintf 'prepared\\n' > "$OPENIM_LOCAL_PROJECT_ROOT/prepared.txt"\n`)
+  const descriptor = {
+    descriptorPath: join(repository, 'product.json'),
+    repositoryRoot: repository,
+    id: 'fixture',
+    hostPreparation: { ios: { script, surfaces: ['uniappx'] } },
+  } as never
+
+  prepareHostProject(descriptor, 'uniappx', 'ios', project, runRoot, { OPENIM_LOCAL_RUN_ROOT: runRoot })
+
+  assert.equal(readFileSync(join(project, 'prepared.txt'), 'utf8'), 'prepared\n')
+  assert.equal(readFileSync(sourceMarker, 'utf8'), 'immutable\n')
+  assert.ok(existsSync(join(runRoot, 'prepare-ios.stdout.log')))
+  assert.equal(prepareHostProject(descriptor, 'uniapp-vue3', 'ios', project, runRoot, {}), false)
 })
 
 test('uni-app x Android host derives a multi-plugin dependency graph from the product descriptor', () => {
