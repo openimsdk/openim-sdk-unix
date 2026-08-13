@@ -8,7 +8,17 @@ readonly device="${OPENIM_TEST_DEVICE_ID:-$(xcrun simctl list devices booted -j 
 test -n "$device"
 xcrun simctl install "$device" "$app"
 xcrun simctl terminate "$device" "${OPENIM_LOCAL_APPLICATION_ID:?}" 2>/dev/null || true
-xcrun simctl launch "$device" "$OPENIM_LOCAL_APPLICATION_ID" >/dev/null
+readonly launch_output="$(xcrun simctl launch "$device" "$OPENIM_LOCAL_APPLICATION_ID")"
+readonly launch_pid="${launch_output##*: }"
+if ! [[ "$launch_pid" =~ ^[0-9]+$ ]]; then
+  echo "Unable to determine launched iOS process ID" >&2
+  exit 1
+fi
+sleep 1
+if ! kill -0 "$launch_pid" 2>/dev/null; then
+  echo "Launched iOS process exited before runtime smoke verification" >&2
+  exit 1
+fi
 test -d "$(xcrun simctl get_app_container "$device" "$OPENIM_LOCAL_APPLICATION_ID" app)"
 readonly screenshots="$OPENIM_LOCAL_RUN_ROOT/screenshots"
 readonly ready_timeout="${OPENIM_LOCAL_IOS_READY_TIMEOUT_SECONDS:-20}"
@@ -24,6 +34,10 @@ fi
 mkdir -p "$screenshots"
 readonly ready_deadline=$((SECONDS + ready_timeout))
 while true; do
+  if ! kill -0 "$launch_pid" 2>/dev/null; then
+    echo "Launched iOS process exited during runtime smoke verification" >&2
+    exit 1
+  fi
   xcrun simctl io "$device" screenshot "$screenshots/product-launch.png" >/dev/null
   sips -s format bmp "$screenshots/product-launch.png" --out "$screenshots/product-launch.bmp" >/dev/null
   if node "$runner_root/local-runtime/hosts/verify-nonblank-bmp.mjs" "$screenshots/product-launch.bmp" >/dev/null 2>&1; then

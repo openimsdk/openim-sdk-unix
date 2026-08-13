@@ -46,11 +46,16 @@ OPENIM_LOCAL_NATIVE_HOST="$native_root" OPENIM_LOCAL_UNIAPP_IOS_SDK="$sdk_root" 
     build
 )
 readonly app="$output_root/HBuilder.app"
+readonly dcloud_uts_ext_api="$sdk_root/SDK/Libs/DCloudUTSExtAPI.framework"
 test -d "$app"
+test -f "$dcloud_uts_ext_api/DCloudUTSExtAPI"
+ditto "$dcloud_uts_ext_api" "$app/Frameworks/DCloudUTSExtAPI.framework"
 test -f "$app/Pandora/apps/$app_id/www/manifest.json"
 test -f "$app/Frameworks/OpenIMCore.framework/OpenIMCore"
+test -f "$app/Frameworks/DCloudUTSExtAPI.framework/DCloudUTSExtAPI"
 verify_required_ios_frameworks "$app"
-codesign --verify --deep --strict "$app" 2>/dev/null || true
+codesign --force --deep --sign - "$app"
+codesign --verify --deep --strict "$app"
 node -e '
   const fs = require("fs"); const crypto = require("crypto"); const path = process.argv[1];
   const files = []; const walk = (d) => fs.readdirSync(d).sort().forEach((n) => { const p = `${d}/${n}`; fs.statSync(p).isDirectory() ? walk(p) : files.push(p) }); walk(path);
