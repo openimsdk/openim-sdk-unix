@@ -22,6 +22,7 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 
 import { traditionalUniAppFixtureFiles } from './uniapp-consumer-compile.js'
+import { verifyDeliveryIdentity, type DeliveryIdentityEvidence, type DeliveryIdentityInput } from './local-delivery-identity.js'
 import { scanReleaseSecrets } from './release-integrity.js'
 import { resolveUniToolchainProfile, type UniToolchainProfileV2 } from './uni-toolchain.js'
 
@@ -70,6 +71,13 @@ export interface LocalNativeArtifact {
   path: string
 }
 
+export interface LocalDeliveryDeclaration {
+  manifest: string
+  checksums: string
+  pluginRoot: string
+  baselineJsonPointer: string
+}
+
 export interface LocalProductDescriptor {
   schemaVersion: 1
   id: string
@@ -80,6 +88,7 @@ export interface LocalProductDescriptor {
   plugins: LocalProductPlugin[]
   automationAssets?: LocalAutomationAsset[]
   nativeArtifacts?: LocalNativeArtifact[]
+  delivery?: LocalDeliveryDeclaration
   androidHost?: LocalAndroidHostOptions
   iosHost?: LocalIOSHostOptions
   hostPreparation?: Partial<Record<LocalPlatform, LocalHostPreparation>>
@@ -89,7 +98,7 @@ export interface LocalProductDescriptor {
   dcloudAppIDs: Record<LocalSurface, string>
 }
 
-export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescriptor, 'repositoryRoot' | 'uniappxSource' | 'surfaceSources' | 'plugins' | 'automationAssets' | 'nativeArtifacts' | 'hostPreparation'> {
+export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescriptor, 'repositoryRoot' | 'uniappxSource' | 'surfaceSources' | 'plugins' | 'automationAssets' | 'nativeArtifacts' | 'delivery' | 'hostPreparation'> {
   descriptorPath: string
   repositoryRoot: string
   uniappxSource: string
@@ -97,6 +106,7 @@ export interface ResolvedLocalProductDescriptor extends Omit<LocalProductDescrip
   plugins: Array<{ id: string; source: string; dependencies?: string[]; androidNamespace?: string; androidGradleTemplate?: string }>
   automationAssets: Array<{ source: string; destination: string; surfaces?: LocalSurface[]; sourceEnvironment?: string }>
   nativeArtifacts: Array<{ id: string; path: string }>
+  delivery?: DeliveryIdentityInput
   hostPreparation: Partial<Record<LocalPlatform, LocalHostPreparation>>
 }
 
@@ -120,6 +130,7 @@ export interface LocalEvidenceV1 {
   finishedAt: string
   source: { revision: string; dirty: boolean }
   runner: { revision: string; dirty: boolean }
+  delivery?: DeliveryIdentityEvidence
   product: string
   surface: LocalSurface
   platform: LocalPlatform
@@ -226,19 +237,33 @@ export function resolveProductDescriptor(path: string): ResolvedLocalProductDesc
     assert(document.applicationIDs[surface]?.startsWith('io.openim.local.'), `Missing local application ID for ${surface}`)
     assert(document.dcloudAppIDs[surface]?.startsWith('__UNI__'), `Missing DCloud AppID for ${surface}`)
   }
+  const plugins = document.plugins.map((plugin) => ({
+    id: plugin.id,
+    source: resolveDescriptorRelative(descriptorPath, plugin.source),
+    ...(plugin.dependencies != null ? { dependencies: plugin.dependencies } : {}),
+    ...(plugin.androidNamespace != null ? { androidNamespace: plugin.androidNamespace } : {}),
+    ...(plugin.androidGradleTemplate != null ? { androidGradleTemplate: resolveDescriptorRelative(descriptorPath, plugin.androidGradleTemplate) } : {}),
+  }))
+  const delivery = document.delivery == null ? null : {
+    manifestPath: resolveDescriptorRelative(descriptorPath, document.delivery.manifest),
+    checksumsPath: resolveDescriptorRelative(descriptorPath, document.delivery.checksums),
+    pluginRoot: resolveDescriptorRelative(descriptorPath, document.delivery.pluginRoot),
+    baselineJsonPointer: document.delivery.baselineJsonPointer,
+  }
+  if (delivery != null) {
+    for (const plugin of plugins) {
+      const location = relative(delivery.pluginRoot, plugin.source)
+      assert(location === '' || (!location.startsWith(`..${sep}`) && location !== '..'), `Plugin source is outside declared delivery plugin root: ${plugin.id}`)
+    }
+  }
+  const { delivery: _delivery, ...descriptorWithoutDelivery } = document
   return {
-    ...document,
+    ...descriptorWithoutDelivery,
     descriptorPath,
     repositoryRoot: resolveDescriptorRelative(descriptorPath, document.repositoryRoot),
     uniappxSource: resolveDescriptorRelative(descriptorPath, document.uniappxSource),
     surfaceSources: Object.fromEntries(Object.entries(document.surfaceSources ?? {}).map(([surface, source]) => [surface, resolveDescriptorRelative(descriptorPath, source)])),
-    plugins: document.plugins.map((plugin) => ({
-      id: plugin.id,
-      source: resolveDescriptorRelative(descriptorPath, plugin.source),
-      ...(plugin.dependencies != null ? { dependencies: plugin.dependencies } : {}),
-      ...(plugin.androidNamespace != null ? { androidNamespace: plugin.androidNamespace } : {}),
-      ...(plugin.androidGradleTemplate != null ? { androidGradleTemplate: resolveDescriptorRelative(descriptorPath, plugin.androidGradleTemplate) } : {}),
-    })),
+    plugins,
     automationAssets: (document.automationAssets ?? []).map((asset) => ({
       source: resolveDescriptorRelative(descriptorPath, asset.source),
       destination: asset.destination,
@@ -246,10 +271,28 @@ export function resolveProductDescriptor(path: string): ResolvedLocalProductDesc
       ...(asset.sourceEnvironment != null ? { sourceEnvironment: asset.sourceEnvironment } : {}),
     })),
     nativeArtifacts: (document.nativeArtifacts ?? []).map((artifact) => ({ id: artifact.id, path: resolveDescriptorRelative(descriptorPath, artifact.path) })),
+    ...(delivery != null ? { delivery } : {}),
     hostPreparation: Object.fromEntries(Object.entries(document.hostPreparation ?? {}).map(([platform, preparation]) => [platform, {
       ...preparation,
       script: resolveDescriptorRelative(descriptorPath, preparation.script),
     }])),
+  }
+}
+
+function preflightProductDelivery(descriptor: ResolvedLocalProductDescriptor): DeliveryIdentityEvidence | undefined {
+  return descriptor.delivery == null ? undefined : verifyDeliveryIdentity(descriptor.delivery)
+}
+
+export function preflightEvidenceIdentity(descriptor: ResolvedLocalProductDescriptor): {
+  source: { revision: string; dirty: boolean }
+  runner: { revision: string; dirty: boolean }
+  delivery?: DeliveryIdentityEvidence
+} {
+  const delivery = preflightProductDelivery(descriptor)
+  return {
+    source: sourceIdentity(descriptor.repositoryRoot),
+    runner: sourceIdentity(runnerRoot),
+    ...(delivery != null ? { delivery } : {}),
   }
 }
 
@@ -664,6 +707,7 @@ export function runLocalRuntime(options: LocalRuntimeOptions): { project: string
   assertPlatform(options.platform)
   const descriptor = resolveProductDescriptor(options.descriptorPath)
   const profile = resolveUniToolchainProfile(options.profilePath)
+  const identities = preflightEvidenceIdentity(descriptor)
   const workspaceRoot = resolve(options.workspaceRoot ?? process.env.OPENIM_LOCAL_WORKSPACE_ROOT ?? '/Volumes/workspace/work/openim-uni-runtime-workspaces')
   const runID = options.runID ?? `${new Date().toISOString().replaceAll(/[:.]/g, '-')}-${randomUUID()}`
   const startedAt = new Date().toISOString()
@@ -682,7 +726,6 @@ export function runLocalRuntime(options: LocalRuntimeOptions): { project: string
     startedAt,
   })
   const device = detectDevice(options.platform, options.deviceID)
-  const identity = sourceIdentity(descriptor.repositoryRoot)
   let project = join(workspaceRoot, descriptor.id, options.surface)
   let evidence: LocalEvidenceV1 = {
     schema: 'io.openim.uni.local-runtime-evidence/v1',
@@ -691,8 +734,9 @@ export function runLocalRuntime(options: LocalRuntimeOptions): { project: string
     cloudPackaging: false,
     startedAt,
     finishedAt: startedAt,
-    source: identity,
-    runner: sourceIdentity(runnerRoot),
+    source: identities.source,
+    runner: identities.runner,
+    ...(identities.delivery != null ? { delivery: identities.delivery } : {}),
     product: descriptor.id,
     surface: options.surface,
     platform: options.platform,

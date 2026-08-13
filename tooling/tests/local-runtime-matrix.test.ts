@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
-import { archiveRuntimeArtifacts, cleanupLocalRun, dcloudAppKeyEnvironmentName, listLocalRuns, localMatrixCells, LocalRuntimeLock, prepareHostProject, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
+import { archiveRuntimeArtifacts, cleanupLocalRun, dcloudAppKeyEnvironmentName, listLocalRuns, localMatrixCells, LocalRuntimeLock, preflightEvidenceIdentity, prepareHostProject, prepareStableProject, resolveProductDescriptor } from '../src/local-runtime-matrix.js'
 import { configureNativeAndroid } from '../../local-runtime/scripts/configure-native-android.mjs'
 
 function write(path: string, source: string): void {
@@ -165,6 +165,52 @@ test('product descriptors resolve explicit environment-backed delivery inputs wi
   } finally {
     delete process.env.OPENIM_TEST_PLUGIN_SOURCE
   }
+})
+
+test('evidence identity keeps product source, runner, and an optional delivery bundle distinct', () => {
+  const item = fixture()
+  const deliveryRoot = join(item.root, 'delivery')
+  write(join(deliveryRoot, 'delivery-manifest.json'), '{"release":{"revision":"bundle-42"}}\n')
+  write(join(deliveryRoot, 'uni_modules/example-plugin/package.json'), '{"id":"example-plugin"}\n')
+  write(join(deliveryRoot, 'SHA256SUMS'), [
+    'a02977d5184184f93612322e1501e9f3fae9fdc83c13aac525454c76401cd483  delivery-manifest.json',
+    '060590508f7615953c1761feb17c47ba0a8b3a7e1544cabd935e6792089a84e6  uni_modules/example-plugin/package.json',
+    '',
+  ].join('\n'))
+  const document = JSON.parse(readFileSync(item.descriptor, 'utf8'))
+  document.plugins = [{ id: 'example-plugin', source: '../../delivery/uni_modules/example-plugin' }]
+  document.delivery = {
+    manifest: '../../delivery/delivery-manifest.json',
+    checksums: '../../delivery/SHA256SUMS',
+    pluginRoot: '../../delivery/uni_modules',
+    baselineJsonPointer: '/release/revision',
+  }
+  writeFileSync(item.descriptor, `${JSON.stringify(document, null, 2)}\n`)
+
+  const descriptor = resolveProductDescriptor(item.descriptor)
+  const identity = preflightEvidenceIdentity(descriptor)
+
+  assert.equal(identity.source.revision, execFileSync('git', ['-C', item.root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim())
+  assert.match(identity.runner.revision, /^[0-9a-f]{40}$/)
+  assert.equal(identity.delivery?.baseline, 'bundle-42')
+  assert.equal(identity.delivery?.manifestSha256, 'a02977d5184184f93612322e1501e9f3fae9fdc83c13aac525454c76401cd483')
+})
+
+test('delivery evidence cannot claim a bundle while staging plugins from another tree', () => {
+  const item = fixture()
+  write(join(item.root, 'candidate/delivery-manifest.json'), '{}\n')
+  write(join(item.root, 'candidate/SHA256SUMS'), 'placeholder\n')
+  write(join(item.root, 'candidate/plugins/.keep'), '')
+  const document = JSON.parse(readFileSync(item.descriptor, 'utf8'))
+  document.delivery = {
+    manifest: '../../candidate/delivery-manifest.json',
+    checksums: '../../candidate/SHA256SUMS',
+    pluginRoot: '../../candidate/plugins',
+    baselineJsonPointer: '/baseline',
+  }
+  writeFileSync(item.descriptor, `${JSON.stringify(document, null, 2)}\n`)
+
+  assert.throws(() => resolveProductDescriptor(item.descriptor), /Plugin source is outside declared delivery plugin root/)
 })
 
 test('product descriptors may supply canonical traditional surface sources', () => {

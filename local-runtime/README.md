@@ -25,6 +25,11 @@ The pipeline uses the platform behavior documented by DCloud:
 - `uni-websocket` is embedded because uni-automator uses it as its control
   channel.
 
+When an internal run targets an assembled candidate instead of source plugin
+bytes, configure the generic preflight described in
+[`DELIVERY-IDENTITY.md`](DELIVERY-IDENTITY.md). This binds evidence to the
+candidate manifest, checksum file, declared baseline, and plugin tree.
+
 ## Inputs
 
 - HBuilderX `5.23.2026080313-alpha`, matching `toolchain.lock.json`.
