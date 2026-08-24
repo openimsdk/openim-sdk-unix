@@ -26,7 +26,6 @@ import {
   OpenIMUpdateFriendBoolean,
   OpenIMGroupNeedVerification,
   OpenIMGroupOption,
-  OpenIMGroupDisplayIsRead,
   OpenIMGroupMemberRoleLevel,
   OpenIMSetConversationParams,
   OpenIMSetSelfInfoParams,
@@ -380,7 +379,17 @@ export const OpenIMLoginStatusLogged : OpenIMLoginStatus = 3
 function optionalString(value ?: string | null) : string { return value != null ? value as string : '' }
 function optionalBoolean(value ?: boolean | null) : boolean { return value != null ? value as boolean : false }
 function optionalNumber(value ?: number | null) : number { return value != null ? value as number : 0 }
-function normalizeAndroidLocalMediaPath(path : string) : string { return UTSAndroid.convert2AbsFullPath(path) }
+function normalizeAndroidLocalMediaPath(path : string) : string {
+  const convertedPath = UTSAndroid.convert2AbsFullPath(path)
+  const userDataPrefix = 'unifile://usr'
+  if (convertedPath.indexOf(userDataPrefix) != 0) { return convertedPath }
+  const context = UTSAndroid.getAppContext()
+  if (context == null) { return convertedPath }
+  const externalFilesDir = context.getExternalFilesDir(null)
+  if (externalFilesDir == null) { return convertedPath }
+  const suffix = convertedPath.substring(userDataPrefix.length)
+  return externalFilesDir.getAbsolutePath() + suffix
+}
 function normalizeAndroidUploadFileParams(params : OpenIMUploadFileParams) : OpenIMUploadFileParams {
   const normalized : OpenIMUploadFileParams = { filepath: normalizeAndroidLocalMediaPath(params.filepath), name: params.name, contentType: params.contentType, uuid: params.uuid }
   if (params.cancelID != null) { normalized.cancelID = params.cancelID }
@@ -399,6 +408,16 @@ function stringifyUpdateFriendsPayload(params : OpenIMUpdateFriendsParams) : str
   if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
   return '{' + payload + '}'
 }
+function stringifySetConversationPayload(params : OpenIMSetConversationParams) : string {
+  let payload = ''
+  if (params.recvMsgOpt != null) { payload = appendPayloadField(payload, '"recvMsgOpt":' + stringifyJSON(params.recvMsgOpt)) }
+  if (params.isPinned != null) { payload = appendPayloadField(payload, '"isPinned":' + stringifyJSON(params.isPinned)) }
+  if (params.isPrivateChat != null) { payload = appendPayloadField(payload, '"isPrivateChat":' + stringifyJSON(params.isPrivateChat)) }
+  if (params.burnDuration != null) { payload = appendPayloadField(payload, '"burnDuration":' + stringifyJSON(params.burnDuration)) }
+  if (params.groupAtType != null) { payload = appendPayloadField(payload, '"groupAtType":' + stringifyJSON(params.groupAtType)) }
+  if (params.ex != null) { payload = appendPayloadField(payload, '"ex":' + stringifyJSON(params.ex)) }
+  return '{' + payload + '}'
+}
 function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : string {
   let payload = ''
   payload = appendPayloadField(payload, '"groupID":' + stringifyJSON(params.groupID))
@@ -410,7 +429,6 @@ function stringifySetGroupInfoPayload(params : OpenIMSetGroupInfoParams) : strin
   if (params.needVerification != null) { payload = appendPayloadField(payload, '"needVerification":' + stringifyJSON(params.needVerification)) }
   if (params.lookMemberInfo != null) { payload = appendPayloadField(payload, '"lookMemberInfo":' + stringifyJSON(params.lookMemberInfo)) }
   if (params.applyMemberFriend != null) { payload = appendPayloadField(payload, '"applyMemberFriend":' + stringifyJSON(params.applyMemberFriend)) }
-  if (params.displayIsRead != null) { payload = appendPayloadField(payload, '"displayIsRead":' + stringifyJSON(params.displayIsRead)) }
   return '{' + payload + '}'
 }
 function stringifySetGroupMemberInfoPayload(params : OpenIMSetGroupMemberInfoParams) : string {
@@ -635,7 +653,7 @@ export const markConversationMessageAsRead = function (conversationID : string, 
 export const getGroupMemberList = function (params : OpenIMGetGroupMemberListParams, operationID ?: string | null) : Promise<OpenIMGroupMemberListResult | null> { return resolveGroupMemberListNative('getGroupMemberList', (resolve, reject) => { const requestJSON = '{"groupID":' + stringifyJSON(params.groupID) + ',"filter":' + stringifyJSON(params.filter) + ',"offset":' + stringifyJSON(params.offset) + ',"count":' + stringifyJSON(params.count) + '}'; driverCallAsync(2065, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setMessageLocalEx = function (params : OpenIMSetMessageLocalExParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"clientMsgID":' + stringifyJSON(params.clientMsgID) + ',"localEx":' + stringifyJSON(params.localEx) + '}'; driverCallAsync(2066, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const revokeMessage = function (params : OpenIMMessageKeyParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"clientMsgID":' + stringifyJSON(params.clientMsgID) + '}'; driverCallAsync(2067, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
-export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"conversationInfo":' + stringifyJSON(stringifyJSON(params)) + '}'; driverCallAsync(2068, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
+export const setConversation = function (params : OpenIMSetConversationParams, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"conversationID":' + stringifyJSON(params.conversationID) + ',"conversationInfo":' + stringifyJSON(stringifySetConversationPayload(params)) + '}'; driverCallAsync(2068, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setAppBackgroundStatus = function (data : boolean, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"isBackground":' + stringifyJSON(data) + '}'; driverCallAsync(2069, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const setAppBadge = function (appUnreadCount : number, operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { const requestJSON = '{"count":' + stringifyJSON(appUnreadCount) + '}'; driverCallAsync(2070, normalizeOperationID(operationID), requestJSON, resolve, reject) }) }
 export const networkStatusChanged = function (operationID ?: string | null) : Promise<string> { return resolveStringNative((resolve, reject) => { driverCallAsync(2071, normalizeOperationID(operationID), '{}', resolve, reject) }) }

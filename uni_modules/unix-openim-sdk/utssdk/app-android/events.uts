@@ -334,6 +334,25 @@ function emitSDKEvent(eventName : string, payload : string, errCode : number, er
           try { onRecvNewMessagesDispatchHandler(parseNativeMessageEventList(payload)) } catch (error) { console.error('[unix-openim-sdk] onRecvNewMessages handler failed', error) }
         }
       }
+      const onRecvNewMessagesSingleDispatchPayload = parseNativeMessageEventList(payload)
+      if (onRecvNewMessagesSingleDispatchPayload != null) {
+        const onRecvNewMessageDispatchSnapshotFromBatch : Array<OpenIMMessageEventHandler> = []
+        for (let onRecvNewMessageCopyIndexFromBatch : number = 0; onRecvNewMessageCopyIndexFromBatch < onRecvNewMessageHandlers.length; onRecvNewMessageCopyIndexFromBatch = onRecvNewMessageCopyIndexFromBatch + 1) {
+          const onRecvNewMessageCurrentHandlerFromBatch = onRecvNewMessageHandlers[onRecvNewMessageCopyIndexFromBatch]
+          if (onRecvNewMessageCurrentHandlerFromBatch != null) { onRecvNewMessageDispatchSnapshotFromBatch.push(onRecvNewMessageCurrentHandlerFromBatch) }
+        }
+        for (let onRecvNewMessageMessageIndexFromBatch : number = 0; onRecvNewMessageMessageIndexFromBatch < onRecvNewMessagesSingleDispatchPayload.messages.length; onRecvNewMessageMessageIndexFromBatch = onRecvNewMessageMessageIndexFromBatch + 1) {
+          const onRecvNewMessageMessageFromBatch = onRecvNewMessagesSingleDispatchPayload.messages[onRecvNewMessageMessageIndexFromBatch]
+          if (onRecvNewMessageMessageFromBatch != null) {
+            for (let onRecvNewMessageDispatchIndexFromBatch : number = 0; onRecvNewMessageDispatchIndexFromBatch < onRecvNewMessageDispatchSnapshotFromBatch.length; onRecvNewMessageDispatchIndexFromBatch = onRecvNewMessageDispatchIndexFromBatch + 1) {
+              const onRecvNewMessageDispatchHandlerFromBatch = onRecvNewMessageDispatchSnapshotFromBatch[onRecvNewMessageDispatchIndexFromBatch]
+              if (onRecvNewMessageDispatchHandlerFromBatch != null) {
+                try { onRecvNewMessageDispatchHandlerFromBatch(onRecvNewMessageMessageFromBatch) } catch (error) { console.error('[unix-openim-sdk] onRecvNewMessage handler failed', error) }
+              }
+            }
+          }
+        }
+      }
       break
 
     case 'onRecvOfflineNewMessages':
@@ -346,6 +365,25 @@ function emitSDKEvent(eventName : string, payload : string, errCode : number, er
         const onRecvOfflineNewMessagesDispatchHandler = onRecvOfflineNewMessagesDispatchSnapshot[onRecvOfflineNewMessagesDispatchIndex]
         if (onRecvOfflineNewMessagesDispatchHandler != null) {
           try { onRecvOfflineNewMessagesDispatchHandler(parseNativeMessageEventList(payload)) } catch (error) { console.error('[unix-openim-sdk] onRecvOfflineNewMessages handler failed', error) }
+        }
+      }
+      const onRecvOfflineNewMessagesSingleDispatchPayload = parseNativeMessageEventList(payload)
+      if (onRecvOfflineNewMessagesSingleDispatchPayload != null) {
+        const onRecvOfflineNewMessageDispatchSnapshotFromBatch : Array<OpenIMMessageEventHandler> = []
+        for (let onRecvOfflineNewMessageCopyIndexFromBatch : number = 0; onRecvOfflineNewMessageCopyIndexFromBatch < onRecvOfflineNewMessageHandlers.length; onRecvOfflineNewMessageCopyIndexFromBatch = onRecvOfflineNewMessageCopyIndexFromBatch + 1) {
+          const onRecvOfflineNewMessageCurrentHandlerFromBatch = onRecvOfflineNewMessageHandlers[onRecvOfflineNewMessageCopyIndexFromBatch]
+          if (onRecvOfflineNewMessageCurrentHandlerFromBatch != null) { onRecvOfflineNewMessageDispatchSnapshotFromBatch.push(onRecvOfflineNewMessageCurrentHandlerFromBatch) }
+        }
+        for (let onRecvOfflineNewMessageMessageIndexFromBatch : number = 0; onRecvOfflineNewMessageMessageIndexFromBatch < onRecvOfflineNewMessagesSingleDispatchPayload.messages.length; onRecvOfflineNewMessageMessageIndexFromBatch = onRecvOfflineNewMessageMessageIndexFromBatch + 1) {
+          const onRecvOfflineNewMessageMessageFromBatch = onRecvOfflineNewMessagesSingleDispatchPayload.messages[onRecvOfflineNewMessageMessageIndexFromBatch]
+          if (onRecvOfflineNewMessageMessageFromBatch != null) {
+            for (let onRecvOfflineNewMessageDispatchIndexFromBatch : number = 0; onRecvOfflineNewMessageDispatchIndexFromBatch < onRecvOfflineNewMessageDispatchSnapshotFromBatch.length; onRecvOfflineNewMessageDispatchIndexFromBatch = onRecvOfflineNewMessageDispatchIndexFromBatch + 1) {
+              const onRecvOfflineNewMessageDispatchHandlerFromBatch = onRecvOfflineNewMessageDispatchSnapshotFromBatch[onRecvOfflineNewMessageDispatchIndexFromBatch]
+              if (onRecvOfflineNewMessageDispatchHandlerFromBatch != null) {
+                try { onRecvOfflineNewMessageDispatchHandlerFromBatch(onRecvOfflineNewMessageMessageFromBatch) } catch (error) { console.error('[unix-openim-sdk] onRecvOfflineNewMessage handler failed', error) }
+              }
+            }
+          }
         }
       }
       break

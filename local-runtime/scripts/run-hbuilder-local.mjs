@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+const projectRoot = resolve(process.env.OPENIM_LOCAL_PROJECT_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), '../..'))
 
 function run(cli, args, stdio) {
   const result = spawnSync(cli, args, {
@@ -32,7 +32,8 @@ spawnSync(cli, ['project', 'close', '--path', projectRoot], {
 })
 run(cli, ['project', 'open', '--path', projectRoot], 'ignore')
 const commandArgs = process.argv.slice(separator + 1)
-run(cli, commandArgs, 'inherit')
+try {
+  run(cli, commandArgs, 'inherit')
 
 if (commandArgs[0] === 'launch' && commandArgs[1] === 'app-ios') {
   const readOption = (name, fallback) => {
@@ -52,4 +53,11 @@ if (commandArgs[0] === 'launch' && commandArgs[1] === 'app-ios') {
   const deviceID = readOption('--deviceId', '')
   if (deviceID.length > 0) logArgs.push('--deviceId', deviceID)
   run(cli, logArgs, 'inherit')
+}
+} finally {
+  spawnSync(cli, ['project', 'close', '--path', projectRoot], {
+    cwd: projectRoot,
+    env: process.env,
+    stdio: 'ignore',
+  })
 }

@@ -1,5 +1,13 @@
 # Public unix-openim-sdk local runtime harness
 
+> **INTERNAL DEVELOPMENT INFRASTRUCTURE — NOT A CUSTOMER DELIVERABLE**
+>
+> This directory is maintained for OpenIM team development, CI, and release
+> verification. It is excluded from Public marketplace artifacts and from
+> Private or IM+AV customer delivery bundles. Customers should follow the
+> integration documentation shipped with the plugin instead of copying or
+> depending on this runner.
+
 This source-only harness builds, installs, launches, and tests the Public
 `unix-openim-sdk` uni-app x project without invoking DCloud cloud packaging.
 
@@ -16,6 +24,11 @@ The pipeline uses the platform behavior documented by DCloud:
   HBuilderX and Xcode. The minimum supported iOS version is 14.
 - `uni-websocket` is embedded because uni-automator uses it as its control
   channel.
+
+When an internal run targets an assembled candidate instead of source plugin
+bytes, configure the generic preflight described in
+[`DELIVERY-IDENTITY.md`](DELIVERY-IDENTITY.md). This binds evidence to the
+candidate manifest, checksum file, declared baseline, and plugin tree.
 
 ## Inputs
 
@@ -123,3 +136,9 @@ the aggregate Jest suite green.
 Generated hosts and evidence live under `unpackage/` and `test-results/` and
 remain ignored. `env.js` is generated locally so uni-automator uses the exact
 APK/app produced by this checkout.
+
+Release certification accepts only immutable schema-v3 per-run evidence and
+its matching manifest. Mutable `latest` files are navigation pointers, while
+schema-v2 results are historical only. Final evidence, manifests, SBOMs, and
+candidate checksums belong in CI/Release assets rather than a tracked index
+that would change the revision after it was tested.

@@ -30,13 +30,20 @@ trap restore_local_automation_environment EXIT
 "$LOCAL_RUNTIME_ROOT/scripts/prepare-automation-test-runtime.sh"
 "$LOCAL_RUNTIME_ROOT/scripts/run-local-android.sh"
 
-readonly APK="$PROJECT_ROOT/unpackage/debug/unix-openim-sdk-local.apk"
+readonly APK="$PROJECT_ROOT/unpackage/debug/${OPENIM_LOCAL_PRODUCT:-unix-openim-sdk}-${OPENIM_LOCAL_SURFACE:-uniappx}-local.apk"
 readonly ADB="$(resolve_adb)"
 readonly DEVICE_ID="$(cat "$PROJECT_ROOT/unpackage/local-runtime/android-device-id")"
+readonly PACKAGE_NAME="$(android_package_name)"
 readonly OS_VERSION="$("$ADB" -s "$DEVICE_ID" shell getprop ro.build.version.release | tr -d '\r')"
 readonly ARCHITECTURE="$("$ADB" -s "$DEVICE_ID" shell getprop ro.product.cpu.abi | tr -d '\r')"
+if [[ "${OPENIM_LOCAL_SURFACE:-uniappx}" == "uniappx" ]]; then
+  readonly AUTOMATION_REBUILD=1
+else
+  readonly AUTOMATION_REBUILD=0
+fi
 
 OPENIM_TEST_CUSTOM_BASE="$APK" \
+OPENIM_TEST_BASE_PACKAGE="$PACKAGE_NAME" \
 OPENIM_TEST_DEVICE_ID="$DEVICE_ID" \
 OPENIM_TEST_DEVICE_KIND="${OPENIM_TEST_DEVICE_KIND:-emulator}" \
 OPENIM_TEST_OS_VERSION="$OS_VERSION" \
@@ -44,5 +51,6 @@ OPENIM_TEST_ARCHITECTURE="$ARCHITECTURE" \
 OPENIM_TEST_BUILD_CONFIGURATION=Debug \
 OPENIM_TEST_VAPOR=false \
 OPENIM_AUTOMATION_PREPROVISION=1 \
-OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD=1 \
+OPENIM_AUTOMATION_RUNTIME_ROOT="$LOCAL_RUNTIME_ROOT" \
+OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD="$AUTOMATION_REBUILD" \
   node "$PROJECT_ROOT/scripts/run-openim-automation.mjs" android --device-id "$DEVICE_ID"

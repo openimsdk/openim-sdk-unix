@@ -62,6 +62,40 @@ test('filtered runs ignore incidental infrastructure evidence but still validate
   assert.deepEqual(incomplete.issues.map((item) => item.axis), ['structure'])
 })
 
+test('filtered runs accept the suite field emitted by the uni-app x automation page', () => {
+  const result = validateAutomationEvidence({
+    manifest: manifest(),
+    platform: 'android',
+    fullRun: false,
+    report: {
+      suiteFilter: 'app',
+      executedSuites: ['app'],
+      cases: [{
+        suite: 'app',
+        apiName: 'updateFcmToken',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        structureValidated: true,
+        semanticValidated: true,
+        assertions: [{
+          axis: 'semantic',
+          profile: 'push-token-updated',
+          rule: 'server-acknowledged',
+          expected: 'accepted',
+          actual: 'accepted',
+          ok: true,
+        }],
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, true, JSON.stringify(result.issues))
+  assert.equal(result.checkedCallables, 1)
+})
+
 function manifest() {
   return {
     schemaVersion: 2,
@@ -208,7 +242,7 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
               operationEpoch: 2,
               eventEpoch: 2,
               payloadMatched: true,
-              correlationKind: 'payload-identity',
+              correlationKind: 'operation-payload-identity',
               payloadIdentity: 'message-4',
               eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-4', progress: 50 }),
               operationTerminalSequence: 7,
@@ -222,7 +256,7 @@ test('evidence from scenario cases is aggregated by explicit apiName', () => {
               operationEpoch: 2,
               eventEpoch: 2,
               payloadMatched: true,
-              correlationKind: 'payload-identity',
+              correlationKind: 'cross-account-payload-identity',
               payloadIdentity: 'message-4',
               eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-4' }),
               operationTerminalSequence: 7,
@@ -307,7 +341,6 @@ test('callable event evidence covers every generated event in operation order an
     operationEpoch: 3,
     eventEpoch: 3,
     payloadMatched: true,
-    correlationKind: 'payload-identity',
     operationTerminalSequence: 14,
     exclusiveOperation: false,
   }
@@ -315,6 +348,7 @@ test('callable event evidence covers every generated event in operation order an
     ...baseCorrelation,
     eventName: 'onSendMessageProgress',
     eventSequence: 11,
+    correlationKind: 'operation-payload-identity',
     payloadIdentity: 'message-10',
     eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10', progress: 50 }),
     ...overrides,
@@ -323,6 +357,7 @@ test('callable event evidence covers every generated event in operation order an
     ...baseCorrelation,
     eventName: 'onRecvNewMessage',
     eventSequence: 12,
+    correlationKind: 'cross-account-payload-identity',
     payloadIdentity: 'message-10',
     eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10' }),
     ...overrides,
@@ -357,8 +392,8 @@ test('callable event evidence covers every generated event in operation order an
   assert.equal(missingPeerDelivery.passed, false)
 
   const wrongEpoch = validate([
-    progressCorrelation(),
-    receiveCorrelation({ eventEpoch: 4 }),
+    progressCorrelation({ eventEpoch: 4 }),
+    receiveCorrelation(),
   ])
   assert.equal(wrongEpoch.passed, false)
 
@@ -400,6 +435,77 @@ test('callable event evidence covers every generated event in operation order an
   assert.deepEqual(valid.issues, [])
 })
 
+test('message event evidence cannot downgrade identity correlation to a timing window', () => {
+  const eventCase = manifest().callables[0]
+  const validate = (eventName: string, correlationKind: string, eventEpoch = 3) => validateAutomationEvidence({
+    manifest: {
+      ...manifest(),
+      counts: { callables: 1, events: 0 },
+      callables: [{ ...eventCase, expectedEvents: [eventName] }],
+      events: [],
+    },
+    platform: 'android',
+    report: {
+      cases: [{
+        apiName: 'sendMessage',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        responseEvidence: true,
+        structureValidated: true,
+        semanticValidated: true,
+        sideEffectValidated: true,
+        assertions: sendMessageProfileAssertions,
+        eventCorrelations: [{
+          operationApiName: 'sendMessage',
+          eventName,
+          operationSequence: 10,
+          eventSequence: 11,
+          operationEpoch: 3,
+          eventEpoch,
+          payloadMatched: true,
+          correlationKind,
+          operationTerminalSequence: 12,
+          exclusiveOperation: true,
+          payloadIdentity: correlationKind === 'exclusive-operation-window' ? '' : 'message-10',
+          eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10', progress: 100 }),
+        }],
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(validate('onSendMessageProgress', 'operation-payload-identity').passed, true)
+  assert.equal(validate('onSendMessageProgress', 'exclusive-operation-window').passed, false)
+  assert.equal(validate('onSendMessageProgress', 'operation-payload-identity', 4).passed, false)
+  assert.equal(validate('onRecvNewMessage', 'cross-account-payload-identity', 4).passed, true)
+  assert.equal(validate('onRecvNewMessage', 'payload-identity').passed, false)
+})
+
+test('focused event-delivery fails closed when a platform-owned producer is absent', () => {
+  const focusedManifest = {
+    ...manifest(),
+    counts: { callables: 1, events: 0 },
+    callables: [{ ...manifest().callables[0], expectedEvents: ['onSendMessageProgress'] }],
+    events: [],
+  }
+  const result = validateAutomationEvidence({
+    manifest: focusedManifest,
+    platform: 'android',
+    fullRun: false,
+    report: {
+      suiteFilter: 'event-delivery',
+      executedSuites: ['message-create', 'message-create-send', 'message-send', 'upload', 'event-delivery'],
+      cases: [],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, false)
+  assert.equal(result.checkedCallables, 1)
+  assert.equal(result.issues.some((issue) => issue.caseId === 'api/sendMessage'), true)
+})
+
 test('cross-account message delivery accepts exact peer identity after operation completion', () => {
   const eventCase = manifest().callables[0]
   const result = validateAutomationEvidence({
@@ -429,10 +535,10 @@ test('cross-account message delivery accepts exact peer identity after operation
           operationEpoch: 3,
           eventEpoch: 3,
           payloadMatched: true,
-          correlationKind: 'exclusive-operation-window',
+          correlationKind: 'operation-payload-identity',
           operationTerminalSequence: 12,
           exclusiveOperation: true,
-          payloadIdentity: '',
+          payloadIdentity: 'message-10',
           eventPayloadDetail: JSON.stringify({ clientMsgID: 'message-10', progress: 100 }),
         }, {
           operationApiName: 'sendMessage',

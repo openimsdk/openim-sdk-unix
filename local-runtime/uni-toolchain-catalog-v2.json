@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "profileID": "dcloud-5.23-v2",
+  "hbuilderx": {
+    "version": "5.23.2026080313-alpha",
+    "distribution": "alpha",
+    "cliSha256": "a22292b1d595c50dd764196233ebff8cedad74af783896876c17880279b69977"
+  },
+  "hostTools": {
+    "javaMajor": "17",
+    "gradleVersion": "8.14.3",
+    "xcodeVersion": "26.2",
+    "swiftVersion": "6.2.3",
+    "cocoapodsVersion": "1.16.2"
+  },
+  "sdks": {
+    "uniapp": {
+      "android": {
+        "archiveFileName": "Android-SDK@5.23.82669_20260804.zip",
+        "archiveRoot": "Android-SDK@5.23.82669_20260804",
+        "sha256": "5dde0fdce0c8d628f5e2df7f734a97b0296fd213ae33532ebadc7af7671403a1"
+      },
+      "ios": {
+        "archiveFileName": "SDK.zip",
+        "archiveRoot": "SDK",
+        "sha256": "03159319399d362def41be64ee3f584aa7021050063fe58c0653a5ff7944234a"
+      }
+    },
+    "uniappx": {
+      "android": {
+        "archiveFileName": "Android-uni-app-x-SDK@14987-5.23.zip",
+        "archiveRoot": "Android-uni-app-x-SDK@14987-5.23",
+        "sha256": "5543143ed70af016b162059820b7f7cb57e2280acfd3ec4cba7329d22c42b87a"
+      },
+      "ios": {
+        "archiveFileName": "UniAppX-iOS@5.23.zip",
+        "archiveRoot": "UniAppX-iOS@5.23",
+        "sha256": "40204df44e329fb28819e30e924bec27de47d4bb9584ee22fa3795984f57c67d"
+      }
+    }
+  }
+}

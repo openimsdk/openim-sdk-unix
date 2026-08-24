@@ -1763,21 +1763,6 @@
               }
             ]
           }
-        },
-        "displayIsRead": {
-          "required": false,
-          "schema": {
-            "kind": "union",
-            "options": [
-              {
-                "kind": "reference",
-                "name": "OpenIMGroupDisplayIsRead"
-              },
-              {
-                "kind": "null"
-              }
-            ]
-          }
         }
       }
     },

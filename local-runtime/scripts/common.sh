@@ -3,9 +3,10 @@
 set -euo pipefail
 
 readonly LOCAL_RUNTIME_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-readonly PROJECT_ROOT="$(cd "$LOCAL_RUNTIME_ROOT/.." && pwd)"
+readonly RUNNER_PROJECT_ROOT="$(cd "$LOCAL_RUNTIME_ROOT/.." && pwd)"
+readonly PROJECT_ROOT="$(cd "${OPENIM_LOCAL_PROJECT_ROOT:-$RUNNER_PROJECT_ROOT}" && pwd)"
 readonly HARNESS_LOCK="$LOCAL_RUNTIME_ROOT/harness-lock.json"
-readonly TOOLCHAIN_LOCK="$PROJECT_ROOT/toolchain.lock.json"
+readonly TOOLCHAIN_LOCK="$RUNNER_PROJECT_ROOT/toolchain.lock.json"
 
 read_json() {
   node -e '
@@ -112,10 +113,10 @@ android_package_name() {
 }
 
 resolve_android_device() {
-  local adb="$1"
+  local adb_bin="$1"
   local requested="${OPENIM_TEST_DEVICE_ID:-${OPENIM_ANDROID_DEVICE_ID:-}}"
   if [[ -n "$requested" ]]; then
-    if [[ "$("$adb" -s "$requested" get-state 2>/dev/null || true)" != "device" ]]; then
+    if [[ "$("$adb_bin" -s "$requested" get-state 2>/dev/null || true)" != "device" ]]; then
       echo "Android device is not ready: $requested" >&2
       return 1
     fi
@@ -123,7 +124,7 @@ resolve_android_device() {
     return
   fi
   local device
-  device="$("$adb" devices | awk 'NR > 1 && $2 == "device" {print $1; exit}')"
+  device="$("$adb_bin" devices | awk 'NR > 1 && $2 == "device" {print $1; exit}')"
   if [[ -z "$device" ]]; then
     echo "No connected Android device or emulator was found" >&2
     return 1
@@ -174,4 +175,27 @@ ensure_ios_simulator() {
   open -a Simulator --args -CurrentDeviceUDID "$simulator"
   xcrun simctl bootstatus "$simulator" -b
   printf '%s\n' "$simulator"
+}
+
+verify_required_ios_frameworks() {
+  local app_bundle="$1"
+  while IFS= read -r framework; do
+    [[ -z "$framework" ]] && continue
+    if [[ ! "$framework" =~ ^[A-Za-z0-9_+.-]+$ ]]; then
+      echo "Invalid required iOS framework name: $framework" >&2
+      return 1
+    fi
+    local count
+    count="$(find "$app_bundle/Frameworks" -maxdepth 1 -type d -name "$framework.framework" | wc -l | tr -d ' ')"
+    if [[ "$count" != "1" ]]; then
+      echo "Expected exactly one $framework.framework in the assembled iOS app, found $count" >&2
+      return 1
+    fi
+  done < <(node -e '
+    const fs = require("fs");
+    const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+    const required = [...(descriptor.iosHost?.requiredFrameworks ?? [])];
+    if (process.env.OPENIM_LOCAL_SURFACE === "uniappx") required.push(...(descriptor.iosHost?.uniappxRequiredFrameworks ?? []));
+    for (const framework of required) process.stdout.write(framework + "\n");
+  ')
 }

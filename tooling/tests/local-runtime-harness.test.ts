@@ -20,6 +20,7 @@ import {
 import {
   buildAutomationEnvironment,
   renderAutomationEnvironment,
+  resolveAutomationProjectRoot,
 } from '../../local-runtime/scripts/configure-automation-env.mjs'
 import { runWithLocalNativeProfile } from '../../local-runtime/scripts/run-with-local-native-profile.mjs'
 
@@ -31,12 +32,12 @@ test('Public workspace exposes local build, run, and automation entrypoints for 
   }
   const scripts = packageDocument.scripts ?? {}
 
-  assert.equal(scripts['local:build:android'], 'bash local-runtime/scripts/build-local-android.sh')
-  assert.equal(scripts['local:run:android'], 'bash local-runtime/scripts/run-local-android.sh')
-  assert.equal(scripts['local:test:android'], 'bash local-runtime/scripts/test-local-android.sh')
-  assert.equal(scripts['local:build:ios'], 'bash local-runtime/scripts/build-local-ios.sh')
-  assert.equal(scripts['local:run:ios'], 'bash local-runtime/scripts/run-local-ios.sh')
-  assert.equal(scripts['local:test:ios'], 'bash local-runtime/scripts/test-local-ios.sh')
+  assert.equal(scripts['local:build:android'], 'npm run local -- build --product public --surface uniappx --platform android')
+  assert.equal(scripts['local:run:android'], 'npm run local -- run --product public --surface uniappx --platform android')
+  assert.equal(scripts['local:test:android'], 'npm run local -- test --product public --surface uniappx --platform android --suite full')
+  assert.equal(scripts['local:build:ios'], 'npm run local -- build --product public --surface uniappx --platform ios')
+  assert.equal(scripts['local:run:ios'], 'npm run local -- run --product public --surface uniappx --platform ios')
+  assert.equal(scripts['local:test:ios'], 'npm run local -- test --product public --surface uniappx --platform ios --suite full')
 })
 
 test('local runtime harness is source-only and carries every regenerable entrypoint', () => {
@@ -57,6 +58,10 @@ test('local runtime harness is source-only and carries every regenerable entrypo
     'scripts/run-with-local-native-profile.mjs',
     'scripts/run-hbuilder-local.mjs',
     'scripts/provision-isolated-openim-server.sh',
+    'hosts/inject-runtime-ready-marker.mjs',
+    'hosts/verify-runtime-ready.mjs',
+    'hosts/verify-stable-bmp.mjs',
+    'hosts/verify-ios-product-plugins.mjs',
     'server/configure-isolated-openim-server.rb',
     'server/start-isolated-openim-server.sh',
     'server/stop-isolated-openim-server.sh',
@@ -68,7 +73,7 @@ test('local runtime harness is source-only and carries every regenerable entrypo
     'native-android-template/app/src/main/AndroidManifest.xml',
     'native-android-template/app/src/main/res/drawable/icon.xml',
     'native-android-template/uniappx/build.gradle',
-    'native-android-template/unix-openim-sdk/build.gradle',
+    'native-android-template/plugin/build.gradle',
   ]
 
   for (const relativePath of required) {
@@ -93,11 +98,13 @@ test('local Android SDK host is classified as VDOM when websocket and UniAppActi
   })
 })
 
-test('local Android template sync preserves the version catalog while reusing the Gradle wrapper', () => {
+test('local Android template sync uses the verified Gradle distribution without probing a remote wrapper URL', () => {
   const source = readFileSync(resolve(root, 'local-runtime/scripts/build-local-android.sh'), 'utf8')
 
   assert.doesNotMatch(source, /--exclude '\/gradle\/'/)
-  assert.match(source, /--exclude '\/gradle\/wrapper\/'/)
+  assert.match(source, /gradle_bootstrap="\$\(resolve_gradle_bootstrap\)"/)
+  assert.match(source, /"\$gradle_bootstrap" --no-daemon --stacktrace --rerun-tasks :app:assembleDebug/)
+  assert.doesNotMatch(source, /\$gradle_bootstrap" wrapper/)
 })
 
 test('local Android host embeds the DCloud automation pull activity used by uniapp.test', () => {
@@ -110,6 +117,7 @@ test('local Android host embeds the DCloud automation pull activity used by unia
   assert.match(source, /uni-showLoading-release\.aar/)
   assert.match(source, /uni-modal-release\.aar/)
   assert.match(source, /uni-actionSheet-release\.aar/)
+  assert.match(source, /descriptor\.androidHost\?\.abiFilters \?\? \["arm64-v8a", "x86_64"\]/)
   assert.match(rebuild, /cache\/\.app-android\/src\/index\.kt/)
   assert.match(rebuild, /OPENIM_AUTOMATOR_PORT/)
   assert.match(rebuild, /install -r -g/)
@@ -214,6 +222,13 @@ test('automation environment preserves Android and iOS bases without committing 
   assert.match(rendered, /is-custom-runtime/)
 })
 
+test('staged automation helper resolves the runner-selected project instead of its copied module parent', () => {
+  assert.equal(
+    resolveAutomationProjectRoot({ OPENIM_LOCAL_PROJECT_ROOT: '/tmp/openim-staged-project' }),
+    '/tmp/openim-staged-project',
+  )
+})
+
 test('local runtime sources contain no tracked binaries, credentials, fixed server, or machine path', () => {
   const files: string[] = []
   const walk = (directory: string) => {
@@ -234,6 +249,19 @@ test('local runtime sources contain no tracked binaries, credentials, fixed serv
     if (file.endsWith('.mjs')) execFileSync(process.execPath, ['--check', file])
     if (file.endsWith('.json')) JSON.parse(source)
   }
+})
+
+test('local runtime is documented as internal infrastructure and never as a customer deliverable', () => {
+  const boundary = 'INTERNAL DEVELOPMENT INFRASTRUCTURE — NOT A CUSTOMER DELIVERABLE'
+  const repositoryReadme = readFileSync(resolve(root, 'README.md'), 'utf8')
+  const harnessReadme = readFileSync(resolve(root, 'local-runtime/README.md'), 'utf8')
+  const matrixReadme = readFileSync(resolve(root, 'local-runtime/README-MATRIX-V2.md'), 'utf8')
+  const marketplaceReadme = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/readme.md'), 'utf8')
+
+  assert.match(repositoryReadme, /团队内部开发与验证基础设施，不属于客户交付物/)
+  assert.match(harnessReadme, new RegExp(boundary))
+  assert.match(matrixReadme, new RegExp(boundary))
+  assert.doesNotMatch(marketplaceReadme, /npm run local|local-runtime\//)
 })
 
 test('isolated Public server harness cannot stop or reuse the commercial deployment', () => {
@@ -310,6 +338,14 @@ test('local automation pre-provisions accounts and requires an explicit server s
   assert.doesNotMatch(register, /openIM123/)
 })
 
+test('automation imports the generated staging project before invoking uniapp.test', () => {
+  const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
+  assert.match(runner, /\['project', 'close', '--path', projectRoot\]/)
+  assert.match(runner, /\['project', 'open', '--path', projectRoot\]/)
+  assert.match(runner, /closeAutomationProject\(\)/)
+  assert.ok(runner.indexOf('openAutomationProject();') < runner.indexOf('assertCustomBase(platform);'))
+})
+
 test('Android automation runner rebuilds the static VDOM host for the allocated port', () => {
   const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
   const androidTest = readFileSync(resolve(root, 'local-runtime/scripts/test-local-android.sh'), 'utf8')
@@ -318,7 +354,9 @@ test('Android automation runner rebuilds the static VDOM host for the allocated 
     'utf8',
   )
 
-  assert.match(androidTest, /OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD=1/)
+  assert.match(androidTest, /OPENIM_LOCAL_SURFACE:-uniappx[\s\S]*AUTOMATION_REBUILD=1/)
+  assert.match(androidTest, /else[\s\S]*AUTOMATION_REBUILD=0/)
+  assert.match(androidTest, /OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD="\$AUTOMATION_REBUILD"/)
   assert.match(runner, /OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD/)
   assert.match(runner, /rebuild-local-android-automation\.sh/)
   assert.match(runner, /allocatedRuntimePort/)
@@ -329,6 +367,37 @@ test('Android automation runner rebuilds the static VDOM host for the allocated 
     /strings\s*\|\s*rg\s+-q/,
     'pipefail must not turn a successful endpoint match into an unzip SIGPIPE failure',
   )
+  assert.match(androidRebuild, /gradle_bootstrap="\$\(resolve_gradle_bootstrap\)"/)
+  assert.match(androidRebuild, /"\$gradle_bootstrap" --no-daemon --rerun-tasks :app:assembleDebug/)
+  assert.doesNotMatch(androidRebuild, /\.\/gradlew/)
+})
+
+test('descriptor-driven Android runtime never falls back to the Public legacy APK name', () => {
+  for (const relativePath of [
+    'local-runtime/scripts/test-local-android.sh',
+    'local-runtime/scripts/rebuild-local-android-automation.sh',
+  ]) {
+    const source = readFileSync(resolve(root, relativePath), 'utf8')
+    assert.match(source, /OPENIM_LOCAL_PRODUCT/)
+    assert.match(source, /OPENIM_LOCAL_SURFACE/)
+    assert.doesNotMatch(source, /unpackage\/debug\/unix-openim-sdk-local\.apk/)
+  }
+  const compatibilityRun = readFileSync(
+    resolve(root, 'local-runtime/scripts/run-local-android.sh'),
+    'utf8',
+  )
+  const hostRun = readFileSync(resolve(root, 'local-runtime/hosts/run-android.sh'), 'utf8')
+  assert.match(compatibilityRun, /hosts\/run-android\.sh/)
+  assert.match(hostRun, /OPENIM_LOCAL_APPLICATION_ID/)
+  assert.match(hostRun, /artifacts\.json/)
+  assert.doesNotMatch(compatibilityRun, /unpackage\/debug\/unix-openim-sdk-local\.apk/)
+})
+
+test('Android automation passes the descriptor package explicitly across HBuilder project import', () => {
+  const source = readFileSync(resolve(root, 'local-runtime/scripts/test-local-android.sh'), 'utf8')
+  assert.match(source, /PACKAGE_NAME="\$\(android_package_name\)"/)
+  assert.match(source, /OPENIM_TEST_BASE_PACKAGE="\$PACKAGE_NAME"/)
+  assert.match(source, /OPENIM_AUTOMATION_RUNTIME_ROOT="\$LOCAL_RUNTIME_ROOT"/)
 })
 
 test('local automation disables HBuilderX protocol debug while credentials cross the bridge', () => {
@@ -357,8 +426,22 @@ test('local test wrappers restore env.js across the entire build, install, and a
 
 test('iOS simulator automation primes the installed host before HBuilderX takes over relaunch', () => {
   const source = readFileSync(resolve(root, 'local-runtime/scripts/test-local-ios.sh'), 'utf8')
+  const host = readFileSync(resolve(root, 'local-runtime/hosts/test-ios.sh'), 'utf8')
+  const compatibilityRun = readFileSync(resolve(root, 'local-runtime/scripts/run-local-ios.sh'), 'utf8')
+  assert.match(host, /OPENIM_LOCAL_SUITE:-smoke[\s\S]*hosts\/run-ios\.sh[\s\S]*exit 0/)
+  assert.doesNotMatch(host, /bash "\$runner_root\/local-runtime\/hosts\/run-ios\.sh"\s*\nif/)
+  assert.match(compatibilityRun, /exec bash "\$LOCAL_RUNTIME_ROOT\/hosts\/run-ios\.sh"/)
+  assert.doesNotMatch(compatibilityRun, /build-local-ios\.sh/)
   assert.match(source, /OPENIM_TEST_VAPOR=false/)
   assert.doesNotMatch(source, /OPENIM_TEST_VAPOR=true/)
+  assert.match(source, /OPENIM_LOCAL_RUN_ROOT\/artifacts\.json/)
+  assert.match(source, /\.appPath/)
+  assert.match(source, /\.deviceID/)
+  assert.match(source, /iosProductPlugins/)
+  assert.doesNotMatch(source, /ios-app-path|ios-device-id/)
+  assert.match(source, /PlistBuddy.+CFBundleExecutable/)
+  assert.match(source, /file "\$APP_PATH\/\$executable_name"/)
+  assert.doesNotMatch(source, /\$APP_PATH\/UniAppX/)
   assert.match(source, /PlistBuddy.+CFBundleIdentifier/)
   assert.match(source, /xcrun simctl launch "\$DEVICE_ID" "\$bundle_id"/)
   assert.ok(
@@ -368,9 +451,9 @@ test('iOS simulator automation primes the installed host before HBuilderX takes 
 })
 
 test('local iOS simulator run always replaces the installed host with the freshly compiled app', () => {
-  const runner = readFileSync(resolve(root, 'local-runtime/scripts/run-local-ios.sh'), 'utf8')
-  assert.match(runner, /simctl terminate "\$DEVICE_ID" "\$BUNDLE_ID"/)
-  assert.match(runner, /simctl uninstall "\$DEVICE_ID" "\$BUNDLE_ID"/)
-  assert.match(runner, /simctl install "\$DEVICE_ID" "\$APP_PATH"/)
-  assert.doesNotMatch(runner, /if ! xcrun simctl get_app_container/)
+  const runner = readFileSync(resolve(root, 'local-runtime/hosts/run-ios.sh'), 'utf8')
+  assert.match(runner, /simctl terminate "\$device" "\$bundle_id"/)
+  assert.match(runner, /simctl install "\$device" "\$app"/)
+  assert.match(runner, /deviceID/)
+  assert.match(runner, /bundleID/)
 })

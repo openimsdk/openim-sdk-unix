@@ -3,6 +3,8 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { importEnterpriseDelta } from './enterprise-contract.js'
 import { sha256 } from './source.js'
+import { implementationBoundaryAuthorityForEdition } from './platform-implementation-types.js'
+import type { EnterpriseDeltaDocument } from './model.js'
 
 const ENTERPRISE_IMPORT_OUTPUTS = [
   'contracts/enterprise/delta.json',
@@ -58,7 +60,14 @@ export function previewEnterpriseImport(publicRoot: string, privateRoot: string)
     for (const path of ['contracts/enterprise', 'uni_modules/unix-openim-sdk/utssdk', 'sdk-src']) {
       cpSync(join(privateRoot, path), join(temporaryRoot, path), { recursive: true })
     }
-    importEnterpriseDelta(publicRoot, temporaryRoot)
+    const delta = JSON.parse(
+      readFileSync(join(temporaryRoot, 'contracts/enterprise/delta.json'), 'utf8'),
+    ) as EnterpriseDeltaDocument
+    importEnterpriseDelta(
+      publicRoot,
+      temporaryRoot,
+      implementationBoundaryAuthorityForEdition(delta.rawIOSImplementationBoundaries),
+    )
     const current = readOutputs(privateRoot)
     const candidate = readOutputs(temporaryRoot)
     const outputChanges = ENTERPRISE_IMPORT_OUTPUTS

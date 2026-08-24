@@ -1,11 +1,19 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import type { ContractCallable, ContractDocument, ContractEvent, DriverRequestField, DriverSuccessHook, Platform, SurfaceSnapshot } from './model.js'
+import type { ContractCallable, ContractDocument, ContractEvent, DriverRequestField, DriverSuccessHook, ImplementationBoundaryAuthority, Platform, SurfaceSnapshot } from './model.js'
 import { INDEX_MARKERS } from './template-authority.js'
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { sha256 } from './source.js'
 import { buildPublicResponseSchemas, buildPublicTestDisposition, type TestDispositionDocument } from './test-contract.js'
 import { renderNativeCoreAdapter, renderPlatformDriverUTS } from './platform-driver.js'
+import {
+  PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY,
+  implementationBoundaryForRequestField,
+  implementationParameterTypes,
+  isRegisteredJSONObjectImplementationBoundary,
+  validateImplementationBoundaryTemplate,
+} from './platform-implementation-types.js'
+import { splitSignatureParameters } from './signature.js'
 
 export interface GeneratedOutput {
   path: string
@@ -23,37 +31,27 @@ function readContract(root: string): ContractDocument {
   return JSON.parse(readFileSync(join(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
 }
 
-function splitSignatureParameters(value: string): string[] {
-  const result: string[] = []
-  let start = 0
-  let depth = 0
-  for (let index = 0; index < value.length; index += 1) {
-    const character = value[index]
-    if (character === '<' || character === '(' || character === '[' || character === '{') depth += 1
-    else if (character === '>' || character === ')' || character === ']' || character === '}') depth -= 1
-    else if (character === ',' && depth === 0) {
-      result.push(value.slice(start, index))
-      start = index + 1
-    }
-  }
-  if (value.slice(start).trim() !== '') result.push(value.slice(start))
-  return result
-}
-
 function formatType(value: string): string {
   return value.trim().replace(/\s*\|\s*/g, ' | ')
 }
 
-function callableSignatureParts(callable: ContractCallable): { parameters: string; returnType: string } {
+function callableSignatureParts(
+  callable: ContractCallable,
+  platform: Platform,
+  implementationBoundaries: ImplementationBoundaryAuthority,
+): { parameters: string; returnType: string } {
   const prefix = `${callable.name}(`
   const separator = callable.signature.lastIndexOf('):')
   if (!callable.signature.startsWith(prefix) || separator < prefix.length) {
     throw new Error(`Invalid callable signature: ${callable.signature}`)
   }
+  const implementationTypes = implementationParameterTypes(callable, platform, implementationBoundaries)
   const parameters = splitSignatureParameters(callable.signature.slice(prefix.length, separator)).map((parameter) => {
     const match = /^([A-Za-z_$][\w$]*)(\?)?:(.+)$/.exec(parameter.trim())
     if (match == null) throw new Error(`Invalid callable parameter in ${callable.signature}: ${parameter}`)
-    return `${match[1]}${match[2] == null ? ' :' : ' ?:'} ${formatType(match[3] ?? '')}`
+    const name = match[1] ?? ''
+    const implementationType = implementationTypes[name]
+    return `${name}${match[2] == null ? ' :' : ' ?:'} ${formatType(implementationType ?? match[3] ?? '')}`
   }).join(', ')
   return { parameters, returnType: formatType(callable.signature.slice(separator + 2)) }
 }
@@ -64,17 +62,27 @@ function promiseValueType(returnType: string): string {
   return match[1] ?? ''
 }
 
-function driverRequestFieldSource(field: DriverRequestField): string {
+function driverRequestFieldSource(field: DriverRequestField, platformParameterTypes: Record<string, string>): string {
   if (field.parameter == null) throw new Error(`Driver request field ${field.name} requires a parameter`)
+  if (field.member != null && platformParameterTypes[field.parameter] === 'UTSJSONObject') {
+    const reader = field.wireType === 'string' ? 'getString' : field.wireType === 'number' ? 'getNumber' : 'getBoolean'
+    return `${field.parameter}.${reader}(${JSON.stringify(field.member)})`
+  }
   return field.member == null ? field.parameter : `${field.parameter}.${field.member}`
 }
 
-function driverRequestFieldExpression(field: DriverRequestField, platform: 'android' | 'ios'): string {
+function driverRequestFieldExpression(
+  callable: ContractCallable,
+  field: DriverRequestField,
+  platform: 'android' | 'ios',
+  platformParameterTypes: Record<string, string>,
+  implementationBoundaries: ImplementationBoundaryAuthority,
+): string {
   if (field.codec === 'literal') {
     if (field.value == null) throw new Error(`Literal Driver request field ${field.name} requires a value`)
     return JSON.stringify(field.value)
   }
-  const source = driverRequestFieldSource(field)
+  const source = driverRequestFieldSource(field, platformParameterTypes)
   if (field.codec === 'identity') return source
   if (field.codec === 'json') return `stringifyJSON(${source})`
   if (field.codec === 'file-json') return platform === 'ios' ? `stringifyOpenIMFileElem(${source})` : `stringifyJSON(${source})`
@@ -88,13 +96,20 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   if (field.codec === 'optional-boolean') return `optionalBoolean(${source})`
   if (field.codec === 'optional-string') return `optionalString(${source})`
   if (field.codec === 'picture-json') return platform === 'ios' ? `stringifyOpenIMPicture(${source})` : `stringifyJSON(${source})`
+  if (field.codec === 'set-conversation-json'
+    || field.codec === 'update-friends-json'
+    || field.codec === 'edition-json-writer') {
+    const boundary = implementationBoundaryForRequestField(callable, field, implementationBoundaries)
+    if (boundary == null || boundary.codec !== field.codec) {
+      throw new Error(`Missing implementation boundary writer for ${callable.name}.${field.name}`)
+    }
+    return `${boundary.writer}(${source})`
+  }
   if (field.codec === 'set-group-info-json') return `stringifySetGroupInfoPayload(${source})`
   if (field.codec === 'set-group-member-info-json') return `stringifySetGroupMemberInfoPayload(${source})`
   if (field.codec === 'sound-json') return platform === 'ios' ? `stringifyOpenIMSoundElem(${source})` : `stringifyJSON(${source})`
   if (field.codec === 'stored-message-json') return platform === 'ios' ? `stringifyOpenIMMessage(${source})` : `stringifyOpenIMMessagePayload(${source})`
   if (field.codec === 'upload-file-json') return platform === 'ios' ? `stringifyJSON(normalizeIOSUploadFileParams(${source}))` : `stringifyJSON(normalizeAndroidUploadFileParams(${source}))`
-  if (field.codec === 'update-friend-json') return `stringifyUpdateFriendPayload(${source})`
-  if (field.codec === 'update-friends-json') return `stringifyUpdateFriendsPayload(${source})`
   if (field.codec === 'fetch-surrounding-messages-json') return `stringifyFetchSurroundingMessagesPayload(${source})`
   if (field.codec === 'modify-message-json') return `stringifyModifyMessagePayload(${source})`
   if (field.codec === 'video-json') return platform === 'ios' ? `stringifyOpenIMVideoElem(${source})` : `stringifyJSON(${source})`
@@ -105,11 +120,17 @@ function driverRequestFieldExpression(field: DriverRequestField, platform: 'andr
   throw new Error(`Unsupported Driver request field codec: ${field.codec}`)
 }
 
-function driverFieldsRequestPrelude(fields: DriverRequestField[], platform: 'android' | 'ios'): string {
+function driverFieldsRequestPrelude(
+  callable: ContractCallable,
+  fields: DriverRequestField[],
+  platform: 'android' | 'ios',
+  platformParameterTypes: Record<string, string>,
+  implementationBoundaries: ImplementationBoundaryAuthority,
+): string {
   if (fields.length === 0) throw new Error('Driver fields request must contain at least one field')
   const fragments = fields.map((field, index) => {
     const prefix = index === 0 ? `'{"${field.name}":'` : `',"${field.name}":'`
-    return `${prefix} + stringifyJSON(${driverRequestFieldExpression(field, platform)})`
+    return `${prefix} + stringifyJSON(${driverRequestFieldExpression(callable, field, platform, platformParameterTypes, implementationBoundaries)})`
   })
   return `const requestJSON = ${fragments.join(' + ')} + '}';`
 }
@@ -227,10 +248,11 @@ function renderLoweredCallable(
   callable: ContractCallable,
   platform: Platform,
   responseParsers: Readonly<Record<string, string>>,
+  implementationBoundaries: ImplementationBoundaryAuthority,
 ): string {
   const lowering = callable.lowering
   if (lowering == null) throw new Error(`Missing callable lowering: ${callable.name}`)
-  const { parameters, returnType } = callableSignatureParts(callable)
+  const { parameters, returnType } = callableSignatureParts(callable, platform, implementationBoundaries)
   if (lowering.kind === 'event-control') {
     const expectedName = lowering.action === 'remove-subscription' ? 'off' : 'offAll'
     if (callable.name !== expectedName) throw new Error(`Invalid event-control lowering for ${callable.name}`)
@@ -317,21 +339,30 @@ function renderLoweredCallable(
     prelude.push(`const requestJSON = '{"userID":' + stringifyJSON(userID) + ',"token":' + stringifyJSON(token) + '}';`)
   } else if (typeof lowering.request === 'object' && lowering.request.kind === 'fields') {
     requestExpression = 'requestJSON'
-    prelude.push(driverFieldsRequestPrelude(lowering.request.fields, platform))
+    prelude.push(driverFieldsRequestPrelude(
+      callable,
+      lowering.request.fields,
+      platform,
+      implementationParameterTypes(callable, platform, implementationBoundaries),
+      implementationBoundaries,
+    ))
   } else requestExpression = "'{}'"
   const requestPrelude = prelude.length === 0 ? '' : `${prelude.join(' ')} `
+  const boundaryAllowance = isRegisteredJSONObjectImplementationBoundary(callable, platform, implementationBoundaries)
+    ? ' // UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT'
+    : ''
 
   if (lowering.transport === 'sync') {
     if (lowering.successHook != null) throw new Error(`Sync lowering cannot use a success hook: ${callable.name}`)
     if (callable.completion !== 'sync') throw new Error(`Sync lowering has non-sync completion: ${callable.name}`)
-    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return driverCallSync(${callable.id}, ${operationID}, ${requestExpression}) }`
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return driverCallSync(${callable.id}, ${operationID}, ${requestExpression}) }${boundaryAllowance}`
   }
   if (callable.completion === 'sync') throw new Error(`Async lowering has sync completion: ${callable.name}`)
   const bindEvents = lowering.bindEvents === true ? 'ensureNativeEventsBound(); ' : ''
   if (callable.completion === 'void') {
     const success = successCallback(callable, '')
     const callback = success === '' ? '(_data : string) => {}' : success
-    return `export const ${callable.name} = function (${parameters}) { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${callback}, (_errCode : number, _errMsg : string) => {}) }`
+    return `export const ${callable.name} = function (${parameters}) { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${callback}, (_errCode : number, _errMsg : string) => {}) }${boundaryAllowance}`
   }
   const valueType = promiseValueType(returnType)
   const promiseResolver = DRIVER_PROMISE_RESPONSE_RESOLVERS[callable.responseCodec]
@@ -339,20 +370,21 @@ function renderLoweredCallable(
     const apiName = callable.responseCodec === 'raw-string' ? '' : `'${callable.name}', `
     const resolveCallback = successCallback(callable, 'resolve(data)')
     const success = resolveCallback === 'resolve(data)' ? 'resolve' : resolveCallback
-    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}(${apiName}(resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${success}, reject) }) }`
+    return `export const ${callable.name} = function (${parameters}) : ${returnType} { return ${promiseResolver}(${apiName}(resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${success}, reject) }) }${boundaryAllowance}`
   }
   const resolveExpression = driverResolveExpressionWithHook(callable, responseParsers)
-  return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }`
+  return `export const ${callable.name} = function (${parameters}) : ${returnType} { return new Promise<${valueType}>((resolve, reject) => { ${bindEvents}${requestPrelude}driverCallAsync(${callable.id}, ${operationID}, ${requestExpression}, ${resolveExpression}, (errCode : number, errMsg : string) => { rejectNativeError(reject, errCode, errMsg) }) }) }${boundaryAllowance}`
 }
 
 function platformDeclaration(
   callable: ContractCallable,
   platform: Platform,
   responseParsers: Readonly<Record<string, string>>,
+  implementationBoundaries: ImplementationBoundaryAuthority,
 ): string {
   if (callable.lowering != null) {
     const universal = callable.lowering.kind === 'local-promise' || callable.lowering.kind === 'synthetic-event-subscription'
-    if (platform !== 'harmony' || universal) return renderLoweredCallable(callable, platform, responseParsers)
+    if (platform !== 'harmony' || universal) return renderLoweredCallable(callable, platform, responseParsers, implementationBoundaries)
   }
   const declaration = callable.declaration?.[platform]
   if (!declaration) throw new Error(`Missing ${platform} declaration for ${callable.name}`)
@@ -365,19 +397,21 @@ export function generateIndexFromTemplate(
   template: string,
   contract: ContractDocument,
   platform: Platform,
+  implementationBoundaries: ImplementationBoundaryAuthority = PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY,
   editionResponseParsers: Readonly<Record<string, string>> = {},
 ): string {
+  validateImplementationBoundaryTemplate(template, contract, platform, implementationBoundaries)
   const responseParsers = responseParserRegistry(editionResponseParsers)
   const constants = contract.constants
     .map((value) => `export const ${value.name} : ${value.type} = ${value.value}`)
     .join('\n')
   const eventCallables = contract.callables
     .filter((value) => value.role !== 'operation')
-    .map((value) => platformDeclaration(value, platform, responseParsers))
+    .map((value) => platformDeclaration(value, platform, responseParsers, implementationBoundaries))
     .join('\n\n')
   const operations = contract.callables
     .filter((value) => value.role === 'operation')
-    .map((value) => platformDeclaration(value, platform, responseParsers))
+    .map((value) => platformDeclaration(value, platform, responseParsers, implementationBoundaries))
     .join('\n')
   return generatedSource(template
     .replace(INDEX_MARKERS.constants, constants)
@@ -387,11 +421,17 @@ export function generateIndexFromTemplate(
     .trimEnd())
 }
 
-export function generateIndex(root: string, contract: ContractDocument, platform: 'android' | 'ios'): string {
+export function generateIndex(
+  root: string,
+  contract: ContractDocument,
+  platform: 'android' | 'ios',
+  implementationBoundaries: ImplementationBoundaryAuthority = PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY,
+): string {
   return generateIndexFromTemplate(
     readFileSync(join(root, `sdk-src/uts/app-${platform}/index.template.uts`), 'utf8'),
     contract,
     platform,
+    implementationBoundaries,
   )
 }
 
@@ -466,7 +506,46 @@ function eventDispatchArguments(event: ContractEvent): string {
   return `${event.decoder.symbol}(payload)`
 }
 
-function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios'): string {
+function generateBatchMessageSingleDispatch(event: ContractEvent, contract: ContractDocument): string {
+  const singleEventName = event.name === 'onRecvNewMessages'
+    ? 'onRecvNewMessage'
+    : event.name === 'onRecvOfflineNewMessages'
+      ? 'onRecvOfflineNewMessage'
+      : null
+  if (singleEventName == null) return ''
+  const singleEvent = contract.events.find((candidate) => candidate.name === singleEventName)
+  if (singleEvent == null) return ''
+  const payload = `${event.name}SingleDispatchPayload`
+  const snapshot = `${singleEventName}DispatchSnapshotFromBatch`
+  const copyIndex = `${singleEventName}CopyIndexFromBatch`
+  const current = `${singleEventName}CurrentHandlerFromBatch`
+  const messageIndex = `${singleEventName}MessageIndexFromBatch`
+  const message = `${singleEventName}MessageFromBatch`
+  const dispatchIndex = `${singleEventName}DispatchIndexFromBatch`
+  const handler = `${singleEventName}DispatchHandlerFromBatch`
+  return `      const ${payload} = ${eventDispatchArguments(event)}
+      if (${payload} != null) {
+        const ${snapshot} : Array<${singleEvent.handlerType}> = []
+        for (let ${copyIndex} : number = 0; ${copyIndex} < ${handlerVariable(singleEvent)}.length; ${copyIndex} = ${copyIndex} + 1) {
+          const ${current} = ${handlerVariable(singleEvent)}[${copyIndex}]
+          if (${current} != null) { ${snapshot}.push(${current}) }
+        }
+        for (let ${messageIndex} : number = 0; ${messageIndex} < ${payload}.messages.length; ${messageIndex} = ${messageIndex} + 1) {
+          const ${message} = ${payload}.messages[${messageIndex}]
+          if (${message} != null) {
+            for (let ${dispatchIndex} : number = 0; ${dispatchIndex} < ${snapshot}.length; ${dispatchIndex} = ${dispatchIndex} + 1) {
+              const ${handler} = ${snapshot}[${dispatchIndex}]
+              if (${handler} != null) {
+                try { ${handler}(${message}) } catch (error) { console.error('[unix-openim-sdk] ${singleEventName} handler failed', error) }
+              }
+            }
+          }
+        }
+      }
+`
+}
+
+function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios', contract: ContractDocument): string {
   const handlers = handlerVariable(event)
   const args = eventDispatchArguments(event)
   const snapshot = `${event.name}DispatchSnapshot`
@@ -486,7 +565,7 @@ function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios')
           try { ${handler}(${args}) } catch (error) { console.error('[unix-openim-sdk] ${event.name} handler failed', error) }
         }
       }
-      break
+${generateBatchMessageSingleDispatch(event, contract)}      break
 `
 }
 
@@ -509,7 +588,7 @@ export function generateEvents(
   const state = contract.events.map(generateEventState).join('\n')
   const removals = contract.events.map(generateEventRemoval).join('\n\n')
   const registrations = contract.events.map(generateEventRegistration).join('\n\n')
-  const dispatchCases = contract.events.map((event) => generateDispatchCase(event, platform)).join('\n')
+  const dispatchCases = contract.events.map((event) => generateDispatchCase(event, platform, contract)).join('\n')
   const offCases = contract.events.map(generateOffCase).join('\n')
   return generatedSource(`${prelude}${extension.length === 0 ? '' : `\n${extension}`}
 
@@ -629,8 +708,8 @@ export function buildGeneratedOutputs(root: string): GeneratedOutput[] {
   return [
     { path: join(root, 'pages/index/openim-automation-profiles.uts'), content: generateAutomationProfileRegistry(testDispositionDocument) },
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), content: interfaceSource },
-    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/index.uts'), content: generateIndex(root, contract, 'android') },
-    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts'), content: generateIndex(root, contract, 'ios') },
+    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/index.uts'), content: generateIndex(root, contract, 'android', PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY) },
+    { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts'), content: generateIndex(root, contract, 'ios', PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY) },
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/events.uts'), content: generateEvents(root, contract, 'android') },
     { path: join(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/events.uts'), content: generateEvents(root, contract, 'ios') },
     {

@@ -12,7 +12,7 @@ readonly OPENIM_AUTOMATOR_PORT="$1"
 readonly DEVICE_ID="$2"
 readonly GENERATED_SOURCE="$PROJECT_ROOT/unpackage/dist/dev/cache/.app-android/src/index.kt"
 readonly NATIVE_ROOT="$PROJECT_ROOT/unpackage/local-runtime/android-host"
-readonly LOCAL_APK="$PROJECT_ROOT/unpackage/debug/unix-openim-sdk-local.apk"
+readonly LOCAL_APK="$PROJECT_ROOT/unpackage/debug/${OPENIM_LOCAL_PRODUCT:-unix-openim-sdk}-${OPENIM_LOCAL_SURFACE:-uniappx}-local.apk"
 readonly ADB="$(resolve_adb)"
 readonly HBUILDER_CLI="$(resolve_hbuilder_cli)"
 readonly ANDROID_SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
@@ -30,7 +30,7 @@ if ! rg -q "wsEndpoint = .*:${OPENIM_AUTOMATOR_PORT}" "$GENERATED_SOURCE" || \
   echo "Generated Android source does not target the allocated automator port $OPENIM_AUTOMATOR_PORT" >&2
   exit 1
 fi
-if [[ ! -x "$NATIVE_ROOT/gradlew" ]]; then
+if [[ ! -f "$NATIVE_ROOT/settings.gradle" ]]; then
   echo "Local Android host is not prepared; run local:run:android first" >&2
   exit 1
 fi
@@ -44,10 +44,11 @@ if [[ ! -x "$java_runtime/bin/java" ]]; then
   exit 1
 fi
 
+gradle_bootstrap="$(resolve_gradle_bootstrap)"
 (
   cd "$NATIVE_ROOT"
   JAVA_HOME="$java_runtime" ANDROID_HOME="$ANDROID_SDK" \
-    ./gradlew --no-daemon --rerun-tasks :app:assembleDebug
+    "$gradle_bootstrap" --no-daemon --rerun-tasks :app:assembleDebug
 )
 
 built_apk="$NATIVE_ROOT/app/build/outputs/apk/debug/app-debug.apk"

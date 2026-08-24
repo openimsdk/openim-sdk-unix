@@ -9,10 +9,20 @@ import {
   renderNativeCoreAdapter,
   renderPlatformDriverUTS,
 } from '../src/platform-driver.js'
-import { generateIndex, responseParserRegistry } from '../src/generate.js'
+import { generateIndex as generateIndexWithAuthority, generateIndexFromTemplate, responseParserRegistry } from '../src/generate.js'
+import { splitSignatureParameters } from '../src/signature.js'
+import {
+  PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY,
+  implementationSignature,
+  type ImplementationBoundaryAuthority,
+} from '../src/platform-implementation-types.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
+
+function generateIndex(rootPath: string, document: ContractDocument, platform: 'android' | 'ios'): string {
+  return generateIndexWithAuthority(rootPath, document, platform, PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY)
+}
 
 const IN_MEMORY_MESSAGE_CREATORS = [
   ['createImageMessageByURL', 2141],
@@ -323,6 +333,9 @@ test('full-path message creators normalize app virtual paths before native Core 
   assert.doesNotMatch(androidFacade, /normalizeIOSLocalMediaPath/)
   assert.match(androidFacade, /function normalizeAndroidLocalMediaPath\(path : string\) : string/)
   assert.match(androidFacade, /UTSAndroid\.convert2AbsFullPath\(path\)/)
+  assert.match(androidFacade, /UTSAndroid\.getAppContext\(\)/)
+  assert.match(androidFacade, /getExternalFilesDir\(null\)/)
+  assert.match(androidFacade, /unifile:\/\/usr/)
   assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(imageFullPath\)/)
   assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(params\.soundPath\)/)
   assert.match(androidFacade, /normalizeAndroidLocalMediaPath\(params\.videoPath\)/)
@@ -360,9 +373,10 @@ test('conversation string operations are generated from structured invocation da
   const setConversation = contract.callables.find((candidate) => candidate.name === 'setConversation')
   assert.equal(setConversation?.lowering?.kind, 'platform-driver')
   if (setConversation?.lowering?.kind === 'platform-driver' && typeof setConversation.lowering.request === 'object') {
+    assert.deepEqual(setConversation.lowering.parameterTypes, { ios: { params: 'UTSJSONObject' } })
     assert.deepEqual(setConversation.lowering.request.fields.map(({ name, parameter, member, codec }) => ({ name, parameter, member, codec })), [
       { name: 'conversationID', parameter: 'params', member: 'conversationID', codec: 'identity' },
-      { name: 'conversationInfo', parameter: 'params', member: undefined, codec: 'json' },
+      { name: 'conversationInfo', parameter: 'params', member: undefined, codec: 'set-conversation-json' },
     ])
   }
 
@@ -389,6 +403,237 @@ test('conversation string operations are generated from structured invocation da
       : /case 2084:\n\s+NativeOpenIMSDK\.hideAllConversations/
     assert.match(adapter, emptyCase)
   }
+})
+
+test('Public implementation boundaries reject seven contract-side escape classes', () => {
+  const boundaries = [
+    ['setConversation', 'OpenIMSetConversationParams'],
+    ['updateFriends', 'OpenIMUpdateFriendsParams'],
+  ] as const
+  const mutations: Array<[string, (document: ContractDocument, apiName: string) => void]> = [
+    ['unapproved callable', (document, apiName) => {
+      const source = document.callables.find((candidate) => candidate.name === apiName)!
+      const target = document.callables.find((candidate) => candidate.name === 'getOneConversation')!
+      if (source.lowering?.kind !== 'platform-driver' || target.lowering?.kind !== 'platform-driver') return
+      target.lowering.parameterTypes = structuredClone(source.lowering.parameterTypes ?? {})
+    }],
+    ['android platform', (document, apiName) => {
+      const target = document.callables.find((candidate) => candidate.name === apiName)!
+      if (target.lowering?.kind === 'platform-driver') target.lowering.parameterTypes = { android: { params: 'UTSJSONObject' } }
+    }],
+    ['harmony platform', (document, apiName) => {
+      const target = document.callables.find((candidate) => candidate.name === apiName)!
+      if (target.lowering?.kind === 'platform-driver') target.lowering.parameterTypes = { harmony: { params: 'UTSJSONObject' } }
+    }],
+    ['unknown parameter', (document, apiName) => {
+      const target = document.callables.find((candidate) => candidate.name === apiName)!
+      if (target.lowering?.kind === 'platform-driver') target.lowering.parameterTypes = { ios: { data: 'UTSJSONObject' } }
+    }],
+    ['arbitrary type', (document, apiName) => {
+      const target = document.callables.find((candidate) => candidate.name === apiName)!
+      if (target.lowering?.kind === 'platform-driver') target.lowering.parameterTypes = { ios: { params: 'any' } }
+    }],
+    ['member-scoped codec', (document, apiName) => {
+      const target = document.callables.find((candidate) => candidate.name === apiName)!
+      if (target.lowering?.kind !== 'platform-driver' || typeof target.lowering.request === 'string') return
+      const field = target.lowering.request.fields.find((candidate) => candidate.parameter === 'params' && candidate.member == null)!
+      field.member = 'unexpected'
+    }],
+    ['wrong codec', (document, apiName) => {
+      const target = document.callables.find((candidate) => candidate.name === apiName)!
+      if (target.lowering?.kind !== 'platform-driver' || typeof target.lowering.request === 'string') return
+      const field = target.lowering.request.fields.find((candidate) => candidate.parameter === 'params' && candidate.member == null)!
+      field.codec = 'json'
+    }],
+  ]
+  assert.equal(mutations.length, 7)
+
+  for (const [apiName] of boundaries) {
+    for (const [label, mutate] of mutations) {
+      const invalid = structuredClone(contract)
+      mutate(invalid, apiName)
+      assert.throws(
+        () => generateIndex(root, invalid, 'ios'),
+        /Invalid implementation boundary authority/,
+        `${apiName} ${label} escaped the reviewed raw iOS parameter seam`,
+      )
+    }
+  }
+})
+
+test('every raw iOS API rejects canonical signature drift', () => {
+  const boundaries = [
+    ['setConversation', 'OpenIMSetConversationParams'],
+    ['updateFriends', 'OpenIMUpdateFriendsParams'],
+  ] as const
+  const drifts: Array<[string, (signature: string, parameterType: string) => string]> = [
+    ['parameter name', (signature) => signature.replace('params:', 'data:')],
+    ['parameter type', (signature, parameterType) => signature.replace(`params:${parameterType}`, 'params:string')],
+    ['parameter requiredness', (signature, parameterType) => signature.replace(`params:${parameterType}`, `params?:${parameterType}`)],
+    ['operation ID', (signature) => signature.replace('operationID?:string|null', 'operationID:string')],
+    ['return type', (signature) => signature.replace('Promise<string>', 'Promise<boolean>')],
+  ]
+
+  for (const [apiName, parameterType] of boundaries) {
+    for (const [label, drift] of drifts) {
+      const invalid = structuredClone(contract)
+      const target = invalid.callables.find((candidate) => candidate.name === apiName)!
+      const changed = drift(target.signature, parameterType)
+      assert.notEqual(changed, target.signature, `${apiName} ${label} test did not alter the signature`)
+      target.signature = changed
+      assert.throws(
+        () => generateIndex(root, invalid, 'ios'),
+        /Invalid implementation boundary authority/,
+        `${apiName} ${label} drift escaped the exact canonical signature`,
+      )
+    }
+  }
+})
+
+test('signature parameter splitting preserves nested generic and object commas', () => {
+  assert.deepEqual(
+    splitSignatureParameters('params:Record<string,Array<{ value:number, label:string }>>,operationID?:string|null'),
+    ['params:Record<string,Array<{ value:number, label:string }>>', 'operationID?:string|null'],
+  )
+  assert.equal(
+    implementationSignature(
+      'example(params:Record<string,Array<{ value:number, label:string }>>,operationID?:string|null):Promise<string>',
+      { operationID: 'UTSJSONObject' },
+    ),
+    'example(params:Record<string,Array<{ value:number, label:string }>>,operationID?:UTSJSONObject):Promise<string>',
+  )
+})
+
+test('setConversation preserves optional patch key presence through an explicit payload writer', () => {
+  const patchFields = ['recvMsgOpt', 'isPinned', 'isPrivateChat', 'burnDuration', 'groupAtType', 'ex'] as const
+  const interfaceSource = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), 'utf8')
+  assert.match(interfaceSource, /export declare const setConversation : \(params:OpenIMSetConversationParams,operationID\?:string\|null\) => Promise<string>/)
+
+  const androidFacade = generateIndex(root, contract, 'android')
+  const androidDeclaration = androidFacade.split('\n').find((line) => line.startsWith('export const setConversation ='))
+  assert.notEqual(androidDeclaration, undefined)
+  assert.match(androidDeclaration!, /function \(params : OpenIMSetConversationParams, operationID \?: string \| null\)/)
+  assert.match(androidDeclaration!, /"conversationInfo":' \+ stringifyJSON\(stringifySetConversationPayload\(params\)\)/)
+  const androidWriterStart = androidFacade.indexOf('function stringifySetConversationPayload(')
+  const androidWriterEnd = androidFacade.indexOf('\n}', androidWriterStart)
+  const androidWriter = androidFacade.slice(androidWriterStart, androidWriterEnd + 2)
+  for (const field of patchFields) {
+    assert.match(
+      androidWriter,
+      new RegExp(`if \\(params\\.${field} != null\\) \\{ payload = appendPayloadField\\(payload, '\"${field}\":' \\+ stringifyJSON\\(params\\.${field}\\)\\) \\}`),
+      `android writer must preserve explicit values and omit null for ${field}`,
+    )
+  }
+
+  const iosFacade = generateIndex(root, contract, 'ios')
+  const iosDeclaration = iosFacade.split('\n').find((line) => line.startsWith('export const setConversation ='))
+  assert.notEqual(iosDeclaration, undefined)
+  assert.match(iosDeclaration!, /function \(params : UTSJSONObject, operationID \?: string \| null\)/)
+  assert.match(iosDeclaration!, /"conversationID":' \+ stringifyJSON\(params\.getString\("conversationID"\)\)/)
+  assert.match(iosDeclaration!, /"conversationInfo":' \+ stringifyJSON\(stringifySetConversationPayload\(params\)\)/)
+  const iosWriterStart = iosFacade.indexOf('function stringifySetConversationPayload(')
+  const iosWriterEnd = iosFacade.indexOf('\n}', iosWriterStart)
+  const iosWriter = iosFacade.slice(iosWriterStart, iosWriterEnd + 2)
+  assert.match(iosWriter, /function stringifySetConversationPayload\(params : UTSJSONObject\)/)
+  const readers = { recvMsgOpt: 'getNumber', isPinned: 'getBoolean', isPrivateChat: 'getBoolean', burnDuration: 'getNumber', groupAtType: 'getNumber', ex: 'getString' } as const
+  for (const field of patchFields) {
+    assert.match(iosWriter, new RegExp(`const ${field} = params\\.${readers[field]}\\('${field}'\\)`))
+    assert.match(
+      iosWriter,
+      new RegExp(`if \\(${field} != null\\) \\{ payload = appendPayloadField\\(payload, '\"${field}\":' \\+ stringifyJSON\\(${field}\\)\\) \\}`),
+      `iOS writer must preserve explicit values and omit absent ${field}`,
+    )
+  }
+  assert.doesNotMatch(iosWriter, /params\.(?:recvMsgOpt|isPinned|isPrivateChat|burnDuration|groupAtType|ex)/)
+  assert.doesNotMatch(iosWriter, /conversationID/)
+
+  const iosAdapter = renderNativeCoreAdapter(contract, 'ios')
+  const setConversationCase = iosAdapter.slice(iosAdapter.indexOf('case 2068:'), iosAdapter.indexOf('case 2069:'))
+  assert.match(setConversationCase, /NativeOpenIMSDK\.setConversation\(operationID, try requiredString\(request, "conversationID"\), try requiredString\(request, "conversationInfo"\), resolve, reject\)/)
+  assert.match(iosAdapter, /private static func requiredString\(_ request: \[String: Any\], _ name: String\) throws -> String \{\n\s+guard let value = request\[name\] as\? String else \{/)
+})
+
+test('updateFriends keeps its typed public contract while iOS reads the raw patch presence', () => {
+  const callable = contract.callables.find((candidate) => candidate.name === 'updateFriends')
+  assert.equal(callable?.signature, 'updateFriends(params:OpenIMUpdateFriendsParams,operationID?:string|null):Promise<string>')
+  assert.equal(callable?.lowering?.kind, 'platform-driver')
+  if (callable?.lowering?.kind !== 'platform-driver') return
+  assert.deepEqual(callable.lowering.parameterTypes, { ios: { params: 'UTSJSONObject' } })
+  assert.equal(
+    typeof callable.lowering.request === 'object' ? callable.lowering.request.fields[0]?.codec : null,
+    'update-friends-json',
+  )
+
+  const interfaceSource = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), 'utf8')
+  assert.match(interfaceSource, /export declare const updateFriends : \(params:OpenIMUpdateFriendsParams,operationID\?:string\|null\) => Promise<string>/)
+
+  const androidFacade = generateIndex(root, contract, 'android')
+  const androidDeclaration = androidFacade.split('\n').find((line) => line.startsWith('export const updateFriends ='))
+  assert.match(androidDeclaration ?? '', /function \(params : OpenIMUpdateFriendsParams, operationID \?: string \| null\)/)
+
+  const iosFacade = generateIndex(root, contract, 'ios')
+  const iosDeclaration = iosFacade.split('\n').find((line) => line.startsWith('export const updateFriends ='))
+  assert.match(iosDeclaration ?? '', /function \(params : UTSJSONObject, operationID \?: string \| null\)/)
+  assert.match(iosDeclaration ?? '', /stringifyUpdateFriendsPayload\(params\)/)
+  const writerStart = iosFacade.indexOf('function stringifyUpdateFriendsPayload(')
+  const writerEnd = iosFacade.indexOf('\n}', writerStart)
+  const writer = iosFacade.slice(writerStart, writerEnd + 2)
+  assert.match(writer, /function stringifyUpdateFriendsPayload\(params : UTSJSONObject\)/)
+  assert.match(writer, /const friendUserIDs = params\.getArray<string>\('friendUserIDs'\)/)
+  assert.match(writer, /payload = appendPayloadField\(payload, '"friendUserIDs":' \+ stringifyJSON\(friendUserIDs\)\)/)
+  assert.match(writer, /const isPinned = params\.getBoolean\('isPinned'\)/)
+  assert.match(writer, /const remark = params\.getString\('remark'\)/)
+  assert.match(writer, /const ex = params\.getString\('ex'\)/)
+  for (const field of ['isPinned', 'remark', 'ex']) {
+    assert.match(writer, new RegExp(`if \\(${field} != null\\) \\{ payload = appendPayloadField`))
+  }
+})
+
+test('setGroupInfo stays outside the Public raw seam because its displayIsRead field lacks Public Core support', () => {
+  const groupDisplayAlias = contract.types.find((candidate) => candidate.name === 'OpenIMGroupDisplayIsRead')
+  const setGroupInfoParams = contract.types.find((candidate) => candidate.name === 'OpenIMSetGroupInfoParams')
+  assert.equal(groupDisplayAlias?.declaration, 'export type OpenIMGroupDisplayIsRead = true | false')
+  assert.doesNotMatch(setGroupInfoParams?.declaration ?? '', /displayIsRead/)
+  const callable = contract.callables.find((candidate) => candidate.name === 'setGroupInfo')
+  assert.equal(callable?.signature, 'setGroupInfo(params:OpenIMSetGroupInfoParams,operationID?:string|null):Promise<string>')
+  assert.equal(callable?.lowering?.kind, 'platform-driver')
+  if (callable?.lowering?.kind !== 'platform-driver') return
+  assert.equal(callable.lowering.parameterTypes, undefined)
+  assert.equal(
+    PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY.entries.some((entry) => entry.callable === 'setGroupInfo'),
+    false,
+  )
+  assert.equal(
+    typeof callable.lowering.request === 'object' ? callable.lowering.request.fields[0]?.codec : null,
+    'set-group-info-json',
+  )
+
+  const interfaceSource = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/interface.uts'), 'utf8')
+  assert.match(interfaceSource, /export declare const setGroupInfo : \(params:OpenIMSetGroupInfoParams,operationID\?:string\|null\) => Promise<string>/)
+  const interfaceParamsStart = interfaceSource.indexOf('export type OpenIMSetGroupInfoParams = {')
+  const interfaceParamsEnd = interfaceSource.indexOf('\n}', interfaceParamsStart)
+  assert.notEqual(interfaceParamsStart, -1)
+  assert.notEqual(interfaceParamsEnd, -1)
+  assert.doesNotMatch(interfaceSource.slice(interfaceParamsStart, interfaceParamsEnd + 2), /displayIsRead/)
+
+  const androidFacade = generateIndex(root, contract, 'android')
+  const androidDeclaration = androidFacade.split('\n').find((line) => line.startsWith('export const setGroupInfo ='))
+  assert.match(androidDeclaration ?? '', /function \(params : OpenIMSetGroupInfoParams, operationID \?: string \| null\)/)
+  const androidWriterStart = androidFacade.indexOf('function stringifySetGroupInfoPayload(')
+  const androidWriterEnd = androidFacade.indexOf('\n}', androidWriterStart)
+  const androidWriter = androidFacade.slice(androidWriterStart, androidWriterEnd + 2)
+  assert.doesNotMatch(androidWriter, /displayIsRead/)
+
+  const iosFacade = generateIndex(root, contract, 'ios')
+  const iosDeclaration = iosFacade.split('\n').find((line) => line.startsWith('export const setGroupInfo ='))
+  assert.match(iosDeclaration ?? '', /function \(params : OpenIMSetGroupInfoParams, operationID \?: string \| null\)/)
+  assert.match(iosDeclaration ?? '', /stringifySetGroupInfoPayload\(params\)/)
+  const writerStart = iosFacade.indexOf('function stringifySetGroupInfoPayload(')
+  const writerEnd = iosFacade.indexOf('\n}', writerStart)
+  const writer = iosFacade.slice(writerStart, writerEnd + 2)
+  assert.match(writer, /function stringifySetGroupInfoPayload\(params : OpenIMSetGroupInfoParams\)/)
+  assert.doesNotMatch(writer, /UTSJSONObject|displayIsRead/)
+  assert.doesNotMatch(iosDeclaration ?? '', /UTS-COMPAT-ALLOW:UTS-BOUNDARY-JSONOBJECT/)
 })
 
 test('typed conversation queries select strict response parsers by contract codec', () => {

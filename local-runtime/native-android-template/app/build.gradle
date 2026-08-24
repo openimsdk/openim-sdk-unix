@@ -9,20 +9,20 @@ android {
 
     defaultConfig {
         applicationId '__OPENIM_ANDROID_APP_ID__'
-        minSdk 21
+        minSdk __OPENIM_ANDROID_MIN_SDK__
         targetSdk 32
         versionCode 1
         versionName '0.1.0-local'
 
         ndk {
-            abiFilters 'arm64-v8a', 'x86_64'
+            abiFilters __OPENIM_ANDROID_ABI_FILTERS__
         }
 
         buildConfigField 'String', 'DCLOUDUnionId', '""'
-        buildConfigField 'String', 'UTSRegisterComponents', '"[]"'
+        buildConfigField 'String', 'UTSRegisterComponents', __OPENIM_UTS_REGISTER_COMPONENTS__
         buildConfigField 'String', 'UTSRegisterProviders', '"[]"'
         buildConfigField 'String[]', 'UTSHooksClassArray', '{}'
-        buildConfigField 'String', 'UTSEasyCom', '"[]"'
+        buildConfigField 'String', 'UTSEasyCom', __OPENIM_UTS_EASY_COM__
     }
 
     buildFeatures {
@@ -70,10 +70,10 @@ android {
 
 dependencies {
     implementation project(':uniappx')
-    implementation project(':unix-openim-sdk')
+    // __OPENIM_PLUGIN_PROJECT_DEPENDENCIES__
 
     implementation fileTree(dir: '../dcloud-libs', include: ['*.aar', '*.jar'])
-    implementation fileTree(dir: '../unix-openim-sdk/libs', include: ['*.aar', '*.jar'])
+    // __OPENIM_PLUGIN_FILE_DEPENDENCIES__
 
     implementation 'androidx.annotation:annotation:1.9.1'
     implementation 'androidx.core:core-ktx:1.13.1'

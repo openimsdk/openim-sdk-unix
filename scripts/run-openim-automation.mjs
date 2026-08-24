@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
-import { execFileSync, spawn } from 'node:child_process';
-import { chmodSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, resolve } from 'node:path';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
+import { chmodSync, existsSync, lstatSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { basename, dirname, relative, resolve } from 'node:path';
 import {
   evidenceFailureMessage,
+  evidenceManifestSummary,
+  reportManifestSummary,
   writeLatestAutomationEvidence,
 } from './lib/openim-runner-evidence.mjs';
 import { runUnderAutomationRunnerLock } from './lib/automation-runner-lock.mjs';
+import { writeAutomationRunManifestSet } from './lib/automation-run-manifest.mjs';
 import {
   automationTarget,
   inspectAndroidBase,
@@ -21,6 +25,7 @@ const startupTimeoutMs = Number(process.env.OPENIM_TEST_STARTUP_TIMEOUT_MS || 5 
 const hardTimeoutMs = Number(process.env.OPENIM_TEST_PROCESS_TIMEOUT_MS || 30 * 60 * 1000);
 const requestedVapor = process.env.OPENIM_TEST_VAPOR !== 'false' && process.env.OPENIM_TEST_VAPOR !== '0';
 const runStartedAtMs = Date.now();
+const runId = randomUUID();
 const requestedSuiteFilter = String(process.env.OPENIM_AUTOMATION_SUITE || '').trim();
 const jestConfigPath = resolve(projectRoot, 'jest.config.js');
 const originalJestConfig = existsSync(jestConfigPath) ? readFileSync(jestConfigPath) : null;
@@ -270,6 +275,114 @@ function assertCustomBase(platformName) {
     fail(`Custom Android base is not a classic runtime: ${basePath}. Set OPENIM_TEST_VAPOR=true for this base.`);
   }
   console.log(`[openim-runner] custom base preflight passed: ${basePath}`);
+  return basePath;
+}
+
+function hashArtifact(path) {
+  if (statSync(path).isFile()) {
+    return createHash('sha256').update(readFileSync(path)).digest('hex');
+  }
+  const digest = createHash('sha256');
+  const visit = (directory) => {
+    for (const name of readdirSync(directory).sort()) {
+      const item = resolve(directory, name);
+      const itemRelative = relative(path, item).replaceAll('\\', '/');
+      const stat = statSync(item);
+      if (stat.isDirectory()) {
+        digest.update(`D\0${itemRelative}\0`);
+        visit(item);
+      } else if (stat.isFile()) {
+        const fileSha256 = createHash('sha256').update(readFileSync(item)).digest('hex');
+        digest.update(`F\0${itemRelative}\0${stat.size}\0${fileSha256}\0`);
+      }
+    }
+  };
+  visit(path);
+  return digest.digest('hex');
+}
+
+function readGitAuthority(root, label) {
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  const branch = execFileSync('git', ['branch', '--show-current'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  if (!/^[0-9a-f]{40}$/.test(head)) fail(`${label} does not resolve to a full Git revision`);
+  return { branch, head, dirty: status.length > 0 };
+}
+
+function resolveSDKAuthorityRoot() {
+  try {
+    const topLevel = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (realpathSync(topLevel) === realpathSync(projectRoot)) return projectRoot;
+  } catch {
+    // A staged local-runtime project is intentionally outside the SDK worktree.
+  }
+  const runtimeRootValue = String(process.env.OPENIM_AUTOMATION_RUNTIME_ROOT || '');
+  if (!runtimeRootValue.startsWith('/')) fail('runtime evidence requires an absolute OPENIM_AUTOMATION_RUNTIME_ROOT');
+  const runtimeRoot = resolve(runtimeRootValue);
+  const sdkRoot = dirname(runtimeRoot);
+  if (!existsSync(runtimeRoot)
+    || lstatSync(runtimeRoot).isSymbolicLink()
+    || realpathSync(runtimeRoot) !== runtimeRoot
+    || runtimeRoot !== resolve(sdkRoot, 'local-runtime')) fail('runtime evidence automation root is not the canonical SDK local-runtime directory');
+  let stage;
+  try {
+    stage = JSON.parse(readFileSync(resolve(projectRoot, '.openim-local-runtime.json'), 'utf8'));
+  } catch {
+    fail('runtime evidence staging metadata is missing or invalid');
+  }
+  const sdk = readGitAuthority(sdkRoot, 'Public SDK authority');
+  if (stage?.schemaVersion !== 1 || stage?.source?.revision !== sdk.head || stage?.source?.dirty !== false || sdk.dirty) fail('runtime evidence staging does not match one clean Public SDK revision');
+  return sdkRoot;
+}
+
+function readToolchainLock() {
+  let lock;
+  try {
+    lock = JSON.parse(readFileSync(resolve(projectRoot, 'toolchain.lock.json'), 'utf8'));
+  } catch {
+    fail('toolchain.lock.json is missing from the automation project');
+  }
+  if (lock?.schemaVersion !== 2 || lock?.publicNative == null) fail('Public native toolchain authority is invalid');
+  return lock;
+}
+
+function readHBuilderToolchainAuthority(lock) {
+  const expectedVersion = String(lock?.hbuilderx?.version || '');
+  const expectedSha256 = String(lock?.hbuilderx?.cliSha256 || '');
+  if (expectedVersion.length === 0 || !/^[0-9a-f]{64}$/.test(expectedSha256)) fail('HBuilderX toolchain lock is incomplete');
+  const cliSha256 = hashArtifact(cliPath);
+  if (cliSha256 !== expectedSha256) fail('HBuilderX CLI does not match toolchain.lock.json');
+  const infoPath = resolve(cliPath, '../../Info.plist');
+  const version = execFileSync('plutil', ['-extract', 'CFBundleShortVersionString', 'raw', '-o', '-', infoPath], { encoding: 'utf8' }).trim();
+  if (version !== expectedVersion) fail('HBuilderX version does not match toolchain.lock.json');
+  return { version, cliSha256 };
+}
+
+function resolvePublicCoreRoot(sdkRoot, lock) {
+  const source = lock.publicNative.source;
+  const environmentName = String(source.rootEnvironmentVariable || 'OPENIM_PUBLIC_CORE_DIR');
+  const explicit = String(process.env[environmentName] || process.env.OPENIM_CORE_ROOT || '');
+  if (explicit.length > 0) return resolve(explicit);
+  for (const name of source.siblingDirectories || []) {
+    const candidate = resolve(sdkRoot, '..', String(name));
+    if (existsSync(candidate)) return candidate;
+  }
+  fail(`${environmentName} must point to the locked Public Core worktree`);
+}
+
+function readPublicCoreAuthority(platformName, sdkRoot, lock) {
+  const coreRoot = resolvePublicCoreRoot(sdkRoot, lock);
+  const core = readGitAuthority(coreRoot, 'Public Core authority');
+  const expectedRevision = String(lock.publicNative.source.revision || '');
+  if (core.dirty || core.head !== expectedRevision) fail('Public Core authority must be the exact clean revision in toolchain.lock.json');
+  const platformLock = lock.publicNative[platformName];
+  const nativeArtifactKind = platformName === 'ios' ? 'xcframework-inventory' : 'aar';
+  const expectedNativeSha256 = String(platformName === 'ios' ? platformLock?.localOverrideInventorySha256 : platformLock?.sha256 || '');
+  const nativeArtifactPath = resolve(sdkRoot, String(platformLock?.localOverridePath || ''));
+  if (!/^[0-9a-f]{64}$/.test(expectedNativeSha256) || !existsSync(nativeArtifactPath)) fail(`locked ${nativeArtifactKind} authority is missing`);
+  const nativeArtifactSha256 = hashArtifact(nativeArtifactPath);
+  if (nativeArtifactSha256 !== expectedNativeSha256) fail(`local ${nativeArtifactKind} does not match toolchain.lock.json`);
+  return { ...core, root: coreRoot, nativeArtifactKind, nativeArtifactSha256 };
 }
 
 function prepareAutomationAccountFixture() {
@@ -310,10 +423,33 @@ if (!existsSync(cliPath)) {
   fail(`HBuilderX CLI does not exist: ${cliPath}`);
 }
 
+function closeAutomationProject() {
+  spawnSync(cliPath, ['project', 'close', '--path', projectRoot], {
+    cwd: projectRoot,
+    env: process.env,
+    stdio: 'ignore',
+  });
+}
+
+function openAutomationProject() {
+  closeAutomationProject();
+  const result = spawnSync(cliPath, ['project', 'open', '--path', projectRoot], {
+    cwd: projectRoot,
+    env: process.env,
+    encoding: 'utf8',
+  });
+  if (result.error != null) {
+    fail(`failed to import the staging project into HBuilderX: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    fail(`failed to import the staging project into HBuilderX (exit ${String(result.status)})`);
+  }
+}
+
+openAutomationProject();
 disableAutomationProtocolDebug();
 assertManifestWebSocket();
 assertStaticAutomationIsPassive();
-assertCustomBase(platform);
 terminateProjectJestProcesses('stale preflight process');
 prepareAutomationAccountFixture();
 stageAutomationSuiteFilter();
@@ -333,6 +469,45 @@ const series = {
   sequence: Number(process.env.OPENIM_AUTOMATION_SERIES_SEQUENCE || 1),
   total: Number(process.env.OPENIM_AUTOMATION_SERIES_TOTAL || 1),
 };
+if (!Number.isSafeInteger(series.sequence) || series.sequence <= 0 || !Number.isSafeInteger(series.total) || series.total <= 0 || series.sequence > series.total) {
+  fail('automation series metadata must be positive integers with sequence <= total');
+}
+const customBasePath = assertCustomBase(platform);
+const sdkAuthorityRoot = resolveSDKAuthorityRoot();
+const sdkAuthority = readGitAuthority(sdkAuthorityRoot, 'Public SDK authority');
+if (sdkAuthority.dirty) fail('Public SDK authority must be clean before runtime evidence is generated');
+const toolchainLock = readToolchainLock();
+const hbuilderxAuthority = readHBuilderToolchainAuthority(toolchainLock);
+const coreAuthority = readPublicCoreAuthority(platform, sdkAuthorityRoot, toolchainLock);
+const runManifest = {
+  schemaVersion: 1,
+  runId,
+  edition: 'public',
+  startedAt: new Date(runStartedAtMs).toISOString(),
+  platform,
+  vapor: requestedVapor,
+  sdk: sdkAuthority,
+  core: { branch: coreAuthority.branch, head: coreAuthority.head, dirty: coreAuthority.dirty },
+  customBase: {
+    name: basename(customBasePath),
+    sha256: hashArtifact(customBasePath),
+    nativeArtifactKind: coreAuthority.nativeArtifactKind,
+    nativeArtifactSha256: coreAuthority.nativeArtifactSha256,
+  },
+  hbuilderx: hbuilderxAuthority,
+  runtime,
+  series,
+  result: { status: 'running', finalizationComplete: false },
+};
+const runManifestPath = resolve(projectRoot, 'test-results/openim-automation', `${platform}-${runId}-manifest.json`);
+const latestRunManifestPath = resolve(projectRoot, 'test-results/openim-automation', `${platform}-latest-manifest.json`);
+const persistRunManifest = () => writeAutomationRunManifestSet({
+  perRunPath: runManifestPath,
+  latestPath: latestRunManifestPath,
+  manifest: runManifest,
+});
+persistRunManifest();
+console.log(`[openim-runner] provenance manifest: ${runManifestPath}`);
 const args = ['uniapp.test', target, '--project', projectRoot, '--vapor', requestedVapor ? 'true' : 'false'];
 if (requestedVapor) {
   args.push('--vapor_render_target', 'bytecode');
@@ -366,7 +541,8 @@ function startAndroidAutomationRebuild() {
     return;
   }
   androidAutomationRebuildStarted = true;
-  const rebuildScript = resolve(projectRoot, 'local-runtime/scripts/rebuild-local-android-automation.sh');
+  const automationRuntimeRoot = resolve(process.env.OPENIM_AUTOMATION_RUNTIME_ROOT || resolve(projectRoot, 'local-runtime'));
+  const rebuildScript = resolve(automationRuntimeRoot, 'scripts/rebuild-local-android-automation.sh');
   console.log(`[openim-runner] rebuilding static Android automation host for port ${allocatedRuntimePort}`);
   androidAutomationRebuildProcess = spawn('bash', [rebuildScript, allocatedRuntimePort, deviceID], {
     cwd: projectRoot,
@@ -463,30 +639,58 @@ child.on('close', (code, signal) => {
   restoreAutomationEnvironment();
   restoreAutomationProtocolDebug();
   terminateProjectJestProcesses('runner exit cleanup');
+  closeAutomationProject();
   const passed = /Test Suites:\s+\d+ passed/i.test(outputTail) && /Tests:\s+\d+ passed/i.test(outputTail);
+  const fullRun = requestedSuiteFilter.length === 0;
   let evidenceFailure = '';
+  let reportSummary = null;
+  let evidenceSummary = null;
   try {
-    const fullRun = requestedSuiteFilter.length === 0;
-    const { evidence, evidencePath } = writeLatestAutomationEvidence({
+    const { evidence, evidencePath, reportPath } = writeLatestAutomationEvidence({
       projectRoot,
       platform,
       startedAtMs: runStartedAtMs,
       fullRun,
+      repositoryOverride: { revision: sdkAuthority.head, dirty: sdkAuthority.dirty },
       runtime: {
         ...runtime,
         target,
         deviceID,
       },
       series,
+      runId,
+      runManifest,
+      runManifestPath: relative(projectRoot, runManifestPath),
     });
+    reportSummary = reportManifestSummary(projectRoot, reportPath, evidence.redactedReport);
+    evidenceSummary = evidenceManifestSummary(projectRoot, evidencePath, evidence);
     console.log(`[openim-runner] automation evidence: ${evidencePath}`);
-    if (fullRun && !evidence.contractEvidence.passed) {
+    if (fullRun && (!evidence.contractEvidence.passed
+      || evidence.contractEvidence.strictPassed !== true
+      || evidence.responseStructureEvidence?.passed !== true
+      || (Array.isArray(evidence.contractEvidence.knownIssueWaivers) && evidence.contractEvidence.knownIssueWaivers.length > 0))) {
       evidenceFailure = evidenceFailureMessage(evidence);
     }
   } catch (error) {
     evidenceFailure = `automation evidence unavailable: ${error.message}`;
   }
-  if (code === 0 && failureMarker.length === 0 && passed && evidenceFailure.length === 0) {
+  const succeeded = code === 0 && failureMarker.length === 0 && passed && evidenceFailure.length === 0;
+  runManifest.finishedAt = new Date().toISOString();
+  runManifest.result = {
+    status: succeeded ? 'passed' : 'failed',
+    exitCode: code,
+    signal,
+    failureMarker: succeeded ? '' : (failureMarker || evidenceFailure || 'missing explicit Jest success marker'),
+    finalizationComplete: true,
+    ...(reportSummary == null ? {} : { report: reportSummary }),
+    ...(evidenceSummary == null ? {} : { evidence: evidenceSummary }),
+  };
+  try {
+    persistRunManifest();
+  } catch (error) {
+    evidenceFailure = `run manifest finalization failed: ${error.message}`;
+  }
+  if (succeeded && evidenceFailure.length === 0) {
     console.log('[openim-runner] automation passed');
     process.exit(0);
   }

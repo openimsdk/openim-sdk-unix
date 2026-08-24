@@ -258,6 +258,30 @@ test('sendMessageNotOss delivery does not require a progress event', () => {
   assert.match(suite, /recordAutomationCallableEventCorrelations\('sendMessage', \['onSendMessageProgress', 'onRecvNewMessage'\]\)/)
 })
 
+test('message event correlations preserve stage identity and correlation ownership', () => {
+  const correlations = functionSource('buildAutomationEventCorrelations')
+  assert.match(
+    correlations,
+    /eventName == 'onRecvNewMessage' \? 'cross-account-payload-identity' : 'operation-payload-identity'/,
+  )
+  assert.match(
+    correlations,
+    /eventName == 'onRecvNewMessage' \? window\.resultIdentity : window\.payloadNeedle/,
+  )
+})
+
+test('quitGroup waits until the secondary account can observe membership', () => {
+  const suite = functionSource('runAutomationGroupSuite')
+  const created = suite.indexOf("createGroup(quitGroupParams, 'uvue_auto_quit_group_create')")
+  const precondition = suite.indexOf('waitAutomationGroupMembership(quitGroupID, config.secondaryUserID')
+  const transfer = suite.indexOf("transferGroupOwner({ groupID: quitGroupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_quit_group')")
+  assert.ok(created >= 0)
+  assert.ok(precondition > created, 'secondary membership must be observed after group creation')
+  assert.ok(transfer > precondition, 'ownership transfer must wait for the peer membership precondition')
+  assert.match(functionSource('waitAutomationGroupMembership'), /getSpecifiedGroupsInfo/)
+  assert.match(functionSource('waitAutomationGroupMembership'), /getGroupMemberList/)
+})
+
 test('conversation and draft mutations are read back and restore the original state', () => {
   const suite = functionSource('runAutomationConversationSuite')
   assert.match(suite, /const originalConversation = await runAutomationStep<OpenIMConversationItem \| null>/)
@@ -338,5 +362,7 @@ test('suiteFilter runs one public automation suite without applying full-run cov
     /process\.on\('exit', \(\) => \{[\s\S]*restoreAutomationFixture\(\)[\s\S]*\}\)/,
   )
   assert.match(automationRunner, /const fullRun = requestedSuiteFilter\.length === 0/)
-  assert.match(automationRunner, /if \(fullRun && !evidence\.contractEvidence\.passed\)/)
+  assert.match(automationRunner, /if \(fullRun && \(!evidence\.contractEvidence\.passed/)
+  assert.match(automationRunner, /evidence\.contractEvidence\.strictPassed !== true/)
+  assert.match(automationRunner, /evidence\.contractEvidence\.knownIssueWaivers/)
 })

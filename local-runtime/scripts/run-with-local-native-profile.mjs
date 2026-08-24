@@ -14,7 +14,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const localRuntimeRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const projectRoot = resolve(localRuntimeRoot, '..')
+const projectRoot = resolve(process.env.OPENIM_LOCAL_PROJECT_ROOT || resolve(localRuntimeRoot, '..'))
 
 export function localNativeConfig(platform, releaseConfig) {
   const local = structuredClone(releaseConfig)

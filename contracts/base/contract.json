@@ -1056,8 +1056,8 @@
     {
       "id": 1046,
       "name": "OpenIMSetGroupInfoParams",
-      "declaration": "export type OpenIMSetGroupInfoParams = {\n  groupID : string\n  groupName ?: string | null\n  notification ?: string | null\n  introduction ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n  needVerification ?: OpenIMGroupNeedVerification | null\n  lookMemberInfo ?: OpenIMGroupOption | null\n  applyMemberFriend ?: OpenIMGroupOption | null\n  displayIsRead ?: OpenIMGroupDisplayIsRead | null\n}",
-      "signatureHash": "b6da4a10753ad1184c55ab4f7f6f64d5fa20b4aa143879b730d1e163a21f4dfb"
+      "declaration": "export type OpenIMSetGroupInfoParams = {\n  groupID : string\n  groupName ?: string | null\n  notification ?: string | null\n  introduction ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n  needVerification ?: OpenIMGroupNeedVerification | null\n  lookMemberInfo ?: OpenIMGroupOption | null\n  applyMemberFriend ?: OpenIMGroupOption | null\n}",
+      "signatureHash": "9aafff7e76952491739ce9ba04d2d29b72540e2ef6091e77bc74bfba32a87434"
     },
     {
       "id": 1047,
@@ -3894,6 +3894,11 @@
         "kind": "platform-driver",
         "transport": "async",
         "operationID": "parameter",
+        "parameterTypes": {
+          "ios": {
+            "params": "UTSJSONObject"
+          }
+        },
         "request": {
           "kind": "fields",
           "fields": [
@@ -3907,7 +3912,7 @@
             {
               "name": "conversationInfo",
               "parameter": "params",
-              "codec": "json",
+              "codec": "set-conversation-json",
               "wireType": "string"
             }
           ]
@@ -3926,7 +3931,7 @@
           "symbol": "setConversation"
         }
       },
-      "signatureHash": "0f337b3cd59b01e3a8b2b59a31b93dfd366177eb83cb7ed844e15e61a65ae9bd",
+      "signatureHash": "25b21f9a0b6d05e00e931b40262d91c33cca902ecae3cb6f798cac47a4c9a9aa",
       "testProfile": {
         "semanticProfile": "mutation-observation",
         "sideEffectProbe": "read-after-write"
@@ -5427,6 +5432,11 @@
         "kind": "platform-driver",
         "transport": "async",
         "operationID": "parameter",
+        "parameterTypes": {
+          "ios": {
+            "params": "UTSJSONObject"
+          }
+        },
         "request": {
           "kind": "fields",
           "fields": [
@@ -5452,7 +5462,7 @@
           "symbol": "updateFriends"
         }
       },
-      "signatureHash": "4fa5ab5bc9810b7d5b0d63235189a0fa6ceb963aba104d2de0757820b3811ee7",
+      "signatureHash": "a28f4d33443adaf43b25835679b9e480511b6758bb92ec5fb51bf546d0703b17",
       "testProfile": {
         "semanticProfile": "mutation-observation",
         "sideEffectProbe": "read-after-write"

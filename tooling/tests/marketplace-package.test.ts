@@ -28,6 +28,8 @@ test('Public marketplace package is deterministic and contains only the explicit
     const first = buildPackage(firstRoot)
     const second = buildPackage(secondRoot)
     assert.equal(first.manifest.version, '0.2.0')
+    assert.equal(first.manifest.artifactKind, 'dcloud-plugin')
+    assert.equal(first.manifest.developmentInfrastructureIncluded, false)
     assert.equal(first.manifest.archive.sha256, second.manifest.archive.sha256)
     assert.deepEqual(first.manifest.files, second.manifest.files)
 
@@ -40,6 +42,7 @@ test('Public marketplace package is deterministic and contains only the explicit
     assert.ok(entries.includes('uni_modules/unix-openim-sdk/utssdk/interface.uts'))
     assert.ok(entries.includes('uni_modules/unix-openim-sdk/utssdk/unierror.uts'))
     assert.equal(entries.some((path) => /app-harmony|\/libs\/|\/Frameworks\/|\.aar$|\.har$|\.xcframework/i.test(path)), false)
+    assert.equal(entries.some((path) => /(?:^|\/)(?:local-runtime|tooling|pages|test-results)(?:\/|$)/.test(path)), false)
     assert.equal(entries.includes('uni_modules/unix-openim-sdk/.npmignore'), false)
 
     const sums = readFileSync(first.sumsPath, 'utf8')

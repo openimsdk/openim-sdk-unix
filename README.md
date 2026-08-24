@@ -181,9 +181,11 @@ pages/index/index.uvue
 
 使用精确锁定的 `HBuilderX 5.23.2026080313-alpha` 打开项目，替换 demo 中的 OpenIM 服务地址和账号占位值，然后使用自定义基座或正式包验证原生 SDK 行为。其他 HBuilderX 构建只能用于诊断，不能作为本仓库的发布认证结果。
 
-### 自动化 smoke 测试
+### 团队内部自动化验证（非客户交付）
 
-Android 和 iOS 已提供不依赖云打包的本地编译、安装和自动化测试闭环：
+`local-runtime` 是团队内部开发与验证基础设施，不属于客户交付物，也不会进入 DCloud 插件市场包。客户集成只需要 `unix-openim-sdk` 插件及其插件文档；以下命令仅供本仓库维护者和 CI 使用。
+
+Android 和 iOS 已提供不依赖云打包的内部本地编译、安装和自动化测试闭环：
 
 ```bash
 npm run local:test:android
@@ -229,7 +231,9 @@ OPENIM_AUTOMATION_SERIES_TOTAL=3 \
 node scripts/run-openim-automation.mjs android --device-id <device-id>
 ```
 
-每次执行都会保留一份带唯一 runId 的不可变 evidence，同时更新 `<platform>-latest-evidence.json`。发布门禁校验三份 evidence 的平台、当前 Git SHA、clean 状态、连续序号、零失败/零跳过、结构/语义证据，并要求 Android 三次结果中至少一份来自 arm64 真机 Release 构建。
+每次执行都会保留一份带唯一 runId 的不可变 evidence 和 matching manifest，同时更新 `<platform>-latest-evidence.json` 导航指针。`latest` 只能用于定位结果，不能作为发布依据。schema-v2 及更早记录仅属于历史证据；正式门禁只接受绑定当前提交、Core、实际原生制品、工具链、设备与构建配置的 schema-v3 证据。
+
+发布门禁校验 Android、iOS 各三份同 series 的连续 evidence，包括当前 Git SHA、clean 状态、sequence 1–3、零失败/零跳过和结构/语义证据。Android 系列至少一份必须来自 arm64 真机 Release；iOS 不额外强制真机。Public 与 Private 证据不能互相替代，详细口径见 [`PUBLIC_MARKETPLACE_RELEASE.md`](PUBLIC_MARKETPLACE_RELEASE.md)。
 
 ## 社区 :busts_in_silhouette:
 

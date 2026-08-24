@@ -12,6 +12,7 @@ import { dirname, join, relative } from 'node:path'
 import type { ContractDocument } from './model.js'
 import type { StableIDRegistry } from './contract-integrity.js'
 import { importPublicContract } from './import-contract.js'
+import { PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY } from './platform-implementation-types.js'
 import { buildGeneratedOutputs, generate } from './generate.js'
 import { GENERATED_MANIFEST_PATH, writeGeneratedManifest } from './generated-manifest.js'
 import {
@@ -55,7 +56,7 @@ export function previewPublicContractImport(root: string): ContractMigrationPrev
 
     const currentContract = readJSON<ContractDocument>(join(root, 'contracts/base/contract.json'))
     const currentRegistry = readJSON<StableIDRegistry>(join(root, 'contracts/base/id-registry.json'))
-    importPublicContract(temporaryRoot)
+    importPublicContract(temporaryRoot, PUBLIC_IMPLEMENTATION_BOUNDARY_AUTHORITY)
     generate(temporaryRoot)
     writeGeneratedManifest(temporaryRoot)
     const candidateContract = readJSON<ContractDocument>(join(temporaryRoot, 'contracts/base/contract.json'))

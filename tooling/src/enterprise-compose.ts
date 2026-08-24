@@ -11,6 +11,7 @@ import type {
   DriverSuccessHook,
   NativeBinding,
   Platform,
+  ImplementationBoundaryAuthority,
 } from './model.js'
 import { withComputedSemanticHashes } from './contract-integrity.js'
 import { normalizeContractText, sha256 } from './source.js'
@@ -35,6 +36,7 @@ import { renderHarmonyDriverBindings, renderHarmonyOperationCodes } from './harm
 import { renderHarmonyPlatformDriver } from './harmony-platform-driver.js'
 import { renderNativeCoreAdapter, renderPlatformDriverUTS } from './platform-driver.js'
 import { buildEnterpriseResponseSchemas, buildEnterpriseTestDisposition } from './test-contract.js'
+import { implementationBoundaryAuthorityForEdition } from './platform-implementation-types.js'
 
 export interface HarmonyFacadeProjectionEntry {
   name: string
@@ -484,6 +486,7 @@ type EnterpriseGenerationContext = {
   delta: EnterpriseDeltaDocument
   contract: ContractDocument
   testDisposition: ReturnType<typeof buildEnterpriseTestDisposition>
+  implementationBoundaries: ImplementationBoundaryAuthority
 }
 
 function buildEnterpriseGenerationContext(publicRoot: string, privateRoot: string): EnterpriseGenerationContext {
@@ -492,7 +495,8 @@ function buildEnterpriseGenerationContext(publicRoot: string, privateRoot: strin
   const harmonyProjection = readEnterpriseHarmonyProjection(privateRoot)
   const contract = composeEnterpriseContract(base, delta, harmonyProjection)
   const testDisposition = buildEnterpriseTestDisposition(base, delta)
-  return { base, delta, contract, testDisposition }
+  const implementationBoundaries = implementationBoundaryAuthorityForEdition(delta.rawIOSImplementationBoundaries)
+  return { base, delta, contract, testDisposition, implementationBoundaries }
 }
 
 function buildEnterpriseAppleAndroidCoreOutputs(
@@ -500,6 +504,7 @@ function buildEnterpriseAppleAndroidCoreOutputs(
   privateRoot: string,
   contract: ContractDocument,
   delta: EnterpriseDeltaDocument,
+  implementationBoundaries: ImplementationBoundaryAuthority,
 ): GeneratedOutput[] {
   return [
     {
@@ -512,6 +517,7 @@ function buildEnterpriseAppleAndroidCoreOutputs(
         readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.android), 'utf8'),
         contract,
         'android',
+        implementationBoundaries,
         delta.editionExtensions?.typedResponseParsers,
       ),
     },
@@ -521,6 +527,7 @@ function buildEnterpriseAppleAndroidCoreOutputs(
         readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.ios), 'utf8'),
         contract,
         'ios',
+        implementationBoundaries,
         delta.editionExtensions?.typedResponseParsers,
       ),
     },
@@ -585,7 +592,7 @@ export function buildEnterpriseAppleAndroidGeneratedOutputs(
 ): GeneratedOutput[] {
   const context = buildEnterpriseGenerationContext(publicRoot, privateRoot)
   return normalizeOutputs([
-    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, context.contract, context.delta),
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, context.contract, context.delta, context.implementationBoundaries),
     ...buildEnterpriseSharedContractOutputs(privateRoot, context),
   ])
 }
@@ -597,6 +604,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
     readFileSync(join(privateRoot, ENTERPRISE_TEMPLATE_PATHS.harmony), 'utf8'),
     contract,
     'harmony',
+    context.implementationBoundaries,
     context.delta.editionExtensions?.typedResponseParsers,
   )
   const harmony = monomorphizeHarmonySource(harmonyRaw)
@@ -614,7 +622,7 @@ export function buildEnterpriseGeneratedOutputs(publicRoot: string, privateRoot:
       path: join(privateRoot, 'pages/index/openim-automation-profiles.uts'),
       content: generateAutomationProfileRegistry(testDisposition),
     },
-    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, contract, context.delta),
+    ...buildEnterpriseAppleAndroidCoreOutputs(publicRoot, privateRoot, contract, context.delta, context.implementationBoundaries),
     {
       path: join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk/app-harmony/index.uts'),
       content: harmony.source,

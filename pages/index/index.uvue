@@ -1501,7 +1501,7 @@
 			let payloadIdentity = ''
 			let payloadMatched = true
 			if (apiName == 'sendMessage' || apiName == 'sendMessageNotOss') {
-				correlationKind = 'payload-identity'
+				correlationKind = eventName == 'onRecvNewMessage' ? 'cross-account-payload-identity' : 'operation-payload-identity'
 				payloadIdentity = eventName == 'onRecvNewMessage' ? window.resultIdentity : window.payloadNeedle
 				payloadMatched = payloadIdentity.length > 0 && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity
 			} else if (apiName == 'uploadFile' || apiName == 'uploadLogs') {
@@ -2786,6 +2786,40 @@
 		await runAutomationStep<string>('friend', 'deleteFriend', deleteFriend(config.secondaryUserID, 'uvue_auto_delete_friend'), noCache)
 	}
 
+	async function waitAutomationGroupMembership(groupID : string, userID : string, operationID : string) : Promise<void> {
+		const startedAt = Date.now()
+		let attempt = 0
+		while (Date.now() - startedAt < automationSideEffectTimeoutMilliseconds) {
+			try {
+				const groups = await withAutomationTimeout<OpenIMGroupListResult | null>(getSpecifiedGroupsInfo([groupID], operationID + '_group_' + attempt.toString()), 'group/getSpecifiedGroupsInfo', automationSideEffectReadTimeoutMilliseconds)
+				const params : OpenIMGetGroupMemberListParams = { groupID: groupID, filter: 0, offset: 0, count: 100 }
+				const members = await withAutomationTimeout<OpenIMGroupMemberListResult | null>(getGroupMemberList(params, operationID + '_members_' + attempt.toString()), 'group/getGroupMemberList', automationSideEffectReadTimeoutMilliseconds)
+				let groupObserved = false
+				if (groups != null) {
+					let groupIndex = 0
+					while (groupIndex < groups.groups.length) {
+						if (groups.groups[groupIndex].groupID == groupID) { groupObserved = true }
+						groupIndex = groupIndex + 1
+					}
+				}
+				let memberObserved = false
+				if (members != null) {
+					let memberIndex = 0
+					while (memberIndex < members.members.length) {
+						if (members.members[memberIndex].userID == userID) { memberObserved = true }
+						memberIndex = memberIndex + 1
+					}
+				}
+				if (groupObserved && memberObserved) { return }
+			} catch (error) {
+				console.log('quit-group membership precondition pending')
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('secondary account did not observe quit-group membership before ownership transfer')
+	}
+
 	async function runAutomationGroupSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await switchAutomationPrimary(config, 'A_group')
 		let groupID = ''
@@ -2883,6 +2917,12 @@
 		const quitGroupResult = await runAutomationOptionalStep<OpenIMGroupItem | null>('group', 'createGroup', createGroup(quitGroupParams, 'uvue_auto_quit_group_create'), noCache, 'quit group setup failed')
 		if (quitGroupResult != null) {
 			quitGroupID = (quitGroupResult as OpenIMGroupItem).groupID
+			await switchAutomationSecondary(config, 'B_group_quit_membership')
+			try {
+				await waitAutomationGroupMembership(quitGroupID, config.secondaryUserID, 'uvue_auto_quit_group_membership')
+			} finally {
+				await switchAutomationPrimary(config, 'A_group_quit_transfer')
+			}
 			await runAutomationStep<string>('group', 'transferGroupOwner', transferGroupOwner({ groupID: quitGroupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_quit_group'), noCache)
 			await runAutomationOptionalStep<string>('group', 'quitGroup', quitGroup(quitGroupID, 'uvue_auto_quit_group'), noCache, 'quit can fail while group maxSeq is still syncing')
 			await switchAutomationSecondary(config, 'B_group_quit_cleanup')

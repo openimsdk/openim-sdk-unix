@@ -5,7 +5,12 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const localRuntimeRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const projectRoot = resolve(localRuntimeRoot, '..')
+export function resolveAutomationProjectRoot(environment = process.env) {
+  return environment.OPENIM_LOCAL_PROJECT_ROOT
+    ? resolve(environment.OPENIM_LOCAL_PROJECT_ROOT)
+    : resolve(localRuntimeRoot, '..')
+}
+const projectRoot = resolveAutomationProjectRoot()
 const statePath = resolve(projectRoot, 'unpackage/local-runtime/automation-env.json')
 const environmentPath = resolve(projectRoot, 'env.js')
 

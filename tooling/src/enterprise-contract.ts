@@ -9,6 +9,7 @@ import type {
   ContractType,
   EnterpriseDeltaDocument,
   EnterpriseTypeExtension,
+  ImplementationBoundaryAuthority,
   NativeBinding,
 } from './model.js'
 import {
@@ -56,6 +57,12 @@ import {
   writeEnterpriseStableIDRegistry,
 } from './enterprise-integrity.js'
 import { ENTERPRISE_HARMONY_PROJECTION_PATH } from './enterprise-compose.js'
+import {
+  implementationBoundaryAuthorityForEdition,
+  implementationParameterTypes,
+  implementationSignature,
+  validateImplementationBoundaryAuthority,
+} from './platform-implementation-types.js'
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -64,6 +71,39 @@ function assert(condition: unknown, message: string): asserts condition {
 function writeText(path: string, value: string): void {
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, value.endsWith('\n') ? value : `${value}\n`)
+}
+
+function enterpriseImplementationBoundaryContract(
+  base: ContractDocument,
+  delta: EnterpriseDeltaDocument,
+): ContractDocument {
+  const overrides = new Map(delta.approvedBaseCallableOverrides.map((value) => [value.name, value]))
+  return {
+    ...base,
+    edition: 'enterprise',
+    callables: [
+      ...base.callables.map((callable) => {
+        const override = overrides.get(callable.name)
+        return override == null ? callable : {
+          ...callable,
+          signature: override.enterpriseSignature,
+          ...((override.lowering ?? callable.lowering) == null
+            ? {}
+            : { lowering: (override.lowering ?? callable.lowering)! }),
+        }
+      }),
+      ...delta.callables,
+    ],
+  }
+}
+
+export function validateEnterpriseImplementationBoundaryAuthority(
+  base: ContractDocument,
+  delta: EnterpriseDeltaDocument,
+): ImplementationBoundaryAuthority {
+  const authority = implementationBoundaryAuthorityForEdition(delta.rawIOSImplementationBoundaries)
+  validateImplementationBoundaryAuthority(enterpriseImplementationBoundaryContract(base, delta), authority)
+  return authority
 }
 
 export function canonicalCapabilityNames(values: Iterable<string>): string[] {
@@ -244,11 +284,17 @@ function importHarmonyABI(
   )
 }
 
-export function importEnterpriseDelta(publicRoot: string, privateRoot: string): EnterpriseDeltaDocument {
+export function importEnterpriseDelta(
+  publicRoot: string,
+  privateRoot: string,
+  implementationBoundaries: ImplementationBoundaryAuthority,
+): EnterpriseDeltaDocument {
   const existingDelta = JSON.parse(
     readFileSync(join(privateRoot, 'contracts/enterprise/delta.json'), 'utf8'),
   ) as EnterpriseDeltaDocument
   const base = JSON.parse(readFileSync(join(publicRoot, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
+  const authorityContract = enterpriseImplementationBoundaryContract(base, existingDelta)
+  validateImplementationBoundaryAuthority(authorityContract, implementationBoundaries)
   const plugin = join(privateRoot, 'uni_modules/unix-openim-sdk/utssdk')
   const interfacePath = join(plugin, 'interface.uts')
   const androidIndexPath = join(plugin, 'app-android/index.uts')
@@ -331,7 +377,15 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       assert(publicConstant.type === androidParts.type && publicConstant.value === androidParts.initializer, `Enterprise overrides public constant ${android.name}`)
       continue
     }
-    assert(android.signature === ios.signature && android.signature === harmony.signature, `Callable signature differs by platform: ${android.name}`)
+    const authorityCallable = authorityContract.callables.find((value) => value.name === android.name)
+    const expectedIOSSignature = authorityCallable == null
+      ? android.signature
+      : implementationSignature(
+        android.signature,
+        implementationParameterTypes(authorityCallable, 'ios', implementationBoundaries),
+      )
+    assert(expectedIOSSignature === ios.signature, `Callable iOS implementation signature differs without authority: ${android.name}`)
+    assert(android.signature === harmony.signature, `Callable Harmony signature differs from the canonical Android signature: ${android.name}`)
     const publicCallable = baseCallableByName.get(android.name)
     if (publicCallable != null) {
       const approvedOverride = existingDelta.approvedBaseCallableOverrides.find((value) => value.name === android.name)
@@ -450,6 +504,9 @@ export function importEnterpriseDelta(publicRoot: string, privateRoot: string): 
       ? {}
       : { approvedBaseTypeOverrides: existingDelta.approvedBaseTypeOverrides }),
     ...(existingDelta.editionExtensions == null ? {} : { editionExtensions: existingDelta.editionExtensions }),
+    ...(existingDelta.rawIOSImplementationBoundaries == null
+      ? {}
+      : { rawIOSImplementationBoundaries: existingDelta.rawIOSImplementationBoundaries }),
     constants: [],
     types,
     typeExtensions,
@@ -486,6 +543,7 @@ export function verifyEnterpriseDelta(
     /^[a-f0-9]{64}$/.test(delta.origin.importedPublicBaseContractHash),
     'Enterprise imported Public base hash is invalid',
   )
+  validateEnterpriseImplementationBoundaryAuthority(base, delta)
   const actualDelta = {
     constants: delta.constants.length,
     types: delta.types.length,

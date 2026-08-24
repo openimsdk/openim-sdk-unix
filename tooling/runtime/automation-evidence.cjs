@@ -16,6 +16,42 @@ const eventAxisFlags = {
 }
 
 const nonWaivableValidationAxes = new Set(['negative', 'cleanup'])
+const focusedEventDeliveryRequiredAxes = new Set(['delivery', 'structure', 'semantic', 'ordering'])
+const focusedSuiteRequiredCallables = {
+  'event-delivery': new Set(['sendMessage', 'sendMessageNotOss', 'uploadFile', 'uploadLogs']),
+}
+const focusedSuiteRequiredEventPolicies = {
+  'event-delivery': {
+    onConnecting: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+    onConnectSuccess: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+    onSyncServerStart: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+    onSyncServerFinish: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+    onSendMessageProgress: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+    onRecvNewMessage: { platforms: new Set(['android']), axes: focusedEventDeliveryRequiredAxes },
+    onUploadFileProgress: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+    onUploadLogsProgress: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+  },
+}
+const focusedSuiteCallableEventPolicies = {
+  'event-delivery': {
+    sendMessage: {
+      android: { requiresEvent: true, allowedEvents: ['onSendMessageProgress', 'onRecvNewMessage'] },
+      ios: { requiresEvent: true, allowedEvents: ['onSendMessageProgress'] },
+    },
+    sendMessageNotOss: {
+      android: { requiresEvent: true, allowedEvents: ['onRecvNewMessage'] },
+      ios: { requiresEvent: false, allowedEvents: [] },
+    },
+    uploadFile: {
+      android: { requiresEvent: true, allowedEvents: ['onUploadFileProgress'] },
+      ios: { requiresEvent: true, allowedEvents: ['onUploadFileProgress'] },
+    },
+    uploadLogs: {
+      android: { requiresEvent: true, allowedEvents: ['onUploadLogsProgress'] },
+      ios: { requiresEvent: true, allowedEvents: ['onUploadLogsProgress'] },
+    },
+  },
+}
 
 function isRecord(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value)
@@ -34,6 +70,62 @@ function callableEvidenceName(item) {
     return item.apiName
   }
   return typeof item.name === 'string' ? item.name : ''
+}
+
+// The page-side UTS report deliberately calls this field `suite`; legacy
+// host-side fixtures used `group`. Treat them as the same report contract so
+// a selected-suite run is evaluated from the evidence it actually emitted.
+function callableEvidenceSuite(item) {
+  if (typeof item.group === 'string' && item.group.length > 0) {
+    return item.group
+  }
+  return typeof item.suite === 'string' ? item.suite : ''
+}
+
+function focusedRunRequiresCallable(fullRun, focusedSuite, apiName) {
+  if (fullRun) return true
+  const required = focusedSuiteRequiredCallables[focusedSuite]
+  return required instanceof Set && required.has(apiName)
+}
+
+function focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase) {
+  if (fullRun) return null
+  const suitePolicy = focusedSuiteCallableEventPolicies[focusedSuite]
+  if (!isRecord(suitePolicy) || !Object.hasOwn(suitePolicy, contractCase.apiName)) return null
+  const callablePolicy = suitePolicy[contractCase.apiName]
+  if (!isRecord(callablePolicy) || !Object.hasOwn(callablePolicy, platform)) {
+    return { requiresEvent: true, allowedEvents: [] }
+  }
+  const platformPolicy = callablePolicy[platform]
+  if (!isRecord(platformPolicy)
+    || typeof platformPolicy.requiresEvent !== 'boolean'
+    || !Array.isArray(platformPolicy.allowedEvents)) {
+    return { requiresEvent: true, allowedEvents: [] }
+  }
+  return {
+    requiresEvent: platformPolicy.requiresEvent,
+    allowedEvents: platformPolicy.allowedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0),
+  }
+}
+
+function focusedRunRequiredEventPolicy(focusedSuite, eventName) {
+  const suitePolicy = focusedSuiteRequiredEventPolicies[focusedSuite]
+  return isRecord(suitePolicy) ? suitePolicy[eventName] : null
+}
+
+function focusedRunRequiresEvent(fullRun, focusedSuite, platform, eventName) {
+  if (fullRun) return true
+  const policy = focusedRunRequiredEventPolicy(focusedSuite, eventName)
+  return isRecord(policy) && policy.platforms instanceof Set && policy.platforms.has(platform)
+}
+
+function effectiveCallableExpectedEvents(fullRun, focusedSuite, platform, contractCase) {
+  const policy = focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase)
+  const declared = Array.isArray(contractCase.expectedEvents)
+    ? contractCase.expectedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0)
+    : []
+  if (policy == null) return declared
+  return declared.filter((eventName) => policy.allowedEvents.includes(eventName))
 }
 
 function eventEvidenceName(item) {
@@ -372,6 +464,15 @@ function eventCorrelationPayloadMatches(eventName, recorded, payloadIdentity) {
   return identityField.length > 0 && recorded[identityField] === payloadIdentity
 }
 
+function requiredCallableEventCorrelationKind(apiName, eventName) {
+  if (apiName === 'sendMessage' && eventName === 'onSendMessageProgress') return 'operation-payload-identity'
+  if ((apiName === 'sendMessage' || apiName === 'sendMessageNotOss') && eventName === 'onRecvNewMessage') {
+    return 'cross-account-payload-identity'
+  }
+  if (apiName === 'uploadFile' || apiName === 'uploadLogs') return 'exclusive-operation-window'
+  return ''
+}
+
 function valueAtPath(value, path) {
   if (!isRecord(value) || typeof path !== 'string' || path.length === 0) return undefined
   let current = value
@@ -385,6 +486,11 @@ function valueAtPath(value, path) {
 function validCallableEventCorrelation(value, apiName, eventName, identityPath) {
   if (!isRecord(value)) return false
   if (value.operationApiName !== apiName || value.eventName !== eventName || value.payloadMatched !== true) return false
+  const requiredKind = requiredCallableEventCorrelationKind(apiName, eventName)
+  if (requiredKind.length > 0 && value.correlationKind !== requiredKind) return false
+  if (value.correlationKind === 'exclusive-operation-window'
+    && apiName !== 'uploadFile'
+    && apiName !== 'uploadLogs') return false
   if (!Number.isFinite(value.operationSequence) || !Number.isFinite(value.eventSequence)) return false
   if (!Number.isFinite(value.operationEpoch) || !Number.isFinite(value.eventEpoch)) return false
   const crossAccountCorrelation = value.correlationKind === 'cross-account-payload-identity'
@@ -397,7 +503,7 @@ function validCallableEventCorrelation(value, apiName, eventName, identityPath) 
   if (value.correlationKind === 'lifecycle-order') {
     return value.exclusiveOperation === false && value.payloadIdentity === ''
   }
-  if (value.correlationKind === 'payload-identity') {
+  if (value.correlationKind === 'payload-identity' || value.correlationKind === 'operation-payload-identity') {
     if (typeof value.payloadIdentity !== 'string' || value.payloadIdentity.length === 0) return false
     if (typeof value.eventPayloadDetail !== 'string' || !Number.isFinite(value.operationTerminalSequence)) return false
     if (value.operationTerminalSequence <= value.operationSequence) return false
@@ -432,9 +538,10 @@ function validCallableEventCorrelation(value, apiName, eventName, identityPath) 
   return false
 }
 
-function callableEventCorrelationResult(candidates, contractCase) {
-  const expectedEvents = Array.isArray(contractCase.expectedEvents)
-    ? [...new Set(contractCase.expectedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0))]
+function callableEventCorrelationResult(candidates, contractCase, expectedEventsOverride = null) {
+  const declaredExpectedEvents = expectedEventsOverride == null ? contractCase.expectedEvents : expectedEventsOverride
+  const expectedEvents = Array.isArray(declaredExpectedEvents)
+    ? [...new Set(declaredExpectedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0))]
     : []
   if (expectedEvents.length === 0) {
     return { passed: false, missing: [], invalid: [], undeclared: true }
@@ -594,6 +701,7 @@ function validateAutomationEvidence(input) {
   const filteredSuiteGroups = !fullRun && typeof report.suiteFilter === 'string' && report.suiteFilter.length > 0 && Array.isArray(report.executedSuites)
     ? new Set(report.executedSuites.filter((item) => typeof item === 'string' && item.length > 0))
     : null
+  const focusedSuite = !fullRun && typeof report.suiteFilter === 'string' ? report.suiteFilter : ''
   const issues = []
   const knownIssueWaivers = []
   let checkedCallables = 0
@@ -611,9 +719,19 @@ function validateAutomationEvidence(input) {
     if (disposition === 'not-in-edition') {
       continue
     }
+    if (!fullRun && focusedSuite === 'event-delivery' && !focusedRunRequiresCallable(fullRun, focusedSuite, contractCase.apiName)) {
+      continue
+    }
     const candidates = reportCases.filter((item) => callableEvidenceName(item) === contractCase.apiName
-      && (filteredSuiteGroups == null || filteredSuiteGroups.has(item.group)))
-    if (!fullRun && candidates.length === 0) {
+      && (filteredSuiteGroups == null || filteredSuiteGroups.has(callableEvidenceSuite(item))))
+    const focusedEventPolicy = focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase)
+    const validationAxes = focusedEventPolicy == null
+      ? (Array.isArray(contractCase.validationAxes) ? contractCase.validationAxes : [])
+      : focusedEventPolicy.requiresEvent ? ['event'] : []
+    if (!fullRun && validationAxes.length === 0) {
+      continue
+    }
+    if (!fullRun && candidates.length === 0 && !focusedRunRequiresCallable(fullRun, focusedSuite, contractCase.apiName)) {
       continue
     }
     checkedCallables += 1
@@ -630,7 +748,7 @@ function validateAutomationEvidence(input) {
         ))
       }
     } else if (disposition === 'required') {
-      const axes = Array.isArray(contractCase.validationAxes) ? contractCase.validationAxes : []
+      const axes = validationAxes
       const approvedKnownIssueCandidates = candidates.filter((item) => approvedKnownIssueMatches(item, contractCase, platform))
       const evidenceCandidates = approvedKnownIssueCandidates.length > 0 ? approvedKnownIssueCandidates : candidates
       for (const axis of axes) {
@@ -685,7 +803,11 @@ function validateAutomationEvidence(input) {
           continue
         }
         if (axis === 'event') {
-          const correlation = callableEventCorrelationResult(evidenceCandidates, contractCase)
+          const correlation = callableEventCorrelationResult(
+            evidenceCandidates,
+            contractCase,
+            effectiveCallableExpectedEvents(fullRun, focusedSuite, platform, contractCase),
+          )
           if (!correlation.passed) {
             const reasons = []
             if (correlation.undeclared) reasons.push('manifest expectedEvents is empty')
@@ -736,15 +858,19 @@ function validateAutomationEvidence(input) {
       continue
     }
     const requiresNegativeEvidence = disposition === 'platform-unsupported' || disposition === 'capability-negative'
+    const focusedEventRequired = focusedRunRequiresEvent(fullRun, focusedSuite, platform, contractEvent.eventName)
+    if (!fullRun && focusedSuite === 'event-delivery' && !focusedEventRequired) {
+      continue
+    }
     if (filteredSuiteGroups != null && !filteredSuiteGroups.has('event-delivery')) {
       continue
     }
     const caseCandidates = reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName
-      && (filteredSuiteGroups == null || filteredSuiteGroups.has(item.group)))
+      && (filteredSuiteGroups == null || filteredSuiteGroups.has(callableEvidenceSuite(item))))
     const eventCandidates = reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
     const candidates = requiresNegativeEvidence ? caseCandidates : eventCandidates
     const allCandidates = [...eventCandidates, ...caseCandidates]
-    if (!fullRun && allCandidates.length === 0) {
+    if (!fullRun && allCandidates.length === 0 && !focusedEventRequired) {
       continue
     }
     if (!requiresNegativeEvidence
@@ -766,7 +892,10 @@ function validateAutomationEvidence(input) {
         ))
       }
     } else if (disposition === 'required') {
-      const axes = Array.isArray(contractEvent.validationAxes) ? contractEvent.validationAxes : []
+      const focusedEventPolicy = focusedRunRequiredEventPolicy(focusedSuite, contractEvent.eventName)
+      const axes = !fullRun && focusedEventRequired && isRecord(focusedEventPolicy) && focusedEventPolicy.axes instanceof Set
+        ? (Array.isArray(contractEvent.validationAxes) ? contractEvent.validationAxes.filter((axis) => focusedEventPolicy.axes.has(axis)) : [])
+        : (Array.isArray(contractEvent.validationAxes) ? contractEvent.validationAxes : [])
       for (const axis of axes) {
         if (axis === 'negative') {
           const negative = requiredNegativeEvidenceResult(caseCandidates, contractEvent)

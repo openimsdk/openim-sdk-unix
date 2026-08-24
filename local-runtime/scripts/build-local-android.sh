@@ -6,14 +6,20 @@ source "$(cd "$(dirname "$0")" && pwd)/common.sh"
 readonly NATIVE_ROOT="$PROJECT_ROOT/unpackage/local-runtime/android-host"
 readonly TEMPLATE_ROOT="$LOCAL_RUNTIME_ROOT/native-android-template"
 readonly EXPORT_ROOT="$PROJECT_ROOT/unpackage/resources/app-android"
-readonly LOCAL_APK="$PROJECT_ROOT/unpackage/debug/unix-openim-sdk-local.apk"
+readonly LOCAL_APK="$PROJECT_ROOT/unpackage/debug/${OPENIM_LOCAL_PRODUCT:-unix-openim-sdk}-${OPENIM_LOCAL_SURFACE:-uniappx}-local.apk"
 readonly HBUILDER_CLI="$(resolve_hbuilder_cli)"
 readonly ANDROID_SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
-readonly SDK_ROOT="${OPENIM_DCLOUD_ANDROID_SDK_ROOT:-$HOME/Library/Caches/DCloud/uni-app-x-sdk/5.23/Android-uni-app-x-SDK@14987-5.23}"
-readonly SDK_ZIP="${OPENIM_DCLOUD_ANDROID_SDK_ZIP:-${SDK_ROOT}.zip}"
+if [[ -z "${OPENIM_UNI_TOOLCHAIN_PROFILE:-}" || ! -f "$OPENIM_UNI_TOOLCHAIN_PROFILE" ]]; then
+  echo "OPENIM_UNI_TOOLCHAIN_PROFILE is required" >&2
+  exit 1
+fi
+readonly SDK_ROOT="$(read_json "$OPENIM_UNI_TOOLCHAIN_PROFILE" sdks.uniappx.android.sdkRoot)"
+readonly SDK_ZIP="$(read_json "$OPENIM_UNI_TOOLCHAIN_PROFILE" sdks.uniappx.android.archivePath)"
 
 verify_hbuilder_cli "$HBUILDER_CLI"
-node "$LOCAL_RUNTIME_ROOT/scripts/prepare-local-native-artifacts.mjs" android
+if [[ "$PROJECT_ROOT" == "$RUNNER_PROJECT_ROOT" ]]; then
+  node "$LOCAL_RUNTIME_ROOT/scripts/prepare-local-native-artifacts.mjs" android
+fi
 
 expected_sdk_sha="$(read_json "$HARNESS_LOCK" android.dcloudSDKZipSha256)"
 if [[ ! -d "$SDK_ROOT/SDK/libs" || ! -d "$SDK_ROOT/plugins" || ! -f "$SDK_ZIP" ]]; then
@@ -48,10 +54,11 @@ if [[ ! -d "$EXPORT_ROOT/$app_id/www" ]]; then
 fi
 
 sync_plugin() {
-  local source_root="$EXPORT_ROOT/uni_modules/unix-openim-sdk/utssdk/app-android"
-  local target_root="$NATIVE_ROOT/unix-openim-sdk"
+  local plugin_id="$1"
+  local source_root="$EXPORT_ROOT/uni_modules/$plugin_id/utssdk/app-android"
+  local target_root="$NATIVE_ROOT/$plugin_id"
   if [[ ! -d "$source_root/src" || ! -d "$source_root/libs" ]]; then
-    echo "Exported unix-openim-sdk Android module is incomplete" >&2
+    echo "Exported $plugin_id Android module is incomplete" >&2
     exit 1
   fi
   mkdir -p "$target_root/src/main/java" "$target_root/src/main/res" "$target_root/libs"
@@ -85,12 +92,33 @@ fi
 rsync -a --delete \
   "$EXPORT_ROOT/$app_id/" \
   "$NATIVE_ROOT/uniappx/src/main/assets/apps/$app_id/"
-sync_plugin
+while IFS= read -r plugin_id; do
+  sync_plugin "$plugin_id"
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  for (const plugin of descriptor.plugins) process.stdout.write(plugin.id + "\n");
+')
 
-expected_openim_aar_sha="$(read_json "$TOOLCHAIN_LOCK" publicNative.android.sha256)"
+expected_openim_aar_sha="$(node -e '
+  const crypto = require("crypto");
+  const fs = require("fs");
+  const path = require("path");
+  const descriptorPath = path.resolve(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR);
+  const descriptor = JSON.parse(fs.readFileSync(descriptorPath, "utf8"));
+  const plugin = descriptor.plugins.find((item) => item.id === "unix-openim-sdk");
+  if (!plugin) throw new Error("unix-openim-sdk is absent from the product descriptor");
+  const source = plugin.source.replace(/\$\{([A-Z0-9_]+)\}/g, (_match, name) => {
+    const value = process.env[name];
+    if (!value) throw new Error(`Missing descriptor environment variable ${name}`);
+    return value;
+  });
+  const artifact = path.resolve(path.dirname(descriptorPath), source, "utssdk/app-android/libs/open_im_sdk.aar");
+  process.stdout.write(crypto.createHash("sha256").update(fs.readFileSync(artifact)).digest("hex"));
+')"
 exported_openim_aar="$NATIVE_ROOT/unix-openim-sdk/libs/open_im_sdk.aar"
 if [[ ! -f "$exported_openim_aar" || "$(sha256_file "$exported_openim_aar")" != "$expected_openim_aar_sha" ]]; then
-  echo "Exported Public OpenIM AAR is absent or stale: $exported_openim_aar" >&2
+  echo "Exported product OpenIM AAR is absent or stale: $exported_openim_aar" >&2
   exit 1
 fi
 
@@ -125,6 +153,13 @@ dcloud_lib_names=(
   uni-theme-release.aar
   uni-websocket-release.aar
 )
+while IFS= read -r extra_lib; do
+  [[ -n "$extra_lib" ]] && dcloud_lib_names+=("$extra_lib")
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  for (const library of descriptor.androidHost?.dcloudLibraries ?? []) process.stdout.write(library + "\n");
+')
 
 for existing in "$NATIVE_ROOT/dcloud-libs"/*; do
   [[ -f "$existing" ]] && unlink "$existing"
@@ -165,21 +200,11 @@ if [[ ! -x "$java_runtime/bin/java" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$NATIVE_ROOT/gradle/wrapper/gradle-wrapper.jar" || ! -x "$NATIVE_ROOT/gradlew" ]]; then
-  gradle_bootstrap="$(resolve_gradle_bootstrap)"
-  (
-    cd "$NATIVE_ROOT"
-    JAVA_HOME="$java_runtime" ANDROID_HOME="$ANDROID_SDK" \
-      "$gradle_bootstrap" wrapper \
-        --gradle-version "$(read_json "$HARNESS_LOCK" android.gradleVersion)" \
-        --distribution-type bin
-  )
-fi
-
+gradle_bootstrap="$(resolve_gradle_bootstrap)"
 (
   cd "$NATIVE_ROOT"
   JAVA_HOME="$java_runtime" ANDROID_HOME="$ANDROID_SDK" \
-    ./gradlew --no-daemon --stacktrace --rerun-tasks :app:assembleDebug
+    "$gradle_bootstrap" --no-daemon --stacktrace --rerun-tasks :app:assembleDebug
 )
 
 built_apk="$NATIVE_ROOT/app/build/outputs/apk/debug/app-debug.apk"
@@ -191,13 +216,17 @@ mkdir -p "$(dirname "$LOCAL_APK")"
 ditto "$built_apk" "$LOCAL_APK"
 
 apk_entries="$(zipinfo -1 "$LOCAL_APK")"
-for abi in arm64-v8a x86_64; do
+while IFS= read -r abi; do
   count="$(printf '%s\n' "$apk_entries" | awk -v path="lib/$abi/libgojni.so" '$0 == path {count++} END {print count+0}')"
   if [[ "$count" != "1" ]]; then
     echo "Expected exactly one $abi libgojni.so in local APK, found $count" >&2
     exit 1
   fi
-done
+done < <(node -e '
+  const fs = require("fs");
+  const descriptor = JSON.parse(fs.readFileSync(process.env.OPENIM_LOCAL_PRODUCT_DESCRIPTOR, "utf8"));
+  for (const abi of descriptor.androidHost?.abiFilters ?? ["arm64-v8a", "x86_64"]) process.stdout.write(abi + "\n");
+')
 if ! printf '%s\n' "$apk_entries" | rg -q '^classes[0-9]*\.dex$'; then
   echo "Local APK contains no DEX files" >&2
   exit 1
@@ -223,4 +252,14 @@ if ! rg -q 'Lio/dcloud/debug/PullDebugActivity;' "$dex_strings"; then
 fi
 
 shasum -a 256 "$LOCAL_APK"
+if [[ -n "${OPENIM_LOCAL_RUN_ROOT:-}" ]]; then
+  node -e '
+    const fs = require("fs");
+    const crypto = require("crypto");
+    const path = process.argv[1];
+    const output = process.argv[2];
+    const bytes = fs.readFileSync(path);
+    fs.writeFileSync(output, JSON.stringify({ apkPath: path, apkSha256: crypto.createHash("sha256").update(bytes).digest("hex"), apkBytes: String(bytes.length) }, null, 2) + "\n");
+  ' "$LOCAL_APK" "$OPENIM_LOCAL_RUN_ROOT/artifacts.json"
+fi
 echo "Local Android APK ready: $LOCAL_APK"

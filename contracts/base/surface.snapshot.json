@@ -1001,7 +1001,7 @@
     {
       "id": 1046,
       "name": "OpenIMSetGroupInfoParams",
-      "signatureHash": "b6da4a10753ad1184c55ab4f7f6f64d5fa20b4aa143879b730d1e163a21f4dfb"
+      "signatureHash": "9aafff7e76952491739ce9ba04d2d29b72540e2ef6091e77bc74bfba32a87434"
     },
     {
       "id": 1047,
@@ -1981,7 +1981,7 @@
       "id": 2068,
       "name": "setConversation",
       "signature": "setConversation(params:OpenIMSetConversationParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "0f337b3cd59b01e3a8b2b59a31b93dfd366177eb83cb7ed844e15e61a65ae9bd"
+      "signatureHash": "25b21f9a0b6d05e00e931b40262d91c33cca902ecae3cb6f798cac47a4c9a9aa"
     },
     {
       "id": 2069,
@@ -2185,7 +2185,7 @@
       "id": 2102,
       "name": "updateFriends",
       "signature": "updateFriends(params:OpenIMUpdateFriendsParams,operationID?:string|null):Promise<string>",
-      "signatureHash": "4fa5ab5bc9810b7d5b0d63235189a0fa6ceb963aba104d2de0757820b3811ee7"
+      "signatureHash": "a28f4d33443adaf43b25835679b9e480511b6758bb92ec5fb51bf546d0703b17"
     },
     {
       "id": 2103,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "40caccb52499d169afe96ef8c4b1e667b40235bfe3fb43f51e833337d0f4ea57"
+  "contractHash": "42ec23fb331518e1900b1f6edb87870ec0d503f377bba48e006ec6b8c4c1b56d"
 }
