@@ -2,10 +2,11 @@ import { createHash, randomUUID } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { basename, relative, resolve } from 'node:path'
+import { basename, isAbsolute, relative, resolve } from 'node:path'
 
 const require = createRequire(import.meta.url)
 const { formatAutomationEvidenceIssues, validateAutomationEvidence } = require('../../tooling/runtime/automation-evidence.cjs')
+const { buildAutomationRunProvenance, stableJSONStringify } = require('../../tooling/runtime/automation-run-provenance.cjs')
 
 const artifactFilePattern = /^openim-automation-.*\.json$/
 const sensitiveKeyPattern = /(token|authorization|credential|secret|password|sign|signature|policy|session|identity|userID|sendID|recvID|clientMsgID|groupID|conversationID|ownerUserID|creatorUserID|nickname|account|faceURL|attachedInfo)/i
@@ -194,8 +195,20 @@ export function createAutomationEvidenceRecord({
   repositoryOverride,
   runtime,
   series,
-  runId = randomUUID(),
+  runId,
+  runManifest,
+  runManifestPath,
 }) {
+  const resolvedRunId = runId ?? runManifest?.runId ?? randomUUID()
+  if (runManifest == null || runManifest.runId !== resolvedRunId || runManifest.platform !== platform) {
+    throw new Error('automation evidence requires the exact platform run manifest')
+  }
+  const releaseProvenance = buildAutomationRunProvenance(runManifest)
+  if (runManifest.releaseProvenance != null
+    && stableJSONStringify(runManifest.releaseProvenance) !== stableJSONStringify(releaseProvenance)) {
+    throw new Error('automation run manifest provenance changed before evidence finalization')
+  }
+  runManifest.releaseProvenance = releaseProvenance
   const manifest = manifestOverride ?? readDispositionManifest(projectRoot)
   const responseSchemas = manifestOverride == null ? readResponseSchemas(projectRoot) : undefined
   const contractEvidence = validateAutomationEvidence({ manifest, responseSchemas, report, platform, fullRun })
@@ -212,12 +225,22 @@ export function createAutomationEvidenceRecord({
     })
   }
   return {
-    schemaVersion: 2,
-    runId,
+    schemaVersion: 3,
+    runId: resolvedRunId,
+    runManifest: {
+      runId: resolvedRunId,
+      path: relative(
+        projectRoot,
+        runManifestPath == null
+          ? resolve(artifactDirectory(projectRoot), `${platform}-${resolvedRunId.replace(/[^A-Za-z0-9._-]/g, '-')}-manifest.json`)
+          : (isAbsolute(runManifestPath) ? runManifestPath : resolve(projectRoot, runManifestPath)),
+      ),
+      provenance: releaseProvenance,
+    },
     generatedAt: new Date().toISOString(),
     platform,
     fullRun,
-    series: series ?? { id: runId, sequence: 1, total: 1 },
+    series: series ?? { id: resolvedRunId, sequence: 1, total: 1 },
     repository: repositoryOverride ?? repositoryState(projectRoot),
     runtime: runtimeMetadata(platform, runtime),
     sourceReport: {
@@ -227,6 +250,7 @@ export function createAutomationEvidenceRecord({
       passed: typeof report?.passed === 'number' ? report.passed : 0,
       failed: typeof report?.failed === 'number' ? report.failed : 0,
       skipped: typeof report?.skipped === 'number' ? report.skipped : 0,
+      knownIssues: typeof report?.knownIssues === 'number' ? report.knownIssues : 0,
     },
     contractEvidence,
     responseStructureEvidence,
@@ -244,6 +268,8 @@ export function writeLatestAutomationEvidence({
   runtime,
   series,
   runId,
+  runManifest,
+  runManifestPath,
 }) {
   const latest = findLatestAutomationReport(projectRoot, startedAtMs)
   if (latest == null) {
@@ -261,6 +287,8 @@ export function writeLatestAutomationEvidence({
     runtime,
     series,
     runId,
+    runManifest,
+    runManifestPath,
   })
   const safeRunId = evidence.runId.replace(/[^A-Za-z0-9._-]/g, '-')
   const evidencePath = resolve(artifactDirectory(projectRoot), `${platform}-${safeRunId}-evidence.json`)
@@ -268,13 +296,21 @@ export function writeLatestAutomationEvidence({
   mkdirSync(resolve(evidencePath, '..'), { recursive: true })
   const encoded = `${JSON.stringify(evidence, null, 2)}\n`
   writeFileSync(evidencePath, encoded)
-  writeFileSync(latestEvidencePath, encoded)
+  writeFileSync(latestEvidencePath, `${JSON.stringify({
+    schemaVersion: 1,
+    navigationOnly: true,
+    platform,
+    runId: evidence.runId,
+    path: relative(projectRoot, evidencePath),
+    updatedAt: new Date().toISOString(),
+  }, null, 2)}\n`)
   return { evidence, evidencePath, latestEvidencePath, reportPath: latest.path }
 }
 
 export function evidenceManifestSummary(projectRoot, evidencePath, evidence) {
   return {
     path: relative(projectRoot, evidencePath),
+    runId: evidence.runId,
     passed: evidence.contractEvidence.passed === true,
     strictPassed: evidence.contractEvidence.strictPassed === true,
     responseStructurePassed: evidence.responseStructureEvidence?.passed === true,
@@ -298,6 +334,7 @@ export function reportManifestSummary(projectRoot, reportPath, report) {
     passed: typeof report?.passed === 'number' ? report.passed : 0,
     failed: typeof report?.failed === 'number' ? report.failed : 0,
     skipped: typeof report?.skipped === 'number' ? report.skipped : 0,
+    knownIssues: typeof report?.knownIssues === 'number' ? report.knownIssues : 0,
   }
 }
 

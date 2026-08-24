@@ -362,5 +362,7 @@ test('suiteFilter runs one public automation suite without applying full-run cov
     /process\.on\('exit', \(\) => \{[\s\S]*restoreAutomationFixture\(\)[\s\S]*\}\)/,
   )
   assert.match(automationRunner, /const fullRun = requestedSuiteFilter\.length === 0/)
-  assert.match(automationRunner, /if \(fullRun && !evidence\.contractEvidence\.passed\)/)
+  assert.match(automationRunner, /if \(fullRun && \(!evidence\.contractEvidence\.passed/)
+  assert.match(automationRunner, /evidence\.contractEvidence\.strictPassed !== true/)
+  assert.match(automationRunner, /evidence\.contractEvidence\.knownIssueWaivers/)
 })

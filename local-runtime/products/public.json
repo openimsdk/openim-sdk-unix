@@ -43,6 +43,10 @@
     {
       "source": "../../package.json",
       "destination": "package.json"
+    },
+    {
+      "source": "../../toolchain.lock.json",
+      "destination": "toolchain.lock.json"
     }
   ],
   "nativeArtifacts": [
