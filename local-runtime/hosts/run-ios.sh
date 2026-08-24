@@ -25,8 +25,9 @@ node -e '
   fs.writeFileSync(temporary, `${JSON.stringify(artifacts, null, 2)}\n`, { mode: 0o600 });
   fs.renameSync(temporary, path);
 ' "$OPENIM_LOCAL_RUN_ROOT/artifacts.json" "$OPENIM_LOCAL_PRODUCT_DESCRIPTOR" "$device" "$bundle_id"
-xcrun simctl install "$device" "$app"
 xcrun simctl terminate "$device" "$bundle_id" 2>/dev/null || true
+xcrun simctl uninstall "$device" "$bundle_id" 2>/dev/null || true
+xcrun simctl install "$device" "$app"
 readonly runtime_log_root="$(mktemp -d "${TMPDIR:-/tmp}/openim-local-ios-runtime.XXXXXX")"
 trap 'rm -rf "$runtime_log_root"' EXIT
 readonly runtime_stdout="$runtime_log_root/stdout.log"

@@ -450,11 +450,16 @@ export function parseNativeCheckFriendResultCommon(data : string, helpers : Nati
 }
 
 export function parseNativeUserStatusEventListCommon(data : string, helpers : NativeParserHelpers) : OpenIMUserStatusListResult | null {
-  const rawList = helpers.parseNativeJSONObjectListData(data)
-  if (rawList == null) { return null }
+  let rawList : Array<UTSJSONObject> | null = helpers.parseNativeJSONObjectListData(data)
+  if (rawList == null) {
+    const raw : NativeJSONValue | null = helpers.parseNativeAny(data)
+    if (!(raw instanceof UTSJSONObject)) { return null }
+    rawList = [raw]
+  }
   const statuses : Array<OpenIMUserStatusItem> = []
   let valid = true
-  rawList.forEach((item : UTSJSONObject) => {
+  const resolvedRawList = rawList as Array<UTSJSONObject>
+  resolvedRawList.forEach((item : UTSJSONObject) => {
     if (helpers.isRequiredField(item, 'userID') && helpers.isRequiredField(item, 'status')) { statuses.push(parseNativeUserStatusItem(item, helpers)) } else { valid = false }
   })
   if (valid == false) { return null }

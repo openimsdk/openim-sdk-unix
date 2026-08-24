@@ -506,7 +506,46 @@ function eventDispatchArguments(event: ContractEvent): string {
   return `${event.decoder.symbol}(payload)`
 }
 
-function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios'): string {
+function generateBatchMessageSingleDispatch(event: ContractEvent, contract: ContractDocument): string {
+  const singleEventName = event.name === 'onRecvNewMessages'
+    ? 'onRecvNewMessage'
+    : event.name === 'onRecvOfflineNewMessages'
+      ? 'onRecvOfflineNewMessage'
+      : null
+  if (singleEventName == null) return ''
+  const singleEvent = contract.events.find((candidate) => candidate.name === singleEventName)
+  if (singleEvent == null) return ''
+  const payload = `${event.name}SingleDispatchPayload`
+  const snapshot = `${singleEventName}DispatchSnapshotFromBatch`
+  const copyIndex = `${singleEventName}CopyIndexFromBatch`
+  const current = `${singleEventName}CurrentHandlerFromBatch`
+  const messageIndex = `${singleEventName}MessageIndexFromBatch`
+  const message = `${singleEventName}MessageFromBatch`
+  const dispatchIndex = `${singleEventName}DispatchIndexFromBatch`
+  const handler = `${singleEventName}DispatchHandlerFromBatch`
+  return `      const ${payload} = ${eventDispatchArguments(event)}
+      if (${payload} != null) {
+        const ${snapshot} : Array<${singleEvent.handlerType}> = []
+        for (let ${copyIndex} : number = 0; ${copyIndex} < ${handlerVariable(singleEvent)}.length; ${copyIndex} = ${copyIndex} + 1) {
+          const ${current} = ${handlerVariable(singleEvent)}[${copyIndex}]
+          if (${current} != null) { ${snapshot}.push(${current}) }
+        }
+        for (let ${messageIndex} : number = 0; ${messageIndex} < ${payload}.messages.length; ${messageIndex} = ${messageIndex} + 1) {
+          const ${message} = ${payload}.messages[${messageIndex}]
+          if (${message} != null) {
+            for (let ${dispatchIndex} : number = 0; ${dispatchIndex} < ${snapshot}.length; ${dispatchIndex} = ${dispatchIndex} + 1) {
+              const ${handler} = ${snapshot}[${dispatchIndex}]
+              if (${handler} != null) {
+                try { ${handler}(${message}) } catch (error) { console.error('[unix-openim-sdk] ${singleEventName} handler failed', error) }
+              }
+            }
+          }
+        }
+      }
+`
+}
+
+function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios', contract: ContractDocument): string {
   const handlers = handlerVariable(event)
   const args = eventDispatchArguments(event)
   const snapshot = `${event.name}DispatchSnapshot`
@@ -526,7 +565,7 @@ function generateDispatchCase(event: ContractEvent, platform: 'android' | 'ios')
           try { ${handler}(${args}) } catch (error) { console.error('[unix-openim-sdk] ${event.name} handler failed', error) }
         }
       }
-      break
+${generateBatchMessageSingleDispatch(event, contract)}      break
 `
 }
 
@@ -549,7 +588,7 @@ export function generateEvents(
   const state = contract.events.map(generateEventState).join('\n')
   const removals = contract.events.map(generateEventRemoval).join('\n\n')
   const registrations = contract.events.map(generateEventRegistration).join('\n\n')
-  const dispatchCases = contract.events.map((event) => generateDispatchCase(event, platform)).join('\n')
+  const dispatchCases = contract.events.map((event) => generateDispatchCase(event, platform, contract)).join('\n')
   const offCases = contract.events.map(generateOffCase).join('\n')
   return generatedSource(`${prelude}${extension.length === 0 ? '' : `\n${extension}`}
 

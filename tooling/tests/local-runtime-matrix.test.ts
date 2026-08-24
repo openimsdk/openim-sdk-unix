@@ -382,6 +382,12 @@ test('uni-app x iOS plugin wrappers retain Objective-C categories from static fr
 
 test('iOS runtime smoke requires the exact rendered product marker and a settled process', () => {
   const source = readFileSync(new URL('../../local-runtime/hosts/run-ios.sh', import.meta.url), 'utf8')
+  const terminate = source.indexOf('xcrun simctl terminate "$device" "$bundle_id"')
+  const uninstall = source.indexOf('xcrun simctl uninstall "$device" "$bundle_id"')
+  const install = source.indexOf('xcrun simctl install "$device" "$app"')
+  assert.ok(terminate >= 0)
+  assert.ok(uninstall > terminate)
+  assert.ok(install > uninstall)
   assert.match(source, /launch_output=.*simctl launch/)
   assert.match(source, /launch_pid/)
   assert.match(source, /kill -0 "\$launch_pid"/)
