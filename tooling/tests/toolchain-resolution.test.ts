@@ -67,7 +67,7 @@ test('package candidate version is consistent across platform metadata', () => {
     root,
     'uni_modules/unix-openim-sdk/package.json',
   ), 'utf8'))
-  assert.match(pluginPackage.version, /^0\.2\.0(?:-rc\.\d+)?$/)
+  assert.equal(pluginPackage.version, '0.2.1')
   for (const clientName of ['uni-app', 'uni-app-x']) {
     const app = pluginPackage.uni_modules.platforms.client[clientName].app
     assert.equal(app.android.extVersion, pluginPackage.version)

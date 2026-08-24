@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url'
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const pluginRelativePath = 'uni_modules/unix-openim-sdk'
 const pluginRoot = resolve(projectRoot, pluginRelativePath)
+const candidatePath = resolve(projectRoot, 'tooling/release/public-candidate.json')
 const normalizedEpochSeconds = 315532800
 const forbiddenPathPattern = /(?:^|\/)(?:app-harmony|libs|Frameworks|node_modules|unpackage|\.hbuilderx)(?:\/|$)|\.(?:aar|har|jar|so|dylib|a|framework|xcframework|apk|ipa|log)$/i
 const forbiddenTextPatterns = [
@@ -69,12 +70,19 @@ function packageFiles(files) {
     .sort((left, right) => left.localeCompare(right, 'en'))
 }
 
-function validatePluginPackage(pluginPackage, files) {
+function validatePluginPackage(pluginPackage, files, candidate) {
   if (pluginPackage.id !== 'unix-openim-sdk') throw new Error('Marketplace plugin id must remain unix-openim-sdk')
   if (typeof pluginPackage.version !== 'string' || !/^\d+\.\d+\.\d+$/.test(pluginPackage.version)) {
     throw new Error(`Marketplace plugin version must be stable semver, got ${String(pluginPackage.version)}`)
   }
   if (pluginPackage.dcloudext?.type !== 'uts') throw new Error('Marketplace dcloudext.type must remain uts')
+  if (candidate?.schemaVersion !== 1 || candidate?.edition !== 'public') {
+    throw new Error('Marketplace candidate metadata must describe the Public edition')
+  }
+  if (candidate.version !== pluginPackage.version) throw new Error('Marketplace candidate and plugin versions must match')
+  if (candidate.status !== 'release-pending' || candidate.releaseApproved !== false) {
+    throw new Error('Marketplace candidate must remain release-pending and non-approved')
+  }
   if (pluginPackage.engines?.['uni-app'] !== '^5.23' || pluginPackage.engines?.['uni-app-x'] !== '^5.23') {
     throw new Error('Marketplace package must require uni-app and uni-app-x 5.23')
   }
@@ -135,8 +143,9 @@ export function buildMarketplacePackage(options = {}) {
   if (!allowDirty && status.length > 0) throw new Error('Marketplace package requires a clean Git worktree')
 
   const pluginPackage = JSON.parse(readFileSync(resolve(pluginRoot, 'package.json'), 'utf8'))
+  const candidate = JSON.parse(readFileSync(candidatePath, 'utf8'))
   const files = Array.isArray(pluginPackage.files) ? pluginPackage.files : []
-  validatePluginPackage(pluginPackage, files)
+  validatePluginPackage(pluginPackage, files, candidate)
   const sourceFiles = packageFiles(files)
   for (const required of ['package.json', 'license.md', 'readme.md', 'changelog.md', 'utssdk/interface.uts', 'utssdk/unierror.uts']) {
     if (!sourceFiles.includes(required)) throw new Error(`Marketplace package is missing required file: ${required}`)
@@ -164,6 +173,8 @@ export function buildMarketplacePackage(options = {}) {
       developmentInfrastructureIncluded: false,
       pluginID: pluginPackage.id,
       version: pluginPackage.version,
+      status: candidate.status,
+      releaseApproved: candidate.releaseApproved,
       repository: pluginPackage.repository,
       gitRevision: git(['rev-parse', 'HEAD']),
       dirty: status.length > 0,
