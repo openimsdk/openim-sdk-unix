@@ -136,3 +136,9 @@ the aggregate Jest suite green.
 Generated hosts and evidence live under `unpackage/` and `test-results/` and
 remain ignored. `env.js` is generated locally so uni-automator uses the exact
 APK/app produced by this checkout.
+
+Release certification accepts only immutable schema-v3 per-run evidence and
+its matching manifest. Mutable `latest` files are navigation pointers, while
+schema-v2 results are historical only. Final evidence, manifests, SBOMs, and
+candidate checksums belong in CI/Release assets rather than a tracked index
+that would change the revision after it was tested.

@@ -11,6 +11,8 @@
 - Tag 固定为 `unix-openim-sdk-public-v<version>`，必须指向 release PR 的 `main` merge commit。
 - DCloud 上传完成并核对后删除临时 release 分支；Tag 和发布产物永久保留。
 
+`0.2.1` 当前仅为 `release-pending` 候选，`releaseApproved=false`。本阶段允许生成、审计和归档候选包，但不允许创建正式 Tag、GitHub Release 或更新 DCloud。
+
 ## 市场包边界
 
 市场上传内容由 `uni_modules/unix-openim-sdk/package.json` 的 `files` allowlist控制：
@@ -64,6 +66,17 @@ npm run marketplace:build
 
 ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_modules 插件时，必须在同一 Tag 的 clean checkout 中用 HBuilderX 右键 `uni_modules/unix-openim-sdk` 执行“发布/更新到插件市场”；上传前后核对 HBuilderX 展示的版本、平台和文件差异与 manifest 一致。
 
+候选 ZIP、逐文件 manifest、`SHA256SUMS`、SBOM 和最终运行证据保存为 CI/Release 资产，不把运行后生成的索引提交回被测提交。仓库只保存稳定政策与历史摘要。
+
+## 运行证据口径
+
+- 正式门禁要求每个平台连续三次同一 series 的 schema-v3 全量证据，sequence 必须为 1、2、3，并绑定最终提交、clean 工作树、锁定 Core 和实际原生制品。
+- Android 三次证据中至少一次必须来自 arm64 真机 Release；其余两次仍须属于同一系列并满足完整证据门禁。
+- iOS 同样需要三次连续证据，但不强制真机；模拟器证据可进入正式系列。
+- schema-v2 及更早结果只作为历史摘要，不能认证当前发布。`latest` 文件只用于导航，发布结论必须引用不可变的 per-run evidence 与 matching manifest。
+- Public 与 Private 的证据不能互相复用。Private Android/iOS 必须使用其锁定的 Enterprise Core，不能用 Public Core 结果替代。
+- 大型 runner 或 matrix 结构性重构登记为 `0.2.1` 发布后的技术债；候选收口阶段不扩大此类改动。
+
 ## 正式发布门禁
 
 以下条件全部满足前不得打 Tag、上传市场或标记 Release Approved：
@@ -73,8 +86,8 @@ ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_module
 - CocoaPods XCFramework 与锁定 Public Core inventory SHA-256 一致。
 - Android/iOS release dependency profile、uni-app x consumer compile/link 通过。
 - 传统 uni-app Vue 2 / Vue 3 的 Android、iOS 正向编译通过，Public 导出合同解析器必须稳定拒绝已移除导出的负向 canary。
-- Android arm64 物理设备连续三次 clean Release 自动化通过。
-- iOS 物理设备连续三次 clean Release 自动化通过。
+- Android、iOS 各有连续三次同系列 schema-v3 全量自动化证据；Android 系列至少包含一次 arm64 真机 Release。
+- iOS 不强制真机，但设备、工具链和构建配置必须在 schema-v3 provenance 中完整记录。
 - 两平台证据均绑定最终 merge commit，`dirty=false`，无 skip 或已知问题豁免。
 - 候选 ZIP 在两个独立 clean checkout 中 SHA-256 一致。
 

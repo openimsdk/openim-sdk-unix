@@ -231,7 +231,9 @@ OPENIM_AUTOMATION_SERIES_TOTAL=3 \
 node scripts/run-openim-automation.mjs android --device-id <device-id>
 ```
 
-每次执行都会保留一份带唯一 runId 的不可变 evidence，同时更新 `<platform>-latest-evidence.json`。发布门禁校验三份 evidence 的平台、当前 Git SHA、clean 状态、连续序号、零失败/零跳过、结构/语义证据，并要求 Android 三次结果中至少一份来自 arm64 真机 Release 构建。
+每次执行都会保留一份带唯一 runId 的不可变 evidence 和 matching manifest，同时更新 `<platform>-latest-evidence.json` 导航指针。`latest` 只能用于定位结果，不能作为发布依据。schema-v2 及更早记录仅属于历史证据；正式门禁只接受绑定当前提交、Core、实际原生制品、工具链、设备与构建配置的 schema-v3 证据。
+
+发布门禁校验 Android、iOS 各三份同 series 的连续 evidence，包括当前 Git SHA、clean 状态、sequence 1–3、零失败/零跳过和结构/语义证据。Android 系列至少一份必须来自 arm64 真机 Release；iOS 不额外强制真机。Public 与 Private 证据不能互相替代，详细口径见 [`PUBLIC_MARKETPLACE_RELEASE.md`](PUBLIC_MARKETPLACE_RELEASE.md)。
 
 ## 社区 :busts_in_silhouette:
 
