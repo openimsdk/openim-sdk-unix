@@ -12,6 +12,7 @@ test('user-status events normalize both list and Core single-object payloads to 
 
   assert.match(parser, /helpers\.parseNativeJSONObjectListData\(data\)/)
   assert.match(parser, /helpers\.parseNativeAny\(data\)/)
+  assert.doesNotMatch(parser, /NativeJSONValue/)
   assert.match(parser, /raw instanceof UTSJSONObject/)
   assert.match(parser, /rawList = \[raw\]/)
   assert.match(parser, /return \{ statuses: statuses \}/)
