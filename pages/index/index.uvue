@@ -2614,23 +2614,34 @@
 	}
 
 	async function waitAutomationPeerOperationEvent(target : string, peerEventName : string, apiName : string, afterSequence : number, label : string) : Promise<void> {
-		const waitPayload : UTSJSONObject = {
-			name: peerEventName,
-			afterSeq: afterSequence,
-			timeoutMs: automationSideEffectTimeoutMilliseconds
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let peerCursor = afterSequence
+		while (Date.now() < deadline) {
+			const remaining = deadline - Date.now()
+			const waitPayload : UTSJSONObject = { name: peerEventName, afterSeq: peerCursor, timeoutMs: remaining }
+			const result = await runAutomationPeerCommand('wait_event', buildAutomationPeerPayload(target, waitPayload), remaining + automationSideEffectReadTimeoutMilliseconds)
+			const sequence = result['seq']
+			if (sequence == null || (sequence as number) <= peerCursor) { throw new Error(label + ' returned an invalid peer event sequence') }
+			peerCursor = sequence as number
+			const payloadTextValue = JSON.stringify(result['payload'])
+			if (payloadTextValue == null) { throw new Error(label + ' returned no event payload') }
+			const mappedEventName = mapAutomationPeerEventName(peerEventName)
+			if (apiName == 'sendMessage' || apiName == 'sendMessageNotOss') {
+				const window = findLatestAutomationOperation(apiName)
+				const expectedIdentity = window == null ? '' : window.resultIdentity
+				const observedIdentity = readAutomationEventPayloadIdentity(mappedEventName, payloadTextValue as string)
+				if (expectedIdentity.length == 0 || observedIdentity != expectedIdentity) { continue }
+			}
+			recordSDKEventDelivery(mappedEventName, payloadTextValue as string)
+			const correlations = buildAutomationEventCorrelations(apiName, [mappedEventName])
+			let matched = correlations.length == 1
+			if (matched) { matched = correlations[0].payloadMatched }
+			if (!matched) { continue }
+			const evidence = mutationAutomationEvidence(apiName, 'independent-peer-event-identity', 'cross-account-event-observed', true)
+			recordAutomationCase('event-delivery', apiName, 'passed', label, new Date().getTime(), evidence, apiName, true, true, null, correlations)
+			return
 		}
-		const result = await runAutomationPeerCommand('wait_event', buildAutomationPeerPayload(target, waitPayload), automationSideEffectTimeoutMilliseconds + automationSideEffectReadTimeoutMilliseconds)
-		const payload = result['payload']
-		const payloadTextValue = JSON.stringify(payload)
-		if (payloadTextValue == null) { throw new Error(label + ' returned no event payload') }
-		const mappedEventName = mapAutomationPeerEventName(peerEventName)
-		recordSDKEventDelivery(mappedEventName, payloadTextValue as string)
-		const correlations = buildAutomationEventCorrelations(apiName, [mappedEventName])
-		let matched = correlations.length == 1
-		if (matched) { matched = correlations[0].payloadMatched }
-		const evidence = mutationAutomationEvidence(apiName, 'independent-peer-event-identity', 'cross-account-event-observed', matched)
-		recordAutomationCase('event-delivery', apiName, matched ? 'passed' : 'failed', label, new Date().getTime(), evidence, apiName, true, matched, null, correlations)
-		if (!matched) { throw new Error(label + ' did not correlate with the operation identity') }
+		throw new Error(label + ' did not correlate with the operation identity before timeout')
 	}
 
 	async function waitAutomationPeerInputState(target : string, conversationID : string, userID : string, expectedPlatform : number, expectedPresent : boolean, operationPrefix : string) : Promise<void> {
@@ -3503,7 +3514,7 @@
 		const insertSingleResult = await runAutomationStep<string>('message-storage', 'insertSingleMessageToLocalStorage', insertSingleMessageToLocalStorage(singleParams, 'uvue_auto_insert_single'), noCache)
 		const insertedSingleMessage = parseAutomationInsertedMessageJSON(insertSingleResult, 'insertSingleMessageToLocalStorage')
 		await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_single_readback')
-		recordAutomationSideEffect('message-storage', 'insertSingleMessageToLocalStorageReadback', 'history returned the inserted single message with exact generated clientMsgID', false, 'insertSingleMessageToLocalStorage')
+		recordAutomationSemanticEvidence('message-storage', 'insertSingleMessageToLocalStorageReadback', 'history returned the inserted single message with exact generated clientMsgID', 'insertSingleMessageToLocalStorage')
 		let groupID = ''
 		const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public storage ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-storage-group' }
 		const groupParams : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
@@ -3520,7 +3531,7 @@
 			const insertGroupResult = await runAutomationStep<string>('message-storage', 'insertGroupMessageToLocalStorage', insertGroupMessageToLocalStorage(groupMessageParams, 'uvue_auto_insert_group'), noCache)
 			const insertedGroupMessage = parseAutomationInsertedMessageJSON(insertGroupResult, 'insertGroupMessageToLocalStorage')
 			await waitAutomationHistoryMessageState(groupConversationID, insertedGroupMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_group_readback')
-			recordAutomationSideEffect('message-storage', 'insertGroupMessageToLocalStorageReadback', 'history returned the inserted group message with exact generated clientMsgID', false, 'insertGroupMessageToLocalStorage')
+			recordAutomationSemanticEvidence('message-storage', 'insertGroupMessageToLocalStorageReadback', 'history returned the inserted group message with exact generated clientMsgID', 'insertGroupMessageToLocalStorage')
 
 			await runAutomationStep<string>('message-storage', 'deleteAllMsgFromLocal', deleteAllMsgFromLocal('uvue_auto_delete_all_local'), noCache)
 			await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, false, null, 'uvue_auto_delete_all_local_single_readback')
@@ -3732,6 +3743,21 @@
 		throw new Error('group info mutation did not become observable')
 	}
 
+	async function waitAutomationGroupOwner(groupID : string, expectedOwnerUserID : string, operationPrefix : string) : Promise<OpenIMGroupItem> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const value = await withAutomationTimeout<OpenIMGroupListResult | null>(getSpecifiedGroupsInfo([groupID], operationPrefix + '_' + attempt.toString()), 'group/getSpecifiedGroupsInfoOwnerReadback', automationSideEffectReadTimeoutMilliseconds)
+			if (value != null && value.groups.length > 0) {
+				const group = value.groups[0]
+				if (group.groupID == groupID && group.ownerUserID == expectedOwnerUserID) { return group }
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('group owner mutation did not become observable')
+	}
+
 	async function waitAutomationGroupMemberUpdate(params : OpenIMSetGroupMemberInfoParams, operationPrefix : string) : Promise<OpenIMGroupMemberItem> {
 		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
 		let attempt = 0
@@ -3924,8 +3950,7 @@
 				await switchAutomationPrimary(config, 'A_group_quit_transfer')
 			}
 			await runAutomationStep<string>('group', 'transferGroupOwner', transferGroupOwner({ groupID: quitGroupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_quit_group'), noCache)
-			const transferReadback = await waitAutomationGroupInfoUpdate({ groupID: quitGroupID }, 'uvue_auto_transfer_quit_group_readback')
-			if (transferReadback.ownerUserID != config.secondaryUserID) { throw new Error('transferGroupOwner readback did not match secondary owner') }
+			await waitAutomationGroupOwner(quitGroupID, config.secondaryUserID, 'uvue_auto_transfer_quit_group_readback')
 			recordAutomationSemanticEvidence('group', 'transferGroupOwnerReadback', 'specified group returned the exact transferred owner', 'transferGroupOwner')
 			const primaryQuitCursor = await captureAutomationPeerCursor('primary')
 			beginAutomationOperation('quitGroup', quitGroupID, true)
@@ -3940,8 +3965,7 @@
 		}
 		await runAutomationStep<string>('group', 'transferGroupOwner', transferGroupOwner({ groupID: groupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_group_owner'), noCache)
 		await switchAutomationSecondary(config, 'B_group_dismiss')
-		const transferredGroup = await waitAutomationGroupInfoUpdate({ groupID: groupID }, 'uvue_auto_transfer_group_owner_readback')
-		if (transferredGroup.ownerUserID != config.secondaryUserID) { throw new Error('main transferGroupOwner readback did not match secondary owner') }
+		await waitAutomationGroupOwner(groupID, config.secondaryUserID, 'uvue_auto_transfer_group_owner_readback')
 		recordAutomationSemanticEvidence('group', 'transferGroupOwnerMainReadback', 'specified group returned the exact transferred owner', 'transferGroupOwner')
 		const primaryDismissCursor = await captureAutomationPeerCursor('primary')
 		beginAutomationOperation('dismissGroup', groupID, true)

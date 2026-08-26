@@ -62,4 +62,8 @@ test('Public page and Jest runner require the independent peer for cross-account
   assert.match(runner, /fixture\._publicPeerCoreRoot = realpathSync\(coreRoot\)/)
   assert.match(jest, /delete pageConfigBase\._publicPeerCoreRoot/)
   assert.doesNotMatch(page, /_publicPeerCoreRoot/)
+  assert.match(source('peer.go'), /return map\[string\]any\{"message": message\}/)
+  assert.match(page, /observedIdentity != expectedIdentity\) \{ continue \}/)
+  assert.match(page, /waitAutomationGroupOwner/)
+  assert.doesNotMatch(page, /recordAutomationSideEffect\('message-storage', 'insertSingleMessageToLocalStorageReadback'/)
 })

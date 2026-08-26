@@ -202,11 +202,14 @@ func (s *peerService) sendText(payload sendTextPayload) (map[string]any, error) 
 	if err != nil {
 		return nil, err
 	}
-	sent, err := s.client.Conversation().SendMessage(ctx, message, payload.RecvID, "", nil, false)
+	_, err = s.client.Conversation().SendMessage(ctx, message, payload.RecvID, "", nil, false)
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"message": sent}, nil
+	// The locked Public Core queues SendMessage asynchronously and returns nil
+	// immediately.  The created message already carries the stable clientMsgID;
+	// delivery is proved independently by the receiving app/event readback.
+	return map[string]any{"message": message}, nil
 }
 
 func (s *peerService) changeInputStates(payload changeInputStatesPayload) (map[string]any, error) {
