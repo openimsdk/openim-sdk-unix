@@ -45,10 +45,6 @@
       "destination": "tooling/public-peer"
     },
     {
-      "source": "../../tooling/package.json",
-      "destination": "tooling/package.json"
-    },
-    {
       "source": "../../jest.config.js",
       "destination": "jest.config.js"
     },

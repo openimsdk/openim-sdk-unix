@@ -6460,8 +6460,8 @@
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "cross-account-event-observation",
       "expectedEvents": [
-        "onGroupMemberAdded",
-        "onGroupApplicationAccepted"
+        "onGroupApplicationAccepted",
+        "onGroupMemberAdded"
       ],
       "negativeProfiles": [],
       "negativeProducers": [],

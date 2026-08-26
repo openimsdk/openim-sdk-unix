@@ -145,7 +145,7 @@ const expectedEventsByCallable = new Map<string, string[]>([
   ['refuseFriendApplication', ['onFriendApplicationRejected']],
   ['createGroup', ['onJoinedGroupAdded', 'onNewConversation']],
   ['joinGroup', ['onGroupApplicationAdded']],
-  ['acceptGroupApplication', ['onGroupMemberAdded', 'onGroupApplicationAccepted']],
+  ['acceptGroupApplication', ['onGroupApplicationAccepted', 'onGroupMemberAdded']],
   ['refuseGroupApplication', ['onGroupApplicationRejected']],
   ['setConversation', ['onConversationChanged']],
   ['markConversationMessageAsRead', ['onRecvC2CReadReceipt']],

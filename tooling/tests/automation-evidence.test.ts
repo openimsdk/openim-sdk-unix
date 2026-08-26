@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import test from 'node:test'
 
 const require = createRequire(import.meta.url)
-const { validateAutomationEvidence } = require('../runtime/automation-evidence.cjs') as {
+const { validateAutomationEvidence, verifyAutomationSummaryStructure } = require('../runtime/automation-evidence.cjs') as {
   validateAutomationEvidence: (input: Record<string, unknown>) => {
     passed: boolean
     checkedCallables: number
@@ -13,7 +13,43 @@ const { validateAutomationEvidence } = require('../runtime/automation-evidence.c
     knownIssueWaivers: Array<{ caseId: string; axis: string; code: string; evidenceApiName: string }>
     issues: Array<{ caseId: string; axis: string; rule: string }>
   }
+  verifyAutomationSummaryStructure: (input: Record<string, unknown>) => {
+    passed: boolean
+    verifiedCases: number
+    skippedCases: number
+    failures: Array<{ caseId: string; apiName: string; issues: Array<{ path: string; rule: string }> }>
+  }
 }
+
+test('runtime summary structure verifier is self-contained and fails closed on drift', () => {
+  const disposition = {
+    callables: [{ apiName: 'getLoginStatus', validationAxes: ['completion', 'structure'] }],
+  }
+  const responseSchemas = {
+    schemas: {},
+    callables: { getLoginStatus: { codec: 'number', schema: { kind: 'number' } } },
+  }
+  const reportCase = {
+    caseId: 'app/getLoginStatus',
+    apiName: 'getLoginStatus',
+    ok: true,
+    resolved: true,
+    responseEvidence: true,
+    responseDetail: '3',
+  }
+
+  const passed = verifyAutomationSummaryStructure({ report: { cases: [reportCase] }, responseSchemas, disposition })
+  assert.equal(passed.passed, true)
+  assert.equal(passed.verifiedCases, 1)
+
+  const failed = verifyAutomationSummaryStructure({
+    report: { cases: [{ ...reportCase, responseDetail: '"not-a-number"' }] },
+    responseSchemas,
+    disposition,
+  })
+  assert.equal(failed.passed, false)
+  assert.equal(failed.failures[0]?.issues[0]?.rule, 'finite-number')
+})
 
 test('filtered runs ignore incidental infrastructure evidence but still validate selected suite cases', () => {
   const selectedCase = {

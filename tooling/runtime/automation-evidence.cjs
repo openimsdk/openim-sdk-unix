@@ -363,6 +363,79 @@ function callableStructureResult(candidates, apiName, responseSchemas, acceptsEv
   return { passed: issues.length === 0, issues }
 }
 
+function verifyAutomationSummaryStructure({ report, responseSchemas, disposition }) {
+  if (!isRecord(report) || !Array.isArray(report.cases)) {
+    return { passed: false, verifiedCases: 0, skippedCases: 0, failures: [{ caseId: 'runtime-summary', apiName: '', issues: [schemaIssue('$', 'summary', 'cases array', 'missing cases')] }] }
+  }
+  if (!isRecord(responseSchemas) || !isRecord(responseSchemas.callables)) {
+    return { passed: false, verifiedCases: 0, skippedCases: 0, failures: [{ caseId: 'runtime-summary', apiName: '', issues: [schemaIssue('$', 'response-schema', 'callable schemas', 'missing schemas')] }] }
+  }
+  if (!isRecord(disposition) || !Array.isArray(disposition.callables)) {
+    return { passed: false, verifiedCases: 0, skippedCases: 0, failures: [{ caseId: 'runtime-summary', apiName: '', issues: [schemaIssue('$', 'disposition', 'callables array', 'missing callables')] }] }
+  }
+
+  const dispositionByName = new Map(disposition.callables
+    .filter((item) => isRecord(item) && typeof item.apiName === 'string')
+    .map((item) => [item.apiName, item]))
+  const failures = []
+  let verifiedCases = 0
+  let skippedCases = 0
+  for (const item of report.cases) {
+    if (!isRecord(item)) {
+      skippedCases += 1
+      continue
+    }
+    const apiName = typeof item.apiName === 'string'
+      ? item.apiName
+      : (typeof item.name === 'string' ? item.name : '')
+    const contractCase = dispositionByName.get(apiName)
+    if (!isRecord(contractCase)
+      || !Array.isArray(contractCase.validationAxes)
+      || !contractCase.validationAxes.includes('structure')
+      || item.skipped === true
+      || item.negativeValidated === true
+      || item.ok !== true
+      || item.resolved !== true
+      || item.responseEvidence !== true) {
+      skippedCases += 1
+      continue
+    }
+    const response = responseSchemas.callables[apiName]
+    if (!isRecord(response) || !isRecord(response.schema)) {
+      failures.push({
+        caseId: typeof item.caseId === 'string' ? item.caseId : `api/${apiName}`,
+        apiName,
+        issues: [schemaIssue('$', 'response-schema', apiName, 'missing schema')],
+      })
+      verifiedCases += 1
+      continue
+    }
+    if (response.schema.kind === 'reference' && response.schema.name === 'OpenIMSDKEventSubscription') {
+      skippedCases += 1
+      continue
+    }
+    const issues = validateSchemaValue(
+      responseSchemas,
+      response.schema,
+      normalizeRecordedValue(
+        parseRecordedValue(item.responseDetail, typeof response.codec === 'string' ? response.codec : 'any'),
+        item.responseEncoding,
+      ),
+    )
+    if (issues.length > 0) {
+      failures.push({
+        caseId: typeof item.caseId === 'string'
+          ? item.caseId
+          : `${typeof item.suite === 'string' ? item.suite : 'unknown'}/${typeof item.name === 'string' ? item.name : apiName}`,
+        apiName,
+        issues,
+      })
+    }
+    verifiedCases += 1
+  }
+  return { passed: failures.length === 0, verifiedCases, skippedCases, failures }
+}
+
 function validateEventArguments(document, eventSchema, value) {
   const argumentsSchema = Array.isArray(eventSchema.arguments) ? eventSchema.arguments : null
   if (argumentsSchema == null) {
@@ -1569,5 +1642,6 @@ function formatAutomationEvidenceIssues(result, limit = 20) {
 
 module.exports = {
   formatAutomationEvidenceIssues,
+  verifyAutomationSummaryStructure,
   validateAutomationEvidence,
 }

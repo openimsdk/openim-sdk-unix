@@ -80,7 +80,7 @@
     },
     {
       "path": "tooling/src/test-contract.ts",
-      "sha256": "a98890da6b073867d33f5d9da5b78811921dcddc065c66fe097b028488bb2bec",
+      "sha256": "dfdc85b48f27c156e580aedd1e5b6f66fd802ea8a8e318a5349511f0de732989",
       "bytes": 39732
     },
     {
@@ -162,7 +162,7 @@
     },
     {
       "path": "contracts/base/test-disposition.json",
-      "sha256": "dab00a2dc25c2e7b79816e729b53b018d2c7631e30b5b2ab5c893b4b62d6e188",
+      "sha256": "9bc2a4577a2a208646eefae5c51a74b34f0f623e179200b92c8697c146a3e6fa",
       "bytes": 257546
     }
   ]
