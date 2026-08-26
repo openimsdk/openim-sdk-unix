@@ -292,7 +292,10 @@ test('public producer plan binds remaining deterministic events to concrete oper
   const eventDelivery = functionSource('runAutomationEventDeliverySuite')
   assert.match(eventDelivery, /runAutomationBatchedMessageEventProbe\(config\)/)
   assert.match(eventDelivery, /runAutomationOfflineMessageEventProbe\(config\)/)
-  assert.match(functionSource('runAutomationSetupSuite'), /runAutomationConnectFailureProbe\(config\)/)
+	assert.doesNotMatch(functionSource('runAutomationSetupSuite'), /runAutomationConnectFailureProbe\(config\)/)
+	const offlineProducer = eventDelivery.indexOf('runAutomationOfflineMessageEventProbe(config)')
+	const destructiveProbe = eventDelivery.indexOf('runAutomationConnectFailureProbe(config)')
+	assert.ok(offlineProducer >= 0 && offlineProducer < destructiveProbe, 'the destructive connection probe must run after message producers')
 
   const friendSuite = functionSource('runAutomationFriendSuite')
   assert.match(friendSuite, /recordAutomationRequiredEventCorrelation\('acceptFriendApplication', 'onFriendAdded'/)
