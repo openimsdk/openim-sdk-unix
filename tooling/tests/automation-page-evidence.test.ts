@@ -350,11 +350,11 @@ test('quote producers use a deterministic message writer instead of typed JSON s
 test('runtime evidence uses explicit writers for iOS messages and conversation event arrays', () => {
   const response = functionSource('stringifyAutomationResponseValue')
   assert.match(response, /isAutomationMessageEvidenceName\(name\)/)
-  assert.match(response, /stringifyAutomationNativeMessagePayload\(value\)/)
+  assert.match(response, /stringifyAutomationMessageEvidencePayload\(value\)/)
 
   const event = functionSource('stringifyAutomationEventValue')
   assert.match(event, /onRecvNewMessages/)
-  assert.match(event, /stringifyAutomationNativeMessagePayload\(result\.messages\)/)
+  assert.match(event, /stringifyAutomationMessageEvidencePayload\(result\.messages\)/)
   assert.match(event, /stringifyAutomationConversationList/)
 
   const conversation = functionSource('stringifyAutomationConversationItem')

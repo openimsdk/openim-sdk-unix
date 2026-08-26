@@ -213,6 +213,29 @@ function stringifyOpenIMAdvancedTextElemForMessage(message : OpenIMMessageItem) 
   return '{}'
 }
 
+function stringifyOpenIMAdvancedTextElem(value : OpenIMAdvancedTextElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'text', value.text)
+  if (value.messageEntityList != null) { text = appendJSONText(text, buildJSONField('messageEntityList', stringifyOpenIMMessageEntityList(value.messageEntityList))) }
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMCustomElemEvidence(value : OpenIMCustomElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'data', value.data)
+  text = appendOptionalJSONStringText(text, 'descriptionText', value.descriptionText)
+  text = appendOptionalJSONStringText(text, 'extensionText', value.extensionText)
+  return '{' + text + '}'
+}
+
+function stringifyOpenIMLocationElemEvidence(value : OpenIMLocationElem) : string {
+  let text = ''
+  text = appendOptionalJSONStringText(text, 'descriptionText', value.descriptionText)
+  text = appendOptionalJSONNumberText(text, 'longitude', value.longitude)
+  text = appendOptionalJSONNumberText(text, 'latitude', value.latitude)
+  return '{' + text + '}'
+}
+
 function stringifyOpenIMAttachedGroupHasReadInfo(value : OpenIMAttachedGroupHasReadInfo) : string {
   let text = ''
   text = appendOptionalJSONNumberText(text, 'hasReadCount', value.hasReadCount)
@@ -387,3 +410,54 @@ export function stringifyOpenIMMessagePayload(value : any | null) : string {
   if (value == null) { return '{}' }
   if (value instanceof Array) { return stringifyOpenIMMessageList(value as Array<OpenIMMessageItem>) }
   return stringifyOpenIMMessage(value as OpenIMMessageItem)
+}
+
+function stringifyOpenIMMessageEvidenceItem(message : OpenIMMessageItem) : string {
+  let json = ''
+  json = appendOptionalJSONStringText(json, 'clientMsgID', message.clientMsgID)
+  json = appendOptionalJSONStringText(json, 'serverMsgID', message.serverMsgID)
+  json = appendJSONText(json, buildJSONField('createTime', stringifyJSONNumber(message.createTime)))
+  json = appendJSONText(json, buildJSONField('sendTime', stringifyJSONNumber(message.sendTime)))
+  json = appendJSONText(json, buildJSONField('sessionType', stringifyJSONNumber(message.sessionType as number)))
+  json = appendOptionalJSONStringText(json, 'sendID', message.sendID)
+  json = appendOptionalJSONStringText(json, 'recvID', message.recvID)
+  json = appendJSONText(json, buildJSONField('msgFrom', stringifyJSONNumber(message.msgFrom)))
+  json = appendJSONText(json, buildJSONField('contentType', stringifyJSONNumber(message.contentType as number)))
+  json = appendJSONText(json, buildJSONField('senderPlatformID', stringifyJSONNumber(message.senderPlatformID as number)))
+  json = appendOptionalJSONStringText(json, 'senderNickname', message.senderNickname)
+  json = appendOptionalJSONStringText(json, 'senderFaceUrl', message.senderFaceUrl)
+  json = appendOptionalJSONStringText(json, 'groupID', message.groupID)
+  json = appendOptionalJSONStringText(json, 'content', message.content)
+  json = appendJSONText(json, buildJSONField('seq', stringifyJSONNumber(message.seq)))
+  json = appendJSONText(json, buildJSONField('isRead', stringifyJSONBoolean(message.isRead)))
+  json = appendJSONText(json, buildJSONField('status', stringifyJSONNumber(message.status as number)))
+  json = appendOptionalJSONStringText(json, 'attachedInfo', message.attachedInfo)
+  json = appendOptionalJSONStringText(json, 'ex', message.ex)
+  json = appendOptionalJSONStringText(json, 'localEx', message.localEx)
+  if (message.textElem != null) { json = appendJSONText(json, buildJSONField('textElem', stringifyOpenIMTextElem(message.textElem as OpenIMTextElem))) }
+  if (message.cardElem != null) { json = appendJSONText(json, buildJSONField('cardElem', stringifyOpenIMCardElem(message.cardElem as OpenIMCardElem))) }
+  if (message.pictureElem != null) { json = appendJSONText(json, buildJSONField('pictureElem', stringifyOpenIMPictureElem(message.pictureElem as OpenIMPictureElem))) }
+  if (message.soundElem != null) { json = appendJSONText(json, buildJSONField('soundElem', stringifyOpenIMSoundElem(message.soundElem as OpenIMSoundElem))) }
+  if (message.videoElem != null) { json = appendJSONText(json, buildJSONField('videoElem', stringifyOpenIMVideoElem(message.videoElem as OpenIMVideoElem))) }
+  if (message.fileElem != null) { json = appendJSONText(json, buildJSONField('fileElem', stringifyOpenIMFileElem(message.fileElem as OpenIMFileElem))) }
+  if (message.mergeElem != null) { json = appendJSONText(json, buildJSONField('mergeElem', stringifyOpenIMMergeElem(message.mergeElem as OpenIMMergeElem))) }
+  if (message.atTextElem != null) { json = appendJSONText(json, buildJSONField('atTextElem', stringifyOpenIMAtTextElem(message.atTextElem as OpenIMAtTextElem))) }
+  if (message.quoteElem != null) { json = appendJSONText(json, buildJSONField('quoteElem', stringifyOpenIMQuoteElem(message.quoteElem as OpenIMQuoteElem))) }
+  if (message.faceElem != null) { json = appendJSONText(json, buildJSONField('faceElem', stringifyOpenIMFaceElem(message.faceElem as OpenIMFaceElem))) }
+  if (message.locationElem != null) { json = appendJSONText(json, buildJSONField('locationElem', stringifyOpenIMLocationElemEvidence(message.locationElem as OpenIMLocationElem))) }
+  if (message.customElem != null) { json = appendJSONText(json, buildJSONField('customElem', stringifyOpenIMCustomElemEvidence(message.customElem as OpenIMCustomElem))) }
+  if (message.advancedTextElem != null) { json = appendJSONText(json, buildJSONField('advancedTextElem', stringifyOpenIMAdvancedTextElem(message.advancedTextElem as OpenIMAdvancedTextElem))) }
+  if (message.attachedInfoElem != null) { json = appendJSONText(json, buildJSONField('attachedInfoElem', stringifyOpenIMAttachedInfoElem(message.attachedInfoElem as OpenIMAttachedInfoElem))) }
+  return '{' + json + '}'
+}
+
+export function stringifyOpenIMMessageEvidencePayload(value : any | null) : string {
+  if (value == null) { return '{}' }
+  if (value instanceof Array) {
+    const items : Array<string> = []
+    const messages = value as Array<OpenIMMessageItem>
+    messages.forEach((message : OpenIMMessageItem) => { items.push(stringifyOpenIMMessageEvidenceItem(message)) })
+    return '[' + items.join(',') + ']'
+  }
+  return stringifyOpenIMMessageEvidenceItem(value as OpenIMMessageItem)
+}

@@ -463,7 +463,7 @@
 		OpenIMLogLevelVerbose
 	} from '@/uni_modules/unix-openim-sdk'
 
-	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload } from '@/uni_modules/unix-openim-sdk/utssdk/common/message-json-writer.uts'
+	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload, stringifyOpenIMMessageEvidencePayload as stringifyAutomationMessageEvidencePayload } from '@/uni_modules/unix-openim-sdk/utssdk/common/message-json-writer.uts'
 
 	// Page state
 	const statusText = ref('Ready')
@@ -794,7 +794,7 @@
 
 	function stringifyAutomationResponseValue(name : string, value : any | null) : string {
 		if (value == null) { return 'null' }
-		if (isAutomationMessageEvidenceName(name)) { return stringifyAutomationNativeMessagePayload(value) }
+		if (isAutomationMessageEvidenceName(name)) { return stringifyAutomationMessageEvidencePayload(value) }
 		return stringifyAPIValue(value)
 	}
 
@@ -841,11 +841,11 @@
 	function stringifyAutomationEventValue(eventName : string, value : any | null) : string {
 		if (value == null) { return 'null' }
 		if (eventName == 'onRecvNewMessage' || eventName == 'onRecvOfflineNewMessage' || eventName == 'onRecvOnlineOnlyMessage' || eventName == 'onMsgDeleted') {
-			return stringifyAutomationNativeMessagePayload(value)
+			return stringifyAutomationMessageEvidencePayload(value)
 		}
 		if (eventName == 'onRecvNewMessages' || eventName == 'onRecvOfflineNewMessages') {
 			const result = value as OpenIMMessageListResult
-			return '{' + automationJSONField('messages', stringifyAutomationNativeMessagePayload(result.messages)) + '}'
+			return '{' + automationJSONField('messages', stringifyAutomationMessageEvidencePayload(result.messages)) + '}'
 		}
 		if (eventName == 'onConversationChanged' || eventName == 'onNewConversation') {
 			return stringifyAutomationConversationList(value as OpenIMConversationListResult)

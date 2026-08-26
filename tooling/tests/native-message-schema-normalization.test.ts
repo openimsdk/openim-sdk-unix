@@ -43,6 +43,9 @@ test('public message writers normalize every item instead of forwarding raw Core
   assert.doesNotMatch(writerSource, /rememberOpenIMMessageJSON/)
   assert.match(writerSource, /items\.push\(stringifyOpenIMMessage\(message\)\)/)
   assert.doesNotMatch(ios, /rememberNativeMessageJSON/)
+  assert.match(writerSource, /export function stringifyOpenIMMessageEvidencePayload/)
+  assert.match(writerSource, /'descriptionText', value\.descriptionText/)
+  assert.match(writerSource, /'extensionText', value\.extensionText/)
 })
 
 test('quote producers preserve the public canonical message JSON string contract', () => {
