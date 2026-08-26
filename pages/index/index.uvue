@@ -463,6 +463,13 @@
 		OpenIMLogLevelVerbose
 	} from '@/uni_modules/unix-openim-sdk'
 
+	// #ifdef APP-IOS
+	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload } from '@/uni_modules/unix-openim-sdk/utssdk/app-ios/native-call.uts'
+	// #endif
+	// #ifdef APP-ANDROID
+	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload } from '@/uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts'
+	// #endif
+
 	// Page state
 	const statusText = ref('Ready')
 	const resultText = ref('Tap a button to call the native SDK wrapper.')
@@ -783,32 +790,76 @@
 	}
 
 	function stringifyQuoteMessage(message : OpenIMMessageItem) : string {
-		let fields : Array<string> = []
-		fields.push(automationJSONField('clientMsgID', automationJSONString(message.clientMsgID == null ? '' : message.clientMsgID as string)))
-		fields.push(automationJSONField('serverMsgID', automationJSONString(message.serverMsgID == null ? '' : message.serverMsgID as string)))
-		fields.push(automationJSONField('createTime', message.createTime.toString()))
-		fields.push(automationJSONField('sendTime', message.sendTime.toString()))
-		fields.push(automationJSONField('sessionType', message.sessionType.toString()))
-		fields.push(automationJSONField('sendID', automationJSONString(message.sendID)))
-		fields.push(automationJSONField('recvID', automationJSONString(message.recvID)))
-		fields.push(automationJSONField('msgFrom', message.msgFrom.toString()))
-		fields.push(automationJSONField('contentType', message.contentType.toString()))
-		fields.push(automationJSONField('senderPlatformID', message.senderPlatformID.toString()))
-		fields.push(automationJSONField('senderNickname', automationJSONString(message.senderNickname)))
-		fields.push(automationJSONField('senderFaceUrl', automationJSONString(message.senderFaceUrl)))
-		fields.push(automationJSONField('groupID', automationJSONString(message.groupID)))
-		fields.push(automationJSONField('content', automationJSONString(message.content)))
-		fields.push(automationJSONField('seq', message.seq.toString()))
-		fields.push(automationJSONField('isRead', message.isRead ? 'true' : 'false'))
-		fields.push(automationJSONField('status', message.status.toString()))
-		fields.push(automationJSONField('attachedInfo', automationJSONString(message.attachedInfo)))
-		fields.push(automationJSONField('ex', automationJSONString(message.ex)))
-		fields.push(automationJSONField('localEx', automationJSONString(message.localEx)))
-		if (message.textElem != null) {
-			const textElem = message.textElem as OpenIMTextElem
-			fields.push(automationJSONField('textElem', '{' + automationJSONField('content', automationJSONString(textElem.content)) + '}'))
-		}
+		return stringifyAutomationNativeMessagePayload(message)
+	}
+
+	function isAutomationMessageEvidenceName(name : string) : boolean {
+		return name == 'createTextMessage' || name == 'createAdvancedTextMessage' || name == 'createQuoteMessage' || name == 'createAdvancedQuoteMessage' || name == 'createTextAtMessage' || name == 'createMergerMessage' || name == 'createForwardMessage' || name == 'createCustomMessage' || name == 'createFaceMessage' || name == 'createLocationMessage' || name == 'createCardMessage' || name == 'createImageMessageByURL' || name == 'createSoundMessageByURL' || name == 'createVideoMessageByURL' || name == 'createFileMessageByURL' || name == 'createImageMessageFromFullPath' || name == 'createSoundMessageFromFullPath' || name == 'createVideoMessageFromFullPath' || name == 'createFileMessageFromFullPath' || name == 'sendMessage' || name == 'sendMessageNotOss'
+	}
+
+	function stringifyAutomationResponseValue(name : string, value : any | null) : string {
+		if (value == null) { return 'null' }
+		if (isAutomationMessageEvidenceName(name)) { return stringifyAutomationNativeMessagePayload(value) }
+		return stringifyAPIValue(value)
+	}
+
+	function stringifyAutomationConversationItem(value : OpenIMConversationItem) : string {
+		const fields : Array<string> = []
+		fields.push(automationJSONField('conversationID', automationJSONString(value.conversationID)))
+		fields.push(automationJSONField('conversationType', value.conversationType.toString()))
+		fields.push(automationJSONField('userID', automationJSONString(value.userID)))
+		fields.push(automationJSONField('groupID', automationJSONString(value.groupID)))
+		fields.push(automationJSONField('showName', automationJSONString(value.showName)))
+		fields.push(automationJSONField('faceURL', automationJSONString(value.faceURL)))
+		fields.push(automationJSONField('recvMsgOpt', value.recvMsgOpt.toString()))
+		fields.push(automationJSONField('unreadCount', value.unreadCount.toString()))
+		fields.push(automationJSONField('latestMsg', automationJSONString(value.latestMsg)))
+		fields.push(automationJSONField('latestMsgSendTime', value.latestMsgSendTime.toString()))
+		fields.push(automationJSONField('draftText', automationJSONString(value.draftText)))
+		fields.push(automationJSONField('draftTextTime', value.draftTextTime.toString()))
+		fields.push(automationJSONField('isPinned', value.isPinned ? 'true' : 'false'))
+		fields.push(automationJSONField('isPrivateChat', value.isPrivateChat ? 'true' : 'false'))
+		fields.push(automationJSONField('attachedInfo', automationJSONString(value.attachedInfo)))
+		fields.push(automationJSONField('ex', automationJSONString(value.ex)))
+		fields.push(automationJSONField('burnDuration', value.burnDuration.toString()))
+		fields.push(automationJSONField('minSeq', value.minSeq.toString()))
+		fields.push(automationJSONField('maxSeq', value.maxSeq.toString()))
+		fields.push(automationJSONField('msgDestructTime', value.msgDestructTime.toString()))
+		fields.push(automationJSONField('groupAtType', value.groupAtType.toString()))
+		fields.push(automationJSONField('isMsgDestruct', value.isMsgDestruct ? 'true' : 'false'))
+		fields.push(automationJSONField('isNotInGroup', value.isNotInGroup ? 'true' : 'false'))
+		fields.push(automationJSONField('updateUnreadCountTime', value.updateUnreadCountTime.toString()))
 		return '{' + fields.join(',') + '}'
+	}
+
+	function stringifyAutomationConversationList(value : OpenIMConversationListResult | null) : string {
+		if (value == null) { return 'null' }
+		const items : Array<string> = []
+		let index = 0
+		while (index < value.conversations.length) {
+			items.push(stringifyAutomationConversationItem(value.conversations[index]))
+			index = index + 1
+		}
+		return '{' + automationJSONField('conversations', '[' + items.join(',') + ']') + '}'
+	}
+
+	function stringifyAutomationEventValue(eventName : string, value : any | null) : string {
+		if (value == null) { return 'null' }
+		if (eventName == 'onRecvNewMessage' || eventName == 'onRecvOfflineNewMessage' || eventName == 'onRecvOnlineOnlyMessage' || eventName == 'onMsgDeleted') {
+			return stringifyAutomationNativeMessagePayload(value)
+		}
+		if (eventName == 'onRecvNewMessages' || eventName == 'onRecvOfflineNewMessages') {
+			const result = value as OpenIMMessageListResult
+			return '{' + automationJSONField('messages', stringifyAutomationNativeMessagePayload(result.messages)) + '}'
+		}
+		if (eventName == 'onConversationChanged' || eventName == 'onNewConversation') {
+			return stringifyAutomationConversationList(value as OpenIMConversationListResult)
+		}
+		return stringifyAPIValue(value)
+	}
+
+	function automationResponseEncoding(apiName : string) : string {
+		return isAutomationMessageEvidenceName(apiName) ? 'openim-explicit-json-v1' : 'uts-typed-json-v1'
 	}
 
 	function readQuoteText(message : OpenIMMessageItem) : string {
@@ -1802,8 +1853,9 @@
 
 	function showSDKEvent(eventName : string, value : any | null) {
 		updateStatusForSDKEventName(eventName)
-		const jsonText = stringifyAPIValue(value)
-		recordSDKEventDelivery(eventName, jsonText)
+		const jsonText = stringifyAutomationEventValue(eventName, value)
+		const payloadEncoding = eventName == 'onRecvNewMessage' || eventName == 'onRecvOfflineNewMessage' || eventName == 'onRecvOnlineOnlyMessage' || eventName == 'onMsgDeleted' || eventName == 'onRecvNewMessages' || eventName == 'onRecvOfflineNewMessages' || eventName == 'onConversationChanged' || eventName == 'onNewConversation' ? 'openim-explicit-json-v1' : 'uts-typed-json-v1'
+		recordSDKEventDelivery(eventName, jsonText, payloadEncoding)
 		console.log('sdk event name', eventName)
 		console.log('sdk event typed payload', value)
 		console.log('sdk event json payload', jsonText)
@@ -2559,7 +2611,7 @@
 			invoked: invoked == true,
 			resolved: resolved == true,
 			responseEvidence: responseDetail != null,
-			responseEncoding: responseDetail != null ? 'uts-typed-json-v1' : '',
+			responseEncoding: responseDetail != null ? automationResponseEncoding(contractAPIName) : '',
 			responseDetail: responseDetail != null ? responseDetail as string : '',
 			structureValidated: checked.structureValidated,
 			semanticValidated: checked.semanticValidated,
@@ -2873,7 +2925,7 @@
 		let resolvedValueText = ''
 		try {
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, timeoutMilliseconds)
-			resolvedValueText = stringifyAPIValue(value)
+			resolvedValueText = stringifyAutomationResponseValue(name, value)
 			onSuccess(value)
 			const validation = validateAutomationResponse(name, value)
 			const checked = mergeAutomationValidationEvidence(name, validation, evidence)
@@ -2904,7 +2956,7 @@
 		try {
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, automationDefaultStepTimeoutMilliseconds)
 			onSuccess(value)
-			const responseDetail = stringifyAPIValue(value)
+			const responseDetail = stringifyAutomationResponseValue(name, value)
 			const validation = validateAutomationResponse(name, value)
 			const checked = mergeAutomationValidationEvidence(name, validation, null)
 			recordAutomationCase(group, name, 'passed', responseDetail, startedAt, checked, name, true, true, responseDetail, null)

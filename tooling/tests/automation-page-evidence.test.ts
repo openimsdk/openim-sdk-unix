@@ -135,7 +135,7 @@ test('runtime response evidence carries the resolved wire value separately from 
   const recorder = functionSource('recordAutomationCase')
   assert.match(recorder, /responseDetail : string \| null = null/)
   assert.match(recorder, /responseEvidence: responseDetail != null/)
-  assert.match(recorder, /responseEncoding: responseDetail != null \? 'uts-typed-json-v1' : ''/)
+  assert.match(recorder, /responseEncoding: responseDetail != null \? automationResponseEncoding\(contractAPIName\) : ''/)
   assert.match(recorder, /responseDetail: responseDetail != null \? responseDetail as string : ''/)
 
   const runner = functionSource('runAutomationStepWithTimeout')
@@ -344,9 +344,27 @@ test('producer correlations carry one complete mutation witness and disconnect b
 test('quote producers use a deterministic message writer instead of typed JSON stringify', () => {
   const writer = functionSource('stringifyQuoteMessage')
   assert.doesNotMatch(writer, /JSON\.stringify\(message\)/)
-  for (const field of ['clientMsgID', 'createTime', 'sessionType', 'msgFrom', 'contentType', 'senderPlatformID', 'seq', 'isRead', 'status', 'textElem']) {
-    assert.match(writer, new RegExp(`'${field}'`))
+  assert.match(writer, /stringifyAutomationNativeMessagePayload\(message\)/)
+})
+
+test('runtime evidence uses explicit writers for iOS messages and conversation event arrays', () => {
+  const response = functionSource('stringifyAutomationResponseValue')
+  assert.match(response, /isAutomationMessageEvidenceName\(name\)/)
+  assert.match(response, /stringifyAutomationNativeMessagePayload\(value\)/)
+
+  const event = functionSource('stringifyAutomationEventValue')
+  assert.match(event, /onRecvNewMessages/)
+  assert.match(event, /stringifyAutomationNativeMessagePayload\(result\.messages\)/)
+  assert.match(event, /stringifyAutomationConversationList/)
+
+  const conversation = functionSource('stringifyAutomationConversationItem')
+  assert.doesNotMatch(conversation, /JSON\.stringify/)
+  for (const field of ['conversationID', 'conversationType', 'recvMsgOpt', 'unreadCount', 'isPinned', 'minSeq', 'maxSeq']) {
+    assert.match(conversation, new RegExp(`'${field}'`))
   }
+
+  const recorder = functionSource('recordAutomationCase')
+  assert.match(recorder, /automationResponseEncoding\(contractAPIName\)/)
 })
 
 test('login correlation selects an operation window containing the complete lifecycle', () => {

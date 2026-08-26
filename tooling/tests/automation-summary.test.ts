@@ -27,7 +27,7 @@ test('automation summary verifier accepts a matching primitive response', () => 
         suite: 'setup',
         name: 'getLoginStatus',
         apiName: 'getLoginStatus',
-        ok: true,
+        status: 'passed',
         skipped: false,
         resolved: true,
         structureValidated: true,

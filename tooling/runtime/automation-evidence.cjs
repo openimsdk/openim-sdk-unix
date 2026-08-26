@@ -394,7 +394,7 @@ function verifyAutomationSummaryStructure({ report, responseSchemas, disposition
       || !contractCase.validationAxes.includes('structure')
       || item.skipped === true
       || item.negativeValidated === true
-      || item.ok !== true
+      || !isSuccessfulEvidence(item)
       || item.resolved !== true
       || item.responseEvidence !== true) {
       skippedCases += 1

@@ -32,7 +32,7 @@ test('runtime summary structure verifier is self-contained and fails closed on d
   const reportCase = {
     caseId: 'app/getLoginStatus',
     apiName: 'getLoginStatus',
-    ok: true,
+    status: 'passed',
     resolved: true,
     responseEvidence: true,
     responseDetail: '3',

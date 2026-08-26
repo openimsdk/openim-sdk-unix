@@ -17,6 +17,7 @@ export interface AutomationSummaryCaseRecord {
   name?: string
   apiName?: string
   ok?: boolean
+  status?: string
   detail?: string
   responseEvidence?: boolean
   responseEncoding?: string
@@ -110,7 +111,7 @@ function verifySummaryStructureWithDocuments(
       skippedCases += 1
       continue
     }
-    if (item.skipped === true || item.negativeValidated === true || item.ok !== true || item.resolved !== true || item.responseEvidence !== true) {
+    if (item.skipped === true || item.status === 'skipped' || item.negativeValidated === true || (item.ok !== true && item.status !== 'passed') || item.resolved !== true || item.responseEvidence !== true) {
       skippedCases += 1
       continue
     }
