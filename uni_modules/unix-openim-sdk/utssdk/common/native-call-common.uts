@@ -749,7 +749,7 @@ function parseNativeSoundElem(value : any | null, helpers : NativeParserHelpers)
 }
 
 function parseNativeVideoElem(value : any | null, helpers : NativeParserHelpers) : OpenIMVideoElem | null {
-  if (value instanceof UTSJSONObject) { return { videoPath: helpers.readStringParam(value, 'videoPath'), videoUUID: helpers.readStringParam(value, 'videoUUID'), videoUrl: helpers.readStringParam(value, 'videoUrl'), videoType: helpers.readStringParam(value, 'videoType'), videoSize: helpers.readNumberParam(value, 'videoSize'), duration: helpers.readNumberParam(value, 'duration'), snapshotPath: helpers.readStringParam(value, 'snapshotPath'), snapshotUUID: helpers.readStringParam(value, 'snapshotUUID'), snapshotSize: helpers.readNumberParam(value, 'snapshotSize'), snapshotUrl: helpers.readStringParam(value, 'snapshotUrl'), snapshotWidth: helpers.readNumberParam(value, 'snapshotWidth'), snapshotHeight: helpers.readNumberParam(value, 'snapshotHeight') } }
+  if (value instanceof UTSJSONObject) { return { videoPath: helpers.readStringParam(value, 'videoPath'), videoUUID: helpers.readStringParam(value, 'videoUUID'), videoUrl: helpers.readStringParam(value, 'videoUrl'), videoType: helpers.readStringParam(value, 'videoType'), videoSize: helpers.readNumberParam(value, 'videoSize'), duration: helpers.readNumberParam(value, 'duration'), snapshotPath: helpers.readStringParam(value, 'snapshotPath'), snapshotUUID: helpers.readStringParam(value, 'snapshotUUID'), snapshotSize: helpers.readNumberParam(value, 'snapshotSize'), snapshotUrl: helpers.readStringParam(value, 'snapshotUrl'), snapshotWidth: helpers.readNumberParam(value, 'snapshotWidth'), snapshotHeight: helpers.readNumberParam(value, 'snapshotHeight'), snapshotType: helpers.readStringParam(value, 'snapshotType') } }
   return null
 }
 
@@ -880,19 +880,43 @@ function isValidParsedMessageList(messages : Array<OpenIMMessageItem>, helpers :
   return true
 }
 
+function normalizeParsedMessage(message : OpenIMMessageItem, helpers : NativeParserHelpers) : OpenIMMessageItem | null {
+  const typedRaw = parseObjectFromValue(message, helpers)
+  if (typedRaw == null || isValidParsedMessageObject(typedRaw, helpers) == false) { return null }
+  return parseNativeMessageItem(typedRaw, helpers)
+}
+
+function normalizeParsedMessageList(messages : Array<OpenIMMessageItem>, helpers : NativeParserHelpers) : Array<OpenIMMessageItem> | null {
+  const normalized : Array<OpenIMMessageItem> = []
+  let index = 0
+  while (index < messages.length) {
+    const message = normalizeParsedMessage(messages[index], helpers)
+    if (message == null) { return null }
+    normalized.push(message as OpenIMMessageItem)
+    index = index + 1
+  }
+  return normalized
+}
+
 export function parseNativeMessageCommon(data : string, helpers : NativeParserHelpers) : OpenIMMessageItem | null {
   const trimmed = data.trim()
   if (trimmed.length == 0) { return null }
   const firstChar = trimmed.substring(0, 1)
   if (firstChar == '[') {
     const typedList = helpers.parseNativeMessageListData(trimmed)
-    if (typedList != null && typedList.length > 0 && isValidParsedMessage(typedList[0], helpers)) { return typedList[0] }
+    if (typedList != null && typedList.length > 0) {
+      const typedRaw = parseObjectFromValue(typedList[0], helpers)
+      if (typedRaw != null && isValidParsedMessageObject(typedRaw, helpers)) { return parseNativeMessageItem(typedRaw, helpers) }
+    }
     const rawList = helpers.parseNativeJSONObjectListData(trimmed)
     if (rawList != null && rawList.length > 0 && isValidParsedMessageObject(rawList[0], helpers)) { return parseNativeMessageItem(rawList[0], helpers) }
     return null
   }
   const typedMessage = helpers.parseNativeMessageData(trimmed)
-  if (typedMessage != null && isValidParsedMessage(typedMessage, helpers)) { return typedMessage }
+  if (typedMessage != null) {
+    const typedRaw = parseObjectFromValue(typedMessage, helpers)
+    if (typedRaw != null && isValidParsedMessageObject(typedRaw, helpers)) { return parseNativeMessageItem(typedRaw, helpers) }
+  }
   const raw = helpers.parseNativeAny(trimmed)
   if (raw instanceof UTSJSONObject && isValidParsedMessageObject(raw, helpers)) { return parseNativeMessageItem(raw, helpers) }
   return null
@@ -902,7 +926,10 @@ export function parseNativeAdvancedHistoryMessageListCommon(data : string, helpe
   const raw = helpers.parseNativeAny(data)
   if (!(raw instanceof UTSJSONObject) || !helpers.isRequiredField(raw, 'isEnd') || !helpers.isRequiredField(raw, 'errCode') || !helpers.isRequiredField(raw, 'errMsg')) { return null }
   const typedResult = helpers.parseNativeAdvancedHistoryMessageListData(data)
-  if (typedResult != null && isValidParsedMessageList(typedResult.messageList, helpers)) { return typedResult }
+  if (typedResult != null && isValidParsedMessageList(typedResult.messageList, helpers)) {
+    const normalizedMessages = normalizeParsedMessageList(typedResult.messageList, helpers)
+    if (normalizedMessages != null) { return { messageList: normalizedMessages as Array<OpenIMMessageItem>, lastMinSeq: typedResult.lastMinSeq, isEnd: typedResult.isEnd, errCode: typedResult.errCode, errMsg: typedResult.errMsg } }
+  }
   return parseNativeAdvancedHistoryMessageListFallbackCommon(data, helpers)
 }
 
@@ -924,7 +951,10 @@ function parseNativeMessageListFromValue(value : any | null, helpers : NativePar
 
 export function parseNativeMessageEventListCommon(data : string, helpers : NativeParserHelpers) : OpenIMMessageListResult | null {
   const typedList = helpers.parseNativeMessageListData(data)
-  if (typedList != null && isValidParsedMessageList(typedList, helpers)) { return { messages: typedList } }
+  if (typedList != null && isValidParsedMessageList(typedList, helpers)) {
+    const normalizedMessages = normalizeParsedMessageList(typedList, helpers)
+    if (normalizedMessages != null) { return { messages: normalizedMessages as Array<OpenIMMessageItem> } }
+  }
   return parseNativeMessageEventListFallbackCommon(data, helpers)
 }
 

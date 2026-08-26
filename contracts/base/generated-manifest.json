@@ -5,8 +5,8 @@
   "inputs": [
     {
       "path": "contracts/base/contract.json",
-      "sha256": "724092037a758e8bfcf0996869f8dcdf2584b4553335b3977c5acd5450f6085a",
-      "bytes": 303008
+      "sha256": "c559f1de527560becd99e9433c4d6e049dbdee1f3d322f9a2c2e11b102948197",
+      "bytes": 303041
     },
     {
       "path": "sdk-src/uts/app-android/index.template.uts",
@@ -80,8 +80,8 @@
     },
     {
       "path": "tooling/src/test-contract.ts",
-      "sha256": "4e158bcd1baa48e0ebe77bd42e63d955acca21740a61d7a20e0ef499a38994a0",
-      "bytes": 39131
+      "sha256": "a98890da6b073867d33f5d9da5b78811921dcddc065c66fe097b028488bb2bec",
+      "bytes": 39732
     },
     {
       "path": "tooling/src/test-profile.ts",
@@ -92,13 +92,13 @@
   "outputs": [
     {
       "path": "pages/index/openim-automation-profiles.uts",
-      "sha256": "d671a7f52ee955e08edaff80cc8bf0ad468143d421ddcb0f1c670413e160dd20",
-      "bytes": 95693
+      "sha256": "b7ead69aae9d55ebda604f5dc09ebc37a2965dbc652ca75ca0ee57c4255e1411",
+      "bytes": 95990
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/interface.uts",
-      "sha256": "403d9787d77a77e2fefc19c01deffea5358abda3ea9c4e45cbd70e321deebbb7",
-      "bytes": 52350
+      "sha256": "62dd7a73ea32f87701dd224d686e30f13c20dc407e9b3264ddd87d0491eaae86",
+      "bytes": 52382
     },
     {
       "path": "uni_modules/unix-openim-sdk/utssdk/app-android/index.uts",
@@ -152,18 +152,18 @@
     },
     {
       "path": "contracts/base/surface.snapshot.json",
-      "sha256": "9dd86a515a02473b97400d5a103496a9a48b089a4ce873dfb5fdf9990f934b54",
+      "sha256": "e0f7c31877c4d0142ef6e63d628c1b809c827700ed45c3e8130ee3bbff0e89e4",
       "bytes": 106843
     },
     {
       "path": "contracts/base/response-schemas.json",
-      "sha256": "99c2b418e38a307fe3dac888079fd6c899762edc5bad487b0f357e532826b7ea",
-      "bytes": 183085
+      "sha256": "abf21ea198a4ec337c034773a5c4101bc50cd30e9e352b7945ea4a363c8cc738",
+      "bytes": 183382
     },
     {
       "path": "contracts/base/test-disposition.json",
-      "sha256": "029de5e20ab9981eb99f7c5be3e2aa62825b28bbbed3ba2485f6a58c68cc5877",
-      "bytes": 256434
+      "sha256": "dab00a2dc25c2e7b79816e729b53b018d2c7631e30b5b2ab5c893b4b62d6e188",
+      "bytes": 257546
     }
   ]
 }

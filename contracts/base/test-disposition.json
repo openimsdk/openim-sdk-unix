@@ -3190,7 +3190,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onRecvC2CReadReceipt"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -3198,20 +3200,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -3334,7 +3339,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onNewRecvMessageRevoked"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -3342,20 +3349,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -3383,7 +3393,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onConversationChanged"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -3391,20 +3403,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -3668,7 +3683,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onSelfInfoUpdated"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -3676,20 +3693,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -3766,7 +3786,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onMsgDeleted"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -3774,20 +3796,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -5000,7 +5025,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onFriendInfoChanged"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -5008,20 +5035,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -5096,7 +5126,8 @@
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "cross-account-event-observation",
       "expectedEvents": [
-        "onFriendAdded"
+        "onFriendAdded",
+        "onFriendApplicationAccepted"
       ],
       "negativeProfiles": [],
       "negativeProducers": [],
@@ -5203,7 +5234,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onFriendDeleted"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -5211,20 +5244,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -5301,7 +5337,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onBlackDeleted"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -5309,20 +5347,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -5445,7 +5486,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "cross-account-event-observation",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onGroupMemberDeleted"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -5453,20 +5496,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -5771,7 +5817,8 @@
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "cross-account-event-observation",
       "expectedEvents": [
-        "onJoinedGroupAdded"
+        "onJoinedGroupAdded",
+        "onNewConversation"
       ],
       "negativeProfiles": [],
       "negativeProducers": [],
@@ -5824,7 +5871,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onGroupInfoChanged"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -5832,20 +5881,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -5873,7 +5925,9 @@
       },
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "read-after-write",
-      "expectedEvents": [],
+      "expectedEvents": [
+        "onGroupMemberInfoChanged"
+      ],
       "negativeProfiles": [],
       "negativeProducers": [],
       "cleanupAction": "",
@@ -5881,20 +5935,23 @@
         "completion",
         "structure",
         "semantic",
-        "side-effect"
+        "side-effect",
+        "event"
       ],
       "validationAxesByPlatform": {
         "android": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "ios": [
           "completion",
           "structure",
           "semantic",
-          "side-effect"
+          "side-effect",
+          "event"
         ],
         "harmony": []
       }
@@ -6403,7 +6460,8 @@
       "semanticProfile": "mutation-observation",
       "sideEffectProbe": "cross-account-event-observation",
       "expectedEvents": [
-        "onGroupMemberAdded"
+        "onGroupMemberAdded",
+        "onGroupApplicationAccepted"
       ],
       "negativeProfiles": [],
       "negativeProducers": [],

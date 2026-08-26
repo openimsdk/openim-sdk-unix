@@ -1314,6 +1314,191 @@ test('generated event schema, not typed callback arrival, certifies payload stru
   assert.equal(invalid.issues.some((issue) => issue.rule === 'event-schema-invalid'), true)
 })
 
+test('C2C read-receipt Core arrays normalize to the public receipts wrapper only for that event', () => {
+  const eventManifest = {
+    schemaVersion: 2,
+    edition: 'public',
+    counts: { callables: 0, events: 1 },
+    callables: [],
+    events: [{
+      caseId: 'event/onRecvC2CReadReceipt',
+      eventName: 'onRecvC2CReadReceipt',
+      deliveryDisposition: 'required',
+      platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+      validationAxes: ['delivery', 'structure'],
+    }],
+  }
+  const responseSchemas = {
+    schemaVersion: 1,
+    callables: {},
+    events: {
+      onRecvC2CReadReceipt: {
+        arguments: [{
+          kind: 'object',
+          fields: {
+            receipts: {
+              required: true,
+              schema: {
+                kind: 'array',
+                items: {
+                  kind: 'object',
+                  fields: { userID: { required: true, schema: { kind: 'string' } } },
+                },
+              },
+            },
+          },
+        }],
+      },
+    },
+    schemas: {},
+  }
+  const receiptArray = JSON.stringify([{ userID: 'peer-user' }])
+  const normalized = validateAutomationEvidence({
+    manifest: eventManifest,
+    responseSchemas,
+    platform: 'ios',
+    report: { cases: [], events: [{ eventName: 'onRecvC2CReadReceipt', count: 1, deliveryValidated: true, payloadEvidence: true, payloadEncoding: 'openim-core-json-v1', payloadDetails: [receiptArray] }] },
+  })
+  assert.equal(normalized.passed, true)
+
+  const unlabelled = validateAutomationEvidence({
+    manifest: eventManifest,
+    responseSchemas,
+    platform: 'ios',
+    report: { cases: [], events: [{ eventName: 'onRecvC2CReadReceipt', count: 1, deliveryValidated: true, payloadEvidence: true, payloadEncoding: 'uts-typed-json-v1', payloadDetails: [receiptArray] }] },
+  })
+  assert.equal(unlabelled.passed, false)
+})
+
+test('C2C read-receipt correlation binds the reader and exact message identity inside a Core array', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'public',
+      counts: { callables: 1, events: 0 },
+      callables: [{
+        caseId: 'api/markConversationMessageAsRead',
+        apiName: 'markConversationMessageAsRead',
+        expectedEvents: ['onRecvC2CReadReceipt'],
+        platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+        validationAxes: ['completion', 'event'],
+      }],
+      events: [],
+    },
+    responseSchemas: { schemaVersion: 1, callables: {}, events: {}, schemas: {} },
+    platform: 'ios',
+    report: {
+      cases: [{
+        apiName: 'markConversationMessageAsRead',
+        ok: true,
+        invoked: true,
+        resolved: true,
+        eventCorrelated: true,
+        eventCorrelations: [{
+          operationApiName: 'markConversationMessageAsRead',
+          eventName: 'onRecvC2CReadReceipt',
+          operationSequence: 10,
+          eventSequence: 12,
+          operationEpoch: 2,
+          eventEpoch: 3,
+          payloadMatched: true,
+          correlationKind: 'cross-account-payload-identity',
+          operationTerminalSequence: 11,
+          exclusiveOperation: true,
+          payloadIdentity: 'reader-1:message-1',
+          eventPayloadDetail: JSON.stringify([{ userID: 'reader-1', msgIDList: ['message-1'] }]),
+        }],
+      }],
+      events: [],
+    },
+  })
+
+  assert.equal(result.passed, true)
+})
+
+test('raw Core group events receive only declared public string defaults', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'public',
+      counts: { callables: 0, events: 1 },
+      callables: [],
+      events: [{
+        caseId: 'event/onGroupDismissed',
+        eventName: 'onGroupDismissed',
+        deliveryDisposition: 'required',
+        platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+        validationAxes: ['delivery', 'structure'],
+      }],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: {},
+      events: {
+        onGroupDismissed: {
+          arguments: [{
+            kind: 'object',
+            fields: {
+              groupID: { required: true, schema: { kind: 'string' } },
+              attachedInfo: { required: true, schema: { kind: 'string' } },
+            },
+          }],
+        },
+      },
+      schemas: {},
+    },
+    platform: 'ios',
+    report: { cases: [], events: [{ eventName: 'onGroupDismissed', count: 1, deliveryValidated: true, payloadEvidence: true, payloadEncoding: 'openim-core-json-v1', payloadDetails: [JSON.stringify({ groupID: 'group-1' })] }] },
+  })
+
+  assert.equal(result.passed, true)
+})
+
+test('raw Core message normalization does not admit undeclared incremental fields', () => {
+  const result = validateAutomationEvidence({
+    manifest: {
+      schemaVersion: 2,
+      edition: 'public',
+      counts: { callables: 0, events: 1 },
+      callables: [],
+      events: [{
+        caseId: 'event/onRecvNewMessage',
+        eventName: 'onRecvNewMessage',
+        deliveryDisposition: 'required',
+        platforms: { android: 'required', ios: 'required', harmony: 'not-in-edition' },
+        validationAxes: ['delivery', 'structure'],
+      }],
+    },
+    responseSchemas: {
+      schemaVersion: 1,
+      callables: {},
+      events: {
+        onRecvNewMessage: {
+          arguments: [{
+            kind: 'object',
+            fields: {
+              clientMsgID: { required: true, schema: { kind: 'string' } },
+              offlinePush: {
+                required: false,
+                schema: {
+                  kind: 'object',
+                  fields: { title: { required: false, schema: { kind: 'string' } } },
+                },
+              },
+            },
+          }],
+        },
+      },
+      schemas: {},
+    },
+    platform: 'ios',
+    report: { cases: [], events: [{ eventName: 'onRecvNewMessage', count: 1, deliveryValidated: true, payloadEvidence: true, payloadEncoding: 'openim-core-json-v1', payloadDetails: [JSON.stringify({ clientMsgID: 'message-1', offlinePush: { title: 'title', signalInfo: 'undeclared' } })] }] },
+  })
+
+  assert.equal(result.passed, false)
+  assert.equal(result.issues.some((issue) => issue.rule === 'event-schema-invalid'), true)
+})
+
 test('opaque string event payloads remain strings even when their contents are JSON', () => {
   const result = validateAutomationEvidence({
     manifest: {

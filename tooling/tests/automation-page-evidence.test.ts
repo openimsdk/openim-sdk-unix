@@ -201,15 +201,17 @@ test('setup normalizes a native login session retained across HBuilder hot reloa
 })
 
 test('event reports distinguish typed delivery from semantic, ordering, and epoch proof', () => {
-  for (const field of ['payloadEvidence : boolean', 'payloadEncoding : string', 'payloadDetail : string', 'payloadDetails : Array<string>']) {
+	for (const field of ['payloadEvidence : boolean', 'payloadEncoding : string', 'payloadDetail : string', 'payloadDetails : Array<string>', 'payloadEncodings : Array<string>']) {
     assert.match(page, new RegExp(field))
   }
   assert.match(page, /record\.deliveryValidated = true/)
   assert.match(page, /record\.structureValidated = true/)
   assert.match(page, /record\.payloadEvidence = true/)
-  assert.match(page, /record\.payloadEncoding = 'uts-typed-json-v1'/)
+	assert.match(page, /record\.payloadEncoding = payloadEncoding/)
+	assert.match(page, /recordSDKEventDelivery\(mappedEventName, payloadTextValue as string, 'openim-core-json-v1'\)/)
   assert.match(page, /record\.payloadDetail = payloadText/)
-  assert.match(page, /record\.payloadDetails\.push\(payloadText\)/)
+	assert.match(page, /record\.payloadDetails\.push\(payloadText\)/)
+	assert.match(page, /record\.payloadEncodings\.push\(payloadEncoding\)/)
   assert.match(functionSource('showSDKErrorEvent'), /recordSDKEventDelivery\(eventName, '\[' \+ errCode\.toString\(\)/)
   assert.doesNotMatch(page, /record\.(?:semanticValidated|orderingValidated|epochValidated) = true/)
 })
@@ -249,6 +251,42 @@ test('callable event correlations retain operation order, epoch, and payload mat
   assert.match(functionSource('completeAutomationOperation'), /terminalSequence/)
   assert.match(functionSource('recordSDKEventDelivery'), /sequence: automationEvidenceSequenceCounter/)
   assert.match(functionSource('recordAutomationCase'), /eventCorrelations: eventCorrelations == null \? \[\]/)
+})
+
+test('public producer plan binds remaining deterministic events to concrete operations', () => {
+  const recorder = functionSource('recordAutomationRequiredEventCorrelation')
+  assert.match(recorder, /readAutomationEventCount\(eventName\) > previousCount/)
+  assert.match(recorder, /buildAutomationEventCorrelations\(apiName, \[eventName\]\)/)
+  assert.match(recorder, /recordAutomationCase\('event-delivery', apiName/)
+
+  const expectedOperationEvents: Array<[string, string]> = [
+    ['setConversation', 'onConversationChanged'],
+    ['revokeMessage', 'onNewRecvMessageRevoked'],
+    ['deleteMessage', 'onMsgDeleted'],
+    ['updateFriends', 'onFriendInfoChanged'],
+    ['deleteFriend', 'onFriendDeleted'],
+    ['removeBlack', 'onBlackDeleted'],
+    ['setGroupInfo', 'onGroupInfoChanged'],
+    ['setGroupMemberInfo', 'onGroupMemberInfoChanged'],
+    ['kickGroupMember', 'onGroupMemberDeleted'],
+    ['setSelfInfo', 'onSelfInfoUpdated'],
+  ]
+  for (const [apiName, eventName] of expectedOperationEvents) {
+    assert.match(page, new RegExp(`beginAutomationOperation\\('${apiName}'`))
+    assert.match(page, new RegExp(`recordAutomationRequiredEventCorrelation\\('${apiName}', '${eventName}'`))
+  }
+
+  const eventDelivery = functionSource('runAutomationEventDeliverySuite')
+  assert.match(eventDelivery, /runAutomationBatchedMessageEventProbe\(config\)/)
+  assert.match(eventDelivery, /runAutomationOfflineMessageEventProbe\(config\)/)
+  assert.match(functionSource('runAutomationSetupSuite'), /runAutomationConnectFailureProbe\(config\)/)
+})
+
+test('peer producer payloads retain their raw Core encoding for narrow schema normalization', () => {
+  assert.match(page, /payloadEncodings : Array<string>/)
+  assert.match(page, /recordSDKEventDelivery\(mappedEventName, payloadTextValue as string, 'openim-core-json-v1'\)/)
+  assert.match(functionSource('runAutomationBatchedMessageEventProbe'), /clientMsgID/)
+  assert.match(functionSource('runAutomationOfflineMessageEventProbe'), /onRecvOfflineNewMessage/)
 })
 
 test('sendMessageNotOss delivery does not require a progress event', () => {

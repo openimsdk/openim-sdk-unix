@@ -242,6 +242,7 @@ export function stringifyOpenIMVideoElem(value : OpenIMVideoElem) : string {
   text = appendOptionalJSONStringText(text, 'snapshotUrl', value.snapshotUrl)
   text = appendOptionalJSONNumberText(text, 'snapshotWidth', value.snapshotWidth)
   text = appendOptionalJSONNumberText(text, 'snapshotHeight', value.snapshotHeight)
+  text = appendOptionalJSONStringText(text, 'snapshotType', value.snapshotType)
   return '{' + text + '}'
 }
 

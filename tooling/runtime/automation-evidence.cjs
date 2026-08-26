@@ -220,6 +220,27 @@ function normalizeRecordedValue(value, encoding) {
   return result
 }
 
+const rawCoreGroupItemEventNames = new Set([
+  'onGroupDismissed',
+  'onGroupInfoChanged',
+  'onJoinedGroupAdded',
+  'onJoinedGroupDeleted',
+])
+
+function normalizeRecordedEventValue(eventName, value, encoding) {
+  const normalized = normalizeRecordedValue(value, encoding)
+  if (encoding !== 'openim-core-json-v1') return normalized
+  if (eventName === 'onRecvC2CReadReceipt' && Array.isArray(normalized)) {
+    return { receipts: normalized }
+  }
+  if (rawCoreGroupItemEventNames.has(eventName) && isRecord(normalized)) {
+    return Object.hasOwn(normalized, 'attachedInfo')
+      ? normalized
+      : { ...normalized, attachedInfo: '' }
+  }
+  return normalized
+}
+
 function schemaLabel(schema) {
   if (!isRecord(schema)) return 'invalid schema'
   if (schema.kind === 'reference') return String(schema.name)
@@ -367,12 +388,18 @@ function eventStructureResult(candidates, eventName, responseSchemas) {
       && Array.isArray(eventSchema.arguments)
       && eventSchema.arguments.length === 1
       && eventSchema.arguments[0]?.kind === 'string'
-    return item.payloadDetails.flatMap((detail) => validateEventArguments(
+    return item.payloadDetails.flatMap((detail, index) => validateEventArguments(
       responseSchemas,
       eventSchema,
       opaqueStringPayload
         ? detail
-        : normalizeRecordedValue(parseRecordedValue(detail, 'any'), item.payloadEncoding),
+        : normalizeRecordedEventValue(
+          eventName,
+          parseRecordedValue(detail, 'any'),
+          Array.isArray(item.payloadEncodings) && typeof item.payloadEncodings[index] === 'string'
+            ? item.payloadEncodings[index]
+            : item.payloadEncoding,
+        ),
     ))
   })
   return { passed: issues.length === 0, issues }
@@ -586,18 +613,38 @@ function callableKnownIssueWaiver(contractCase, platform, axis) {
 function eventCorrelationIdentityField(eventName) {
   if (eventName === 'onSendMessageProgress') return 'clientMsgID'
   if (eventName === 'onRecvNewMessage') return 'clientMsgID'
-  if (eventName === 'onFriendApplicationAdded' || eventName === 'onFriendApplicationRejected') return 'fromUserID'
-  if (eventName === 'onFriendAdded') return 'userID'
+  if (eventName === 'onMsgDeleted' || eventName === 'onNewRecvMessageRevoked') return 'clientMsgID'
+  if (eventName === 'onFriendApplicationAdded' || eventName === 'onFriendApplicationRejected' || eventName === 'onFriendApplicationAccepted') return 'fromUserID'
+  if (eventName === 'onFriendAdded'
+    || eventName === 'onFriendDeleted'
+    || eventName === 'onFriendInfoChanged'
+    || eventName === 'onBlackDeleted'
+    || eventName === 'onSelfInfoUpdated') return 'userID'
   if (eventName === 'onJoinedGroupAdded'
     || eventName === 'onGroupApplicationAdded'
     || eventName === 'onGroupMemberAdded'
-    || eventName === 'onGroupApplicationRejected') return 'groupID'
+    || eventName === 'onGroupApplicationRejected'
+    || eventName === 'onGroupApplicationAccepted'
+    || eventName === 'onGroupInfoChanged') return 'groupID'
   return ''
 }
 
 function eventCorrelationPayloadMatches(eventName, recorded, payloadIdentity) {
+  if (eventName === 'onRecvC2CReadReceipt') {
+    const normalized = Array.isArray(recorded) ? { receipts: recorded } : recorded
+    if (!isRecord(normalized) || !Array.isArray(normalized.receipts)) return false
+    return normalized.receipts.some((receipt) => isRecord(receipt)
+      && typeof receipt.userID === 'string'
+      && Array.isArray(receipt.msgIDList)
+      && receipt.msgIDList.some((messageID) => `${receipt.userID}:${String(messageID)}` === payloadIdentity))
+  }
+  if (eventName === 'onConversationChanged' || eventName === 'onNewConversation') {
+    if (!isRecord(recorded) || !Array.isArray(recorded.conversations)) return false
+    return recorded.conversations.some((conversation) => isRecord(conversation)
+      && (conversation.conversationID === payloadIdentity || conversation.groupID === payloadIdentity || conversation.userID === payloadIdentity))
+  }
   if (!isRecord(recorded)) return false
-  if (eventName === 'onGroupMemberAdded' || eventName === 'onGroupMemberDeleted') {
+  if (eventName === 'onGroupMemberAdded' || eventName === 'onGroupMemberDeleted' || eventName === 'onGroupMemberInfoChanged') {
     const groupID = typeof recorded.groupID === 'string' ? recorded.groupID : ''
     const userID = typeof recorded.userID === 'string' ? recorded.userID : ''
     if (groupID.length > 0 && userID.length > 0 && `${groupID}:${userID}` === payloadIdentity) return true
@@ -615,6 +662,7 @@ const lifecycleCorrelationCallables = new Set([
 const uploadCorrelationCallables = new Set(['uploadFile', 'uploadLogs'])
 const crossAccountCorrelationCallables = new Set([
   'sendMessageNotOss',
+  'markConversationMessageAsRead',
   'addFriend', 'acceptFriendApplication', 'refuseFriendApplication', 'addBlack',
   'createGroup', 'joinGroup', 'acceptGroupApplication', 'refuseGroupApplication',
   'kickGroupMember', 'inviteUserToGroup', 'quitGroup', 'dismissGroup',
@@ -622,7 +670,7 @@ const crossAccountCorrelationCallables = new Set([
 const operationCorrelationCallables = new Set([
   'updateFriends', 'deleteFriend', 'removeBlack', 'setGroupInfo',
   'setGroupMemberInfo', 'setConversation', 'changeInputStates',
-  'markConversationMessageAsRead',
+  'revokeMessage', 'deleteMessage', 'setSelfInfo',
 ])
 
 function requiredCallableEventCorrelationKind(apiName, eventName) {
@@ -708,8 +756,8 @@ function validCallableEventCorrelation(value, apiName, eventName, identityPath) 
       recorded = parseRecordedValue(recorded, 'any')
     }
     recorded = normalizeRecordedValue(recorded, 'uts-typed-json-v1')
-    if (!isRecord(recorded)) return false
     if (typeof identityPath === 'string' && identityPath.length > 0) {
+      if (!isRecord(recorded)) return false
       return valueAtPath(recorded, identityPath) === value.payloadIdentity
     }
     return eventCorrelationPayloadMatches(eventName, recorded, value.payloadIdentity)
