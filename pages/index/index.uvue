@@ -772,6 +772,16 @@
 		return selected
 	}
 
+	function automationJSONString(value : string | null) : string {
+		const normalized = value == null ? '' : value as string
+		const text = JSON.stringify(normalized)
+		return text == null ? '""' : text as string
+	}
+
+	function automationJSONField(key : string, encodedValue : string) : string {
+		return automationJSONString(key) + ':' + encodedValue
+	}
+
 	function stringifyQuoteMessage(message : OpenIMMessageItem) : string {
 		let fields : Array<string> = []
 		fields.push(automationJSONField('clientMsgID', automationJSONString(message.clientMsgID == null ? '' : message.clientMsgID as string)))
@@ -799,16 +809,6 @@
 			fields.push(automationJSONField('textElem', '{' + automationJSONField('content', automationJSONString(textElem.content)) + '}'))
 		}
 		return '{' + fields.join(',') + '}'
-	}
-
-	function automationJSONString(value : string | null) : string {
-		const normalized = value == null ? '' : value as string
-		const text = JSON.stringify(normalized)
-		return text == null ? '""' : text as string
-	}
-
-	function automationJSONField(key : string, encodedValue : string) : string {
-		return automationJSONString(key) + ':' + encodedValue
 	}
 
 	function readQuoteText(message : OpenIMMessageItem) : string {
@@ -2070,6 +2070,14 @@
 		return message
 	}
 
+	function parseAutomationInsertedMessageJSON(payloadJSON : string, method : string) : OpenIMMessageItem {
+		const message = JSON.parseObject<OpenIMMessageItem>(payloadJSON)
+		if (message == null || message.clientMsgID == null || (message.clientMsgID as string).length == 0) {
+			throw new Error(method + ' returned no concrete clientMsgID')
+		}
+		return message as OpenIMMessageItem
+	}
+
 	function assertAutomationConversationItem(value : OpenIMConversationItem | null, label : string) : OpenIMConversationItem {
 		if (value == null) { throw new Error(label + ' returned null conversation') }
 		const conversation = value as OpenIMConversationItem
@@ -2212,7 +2220,8 @@
 		}
 		if (name == 'createTextMessage') {
 			const message = assertAutomationMessageItem(value as OpenIMMessageItem | null, name, false)
-			if (message.textElem == null || (message.textElem as OpenIMTextElem).content.length == 0) { throw new Error('createTextMessage returned empty textElem.content') }
+			const content = message.textElem == null ? null : (message.textElem as OpenIMTextElem).content
+			if (content == null || content.length == 0) { throw new Error('createTextMessage returned empty textElem.content') }
 			return { structureValidated: true, semanticValidated: true }
 		}
 		if (name == 'sendMessage' || name == 'sendMessageNotOss') {
@@ -2403,16 +2412,6 @@
 		return emptyAutomationValidationState()
 	}
 
-	function mergeAutomationValidationEvidence(apiName : string, validation : OpenIMAutomationValidationState, supplied : OpenIMAutomationEvidence | null) : OpenIMAutomationEvidence {
-		const evidence = supplied == null ? emptyAutomationEvidence() : supplied as OpenIMAutomationEvidence
-		if (validation.structureValidated) { evidence.structureValidated = true }
-		if (validation.semanticValidated && !evidence.semanticValidated) {
-			evidence.semanticValidated = true
-			evidence.assertions.push(createAutomationProfileAssertion('semantic', requireAutomationSemanticProfile(apiName), 'scenario-semantics', 'response correlated with current automation context', 'response correlated', true))
-		}
-		return evidence
-	}
-
 	function emptyAutomationEvidence() : OpenIMAutomationEvidence {
 		return {
 			structureValidated: false,
@@ -2448,6 +2447,16 @@
 
 	function requireAutomationSideEffectProbe(apiName : string) : string {
 		return requireAutomationProfile(apiName).sideEffectProbe
+	}
+
+	function mergeAutomationValidationEvidence(apiName : string, validation : OpenIMAutomationValidationState, supplied : OpenIMAutomationEvidence | null) : OpenIMAutomationEvidence {
+		const evidence = supplied == null ? emptyAutomationEvidence() : supplied as OpenIMAutomationEvidence
+		if (validation.structureValidated) { evidence.structureValidated = true }
+		if (validation.semanticValidated && !evidence.semanticValidated) {
+			evidence.semanticValidated = true
+			evidence.assertions.push(createAutomationProfileAssertion('semantic', requireAutomationSemanticProfile(apiName), 'scenario-semantics', 'response correlated with current automation context', 'response correlated', true))
+		}
+		return evidence
 	}
 
 	function responseAutomationEvidence(apiName : string, rule : string) : OpenIMAutomationEvidence {
@@ -3248,14 +3257,6 @@
 		throw new Error('message localEx did not match before timeout')
 	}
 
-	function parseAutomationInsertedMessageJSON(payloadJSON : string, method : string) : OpenIMMessageItem {
-		const message = JSON.parseObject<OpenIMMessageItem>(payloadJSON)
-		if (message == null || message.clientMsgID == null || (message.clientMsgID as string).length == 0) {
-			throw new Error(method + ' returned no concrete clientMsgID')
-		}
-		return message as OpenIMMessageItem
-	}
-
 	function findFriendApplication(result : OpenIMFriendApplicationListResult | null, fromUserID : string, toUserID : string) : OpenIMFriendApplicationItem | null {
 		if (result == null) {
 			return null
@@ -3625,16 +3626,6 @@
 		throw new Error('conversation mutation did not become observable before timeout')
 	}
 
-	async function sendAutomationPeerUnreadMessageToPrimary(config : OpenIMAutomationConfig, label : string) : Promise<OpenIMMessageItem> {
-		const payload : UTSJSONObject = {
-			recvID: config.primaryUserID,
-			text: 'unread readback from unixsdk public automation',
-			operationID: 'uvue_auto_' + label + '_peer_send'
-		}
-		const result = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', payload), automationDefaultStepTimeoutMilliseconds)
-		return readAutomationPeerMessage(result, label)
-	}
-
 	function readAutomationPeerMessage(result : UTSJSONObject, label : string) : OpenIMMessageItem {
 		const encodedMessage = JSON.stringify(result['message'])
 		if (encodedMessage == null) { throw new Error(label + ' peer send returned no message') }
@@ -3643,6 +3634,16 @@
 			throw new Error(label + ' peer send returned no concrete clientMsgID')
 		}
 		return message as OpenIMMessageItem
+	}
+
+	async function sendAutomationPeerUnreadMessageToPrimary(config : OpenIMAutomationConfig, label : string) : Promise<OpenIMMessageItem> {
+		const payload : UTSJSONObject = {
+			recvID: config.primaryUserID,
+			text: 'unread readback from unixsdk public automation',
+			operationID: 'uvue_auto_' + label + '_peer_send'
+		}
+		const result = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', payload), automationDefaultStepTimeoutMilliseconds)
+		return readAutomationPeerMessage(result, label)
 	}
 
 	async function waitAutomationConversationUnreadCount(params : OpenIMGetOneConversationParams, expectPositive : boolean, operationPrefix : string) : Promise<number> {
@@ -4481,7 +4482,8 @@
 
 	function readAutomationMessageText(message : OpenIMMessageItem) : string {
 		if (message.textElem == null) { return '' }
-		return (message.textElem as OpenIMTextElem).content
+		const content = (message.textElem as OpenIMTextElem).content
+		return content == null ? '' : content as string
 	}
 
 	async function runAutomationBatchedMessageEventProbe(config : OpenIMAutomationConfig) : Promise<void> {

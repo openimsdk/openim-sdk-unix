@@ -20,6 +20,12 @@ function functionSource(name: string): string {
     : page.slice(start, start + declaration![0].length + nextFunction)
 }
 
+function functionIndex(name: string): number {
+  const declaration = new RegExp(`(?:async\\s+)?function\\s+${name}(?:<[^>]+>)?\\s*\\(`).exec(page)
+  assert.notEqual(declaration, null, `${name} must exist in the automation page`)
+  return declaration!.index
+}
+
 test('Jest failure narrative reads the report status field emitted by the UTS page', () => {
   assert.match(pageTest, /item\.status === 'failed'/)
   assert.doesNotMatch(pageTest, /item\.ok === false/)
@@ -296,6 +302,28 @@ test('peer producer payloads retain their raw Core encoding for narrow schema no
   assert.match(functionSource('readAutomationPeerMessage'), /result\['message'\]/)
   assert.match(functionSource('runAutomationBatchedMessageEventProbe'), /readAutomationPeerMessage\(peerResult/)
   assert.match(functionSource('runAutomationOfflineMessageEventProbe'), /readAutomationPeerMessage\(peerResult/)
+})
+
+test('peer message text normalization never returns nullable Core content', () => {
+  const reader = functionSource('readAutomationMessageText')
+  assert.match(reader, /const content = \(message\.textElem as OpenIMTextElem\)\.content/)
+  assert.match(reader, /return content == null \? '' : content as string/)
+})
+
+test('Android-generated local functions declare helpers before their first consumers', () => {
+  for (const [helper, consumer] of [
+    ['automationJSONString', 'stringifyQuoteMessage'],
+    ['automationJSONField', 'stringifyQuoteMessage'],
+    ['parseAutomationInsertedMessageJSON', 'validateAutomationResponse'],
+    ['emptyAutomationEvidence', 'mergeAutomationValidationEvidence'],
+    ['createAutomationProfileAssertion', 'mergeAutomationValidationEvidence'],
+    ['requireAutomationSemanticProfile', 'mergeAutomationValidationEvidence'],
+    ['readAutomationPeerMessage', 'sendAutomationPeerUnreadMessageToPrimary'],
+  ] as Array<[string, string]>) {
+    assert.ok(functionIndex(helper) < functionIndex(consumer), `${helper} must be declared before ${consumer}`)
+  }
+  assert.match(functionSource('validateAutomationResponse'), /const content = message\.textElem == null \? null/)
+  assert.match(functionSource('validateAutomationResponse'), /if \(content == null \|\| content\.length == 0\)/)
 })
 
 test('quote producers use a deterministic message writer instead of typed JSON stringify', () => {
