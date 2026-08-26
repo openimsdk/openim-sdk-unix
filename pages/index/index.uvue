@@ -2613,6 +2613,24 @@
 		return sequence as number
 	}
 
+	async function captureAutomationPeerSettledCursor(target : string) : Promise<number> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let cursor = await captureAutomationPeerCursor(target)
+		let stableIntervals = 0
+		while (Date.now() < deadline) {
+			await sleepAutomation(500)
+			const nextCursor = await captureAutomationPeerCursor(target)
+			if (nextCursor == cursor) {
+				stableIntervals = stableIntervals + 1
+				if (stableIntervals >= 2) { return nextCursor }
+			} else {
+				cursor = nextCursor
+				stableIntervals = 0
+			}
+		}
+		throw new Error('Public automation peer event stream did not settle before the scenario')
+	}
+
 	async function waitAutomationPeerOperationEvent(target : string, peerEventName : string, apiName : string, afterSequence : number, label : string, expectedTextContent : string | null = null) : Promise<void> {
 		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
 		let peerCursor = afterSequence
@@ -3282,7 +3300,7 @@
 		const message = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessage from unixsdk public automation', 'uvue_auto_create_send_text'), cacheRequiredAutomationMessage)
 		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text', message: message as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const sendClientMsgID = message != null && message.clientMsgID != null ? message.clientMsgID as string : ''
-		const secondarySendCursor = await captureAutomationPeerCursor('secondary')
+		const secondarySendCursor = await captureAutomationPeerSettledCursor('secondary')
 		beginAutomationOperation('sendMessage', sendClientMsgID, false)
 		const sent = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
 		const sentClientMsgID = sent.clientMsgID != null ? sent.clientMsgID as string : ''
