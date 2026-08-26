@@ -454,6 +454,15 @@ test('conversation and draft mutations are read back and restore the original st
   assert.doesNotMatch(wait, /withAutomationTimeout<[^>]+>\('conversation', 'getOneConversation'/)
 })
 
+test('message storage continues after an isolated local-delete Core readback failure', () => {
+  const suite = functionSource('runAutomationMessageStorageSuite')
+  const localDelete = suite.indexOf("deleteMessageFromLocalStorage(localKey")
+  const failure = suite.indexOf("recordAutomationSideEffectFailure('message-storage', 'deleteMessageFromLocalStorageReadback'")
+  const revoke = suite.indexOf("revokeMessage(revokeKey")
+  assert.ok(localDelete >= 0 && failure > localDelete)
+  assert.ok(revoke > failure, 'later producers must still execute after a local-delete readback failure')
+})
+
 test('successful public calls emit semantic evidence only after response validation', () => {
 	assert.match(page, /OpenIMLoginStatusLogged,/)
   const runner = functionSource('runAutomationStepWithTimeout')

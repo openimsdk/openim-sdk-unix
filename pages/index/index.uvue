@@ -2671,6 +2671,11 @@
 		recordAutomationCase(group, name, 'passed', detail, new Date().getTime(), evidence, contractAPIName, true, true, null, null)
 	}
 
+	function recordAutomationSideEffectFailure(group : string, name : string, detail : string, apiName : string) {
+		const evidence = mutationAutomationEvidence(apiName, 'scenario-mutation-correlated', 'generated-side-effect-observed', false)
+		recordAutomationCase(group, name, 'failed', detail, new Date().getTime(), evidence, apiName, true, true, null, null)
+	}
+
 	function recordAutomationCleanupEvidence(group : string, apiName : string, cleanupAction : string, rule : string, expected : string, actual : string, ok : boolean) {
 		recordAutomationCase(group, apiName, ok ? 'passed' : 'failed', rule + ': expected ' + expected + ', actual ' + actual, new Date().getTime(), cleanupAutomationEvidence(cleanupAction, rule, expected, actual, ok), apiName, true, ok, null, null)
 	}
@@ -3855,8 +3860,12 @@
 		await waitAutomationMessageLocalEx(localKey, localExParams.localEx, 'uvue_auto_set_local_ex_readback')
 		recordAutomationSideEffect('message-storage', 'setMessageLocalExReadback', 'history returned the expected localEx for the exact clientMsgID', false, 'setMessageLocalEx')
 		await runAutomationStep<string>('message-storage', 'deleteMessageFromLocalStorage', deleteMessageFromLocalStorage(localKey, 'uvue_auto_delete_local_message'), noCache)
-		await waitAutomationHistoryMessageState(localKey.conversationID, localKey.clientMsgID, false, null, 'uvue_auto_delete_local_message_readback')
-		recordAutomationSideEffect('message-storage', 'deleteMessageFromLocalStorageReadback', 'history omitted the exact locally deleted clientMsgID', false, 'deleteMessageFromLocalStorage')
+		try {
+			await waitAutomationHistoryMessageState(localKey.conversationID, localKey.clientMsgID, false, null, 'uvue_auto_delete_local_message_readback')
+			recordAutomationSideEffect('message-storage', 'deleteMessageFromLocalStorageReadback', 'history omitted the exact locally deleted clientMsgID', false, 'deleteMessageFromLocalStorage')
+		} catch (error) {
+			recordAutomationSideEffectFailure('message-storage', 'deleteMessageFromLocalStorageReadback', stringifyAPIValue(error), 'deleteMessageFromLocalStorage')
+		}
 
 		const revokeMessageTarget = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('revoke from unixsdk public automation', 'uvue_auto_revoke_create'), cacheRequiredAutomationMessage)
 		const revokeOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_revoke_send', message: revokeMessageTarget as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
