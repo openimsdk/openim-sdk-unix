@@ -54,6 +54,15 @@ function stageAutomationSuiteFilter() {
   writeFileSync(automationFixturePath, `${JSON.stringify(fixture, null, 2)}\n`, { mode: 0o600 });
 }
 
+function stagePublicPeerCoreAuthority(coreRoot) {
+  if (!existsSync(automationFixturePath)) {
+    fail('Public peer Core authority requires the local automation fixture');
+  }
+  const fixture = JSON.parse(readFileSync(automationFixturePath, 'utf8'));
+  fixture._publicPeerCoreRoot = realpathSync(coreRoot);
+  writeFileSync(automationFixturePath, `${JSON.stringify(fixture, null, 2)}\n`, { mode: 0o600 });
+}
+
 function restoreAutomationFixture() {
   if (originalAutomationFixture == null) {
     return;
@@ -480,6 +489,7 @@ if (sdkAuthority.dirty) fail('Public SDK authority must be clean before runtime 
 const toolchainLock = readToolchainLock();
 const hbuilderxAuthority = readHBuilderToolchainAuthority(toolchainLock);
 const coreAuthority = readPublicCoreAuthority(platform, sdkAuthorityRoot, toolchainLock);
+stagePublicPeerCoreAuthority(coreAuthority.root);
 const runManifest = {
   schemaVersion: 1,
   runId,

@@ -49,6 +49,7 @@ test('Public automation peer is a public-Core-only command surface', () => {
 test('Public page and Jest runner require the independent peer for cross-account evidence', () => {
   const page = readFileSync(resolve(root, 'pages/index/index.uvue'), 'utf8')
   const jest = readFileSync(resolve(root, 'pages/index/index.test.js'), 'utf8')
+  const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
 
   assert.match(page, /peerBridgeEnabled\s*:\s*boolean/)
   assert.match(page, /runAutomationPeerCommand/)
@@ -57,4 +58,8 @@ test('Public page and Jest runner require the independent peer for cross-account
   assert.match(jest, /tooling\/public-peer/)
   assert.match(jest, /startPublicPeerBridge/)
   assert.match(jest, /Promise\.all/)
+  assert.match(runner, /stagePublicPeerCoreAuthority\(coreAuthority\.root\)/)
+  assert.match(runner, /fixture\._publicPeerCoreRoot = realpathSync\(coreRoot\)/)
+  assert.match(jest, /delete pageConfigBase\._publicPeerCoreRoot/)
+  assert.doesNotMatch(page, /_publicPeerCoreRoot/)
 })

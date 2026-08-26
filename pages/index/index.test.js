@@ -35,9 +35,9 @@ function readPublicPeerToken(config, accountName, platformID) {
   return token
 }
 
-function buildPublicPeer(tempRoot) {
+function buildPublicPeer(tempRoot, configuredCoreRoot) {
   const sourceRoot = path.join(projectRoot, 'tooling/public-peer')
-  const coreRoot = path.resolve(process.env.OPENIM_AUTOMATION_PEER_CORE_ROOT || process.env.OPENIM_PUBLIC_CORE_DIR || '')
+  const coreRoot = path.resolve(String(configuredCoreRoot || ''))
   if (!path.isAbsolute(coreRoot) || !fs.existsSync(path.join(coreRoot, 'go.mod'))) {
     throw new Error('Public peer requires an exact OPENIM_PUBLIC_CORE_DIR authority')
   }
@@ -120,7 +120,7 @@ function createPublicPeerClient(binaryPath, name, loginPayload) {
 async function startPublicPeerBridge(config) {
   const tempRoot = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'openim-public-peer-'))
   fs.chmodSync(tempRoot, 0o700)
-  const binaryPath = buildPublicPeer(tempRoot)
+  const binaryPath = buildPublicPeer(tempRoot, config._publicPeerCoreRoot)
   const platformID = readPublicPeerPlatformID()
   const makePayload = (accountName) => ({
     apiAddr: config.apiAddr,
@@ -361,8 +361,10 @@ describe('OpenIM SDK demo automation', () => {
     console.log('[openim-test] automator connected; starting OpenIM flow')
     const requestedSuiteFilter = String(config.suiteFilter || '').trim()
     const peerBridge = await startPublicPeerBridge(config)
+    const pageConfigBase = { ...config }
+    delete pageConfigBase._publicPeerCoreRoot
     const automationConfig = {
-      ...config,
+      ...pageConfigBase,
       ...peerBridge.pageConfig,
       autorun: 'false',
       suiteFilter: requestedSuiteFilter,
