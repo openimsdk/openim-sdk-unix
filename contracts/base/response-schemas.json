@@ -3621,6 +3621,20 @@
               }
             ]
           }
+        },
+        "snapshotType": {
+          "required": false,
+          "schema": {
+            "kind": "union",
+            "options": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "null"
+              }
+            ]
+          }
         }
       }
     },

@@ -5,7 +5,7 @@ import { createRequire } from 'node:module'
 import { basename, isAbsolute, relative, resolve } from 'node:path'
 
 const require = createRequire(import.meta.url)
-const { formatAutomationEvidenceIssues, validateAutomationEvidence } = require('../../tooling/runtime/automation-evidence.cjs')
+const { formatAutomationEvidenceIssues, validateAutomationEvidence, verifyAutomationSummaryStructure } = require('../../tooling/runtime/automation-evidence.cjs')
 const { buildAutomationRunProvenance, stableJSONStringify } = require('../../tooling/runtime/automation-run-provenance.cjs')
 
 const artifactFilePattern = /^openim-automation-.*\.json$/
@@ -130,33 +130,22 @@ function readResponseSchemas(projectRoot) {
   return JSON.parse(readFileSync(responseSchemasPath(projectRoot), 'utf8'))
 }
 
-function summarizeVerificationFailure(error) {
-  const stderr = error?.stderr == null ? '' : String(error.stderr)
-  const stdout = error?.stdout == null ? '' : String(error.stdout)
-  const output = `${stderr}\n${stdout}\n${error?.message ?? ''}`.trim()
-  return output.length > 2000 ? output.slice(output.length - 2000) : output
-}
-
-function verifyRuntimeSummaryStructure(projectRoot, reportPath) {
-  if (!existsSync(resolve(projectRoot, 'package.json'))) {
-    return { passed: true, detail: 'skipped without package.json fixture' }
+function verifyRuntimeSummaryStructure(projectRoot, report) {
+  const verification = verifyAutomationSummaryStructure({
+    report,
+    responseSchemas: readResponseSchemas(projectRoot),
+    disposition: readDispositionManifest(projectRoot),
+  })
+  if (verification.passed) {
+    return { passed: true, detail: `runtime summary structure verified (${verification.verifiedCases} callable responses checked)` }
   }
-  const enterprise = existsSync(resolve(projectRoot, 'contracts/enterprise/test-disposition.json'))
-  const args = enterprise
-    ? ['run', 'enterprise:verify-automation-summary', '--', '--private-root', projectRoot, '--summary', reportPath]
-    : ['run', 'verify:automation-summary', '--', '--summary', reportPath]
-  try {
-    execFileSync('npm', args, {
-      cwd: projectRoot,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-    return { passed: true, detail: 'runtime summary structure verified' }
-  } catch (error) {
-    return {
-      passed: false,
-      detail: summarizeVerificationFailure(error),
-    }
+  const failures = verification.failures.slice(0, 8).map((failure) => {
+    const issue = failure.issues[0]
+    return `${failure.caseId}: ${issue == null ? 'schema mismatch' : `${issue.path} ${issue.rule}`}`
+  })
+  return {
+    passed: false,
+    detail: `runtime summary structure rejected (${verification.failures.length} failures): ${failures.join(', ')}`,
   }
 }
 
@@ -213,7 +202,7 @@ export function createAutomationEvidenceRecord({
   const responseSchemas = manifestOverride == null ? readResponseSchemas(projectRoot) : undefined
   const contractEvidence = validateAutomationEvidence({ manifest, responseSchemas, report, platform, fullRun })
   const responseStructureEvidence = manifestOverride == null
-    ? verifyRuntimeSummaryStructure(projectRoot, reportPath)
+    ? verifyRuntimeSummaryStructure(projectRoot, report)
     : { passed: true, detail: 'skipped for manifestOverride fixture' }
   if (!responseStructureEvidence.passed) {
     contractEvidence.passed = false

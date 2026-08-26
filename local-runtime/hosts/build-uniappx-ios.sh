@@ -110,6 +110,9 @@ if find "$app/Frameworks" -maxdepth 2 -type f -print0 | xargs -0 file | grep -Fq
   echo "Static framework remained in the generated uni-app x iOS app" >&2
   exit 1
 fi
+readonly embedded_ext_api_binary="$app/Frameworks/DCloudUTSExtAPI.framework/DCloudUTSExtAPI"
+node "$runner_root/local-runtime/hosts/write-ios-uts-dependencies.mjs" \
+  "$app" "$PROJECT_ROOT/manifest.json" "$embedded_ext_api_binary"
 readonly plugin_receipt="$OPENIM_LOCAL_RUN_ROOT/ios-product-plugins.json"
 node "$runner_root/local-runtime/hosts/verify-ios-product-plugins.mjs" \
   "$OPENIM_LOCAL_PRODUCT_DESCRIPTOR" "$app" "$output_root" "$plugin_receipt"

@@ -491,6 +491,7 @@ export type OpenIMVideoElem = {
   snapshotUrl ?: string | null
   snapshotWidth ?: number | null
   snapshotHeight ?: number | null
+  snapshotType ?: string | null
 }
 
 export type OpenIMMessageItemRef = {

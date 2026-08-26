@@ -16,13 +16,20 @@ import test from 'node:test'
 import {
   automationTarget,
   inspectAndroidBaseEntries,
+  iosBaseHasWebSocket,
 } from '../../scripts/lib/local-base-inspection.mjs'
+import { hashNativeArtifact } from '../../scripts/lib/native-artifact-hash.mjs'
 import {
   buildAutomationEnvironment,
   renderAutomationEnvironment,
   resolveAutomationProjectRoot,
 } from '../../local-runtime/scripts/configure-automation-env.mjs'
+import {
+  sha256Directory as localNativeDirectorySha256,
+  sha256File as localNativeFileSha256,
+} from '../../local-runtime/scripts/prepare-local-native-artifacts.mjs'
 import { runWithLocalNativeProfile } from '../../local-runtime/scripts/run-with-local-native-profile.mjs'
+import { writeIOSUTSDependencies } from '../../local-runtime/hosts/write-ios-uts-dependencies.mjs'
 
 const root = resolve(import.meta.dirname, '../..')
 
@@ -38,6 +45,22 @@ test('Public workspace exposes local build, run, and automation entrypoints for 
   assert.equal(scripts['local:build:ios'], 'npm run local -- build --product public --surface uniappx --platform ios')
   assert.equal(scripts['local:run:ios'], 'npm run local -- run --product public --surface uniappx --platform ios')
   assert.equal(scripts['local:test:ios'], 'npm run local -- test --product public --surface uniappx --platform ios --suite full')
+})
+
+test('Public automation staging carries the executable summary verifier and peer bridge sources', () => {
+  const descriptor = JSON.parse(readFileSync(resolve(root, 'local-runtime/products/public.json'), 'utf8')) as {
+    automationAssets?: Array<{ source: string; destination: string }>
+  }
+  const assets = descriptor.automationAssets ?? []
+
+  assert.equal(
+    assets.some((asset) => asset.source === '../../tooling/src' && asset.destination === 'tooling/src'),
+    true,
+  )
+  assert.equal(
+    assets.some((asset) => asset.source === '../../tooling/public-peer' && asset.destination === 'tooling/public-peer'),
+    true,
+  )
 })
 
 test('local runtime harness is source-only and carries every regenerable entrypoint', () => {
@@ -62,6 +85,7 @@ test('local runtime harness is source-only and carries every regenerable entrypo
     'hosts/verify-runtime-ready.mjs',
     'hosts/verify-stable-bmp.mjs',
     'hosts/verify-ios-product-plugins.mjs',
+    'hosts/write-ios-uts-dependencies.mjs',
     'server/configure-isolated-openim-server.rb',
     'server/start-isolated-openim-server.sh',
     'server/stop-isolated-openim-server.sh',
@@ -128,6 +152,58 @@ test('iOS automation target follows simulator versus physical-device selection',
   assert.equal(automationTarget('android', 'device'), 'app-android')
   assert.equal(automationTarget('ios', 'simulator'), 'app-ios-simulator')
   assert.equal(automationTarget('ios', 'device'), 'app-ios')
+})
+
+test('Public runner hashes native artifacts with the same canonical inventory as native preparation', () => {
+  const temporary = mkdtempSync(resolve(tmpdir(), 'openim-public-native-hash-'))
+  try {
+    const framework = resolve(temporary, 'OpenIMCore.xcframework')
+    mkdirSync(resolve(framework, 'ios-arm64/OpenIMCore.framework/Headers'), { recursive: true })
+    writeFileSync(resolve(framework, 'Info.plist'), 'fixture-info')
+    writeFileSync(resolve(framework, 'ios-arm64/OpenIMCore.framework/OpenIMCore'), 'fixture-binary')
+    writeFileSync(resolve(framework, 'ios-arm64/OpenIMCore.framework/Headers/OpenIMCore.h'), 'fixture-header')
+    const aar = resolve(temporary, 'open_im_sdk.aar')
+    writeFileSync(aar, 'fixture-aar')
+
+    assert.equal(
+      hashNativeArtifact(framework, 'xcframework-inventory'),
+      localNativeDirectorySha256(framework),
+    )
+    assert.equal(hashNativeArtifact(aar, 'aar'), localNativeFileSha256(aar))
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
+})
+
+test('matrix iOS host writes a websocket receipt only when manifest and runtime binary agree', () => {
+  const temporary = mkdtempSync(resolve(tmpdir(), 'openim-public-ios-dependencies-'))
+  try {
+    const app = resolve(temporary, 'Public.app')
+    const manifestPath = resolve(temporary, 'manifest.json')
+    const extAPIBinary = resolve(app, 'Frameworks/DCloudUTSExtAPI.framework/DCloudUTSExtAPI')
+    mkdirSync(resolve(extAPIBinary, '..'), { recursive: true })
+    writeFileSync(manifestPath, `{
+      /* fixture manifest */
+      "app-ios": { "distribute": { "modules": { "uni-websocket": {} } } }
+    }`)
+    writeFileSync(extAPIBinary, 'fixture DCloudUTSExtAPI/uni-websocket-index.swift payload')
+
+    const receipt = writeIOSUTSDependencies({ appPath: app, manifestPath, extAPIBinary })
+    assert.deepEqual(receipt, { duts: ['uni-websocket'] })
+    assert.equal(iosBaseHasWebSocket(app), true)
+
+    const missingRuntime = resolve(temporary, 'MissingRuntime.app')
+    const missingBinary = resolve(missingRuntime, 'Frameworks/DCloudUTSExtAPI.framework/DCloudUTSExtAPI')
+    mkdirSync(resolve(missingBinary, '..'), { recursive: true })
+    writeFileSync(missingBinary, 'fixture without the required module')
+    assert.throws(
+      () => writeIOSUTSDependencies({ appPath: missingRuntime, manifestPath, extAPIBinary: missingBinary }),
+      /does not contain uni-websocket/,
+    )
+    assert.equal(iosBaseHasWebSocket(missingRuntime), false)
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
 })
 
 test('local iOS build compiles the simulator module before assembling the locked host', () => {
@@ -335,6 +411,9 @@ test('local automation pre-provisions accounts and requires an explicit server s
   assert.match(iosTest, /OPENIM_AUTOMATION_PREPROVISION=1/)
   assert.match(register, /env\.IM_SECRET \|\| ''/)
   assert.match(register, /IM_SECRET is required/)
+  assert.match(register, /overrideURLPort\(env\.OPENIM_API_BASE[^\n]+env\.OPENIM_API_PORT/)
+  assert.match(register, /overrideURLPort\(env\.OPENIM_WS_BASE[^\n]+env\.OPENIM_WS_PORT/)
+  assert.match(register, /port > 65535/)
   assert.doesNotMatch(register, /openIM123/)
 })
 

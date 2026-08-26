@@ -659,21 +659,123 @@ export function generateInterface(contract: ContractDocument): string {
 }
 
 export function generateAutomationProfileRegistry(disposition: TestDispositionDocument): string {
-  const entries = disposition.callables.map((item) => (
-    `\t{ apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}', validationAxes: [${item.validationAxes.map((axis) => `'${axis}'`).join(', ')}] }`
-  )).join(',\n')
+  const producerSource = (value: { key: string; suite: string; scenario: string; platforms: string[] }): string => (
+    `{ key: ${JSON.stringify(value.key)}, suite: ${JSON.stringify(value.suite)}, scenario: ${JSON.stringify(value.scenario)}, platforms: [${value.platforms.map((platform) => JSON.stringify(platform)).join(', ')}] }`
+  )
+  const negativeSource = (values: Array<{ profile: string; producer: { key: string; suite: string; scenario: string; platforms: string[] } }>): string => (
+    `[${values.map((value) => `{ profile: ${JSON.stringify(value.profile)}, producer: ${producerSource(value.producer)} }`).join(', ')}]`
+  )
+  const cleanupSource = (value: { action: string; rule: string; producer: { key: string; suite: string; scenario: string; platforms: string[] } } | undefined): string => (
+    value == null
+      ? 'null'
+      : `{ action: ${JSON.stringify(value.action)}, rule: ${JSON.stringify(value.rule)}, producer: ${producerSource(value.producer)} }`
+  )
+  const epochSource = (value: { rule: string; producer: { key: string; suite: string; scenario: string; platforms: string[] } } | undefined): string => (
+    value == null
+      ? 'null'
+      : `{ rule: ${JSON.stringify(value.rule)}, producer: ${producerSource(value.producer)} }`
+  )
+  const validationAxesByPlatformSource = (value: { android: string[]; ios: string[]; harmony: string[] }): string => (
+    `{ android: [${value.android.map((axis) => JSON.stringify(axis)).join(', ')}], ios: [${value.ios.map((axis) => JSON.stringify(axis)).join(', ')}], harmony: [${value.harmony.map((axis) => JSON.stringify(axis)).join(', ')}] }`
+  )
+  const callableEntries = disposition.callables.map((item) => (
+    `\t{ apiName: ${JSON.stringify(item.apiName)}, semanticProfile: ${JSON.stringify(item.semanticProfile)}, sideEffectProbe: ${JSON.stringify(item.sideEffectProbe)}, negativeProfiles: [${item.negativeProfiles.map((profile) => JSON.stringify(profile)).join(', ')}], negativeProducers: ${negativeSource(item.negativeProducers)}, cleanupAction: ${JSON.stringify(item.cleanupAction)}, cleanupRule: ${JSON.stringify(item.cleanupRule ?? '')}, cleanupProducer: ${cleanupSource(item.cleanupProducer == null ? undefined : { action: item.cleanupAction, rule: item.cleanupRule ?? '', producer: item.cleanupProducer })}, validationAxes: [${item.validationAxes.map((axis) => JSON.stringify(axis)).join(', ')}], validationAxesByPlatform: ${validationAxesByPlatformSource(item.validationAxesByPlatform)} }`
+  ))
+  const eventEntries = disposition.events.map((item) => (
+    `\t{ eventName: ${JSON.stringify(item.eventName)}, negativeProfiles: [${item.negativeProfiles.map((profile) => JSON.stringify(profile)).join(', ')}], negativeProducers: ${negativeSource(item.negativeProducers)}, cleanupAction: ${JSON.stringify(item.cleanupAction)}, cleanupRule: ${JSON.stringify(item.cleanupRule ?? '')}, cleanupProducer: ${cleanupSource(item.cleanupProducer == null ? undefined : { action: item.cleanupAction, rule: item.cleanupRule ?? '', producer: item.cleanupProducer })}, epochProducer: ${epochSource(item.epochProducer)}, validationAxes: [${item.validationAxes.map((axis) => JSON.stringify(axis)).join(', ')}], validationAxesByPlatform: ${validationAxesByPlatformSource(item.validationAxesByPlatform)} }`
+  ))
+  const chunkedRegistrySource = (name: string, type: string, entries: string[]): string => {
+    const chunkSize = 16
+    const chunks: string[][] = []
+    for (let index = 0; index < entries.length; index += chunkSize) {
+      chunks.push(entries.slice(index, index + chunkSize))
+    }
+    const chunkFunctions = chunks.map((chunk, index) => `function ${name}Chunk${index}() : Array<${type}> {
+\treturn [
+${chunk.map((entry) => `\t${entry}`).join(',\n')}
+\t]
+}`).join('\n\n')
+    const appendName = `append${name[0]!.toUpperCase()}${name.slice(1)}`
+    const buildName = `build${name[0]!.toUpperCase()}${name.slice(1)}`
+    const appendFunction = `function ${appendName}(target : Array<${type}>, source : Array<${type}>) {
+\tlet index = 0
+\twhile (index < source.length) {
+\t\ttarget.push(source[index])
+\t\tindex = index + 1
+\t}
+}`
+    const buildFunction = `function ${buildName}() : Array<${type}> {
+\tconst entries : Array<${type}> = []
+${chunks.map((_chunk, index) => `\t${appendName}(entries, ${name}Chunk${index}())`).join('\n')}
+\treturn entries
+}`
+    return `${chunkFunctions}\n\n${appendFunction}\n\n${buildFunction}`
+  }
+  const callableRegistry = chunkedRegistrySource('openIMAutomationProfileEntries', 'OpenIMAutomationProfileEntry', callableEntries)
+  const eventRegistry = chunkedRegistrySource('openIMAutomationEventProfileEntries', 'OpenIMAutomationEventProfileEntry', eventEntries)
   return generatedSource(`export type OpenIMAutomationProfileEntry = {
 \tapiName : string
 \tsemanticProfile : string
 \tsideEffectProbe : string
+\tnegativeProfiles : Array<string>
+\tnegativeProducers : Array<OpenIMAutomationNegativeProducer>
+\tcleanupAction : string
+\tcleanupRule : string
+\tcleanupProducer : OpenIMAutomationCleanupProducer | null
 \tvalidationAxes : Array<string>
+\tvalidationAxesByPlatform : OpenIMAutomationValidationAxesByPlatform | null
+}
+
+export type OpenIMAutomationValidationAxesByPlatform = {
+\tandroid : Array<string>
+\tios : Array<string>
+\tharmony : Array<string>
+}
+
+export type OpenIMAutomationProducerRef = {
+\tkey : string
+\tsuite : string
+\tscenario : string
+\tplatforms : Array<string>
+}
+
+export type OpenIMAutomationNegativeProducer = {
+\tprofile : string
+\tproducer : OpenIMAutomationProducerRef
+}
+
+export type OpenIMAutomationCleanupProducer = {
+\taction : string
+\trule : string
+\tproducer : OpenIMAutomationProducerRef
+}
+
+export type OpenIMAutomationEpochProducer = {
+\trule : string
+\tproducer : OpenIMAutomationProducerRef
+}
+
+export type OpenIMAutomationEventProfileEntry = {
+\teventName : string
+\tnegativeProfiles : Array<string>
+\tnegativeProducers : Array<OpenIMAutomationNegativeProducer>
+\tcleanupAction : string
+\tcleanupRule : string
+\tcleanupProducer : OpenIMAutomationCleanupProducer | null
+\tepochProducer : OpenIMAutomationEpochProducer | null
+\tvalidationAxes : Array<string>
+\tvalidationAxesByPlatform : OpenIMAutomationValidationAxesByPlatform | null
 }
 
 export const openIMAutomationContractEdition = '${disposition.edition}'
 
-export const openIMAutomationProfileEntries : Array<OpenIMAutomationProfileEntry> = [
-${entries}
-]`)
+${callableRegistry}
+
+export const openIMAutomationProfileEntries : Array<OpenIMAutomationProfileEntry> = buildOpenIMAutomationProfileEntries()
+
+${eventRegistry}
+
+export const openIMAutomationEventProfileEntries : Array<OpenIMAutomationEventProfileEntry> = buildOpenIMAutomationEventProfileEntries()`)
 }
 
 export function buildSurfaceSnapshot(contract: ContractDocument): SurfaceSnapshot {

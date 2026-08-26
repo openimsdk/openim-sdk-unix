@@ -1284,8 +1284,8 @@
     {
       "id": 1084,
       "name": "OpenIMVideoElem",
-      "declaration": "export type OpenIMVideoElem = {\n  videoPath ?: string | null\n  videoUUID ?: string | null\n  videoUrl ?: string | null\n  videoType ?: string | null\n  videoSize ?: number | null\n  duration ?: number | null\n  snapshotPath ?: string | null\n  snapshotUUID ?: string | null\n  snapshotSize ?: number | null\n  snapshotUrl ?: string | null\n  snapshotWidth ?: number | null\n  snapshotHeight ?: number | null\n}",
-      "signatureHash": "aa263f920958c6d75d1d3254f6c18e904248901bc49a832c5e70a5d7bf52678e"
+      "declaration": "export type OpenIMVideoElem = {\n  videoPath ?: string | null\n  videoUUID ?: string | null\n  videoUrl ?: string | null\n  videoType ?: string | null\n  videoSize ?: number | null\n  duration ?: number | null\n  snapshotPath ?: string | null\n  snapshotUUID ?: string | null\n  snapshotSize ?: number | null\n  snapshotUrl ?: string | null\n  snapshotWidth ?: number | null\n  snapshotHeight ?: number | null\n  snapshotType ?: string | null\n}",
+      "signatureHash": "39ba56f19ec63aae1daef347011a6329a1966cc7244253b2ac765fbccef035a0"
     },
     {
       "id": 1085,

@@ -202,7 +202,7 @@ test('Public runner evidence reads base authority and keeps response structure s
   const report = {
     headline: 'Automation passed', total: 1, passed: 1, failed: 0, skipped: 0,
     cases: [{
-      apiName: 'getLoginStatus', status: 'passed', invoked: true, resolved: true,
+      apiName: 'getLoginStatus', status: 'passed', ok: true, invoked: true, resolved: true,
       responseEvidence: true, responseEncoding: 'uts-typed-json-v1', responseDetail: '3',
       structureValidated: true, semanticValidated: true,
       assertions: [{ axis: 'semantic', profile: 'lifecycle-state', rule: 'login-status-is-logged', expected: '3', actual: '3', ok: true }],
@@ -226,6 +226,8 @@ test('Public runner evidence reads base authority and keeps response structure s
     runManifestPath: 'test-results/openim-automation/android-fixture-run-manifest.json',
   })
   assert.equal(evidence.contractEvidence.passed, true)
+  assert.equal(evidence.responseStructureEvidence.passed, true)
+  assert.match(evidence.responseStructureEvidence.detail, /1 callable responses checked/)
   const persisted = JSON.parse(readFileSync(evidencePath, 'utf8'))
   assert.equal(persisted.schemaVersion, 3)
   assert.equal(persisted.runManifest.runId, 'fixture-run')

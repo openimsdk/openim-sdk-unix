@@ -37,6 +37,14 @@
       "destination": "tooling/runtime"
     },
     {
+      "source": "../../tooling/src",
+      "destination": "tooling/src"
+    },
+    {
+      "source": "../../tooling/public-peer",
+      "destination": "tooling/public-peer"
+    },
+    {
       "source": "../../jest.config.js",
       "destination": "jest.config.js"
     },

@@ -6,10 +6,10 @@ import { dirname, resolve } from 'node:path';
 
 const env = process.env;
 
-const OPENIM_API_BASE = env.OPENIM_API_BASE || 'http://127.0.0.1:10002';
-const OPENIM_WS_BASE = env.OPENIM_WS_BASE || 'ws://127.0.0.1:10001';
-const OPENIM_SDK_API_BASE = env.OPENIM_SDK_API_BASE || '';
-const OPENIM_SDK_WS_BASE = env.OPENIM_SDK_WS_BASE || '';
+const OPENIM_API_BASE = overrideURLPort(env.OPENIM_API_BASE || 'http://127.0.0.1:10002', env.OPENIM_API_PORT || '', 'OPENIM_API_PORT');
+const OPENIM_WS_BASE = overrideURLPort(env.OPENIM_WS_BASE || 'ws://127.0.0.1:10001', env.OPENIM_WS_PORT || '', 'OPENIM_WS_PORT');
+const OPENIM_SDK_API_BASE = overrideURLPort(env.OPENIM_SDK_API_BASE || '', env.OPENIM_API_PORT || '', 'OPENIM_API_PORT');
+const OPENIM_SDK_WS_BASE = overrideURLPort(env.OPENIM_SDK_WS_BASE || '', env.OPENIM_WS_PORT || '', 'OPENIM_WS_PORT');
 
 const IM_ADMIN_USER_ID = env.IM_ADMIN_USER_ID || 'imAdmin';
 const IM_SECRET = env.IM_SECRET || '';
@@ -33,6 +33,19 @@ if (IM_SECRET.length === 0) {
 function sanitizeAccountPrefix(value) {
   const sanitized = value.replace(/[^a-zA-Z0-9]/g, '');
   return sanitized.length > 0 ? sanitized : 'unixagent';
+}
+
+function overrideURLPort(value, portValue, name) {
+  if (value.length === 0 || portValue.length === 0) {
+    return value;
+  }
+  const port = Number(portValue);
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+    throw new Error(`${name} must be an integer from 1 to 65535`);
+  }
+  const url = new URL(value);
+  url.port = String(port);
+  return trimBaseURL(url.toString());
 }
 
 function parsePlatformIDs(value) {

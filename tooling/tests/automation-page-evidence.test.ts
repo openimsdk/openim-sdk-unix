@@ -20,9 +20,22 @@ function functionSource(name: string): string {
     : page.slice(start, start + declaration![0].length + nextFunction)
 }
 
+function functionIndex(name: string): number {
+  const declaration = new RegExp(`(?:async\\s+)?function\\s+${name}(?:<[^>]+>)?\\s*\\(`).exec(page)
+  assert.notEqual(declaration, null, `${name} must exist in the automation page`)
+  return declaration!.index
+}
+
 test('Jest failure narrative reads the report status field emitted by the UTS page', () => {
   assert.match(pageTest, /item\.status === 'failed'/)
   assert.doesNotMatch(pageTest, /item\.ok === false/)
+  assert.match(pageTest, /public peer \$\{name\} command failed \(\$\{safeCode\}\)/)
+  assert.doesNotMatch(pageTest, /response\.error\?\.message/)
+})
+
+test('independent Public peer uses the other mobile platform identity', () => {
+  assert.match(pageTest, /const fallback = uniOSName === 'ios' \? 2 : 1/)
+  assert.match(pageTest, /PLATFORM_IDS: process\.env\.PLATFORM_IDS \|\| '1,2'/)
 })
 
 test('runtime cases carry explicit contract evidence instead of deriving validation from Promise success', () => {
@@ -129,7 +142,7 @@ test('runtime response evidence carries the resolved wire value separately from 
   const recorder = functionSource('recordAutomationCase')
   assert.match(recorder, /responseDetail : string \| null = null/)
   assert.match(recorder, /responseEvidence: responseDetail != null/)
-  assert.match(recorder, /responseEncoding: responseDetail != null \? 'uts-typed-json-v1' : ''/)
+  assert.match(recorder, /responseEncoding: responseDetail != null \? automationResponseEncoding\(contractAPIName\) : ''/)
   assert.match(recorder, /responseDetail: responseDetail != null \? responseDetail as string : ''/)
 
   const runner = functionSource('runAutomationStepWithTimeout')
@@ -201,15 +214,17 @@ test('setup normalizes a native login session retained across HBuilder hot reloa
 })
 
 test('event reports distinguish typed delivery from semantic, ordering, and epoch proof', () => {
-  for (const field of ['payloadEvidence : boolean', 'payloadEncoding : string', 'payloadDetail : string', 'payloadDetails : Array<string>']) {
+	for (const field of ['payloadEvidence : boolean', 'payloadEncoding : string', 'payloadDetail : string', 'payloadDetails : Array<string>', 'payloadEncodings : Array<string>']) {
     assert.match(page, new RegExp(field))
   }
   assert.match(page, /record\.deliveryValidated = true/)
   assert.match(page, /record\.structureValidated = true/)
   assert.match(page, /record\.payloadEvidence = true/)
-  assert.match(page, /record\.payloadEncoding = 'uts-typed-json-v1'/)
+	assert.match(page, /record\.payloadEncoding = payloadEncoding/)
+	assert.match(page, /recordSDKEventDelivery\(mappedEventName, payloadTextValue as string, 'openim-core-json-v1'\)/)
   assert.match(page, /record\.payloadDetail = payloadText/)
-  assert.match(page, /record\.payloadDetails\.push\(payloadText\)/)
+	assert.match(page, /record\.payloadDetails\.push\(payloadText\)/)
+	assert.match(page, /record\.payloadEncodings\.push\(payloadEncoding\)/)
   assert.match(functionSource('showSDKErrorEvent'), /recordSDKEventDelivery\(eventName, '\[' \+ errCode\.toString\(\)/)
   assert.doesNotMatch(page, /record\.(?:semanticValidated|orderingValidated|epochValidated) = true/)
 })
@@ -251,6 +266,123 @@ test('callable event correlations retain operation order, epoch, and payload mat
   assert.match(functionSource('recordAutomationCase'), /eventCorrelations: eventCorrelations == null \? \[\]/)
 })
 
+test('public producer plan binds remaining deterministic events to concrete operations', () => {
+  const recorder = functionSource('recordAutomationRequiredEventCorrelation')
+  assert.match(recorder, /readAutomationEventCount\(eventName\) > previousCount/)
+  assert.match(recorder, /buildAutomationEventCorrelations\(apiName, \[eventName\]\)/)
+  assert.match(recorder, /recordAutomationCase\('event-delivery', apiName/)
+
+  const expectedOperationEvents: Array<[string, string]> = [
+    ['setConversation', 'onConversationChanged'],
+    ['revokeMessage', 'onNewRecvMessageRevoked'],
+    ['deleteMessage', 'onMsgDeleted'],
+    ['updateFriends', 'onFriendInfoChanged'],
+    ['deleteFriend', 'onFriendDeleted'],
+    ['removeBlack', 'onBlackDeleted'],
+    ['setGroupInfo', 'onGroupInfoChanged'],
+    ['setGroupMemberInfo', 'onGroupMemberInfoChanged'],
+    ['kickGroupMember', 'onGroupMemberDeleted'],
+    ['setSelfInfo', 'onSelfInfoUpdated'],
+  ]
+  for (const [apiName, eventName] of expectedOperationEvents) {
+    assert.match(page, new RegExp(`beginAutomationOperation\\('${apiName}'`))
+    assert.match(page, new RegExp(`recordAutomationRequiredEventCorrelation\\('${apiName}', '${eventName}'`))
+  }
+
+  const eventDelivery = functionSource('runAutomationEventDeliverySuite')
+  assert.match(eventDelivery, /runAutomationBatchedMessageEventProbe\(config\)/)
+  assert.match(eventDelivery, /runAutomationOfflineMessageEventProbe\(config\)/)
+  assert.match(functionSource('runAutomationSetupSuite'), /runAutomationConnectFailureProbe\(config\)/)
+
+  const friendSuite = functionSource('runAutomationFriendSuite')
+  assert.match(friendSuite, /recordAutomationRequiredEventCorrelation\('acceptFriendApplication', 'onFriendAdded'/)
+  assert.match(friendSuite, /recordAutomationCallableEventCorrelations\('acceptFriendApplication', \['onFriendAdded', 'onFriendApplicationAccepted'\]\)/)
+  assert.doesNotMatch(friendSuite, /acceptFriendApplication applicant delivery/)
+
+  const groupSuite = functionSource('runAutomationGroupSuite')
+  assert.match(groupSuite, /recordAutomationRequiredEventCorrelation\('kickGroupMember', 'onGroupMemberDeleted'/)
+  assert.match(groupSuite, /recordAutomationCallableEventCorrelations\('kickGroupMember', \['onGroupMemberDeleted'\]\)/)
+  assert.match(groupSuite, /recordAutomationCallableEventCorrelations\('acceptGroupApplication', \['onGroupApplicationAccepted', 'onGroupMemberAdded'\]\)/)
+  assert.doesNotMatch(groupSuite, /kickGroupMember affected-member delivery/)
+})
+
+test('peer producer payloads retain their raw Core encoding for narrow schema normalization', () => {
+  assert.match(page, /payloadEncodings : Array<string>/)
+  assert.match(page, /recordSDKEventDelivery\(mappedEventName, payloadTextValue as string, 'openim-core-json-v1'\)/)
+  assert.match(functionSource('readAutomationPeerMessage'), /result\['message'\]/)
+  assert.match(functionSource('runAutomationBatchedMessageEventProbe'), /readAutomationPeerMessage\(peerResult/)
+  assert.match(functionSource('runAutomationOfflineMessageEventProbe'), /readAutomationPeerMessage\(peerResult/)
+})
+
+test('peer message text normalization never returns nullable Core content', () => {
+  const reader = functionSource('readAutomationMessageText')
+  assert.match(reader, /const content = \(message\.textElem as OpenIMTextElem\)\.content/)
+  assert.match(reader, /return content == null \? '' : content as string/)
+})
+
+test('Android-generated local functions declare helpers before their first consumers', () => {
+  for (const [helper, consumer] of [
+    ['automationJSONString', 'stringifyQuoteMessage'],
+    ['automationJSONField', 'stringifyQuoteMessage'],
+    ['parseAutomationInsertedMessageJSON', 'validateAutomationResponse'],
+    ['emptyAutomationEvidence', 'mergeAutomationValidationEvidence'],
+    ['createAutomationProfileAssertion', 'mergeAutomationValidationEvidence'],
+    ['requireAutomationSemanticProfile', 'mergeAutomationValidationEvidence'],
+    ['readAutomationPeerMessage', 'sendAutomationPeerUnreadMessageToPrimary'],
+    ['recordAutomationCallableEventCorrelations', 'runAutomationFriendSuite'],
+  ] as Array<[string, string]>) {
+    assert.ok(functionIndex(helper) < functionIndex(consumer), `${helper} must be declared before ${consumer}`)
+  }
+  assert.match(functionSource('validateAutomationResponse'), /const content = message\.textElem == null \? null/)
+  assert.match(functionSource('validateAutomationResponse'), /if \(content == null \|\| content\.length == 0\)/)
+})
+
+test('producer correlations carry one complete mutation witness and disconnect before the offline send', () => {
+  const correlations = functionSource('recordAutomationCallableEventCorrelations')
+  assert.match(correlations, /mutationAutomationEvidence\(apiName, 'operation-event-identity', 'cross-account-event-observed', allMatched\)/)
+  assert.match(correlations, /evidence\.eventCorrelated = allMatched/)
+
+  const offline = functionSource('runAutomationOfflineMessageEventProbe')
+  const disconnect = offline.indexOf("networkStatusChanged('uvue_auto_offline_event_network_changed')")
+  const peerSend = offline.indexOf("runAutomationPeerCommand('send_text'")
+  assert.ok(disconnect >= 0 && disconnect < peerSend, 'offline producer must disconnect before the peer sends')
+})
+
+test('quote producers use a deterministic message writer instead of typed JSON stringify', () => {
+  const writer = functionSource('stringifyQuoteMessage')
+  assert.doesNotMatch(writer, /JSON\.stringify\(message\)/)
+  assert.match(writer, /stringifyAutomationNativeMessagePayload\(message\)/)
+})
+
+test('runtime evidence uses explicit writers for iOS messages and conversation event arrays', () => {
+  const response = functionSource('stringifyAutomationResponseValue')
+  assert.match(response, /isAutomationMessageEvidenceName\(name\)/)
+  assert.match(response, /stringifyAutomationMessageEvidencePayload\(value\)/)
+
+  const event = functionSource('stringifyAutomationEventValue')
+  assert.match(event, /onRecvNewMessages/)
+  assert.match(event, /stringifyAutomationMessageEvidencePayload\(result\.messages\)/)
+  assert.match(event, /stringifyAutomationConversationList/)
+
+  const conversation = functionSource('stringifyAutomationConversationItem')
+  assert.doesNotMatch(conversation, /JSON\.stringify/)
+  for (const field of ['conversationID', 'conversationType', 'recvMsgOpt', 'unreadCount', 'isPinned', 'minSeq', 'maxSeq']) {
+    assert.match(conversation, new RegExp(`'${field}'`))
+  }
+
+  const recorder = functionSource('recordAutomationCase')
+  assert.match(recorder, /automationResponseEncoding\(contractAPIName\)/)
+  assert.match(page, /function stringifyAutomationMessageEvidencePayload\(value : any \| null\) : string/)
+})
+
+test('login correlation selects an operation window containing the complete lifecycle', () => {
+  const selector = functionSource('findAutomationLoginLifecycleWindow')
+  assert.match(selector, /automationOperationWindows\.length - 1/)
+  assert.match(selector, /findAutomationEventOccurrence\(expectedEvents\[eventIndex\]/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /findAutomationLoginLifecycleWindow\(expectedEvents\)/)
+  assert.match(functionSource('switchAutomationAccount'), /completeAutomationOperation\('login'/)
+})
+
 test('sendMessageNotOss delivery does not require a progress event', () => {
   const suite = functionSource('runAutomationEventDeliverySuite')
   assert.match(suite, /recordAutomationCallableEventCorrelations\('sendMessageNotOss', \['onRecvNewMessage'\]\)/)
@@ -267,6 +399,21 @@ test('message event correlations preserve stage identity and correlation ownersh
   assert.match(
     correlations,
     /eventName == 'onRecvNewMessage' \? window\.resultIdentity : window\.payloadNeedle/,
+  )
+})
+
+test('identity correlations skip unrelated same-event noise inside the operation window', () => {
+  const finder = functionSource('findAutomationEventOccurrenceByPayloadIdentity')
+  assert.match(finder, /occurrence\.sequence > afterSequence/)
+  assert.match(finder, /readAutomationEventPayloadIdentity\(eventName, occurrence\.payloadText\) == payloadIdentity/)
+
+  const correlations = functionSource('buildAutomationEventCorrelations')
+  assert.match(correlations, /findAutomationEventOccurrenceByPayloadIdentity\(eventName, occurrenceEpoch, afterSequence, payloadIdentity\)/)
+  assert.match(correlations, /correlationKind == 'operation-payload-identity'/)
+  assert.match(correlations, /correlationKind == 'cross-account-payload-identity'/)
+  assert.ok(
+    functionIndex('findAutomationEventOccurrenceByPayloadIdentity') > functionIndex('readAutomationEventPayloadIdentity'),
+    'Kotlin generation requires the local identity reader before its caller',
   )
 })
 
@@ -305,6 +452,52 @@ test('conversation and draft mutations are read back and restore the original st
   assert.match(wait, /const remainingMilliseconds = automationSideEffectTimeoutMilliseconds - \(Date\.now\(\) - startedAt\)/)
   assert.match(wait, /withAutomationTimeout<OpenIMConversationItem \| null>\(getOneConversation\(params, operationID \+ '_' \+ attempt\.toString\(\)\), 'conversation\/getOneConversation', attemptTimeoutMilliseconds\)/)
   assert.doesNotMatch(wait, /withAutomationTimeout<[^>]+>\('conversation', 'getOneConversation'/)
+})
+
+test('message storage continues after an isolated local-delete Core readback failure', () => {
+  const suite = functionSource('runAutomationMessageStorageSuite')
+  const localDelete = suite.indexOf("deleteMessageFromLocalStorage(localKey")
+  const failure = suite.indexOf("recordAutomationSideEffectFailure('message-storage', 'deleteMessageFromLocalStorageReadback'")
+  const revoke = suite.indexOf("revokeMessage(revokeKey")
+  assert.ok(localDelete >= 0 && failure > localDelete)
+  assert.ok(revoke > failure, 'later producers must still execute after a local-delete readback failure')
+  for (const apiName of ['revokeMessage', 'deleteMessage', 'insertSingleMessageToLocalStorage', 'insertGroupMessageToLocalStorage', 'deleteAllMsgFromLocal', 'deleteAllMsgFromLocalAndSvr']) {
+    assert.match(suite, new RegExp(`recordAutomationSideEffectFailure\\('message-storage', '${apiName}Readback'`))
+  }
+})
+
+test('successful public calls emit semantic evidence only after response validation', () => {
+	assert.match(page, /OpenIMLoginStatusLogged,/)
+  const runner = functionSource('runAutomationStepWithTimeout')
+  const callback = runner.indexOf('onSuccess(value)')
+  const validation = runner.indexOf('validateAutomationResponse(name, value)')
+  const merge = runner.indexOf('mergeAutomationValidationEvidence(name, validation, evidence)')
+  const record = runner.indexOf("recordAutomationCase(group, name, 'passed'")
+  assert.ok(callback >= 0)
+  assert.ok(validation > callback, 'scenario callback checks must finish before evidence validation')
+  assert.ok(merge > validation, 'validated response must be merged into contract evidence')
+  assert.ok(record > merge, 'a passing case must be recorded only after evidence is built')
+
+  const responseValidation = functionSource('validateAutomationResponse')
+  assert.match(responseValidation, /validateAutomationCreatedMessage\(name, value\)/)
+  assert.match(responseValidation, /getUsersInfo did not contain both automation accounts/)
+	assert.match(responseValidation, /const expectedStatus = automationLoggedIn \? OpenIMLoginStatusLogged : 1/)
+  assert.match(responseValidation, /did not contain the active scenario conversationID/)
+  assert.match(responseValidation, /totalCount below its observed message count/)
+  assert.match(responseValidation, /uploadFile returned neither url nor uri/)
+	assert.match(responseValidation, /semanticValidated: found/)
+  assert.doesNotMatch(responseValidation, /return \{ structureValidated: true, semanticValidated: true \}\s*$/)
+
+  const mergeEvidence = functionSource('mergeAutomationValidationEvidence')
+  assert.match(mergeEvidence, /if \(validation\.semanticValidated && !evidence\.semanticValidated\)/)
+  assert.match(mergeEvidence, /requireAutomationSemanticProfile\(apiName\)/)
+  assert.match(mergeEvidence, /'scenario-semantics'/)
+
+	const messageSend = functionSource('runAutomationMessageSendSuite')
+	assert.match(messageSend, /while \(Date\.now\(\) - historyStartedAt < automationSideEffectTimeoutMilliseconds/)
+	assert.match(messageSend, /sendMessagePeerReadback/)
+	assert.match(messageSend, /sendMessageNotOssPeerReadback/)
+	assert.match(functionSource('waitAutomationSubscribedStatus'), /automationSideEffectTimeoutMilliseconds/)
 })
 
 test('suiteFilter runs one public automation suite without applying full-run coverage gates', () => {

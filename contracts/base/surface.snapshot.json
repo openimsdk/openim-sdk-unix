@@ -1191,7 +1191,7 @@
     {
       "id": 1084,
       "name": "OpenIMVideoElem",
-      "signatureHash": "aa263f920958c6d75d1d3254f6c18e904248901bc49a832c5e70a5d7bf52678e"
+      "signatureHash": "39ba56f19ec63aae1daef347011a6329a1966cc7244253b2ac765fbccef035a0"
     },
     {
       "id": 1085,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "42ec23fb331518e1900b1f6edb87870ec0d503f377bba48e006ec6b8c4c1b56d"
+  "contractHash": "09edccfc09a4d3cad353feb89446cf3265ff896abe4b5de4f22fc05f2b29a49d"
 }

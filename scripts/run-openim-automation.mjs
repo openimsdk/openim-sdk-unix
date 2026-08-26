@@ -17,6 +17,7 @@ import {
   inspectAndroidBase,
   iosBaseHasWebSocket,
 } from './lib/local-base-inspection.mjs';
+import { hashNativeArtifact } from './lib/native-artifact-hash.mjs';
 
 const projectRoot = resolve(new URL('..', import.meta.url).pathname);
 const platform = process.argv[2] || '';
@@ -50,6 +51,15 @@ function stageAutomationSuiteFilter() {
   originalAutomationFixture = readFileSync(automationFixturePath);
   const fixture = JSON.parse(originalAutomationFixture.toString('utf8'));
   fixture.suiteFilter = requestedSuiteFilter;
+  writeFileSync(automationFixturePath, `${JSON.stringify(fixture, null, 2)}\n`, { mode: 0o600 });
+}
+
+function stagePublicPeerCoreAuthority(coreRoot) {
+  if (!existsSync(automationFixturePath)) {
+    fail('Public peer Core authority requires the local automation fixture');
+  }
+  const fixture = JSON.parse(readFileSync(automationFixturePath, 'utf8'));
+  fixture._publicPeerCoreRoot = realpathSync(coreRoot);
   writeFileSync(automationFixturePath, `${JSON.stringify(fixture, null, 2)}\n`, { mode: 0o600 });
 }
 
@@ -380,7 +390,7 @@ function readPublicCoreAuthority(platformName, sdkRoot, lock) {
   const expectedNativeSha256 = String(platformName === 'ios' ? platformLock?.localOverrideInventorySha256 : platformLock?.sha256 || '');
   const nativeArtifactPath = resolve(sdkRoot, String(platformLock?.localOverridePath || ''));
   if (!/^[0-9a-f]{64}$/.test(expectedNativeSha256) || !existsSync(nativeArtifactPath)) fail(`locked ${nativeArtifactKind} authority is missing`);
-  const nativeArtifactSha256 = hashArtifact(nativeArtifactPath);
+  const nativeArtifactSha256 = hashNativeArtifact(nativeArtifactPath, nativeArtifactKind);
   if (nativeArtifactSha256 !== expectedNativeSha256) fail(`local ${nativeArtifactKind} does not match toolchain.lock.json`);
   return { ...core, root: coreRoot, nativeArtifactKind, nativeArtifactSha256 };
 }
@@ -479,6 +489,7 @@ if (sdkAuthority.dirty) fail('Public SDK authority must be clean before runtime 
 const toolchainLock = readToolchainLock();
 const hbuilderxAuthority = readHBuilderToolchainAuthority(toolchainLock);
 const coreAuthority = readPublicCoreAuthority(platform, sdkAuthorityRoot, toolchainLock);
+stagePublicPeerCoreAuthority(coreAuthority.root);
 const runManifest = {
   schemaVersion: 1,
   runId,

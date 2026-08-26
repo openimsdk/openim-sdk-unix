@@ -10,6 +10,7 @@ static/openim-test-config.json
 test-results/
 openim-automation-assets/
 openim-automation-results/
+logs/
 
 # Private HarmonyOS commercial support
 uni_modules/unix-openim-sdk/utssdk/app-harmony/

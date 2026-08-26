@@ -73,17 +73,37 @@ test('generated interface declares every public constant and callable', () => {
 
 test('generated automation profile registry matches every callable disposition', () => {
   const disposition = JSON.parse(readFileSync(resolve(root, 'contracts/base/test-disposition.json'), 'utf8')) as {
-    callables: Array<{ apiName: string; semanticProfile: string; sideEffectProbe: string; validationAxes: string[] }>
+    callables: Array<{
+      apiName: string
+      semanticProfile: string
+      sideEffectProbe: string
+      negativeProfiles: string[]
+      negativeProducers: Array<{ profile: string; producer: { key: string; suite: string; scenario: string; platforms: string[] } }>
+      cleanupAction: string
+      cleanupRule?: string
+      cleanupProducer?: { key: string; suite: string; scenario: string; platforms: string[] }
+      validationAxes: string[]
+      validationAxesByPlatform: { android: string[]; ios: string[]; harmony: string[] }
+    }>
   }
   const output = buildGeneratedOutputs(root).find((item) => item.path === resolve(root, 'pages/index/openim-automation-profiles.uts'))
   assert.ok(output, 'automation profile registry must be a generated output')
+  const producerSource = (producer: { key: string; suite: string; scenario: string; platforms: string[] }) => (
+    `{ key: ${JSON.stringify(producer.key)}, suite: ${JSON.stringify(producer.suite)}, scenario: ${JSON.stringify(producer.scenario)}, platforms: [${producer.platforms.map((platform) => JSON.stringify(platform)).join(', ')}] }`
+  )
+  const axesByPlatformSource = (axes: { android: string[]; ios: string[]; harmony: string[] }) => (
+    `{ android: [${axes.android.map((axis) => JSON.stringify(axis)).join(', ')}], ios: [${axes.ios.map((axis) => JSON.stringify(axis)).join(', ')}], harmony: [${axes.harmony.map((axis) => JSON.stringify(axis)).join(', ')}] }`
+  )
   for (const item of disposition.callables) {
-    const axes = item.validationAxes.map((axis) => `'${axis}'`).join(', ')
-    assert.match(
-      output.content,
-      new RegExp(`apiName: '${item.apiName}', semanticProfile: '${item.semanticProfile}', sideEffectProbe: '${item.sideEffectProbe}', validationAxes: \\[${axes}\\]`),
-    )
+    const negativeProfiles = `[${item.negativeProfiles.map((profile) => JSON.stringify(profile)).join(', ')}]`
+    const negativeProducers = `[${item.negativeProducers.map((value) => `{ profile: ${JSON.stringify(value.profile)}, producer: ${producerSource(value.producer)} }`).join(', ')}]`
+    const cleanupProducer = item.cleanupProducer == null
+      ? 'null'
+      : `{ action: ${JSON.stringify(item.cleanupAction)}, rule: ${JSON.stringify(item.cleanupRule ?? '')}, producer: ${producerSource(item.cleanupProducer)} }`
+    const expected = `{ apiName: ${JSON.stringify(item.apiName)}, semanticProfile: ${JSON.stringify(item.semanticProfile)}, sideEffectProbe: ${JSON.stringify(item.sideEffectProbe)}, negativeProfiles: ${negativeProfiles}, negativeProducers: ${negativeProducers}, cleanupAction: ${JSON.stringify(item.cleanupAction)}, cleanupRule: ${JSON.stringify(item.cleanupRule ?? '')}, cleanupProducer: ${cleanupProducer}, validationAxes: [${item.validationAxes.map((axis) => JSON.stringify(axis)).join(', ')}], validationAxesByPlatform: ${axesByPlatformSource(item.validationAxesByPlatform)} }`
+    assert.ok(output.content.includes(expected), `missing generated callable profile: ${item.apiName}`)
   }
   assert.match(output.content, /validationAxes : Array<string>/)
+  assert.match(output.content, /validationAxesByPlatform : OpenIMAutomationValidationAxesByPlatform \| null/)
   assert.equal((output.content.match(/apiName:/g) ?? []).length, disposition.callables.length)
 })
