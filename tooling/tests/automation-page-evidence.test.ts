@@ -394,6 +394,17 @@ test('message event correlations preserve stage identity and correlation ownersh
   )
 })
 
+test('identity correlations skip unrelated same-event noise inside the operation window', () => {
+  const finder = functionSource('findAutomationEventOccurrenceByPayloadIdentity')
+  assert.match(finder, /occurrence\.sequence > afterSequence/)
+  assert.match(finder, /readAutomationEventPayloadIdentity\(eventName, occurrence\.payloadText\) == payloadIdentity/)
+
+  const correlations = functionSource('buildAutomationEventCorrelations')
+  assert.match(correlations, /findAutomationEventOccurrenceByPayloadIdentity\(eventName, occurrenceEpoch, afterSequence, payloadIdentity\)/)
+  assert.match(correlations, /correlationKind == 'operation-payload-identity'/)
+  assert.match(correlations, /correlationKind == 'cross-account-payload-identity'/)
+})
+
 test('quitGroup waits until the secondary account can observe membership', () => {
   const suite = functionSource('runAutomationGroupSuite')
   const created = suite.indexOf("createGroup(quitGroupParams, 'uvue_auto_quit_group_create')")

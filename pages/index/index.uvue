@@ -1556,6 +1556,19 @@
 		return null
 	}
 
+	function findAutomationEventOccurrenceByPayloadIdentity(eventName : string, epoch : number, afterSequence : number, payloadIdentity : string) : OpenIMAutomationEventOccurrence | null {
+		if (payloadIdentity.length == 0) { return null }
+		let index = 0
+		while (index < automationEventOccurrences.length) {
+			const occurrence = automationEventOccurrences[index]
+			if (occurrence.eventName == eventName && (epoch <= 0 || occurrence.epoch == epoch) && occurrence.sequence > afterSequence && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity) {
+				return occurrence
+			}
+			index = index + 1
+		}
+		return null
+	}
+
 	function beginAutomationOperation(apiName : string, payloadNeedle : string | null = null, exclusiveOperation : boolean | null = null) {
 		automationEvidenceSequenceCounter = automationEvidenceSequenceCounter + 1
 		let exclusive = exclusiveOperation == true
@@ -1723,7 +1736,7 @@
 		while (index < expectedEvents.length) {
 			const eventName = expectedEvents[index]
 			const occurrenceEpoch = eventName == 'onRecvNewMessage' ? 0 : window.operationEpoch
-			const occurrence = findAutomationEventOccurrence(eventName, occurrenceEpoch, afterSequence)
+			let occurrence = findAutomationEventOccurrence(eventName, occurrenceEpoch, afterSequence)
 			if (occurrence == null) { return correlations }
 			let correlationKind = 'lifecycle-order'
 			let payloadIdentity = ''
@@ -1743,6 +1756,13 @@
 			} else if (apiName == 'uploadFile' || apiName == 'uploadLogs') {
 				correlationKind = 'exclusive-operation-window'
 				payloadMatched = window.exclusiveOperation && window.terminalSequence > occurrence.sequence
+			}
+			if (payloadMatched == false && payloadIdentity.length > 0 && (correlationKind == 'operation-payload-identity' || correlationKind == 'cross-account-payload-identity')) {
+				const exactOccurrence = findAutomationEventOccurrenceByPayloadIdentity(eventName, occurrenceEpoch, afterSequence, payloadIdentity)
+				if (exactOccurrence != null) {
+					occurrence = exactOccurrence
+					payloadMatched = true
+				}
 			}
 			const correlation : OpenIMAutomationEventCorrelation = {
 				operationApiName: apiName,
