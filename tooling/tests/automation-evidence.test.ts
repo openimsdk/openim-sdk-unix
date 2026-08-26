@@ -51,6 +51,50 @@ test('runtime summary structure verifier is self-contained and fails closed on d
   assert.equal(failed.failures[0]?.issues[0]?.rule, 'finite-number')
 })
 
+test('runtime summary schema verifier selects the matching object union branch', () => {
+  const disposition = {
+    callables: [{ apiName: 'readNullableObject', validationAxes: ['completion', 'structure'] }],
+  }
+  const responseSchemas = {
+    schemas: {},
+    callables: {
+      readNullableObject: {
+        codec: 'object',
+        schema: {
+          kind: 'union',
+          options: [
+            { kind: 'null' },
+            {
+              kind: 'object',
+              fields: {
+                count: { required: true, schema: { kind: 'number' } },
+              },
+            },
+          ],
+        },
+      },
+    },
+  }
+  const result = verifyAutomationSummaryStructure({
+    report: {
+      cases: [{
+        caseId: 'app/readNullableObject',
+        apiName: 'readNullableObject',
+        status: 'passed',
+        resolved: true,
+        responseEvidence: true,
+        responseDetail: '{"count":true}',
+      }],
+    },
+    responseSchemas,
+    disposition,
+  })
+
+  assert.equal(result.passed, false)
+  assert.equal(result.failures[0]?.issues[0]?.path, '$.count')
+  assert.equal(result.failures[0]?.issues[0]?.rule, 'finite-number')
+})
+
 test('filtered runs ignore incidental infrastructure evidence but still validate selected suite cases', () => {
   const selectedCase = {
     group: 'app',

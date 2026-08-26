@@ -22,6 +22,42 @@ import {
   OpenIMUploadProgress
 } from '../interface.uts'
 
+const rememberedOpenIMMessageIDs : Array<string> = []
+const rememberedOpenIMMessageJSON : Array<string> = []
+const rememberedOpenIMMessageLimit : number = 256
+
+function readRememberedOpenIMMessageJSON(message : OpenIMMessageItem) : string | null {
+  if (message.clientMsgID == null || (message.clientMsgID as string).length == 0) { return null }
+  const clientMsgID = message.clientMsgID as string
+  let index = rememberedOpenIMMessageIDs.length - 1
+  while (index >= 0) {
+    if (rememberedOpenIMMessageIDs[index] == clientMsgID) { return rememberedOpenIMMessageJSON[index] }
+    index = index - 1
+  }
+  return null
+}
+
+export function rememberOpenIMMessageJSON(message : OpenIMMessageItem | null, data : string) {
+  if (message == null || message.clientMsgID == null || (message.clientMsgID as string).length == 0) { return }
+  const json = data.trim()
+  if (json.length < 2 || json.substring(0, 1) != '{' || json.substring(json.length - 1) != '}') { return }
+  const clientMsgID = message.clientMsgID as string
+  let index = rememberedOpenIMMessageIDs.length - 1
+  while (index >= 0) {
+    if (rememberedOpenIMMessageIDs[index] == clientMsgID) {
+      rememberedOpenIMMessageJSON[index] = json
+      return
+    }
+    index = index - 1
+  }
+  rememberedOpenIMMessageIDs.push(clientMsgID)
+  rememberedOpenIMMessageJSON.push(json)
+  if (rememberedOpenIMMessageIDs.length > rememberedOpenIMMessageLimit) {
+    rememberedOpenIMMessageIDs.shift()
+    rememberedOpenIMMessageJSON.shift()
+  }
+}
+
 export function stringifyOpenIMPicture(value : OpenIMPicture | null) : string {
   if (value == null) { return '{}' }
   let text = ''
@@ -374,12 +410,14 @@ function stringifyOpenIMMessageItem(message : OpenIMMessageItem) : string {
 
 export function stringifyOpenIMMessage(message : OpenIMMessageItem | null) : string {
   if (message == null) { return '{}' }
+  const remembered = readRememberedOpenIMMessageJSON(message as OpenIMMessageItem)
+  if (remembered != null) { return remembered as string }
   return stringifyOpenIMMessageItem(message as OpenIMMessageItem)
 }
 
 export function stringifyOpenIMMessageList(messages : Array<OpenIMMessageItem>) : string {
   const items : Array<string> = []
-  messages.forEach((message : OpenIMMessageItem) => { items.push(stringifyOpenIMMessageItem(message)) })
+  messages.forEach((message : OpenIMMessageItem) => { items.push(stringifyOpenIMMessage(message)) })
   return '[' + items.join(',') + ']'
 }
 
@@ -387,4 +425,3 @@ export function stringifyOpenIMMessagePayload(value : any | null) : string {
   if (value == null) { return '{}' }
   if (value instanceof Array) { return stringifyOpenIMMessageList(value as Array<OpenIMMessageItem>) }
   return stringifyOpenIMMessage(value as OpenIMMessageItem)
-

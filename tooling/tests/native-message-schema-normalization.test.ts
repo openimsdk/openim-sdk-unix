@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const common = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/common/native-call-common.uts'), 'utf8')
 const ios = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/native-call.uts'), 'utf8')
+const iosIndex = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-ios/index.uts'), 'utf8')
+const androidIndex = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/app-android/index.uts'), 'utf8')
 const writerSource = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/utssdk/common/message-json-writer.uts'), 'utf8')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as {
   types: Array<{ name: string; declaration: string }>
@@ -32,4 +34,21 @@ test('typed native messages are reconstructed through the declared public messag
   assert.match(parser, /parseNativeMessageItem\(typedRaw, helpers\)/)
   assert.doesNotMatch(parser, /return typedMessage\s*}/)
   assert.doesNotMatch(parser, /return typedList\[0\]\s*}/)
+})
+
+test('iOS preserves canonical native message JSON for later sends and evidence', () => {
+  assert.match(writerSource, /export function rememberOpenIMMessageJSON/)
+  assert.match(writerSource, /readRememberedOpenIMMessageJSON/)
+  assert.match(writerSource, /items\.push\(stringifyOpenIMMessage\(message\)\)/)
+  assert.match(ios, /rememberOpenIMMessageJSON\(message, itemJSON\)/)
+  assert.match(ios, /rememberNativeMessageListJSON\(result\.messages, data\)/)
+})
+
+test('quote producers preserve the public canonical message JSON string contract', () => {
+  for (const source of [iosIndex, androidIndex]) {
+    const quote = source.match(/export const createQuoteMessage[\s\S]*?export const createAdvancedQuoteMessage/)?.[0] ?? ''
+    const advanced = source.match(/export const createAdvancedQuoteMessage[\s\S]*?export const createAdvancedTextMessage/)?.[0] ?? ''
+    assert.match(quote, /stringifyJSON\(params\.message\)/)
+    assert.match(advanced, /stringifyJSON\(params\.message\)/)
+  }
 })

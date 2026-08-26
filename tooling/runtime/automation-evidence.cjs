@@ -268,6 +268,28 @@ function schemaIssue(path, rule, expected, actual, severity = 'error') {
   return { path, rule, expected, actual, severity }
 }
 
+function schemaMatchesActualKind(document, schema, value, referenceStack = []) {
+  if (!isRecord(schema) || typeof schema.kind !== 'string') return false
+  if (schema.kind === 'any') return true
+  if (schema.kind === 'void') return value === undefined || value === null
+  if (schema.kind === 'string' || schema.kind === 'boolean') return typeof value === schema.kind
+  if (schema.kind === 'number') return typeof value === 'number'
+  if (schema.kind === 'null') return value === null
+  if (schema.kind === 'literal') return typeof value === typeof schema.value
+  if (schema.kind === 'array') return Array.isArray(value)
+  if (schema.kind === 'string-map' || schema.kind === 'object') return value != null && typeof value === 'object' && !Array.isArray(value)
+  if (schema.kind === 'union') {
+    return Array.isArray(schema.options) && schema.options.some((option) => schemaMatchesActualKind(document, option, value, referenceStack))
+  }
+  if (schema.kind === 'reference') {
+    const schemas = isRecord(document.schemas) ? document.schemas : {}
+    const target = schemas[schema.name]
+    if (!isRecord(target) || referenceStack.includes(schema.name)) return true
+    return schemaMatchesActualKind(document, target, value, [...referenceStack, schema.name])
+  }
+  return false
+}
+
 function validateSchemaValue(document, schema, value, path = '$', referenceStack = []) {
   if (!isRecord(schema) || typeof schema.kind !== 'string') {
     return [schemaIssue(path, 'schema', 'declared schema', 'malformed schema')]
@@ -295,9 +317,14 @@ function validateSchemaValue(document, schema, value, path = '$', referenceStack
     if (!Array.isArray(schema.options) || schema.options.length === 0) {
       return [schemaIssue(path, 'union', 'at least one option', 'empty union')]
     }
-    const attempts = schema.options.map((option) => validateSchemaValue(document, option, value, path, referenceStack))
-    const ranked = attempts
-      .map((issues, index) => ({
+    const attempts = schema.options.map((option, index) => ({
+      issues: validateSchemaValue(document, option, value, path, referenceStack),
+      index,
+      matchesActualKind: schemaMatchesActualKind(document, option, value, referenceStack),
+    }))
+    const matchingAttempts = attempts.filter((attempt) => attempt.matchesActualKind)
+    const ranked = (matchingAttempts.length === 0 ? attempts : matchingAttempts)
+      .map(({ issues, index }) => ({
         issues,
         index,
         errors: issues.filter((item) => item.severity === 'error').length,

@@ -1,5 +1,6 @@
 import { UTSiOS } from 'DCloudUTSFoundation'
 import { normalizeOperationID, stringifyJSON, rejectNativeError, readNativeValue, NativeParserHelpers, buildJSONField, stringifyJSONString, stringifyJSONNumber, stringifyJSONBoolean, appendJSONText, appendOptionalJSONStringText, appendOptionalJSONNumberText, appendOptionalJSONBooleanText, stringifyStringList, stringifyOpenIMMessageEntityList, parseNativeUploadFileResultCommon, parseNativeUploadFileProgressEventCommon, parseNativeUploadLogsProgressEventCommon, parseNativeSendMessageProgressEventCommon, parseNativeConversationEventListCommon, parseNativeConversationObjectCommon, parseNativeConversationListResultCommon, parseNativeConversationListResultFallbackCommon, parseNativeUserListResultCommon, parseNativeUserObjectCommon, parseNativeUserStatusListResultCommon, parseNativeUserStatusEventListCommon, parseNativeCheckFriendResultCommon, parseNativeFriendListResultCommon, parseNativeFriendListResultFallbackCommon, parseNativeFriendObjectCommon, parseNativeBlackListResultCommon, parseNativeBlackUserObjectCommon, parseNativeGroupListResultCommon, parseNativeGroupListResultFallbackCommon, parseNativeGroupObjectCommon, parseNativeGroupMemberListResultCommon, parseNativeGroupMemberListResultFallbackCommon, parseNativeGroupMemberObjectCommon, parseNativeFriendApplicationListResultCommon, parseNativeFriendApplicationListResultFallbackCommon, parseNativeFriendApplicationObjectCommon, parseNativeGroupApplicationListResultCommon, parseNativeGroupApplicationListResultFallbackCommon, parseNativeGroupApplicationObjectCommon, parseNativeConversationInputStatusCommon, parseNativeMessageCommon, parseNativeAdvancedHistoryMessageListCommon, parseNativeAdvancedHistoryMessageListFallbackCommon, parseNativeMessageEventListCommon, parseNativeMessageEventListFallbackCommon, parseNativeFindMessageResultCommon, parseNativeMessageListResultCommon, parseNativeSearchMessageResultCommon, parseNativeMessageRevokedCommon, parseNativeMessageReceiptListCommon, parseNativeLoginStatusCommon } from '../common/native-call-common.uts'
+import { rememberOpenIMMessageJSON } from '../common/message-json-writer.uts'
 export { normalizeOperationID, stringifyJSON, rejectNativeError, stringifyOpenIMMessageEntityList }
 import {
   OpenIMInitConfig,
@@ -97,20 +98,46 @@ export function normalizeInitConfig(config : OpenIMInitConfig) : string {
 
 export function parseNativeMessage(data : string) : OpenIMMessageItem | null {
   const message = parseNativeMessageCommon(data, getNativeParserHelpers())
-  if (message == null || (message.content != null && (message.content as string).length > 0)) {
-    return message
-  }
-  const raw = parseNativeAny(data)
-  if (raw instanceof UTSJSONObject) {
-    const atTextElem = readNativeValue(raw, 'atTextElem')
-    if (atTextElem instanceof UTSJSONObject) {
-      const content = JSON.stringify(atTextElem)
-      if (content != null) {
-        message.content = content as string
+  if (message == null) { return null }
+  if (message.content == null || (message.content as string).length == 0) {
+    const raw = parseNativeAny(data)
+    if (raw instanceof UTSJSONObject) {
+      const atTextElem = readNativeValue(raw, 'atTextElem')
+      if (atTextElem instanceof UTSJSONObject) {
+        const content = JSON.stringify(atTextElem)
+        if (content != null) {
+          message.content = content as string
+        }
       }
     }
   }
+  rememberNativeMessageJSON(message, data)
   return message
+}
+
+function rememberNativeMessageJSON(message : OpenIMMessageItem, data : string) {
+  const trimmed = data.trim()
+  if (trimmed.substring(0, 1) != '[') {
+    rememberOpenIMMessageJSON(message, trimmed)
+    return
+  }
+  const framed = NativeOpenIMSDK.splitJSONObjectArray(trimmed)
+  if (framed == null || (framed as string).length == 0) { return }
+  const itemJSON = (framed as string).split('\n')[0]
+  rememberOpenIMMessageJSON(message, itemJSON)
+}
+
+function rememberNativeMessageListJSON(messages : Array<OpenIMMessageItem>, data : string) {
+  const framed = NativeOpenIMSDK.splitJSONObjectArray(data)
+  if (framed == null) { return }
+  const text = framed as string
+  if (text.length == 0) { return }
+  const itemJSONList = text.split('\n')
+  let index = 0
+  while (index < messages.length && index < itemJSONList.length) {
+    rememberOpenIMMessageJSON(messages[index], itemJSONList[index])
+    index = index + 1
+  }
 }
 
 export function readStringParam(value : any | null, key : string) : string {
@@ -335,7 +362,11 @@ export function parseNativeAdvancedHistoryMessageList(data : string) : OpenIMAdv
 
 export function parseNativeAdvancedHistoryMessageListFallback(data : string) : OpenIMAdvancedHistoryMessageListResult | null { return parseNativeAdvancedHistoryMessageListFallbackCommon(data, getNativeParserHelpers()) }
 
-export function parseNativeMessageEventList(data : string) : OpenIMMessageListResult | null { return parseNativeMessageEventListCommon(data, getNativeParserHelpers()) }
+export function parseNativeMessageEventList(data : string) : OpenIMMessageListResult | null {
+  const result = parseNativeMessageEventListCommon(data, getNativeParserHelpers())
+  if (result != null) { rememberNativeMessageListJSON(result.messages, data) }
+  return result
+}
 
 export function parseNativeMessageEventListFallback(data : string) : OpenIMMessageListResult | null { return parseNativeMessageEventListFallbackCommon(data, getNativeParserHelpers()) }
 
