@@ -1,7 +1,9 @@
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const { execFileSync } = require('child_process')
+const readline = require('readline')
+const { execFileSync, spawn } = require('child_process')
+const { randomUUID } = require('crypto')
 const { formatAutomationEvidenceIssues, validateAutomationEvidence } = require('../../tooling/runtime/automation-evidence.cjs')
 
 const projectRoot = path.resolve(__dirname, '../..')
@@ -14,6 +16,170 @@ const runTimeoutMs = Number(process.env.OPENIM_AUTOMATION_TIMEOUT_MS || 20 * 60 
 jest.setTimeout(runTimeoutMs + 60 * 1000)
 
 const artifactDir = path.join(projectRoot, 'test-results/openim-automation')
+
+function readPublicPeerPlatformID() {
+  const uniOSName = String(process.env.UNI_OS_NAME || '').toLowerCase()
+  const fallback = uniOSName === 'ios' ? 2 : 1
+  const value = Number(process.env.OPENIM_AUTOMATION_PEER_PLATFORM_ID || fallback)
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error('OPENIM_AUTOMATION_PEER_PLATFORM_ID must be a positive integer')
+  }
+  return value
+}
+
+function readPublicPeerToken(config, accountName, platformID) {
+  const token = String(config?.accounts?.[accountName]?.imTokens?.[String(platformID)] || '')
+  if (token.length === 0) {
+    throw new Error(`Public automation fixture lacks ${accountName} token for peer platform ${platformID}`)
+  }
+  return token
+}
+
+function buildPublicPeer(tempRoot) {
+  const sourceRoot = path.join(projectRoot, 'tooling/public-peer')
+  const coreRoot = path.resolve(process.env.OPENIM_AUTOMATION_PEER_CORE_ROOT || process.env.OPENIM_PUBLIC_CORE_DIR || '')
+  if (!path.isAbsolute(coreRoot) || !fs.existsSync(path.join(coreRoot, 'go.mod'))) {
+    throw new Error('Public peer requires an exact OPENIM_PUBLIC_CORE_DIR authority')
+  }
+  const status = execFileSync('git', ['-C', coreRoot, 'status', '--porcelain'], { encoding: 'utf8' })
+  if (status.trim().length > 0) {
+    throw new Error('Public peer Core authority must be clean')
+  }
+  const buildRoot = path.join(tempRoot, 'build')
+  fs.mkdirSync(buildRoot, { recursive: true, mode: 0o700 })
+  for (const name of ['go.mod', 'go.sum', 'main.go', 'peer.go', 'protocol.go']) {
+    fs.copyFileSync(path.join(sourceRoot, name), path.join(buildRoot, name))
+  }
+  const goBinary = process.env.GO_BINARY || 'go'
+  const runGo = (args, timeout) => execFileSync(goBinary, args, {
+    cwd: buildRoot,
+    env: { ...process.env, GOTELEMETRY: 'off', GOWORK: 'off' },
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout,
+  })
+  runGo(['mod', 'edit', `-replace=github.com/openimsdk/openim-sdk-core/v3=${coreRoot}`], 30 * 1000)
+  runGo(['mod', 'verify'], 5 * 60 * 1000)
+  runGo(['test', '-mod=readonly', './...'], 5 * 60 * 1000)
+  const binaryPath = path.join(tempRoot, 'public-peer')
+  runGo(['build', '-trimpath', '-mod=readonly', '-o', binaryPath, '.'], 5 * 60 * 1000)
+  fs.chmodSync(binaryPath, 0o700)
+  return binaryPath
+}
+
+function createPublicPeerClient(binaryPath, name, loginPayload) {
+  const child = spawn(binaryPath, [], { stdio: ['pipe', 'pipe', 'pipe'] })
+  const output = readline.createInterface({ input: child.stdout })
+  const pending = new Map()
+  let sequence = 0
+  let exited = false
+  output.on('line', (line) => {
+    let response
+    try { response = JSON.parse(line) } catch { return }
+    const id = String(response.id || '')
+    const entry = pending.get(id)
+    if (entry == null) return
+    pending.delete(id)
+    clearTimeout(entry.timer)
+    if (response.ok === true) entry.resolve(response.result || {})
+    else entry.reject(new Error(`public peer ${name} command failed`))
+  })
+  child.on('exit', () => {
+    exited = true
+    for (const entry of pending.values()) {
+      clearTimeout(entry.timer)
+      entry.reject(new Error(`public peer ${name} exited`))
+    }
+    pending.clear()
+  })
+  function request(command, payload = {}, timeoutMs = 75 * 1000) {
+    if (exited) return Promise.reject(new Error(`public peer ${name} is not running`))
+    sequence += 1
+    const id = `${name}-${sequence}`
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        pending.delete(id)
+        reject(new Error(`public peer ${name} command timed out`))
+      }, timeoutMs)
+      pending.set(id, { resolve, reject, timer })
+      child.stdin.write(`${JSON.stringify({ id, command, payload })}\n`)
+    })
+  }
+  return {
+    request,
+    login: () => request('login', loginPayload),
+    shutdown: async () => {
+      if (!exited) {
+        try { await request('shutdown', {}, 10 * 1000) } catch {}
+      }
+      if (!exited) child.kill('SIGTERM')
+    },
+  }
+}
+
+async function startPublicPeerBridge(config) {
+  const tempRoot = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'openim-public-peer-'))
+  fs.chmodSync(tempRoot, 0o700)
+  const binaryPath = buildPublicPeer(tempRoot)
+  const platformID = readPublicPeerPlatformID()
+  const makePayload = (accountName) => ({
+    apiAddr: config.apiAddr,
+    wsAddr: config.wsAddr,
+    userID: config[`${accountName}UserID`],
+    token: readPublicPeerToken(config, accountName, platformID),
+    platform: platformID,
+    dataDir: path.join(tempRoot, `${accountName}-data`),
+    logFilePath: path.join(tempRoot, `${accountName}-logs`),
+    operationID: `public_peer_${accountName}_login`,
+    syncTimeoutMs: 60 * 1000,
+  })
+  const primary = createPublicPeerClient(binaryPath, 'primary', makePayload('primary'))
+  const secondary = createPublicPeerClient(binaryPath, 'secondary', makePayload('secondary'))
+  try {
+    await Promise.all([primary.login(), secondary.login()])
+  } catch (error) {
+    await Promise.allSettled([primary.shutdown(), secondary.shutdown()])
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+    throw error
+  }
+  let stopped = false
+  return {
+    pageConfig: {
+      peerBridgeEnabled: true,
+      peerBridgeRunNonce: randomUUID().replace(/-/g, ''),
+    },
+    async run(page, runNonce) {
+      let lastRequestID = ''
+      while (!stopped) {
+        const raw = await page.callMethod('handleAutomationPeerBridgeReadRequest', runNonce)
+        if (typeof raw === 'string' && raw.length > 0) {
+          const request = JSON.parse(raw)
+          const requestID = String(request.id || '')
+          if (requestID.length > 0 && requestID !== lastRequestID) {
+            const payload = request.payload && typeof request.payload === 'object' ? { ...request.payload } : {}
+            const target = payload.target === 'primary' ? primary : secondary
+            delete payload.target
+            let response
+            try {
+              const result = await target.request(request.command, payload, Number(payload.timeoutMs || 60 * 1000) + 5000)
+              response = { kind: 'response', id: requestID, ok: true, result }
+            } catch {
+              response = { kind: 'response', id: requestID, ok: false, error: { code: 'command_failed', message: 'public peer command failed' } }
+            }
+            await page.callMethod('handleAutomationPeerBridgeWriteResponse', JSON.stringify(response))
+            lastRequestID = requestID
+          }
+        }
+        if (!stopped) await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+    },
+    async stop() {
+      stopped = true
+      await Promise.allSettled([primary.shutdown(), secondary.shutdown()])
+      fs.rmSync(tempRoot, { recursive: true, force: true })
+    },
+  }
+}
 
 function isLoopbackHost(hostname) {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '::1'
@@ -194,14 +360,23 @@ describe('OpenIM SDK demo automation', () => {
 
     console.log('[openim-test] automator connected; starting OpenIM flow')
     const requestedSuiteFilter = String(config.suiteFilter || '').trim()
-    const automationConfig = { ...config, autorun: 'false', suiteFilter: requestedSuiteFilter }
+    const peerBridge = await startPublicPeerBridge(config)
+    const automationConfig = {
+      ...config,
+      ...peerBridge.pageConfig,
+      autorun: 'false',
+      suiteFilter: requestedSuiteFilter,
+    }
     await program.callUniMethod('setStorageSync', 'openim-test-config', automationConfig)
+    let peerRunPromise = null
     try {
       const page = await program.reLaunch('/pages/index/index')
       await page.waitFor(500)
 
       const baseName = createArtifactBaseName()
-      const summary = await withRunGuard(page.callMethod('handleRunAutomation'), 'OpenIM automation')
+      const pageRunPromise = withRunGuard(page.callMethod('handleRunAutomation'), 'OpenIM automation')
+      peerRunPromise = peerBridge.run(page, peerBridge.pageConfig.peerBridgeRunNonce)
+      const summary = await pageRunPromise
       if (typeof summary === 'string') {
         throw new Error('OpenIM automation returned legacy text without per-axis contract evidence')
       }
@@ -236,6 +411,8 @@ describe('OpenIM SDK demo automation', () => {
       expect(summary.logFilePath || artifacts.logPath).toBeTruthy()
       expect(String(summary.headline || summary.summaryText)).toContain('Automation passed')
     } finally {
+      await peerBridge.stop()
+      if (peerRunPromise != null) await peerRunPromise
       await program.callUniMethod('removeStorageSync', 'openim-test-config')
     }
   })

@@ -80,9 +80,12 @@ test('toolchain paths resolve from environment or verified siblings', () => {
   assert.equal(cli, '/tmp/explicit-hbuilderx-cli')
 
   const nativeRoot = resolvePublicNativeRoot(root, lock.publicNative.source)
+  const explicitNativeRoot = process.env[lock.publicNative.source.rootEnvironmentVariable]
   assert.equal(
     resolve(nativeRoot),
-    resolve(root, '..', 'openim-sdk-core-v3.8.3-locked'),
+    explicitNativeRoot == null || explicitNativeRoot === ''
+      ? resolve(root, '..', 'openim-sdk-core-v3.8.3-locked')
+      : resolve(explicitNativeRoot),
   )
 })
 

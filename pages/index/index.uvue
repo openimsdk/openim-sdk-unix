@@ -233,6 +233,7 @@
 		OpenIMMessageKeyParams,
 		OpenIMMessageListResult,
 		OpenIMMessageTypeText,
+		OpenIMMessageTypeRevokeMessage,
 		OpenIMMessageTypePicture,
 		OpenIMMessageTypeVoice,
 		OpenIMMessageTypeVideo,
@@ -943,6 +944,8 @@
 		secondaryToken : string
 		secondaryIOSToken : string
 		secondaryAndroidToken : string
+		peerBridgeEnabled : boolean
+		peerBridgeRunNonce : string
 	}
 
 	type OpenIMAutomationValidationState = {
@@ -1110,6 +1113,11 @@
 	let automationEvidenceSequenceCounter = 0
 	let automationLifecycleEpochCounter = 0
 	let automationCurrentLifecycleEpoch = 0
+	let automationPeerBridgeEnabled = false
+	let automationPeerBridgeRunNonce = ''
+	let automationPeerBridgeRequestText = ''
+	let automationPeerBridgeResponseText = ''
+	let automationPeerBridgeRequestCounter = 0
 
 	const automationDefaultStepTimeoutMilliseconds = 60000
 	const automationSendStepTimeoutMilliseconds = 30000
@@ -1199,6 +1207,12 @@
 		return 0
 	}
 
+	function readAutomationBoolean(value : UTSJSONObject, key : string) : boolean {
+		const raw = value[key]
+		if (raw != null) { return raw as boolean }
+		return false
+	}
+
 	function selectAutomationPlatformTokens(config : OpenIMAutomationConfig) : OpenIMAutomationConfig {
 		let primaryToken = config.primaryToken
 		let secondaryToken = config.secondaryToken
@@ -1229,7 +1243,9 @@
 			secondaryUserID: readAutomationString(value, 'secondaryUserID'),
 			secondaryToken: readAutomationString(value, 'secondaryToken'),
 			secondaryIOSToken: readAutomationString(value, 'secondaryIOSToken'),
-			secondaryAndroidToken: readAutomationString(value, 'secondaryAndroidToken')
+			secondaryAndroidToken: readAutomationString(value, 'secondaryAndroidToken'),
+			peerBridgeEnabled: readAutomationBoolean(value, 'peerBridgeEnabled'),
+			peerBridgeRunNonce: readAutomationString(value, 'peerBridgeRunNonce')
 		}
 		return selectAutomationPlatformTokens(config)
 	}
@@ -1377,6 +1393,11 @@
 		automationEvidenceSequenceCounter = 0
 		automationLifecycleEpochCounter = 0
 		automationCurrentLifecycleEpoch = 0
+		automationPeerBridgeEnabled = false
+		automationPeerBridgeRunNonce = ''
+		automationPeerBridgeRequestText = ''
+		automationPeerBridgeResponseText = ''
+		automationPeerBridgeRequestCounter = 0
 		updateCacheText()
 	}
 
@@ -2021,6 +2042,26 @@
 			}
 			return { structureValidated: true, semanticValidated: found }
 		}
+		if (name == 'subscribeUsersStatus') {
+			const responseText = value as string
+			const statuses = JSON.parseArray<UTSJSONObject>(responseText)
+			let found = false
+			if (statuses != null) {
+				let index = 0
+				while (index < statuses.length) {
+					const userID = statuses[index]['userID']
+					if (userID != null && (userID as string) == automationExpectedSecondaryUserID) { found = true }
+					index = index + 1
+				}
+			}
+			if (!found) { throw new Error('subscribeUsersStatus response did not contain the secondary account') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'unsubscribeUsersStatus') {
+			const encodedResponse = JSON.stringify(value)
+			if (encodedResponse == null) { throw new Error('unsubscribeUsersStatus did not return a string response') }
+			return { structureValidated: true, semanticValidated: false }
+		}
 		if (name == 'createTextMessage') {
 			const message = assertAutomationMessageItem(value as OpenIMMessageItem | null, name, false)
 			if (message.textElem == null || (message.textElem as OpenIMTextElem).content.length == 0) { throw new Error('createTextMessage returned empty textElem.content') }
@@ -2030,6 +2071,10 @@
 			const message = assertAutomationMessageItem(value as OpenIMMessageItem | null, name, true)
 			const serverMsgID = message.serverMsgID != null ? message.serverMsgID as string : ''
 			if (serverMsgID.length == 0 || message.sendID == null || message.sendID != automationActiveUserID) { throw new Error(name + ' returned an uncorrelated sender or empty serverMsgID') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'insertSingleMessageToLocalStorage' || name == 'insertGroupMessageToLocalStorage') {
+			parseAutomationInsertedMessageJSON(value as string, name)
 			return { structureValidated: true, semanticValidated: true }
 		}
 		if (name == 'getConversationIDBySessionType') {
@@ -2341,15 +2386,16 @@
 	}
 
 	function recordAutomationCase(group : string, name : string, status : string, message : string, startedAt : number, evidence : OpenIMAutomationEvidence | null = null, apiName : string | null = null, invoked : boolean | null = null, resolved : boolean | null = null, responseDetail : string | null = null, eventCorrelations : Array<OpenIMAutomationEventCorrelation> | null = null) {
-		markAutomationAPICovered(name)
+		const contractAPIName = apiName == null || (apiName as string).length == 0 ? name : apiName as string
+		markAutomationAPICovered(contractAPIName)
 		const checked = evidence == null ? emptyAutomationEvidence() : evidence as OpenIMAutomationEvidence
 		if (status == 'passed' && (checked.structureValidated || checked.semanticValidated || checked.sideEffectValidated || checked.eventCorrelated)) {
-			markAutomationAPIValidated(name)
+			markAutomationAPIValidated(contractAPIName)
 		}
 		const item : OpenIMAutomationCase = {
 			group: group,
 			name: name,
-			apiName: apiName == null || (apiName as string).length == 0 ? name : apiName as string,
+			apiName: contractAPIName,
 			status: status,
 			message: automationClip(message),
 			durationMs: new Date().getTime() - startedAt,
@@ -2480,6 +2526,138 @@
 				}
 			})
 		})
+	}
+
+	function buildAutomationPeerPayload(target : string, payload : UTSJSONObject | null) : UTSJSONObject {
+		const result : UTSJSONObject = { target: target }
+		if (payload != null) {
+			const keys = UTSJSONObject.keys(payload)
+			let index = 0
+			while (index < keys.length) {
+				const key = keys[index]
+				result[key] = payload[key]
+				index = index + 1
+			}
+		}
+		return result
+	}
+
+	async function runAutomationPeerCommand(command : string, payload : UTSJSONObject | null, timeoutMilliseconds : number | null = null) : Promise<UTSJSONObject> {
+		if (!automationPeerBridgeEnabled || automationPeerBridgeRunNonce.length == 0) {
+			throw new Error('Public automation peer bridge is required')
+		}
+		automationPeerBridgeRequestCounter = automationPeerBridgeRequestCounter + 1
+		const requestID = automationPeerBridgeRunNonce + '-' + automationPeerBridgeRequestCounter.toString()
+		const request : UTSJSONObject = { id: requestID, command: command }
+		if (payload != null) { request['payload'] = payload }
+		const requestText = JSON.stringify(request)
+		if (requestText == null) { throw new Error('Public automation peer request could not be encoded') }
+		automationPeerBridgeResponseText = ''
+		automationPeerBridgeRequestText = requestText as string
+		const timeout = timeoutMilliseconds == null ? automationDefaultStepTimeoutMilliseconds : timeoutMilliseconds as number
+		const deadline = Date.now() + timeout
+		while (Date.now() < deadline) {
+			if (automationPeerBridgeResponseText.length > 0) {
+				const response = JSON.parseObject<UTSJSONObject>(automationPeerBridgeResponseText)
+				if (response != null && response['id'] == requestID) {
+					automationPeerBridgeRequestText = ''
+					automationPeerBridgeResponseText = ''
+					if (response['ok'] != true) { throw new Error('Public automation peer command failed') }
+					const result = response['result']
+					if (result instanceof UTSJSONObject) { return result as UTSJSONObject }
+					return {}
+				}
+			}
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		automationPeerBridgeRequestText = ''
+		throw new Error('Public automation peer command timed out: ' + command)
+	}
+
+	function handleAutomationPeerBridgeReadRequest(runNonce : string) : string {
+		if (!automationPeerBridgeEnabled || runNonce != automationPeerBridgeRunNonce) { return '' }
+		return automationPeerBridgeRequestText
+	}
+
+	function handleAutomationPeerBridgeWriteResponse(responseText : string) : boolean {
+		if (!automationPeerBridgeEnabled || responseText.length == 0) { return false }
+		automationPeerBridgeResponseText = responseText
+		return true
+	}
+
+	function mapAutomationPeerEventName(peerEventName : string) : string {
+		if (peerEventName == 'OnRecvNewMessage') { return 'onRecvNewMessage' }
+		if (peerEventName == 'OnRecvC2CReadReceipt') { return 'onRecvC2CReadReceipt' }
+		if (peerEventName == 'OnNewRecvMessageRevoked') { return 'onNewRecvMessageRevoked' }
+		if (peerEventName == 'OnMsgDeleted') { return 'onMsgDeleted' }
+		if (peerEventName == 'OnFriendApplicationAdded') { return 'onFriendApplicationAdded' }
+		if (peerEventName == 'OnFriendApplicationRejected') { return 'onFriendApplicationRejected' }
+		if (peerEventName == 'OnFriendAdded') { return 'onFriendAdded' }
+		if (peerEventName == 'OnBlackAdded') { return 'onBlackAdded' }
+		if (peerEventName == 'OnJoinedGroupAdded') { return 'onJoinedGroupAdded' }
+		if (peerEventName == 'OnJoinedGroupDeleted') { return 'onJoinedGroupDeleted' }
+		if (peerEventName == 'OnGroupApplicationAdded') { return 'onGroupApplicationAdded' }
+		if (peerEventName == 'OnGroupMemberAdded') { return 'onGroupMemberAdded' }
+		if (peerEventName == 'OnGroupMemberDeleted') { return 'onGroupMemberDeleted' }
+		if (peerEventName == 'OnGroupApplicationRejected') { return 'onGroupApplicationRejected' }
+		if (peerEventName == 'OnGroupDismissed') { return 'onGroupDismissed' }
+		if (peerEventName == 'OnConversationUserInputStatusChanged') { return 'onConversationUserInputStatusChanged' }
+		if (peerEventName == 'OnUserStatusChanged') { return 'onUserStatusChanged' }
+		return peerEventName
+	}
+
+	async function captureAutomationPeerCursor(target : string) : Promise<number> {
+		const result = await runAutomationPeerCommand('event_cursor', buildAutomationPeerPayload(target, null), automationSideEffectTimeoutMilliseconds)
+		const sequence = result['seq']
+		if (sequence == null) { throw new Error('Public automation peer cursor is missing') }
+		return sequence as number
+	}
+
+	async function waitAutomationPeerOperationEvent(target : string, peerEventName : string, apiName : string, afterSequence : number, label : string) : Promise<void> {
+		const waitPayload : UTSJSONObject = {
+			name: peerEventName,
+			afterSeq: afterSequence,
+			timeoutMs: automationSideEffectTimeoutMilliseconds
+		}
+		const result = await runAutomationPeerCommand('wait_event', buildAutomationPeerPayload(target, waitPayload), automationSideEffectTimeoutMilliseconds + automationSideEffectReadTimeoutMilliseconds)
+		const payload = result['payload']
+		const payloadTextValue = JSON.stringify(payload)
+		if (payloadTextValue == null) { throw new Error(label + ' returned no event payload') }
+		const mappedEventName = mapAutomationPeerEventName(peerEventName)
+		recordSDKEventDelivery(mappedEventName, payloadTextValue as string)
+		const correlations = buildAutomationEventCorrelations(apiName, [mappedEventName])
+		let matched = correlations.length == 1
+		if (matched) { matched = correlations[0].payloadMatched }
+		const evidence = mutationAutomationEvidence(apiName, 'independent-peer-event-identity', 'cross-account-event-observed', matched)
+		recordAutomationCase('event-delivery', apiName, matched ? 'passed' : 'failed', label, new Date().getTime(), evidence, apiName, true, matched, null, correlations)
+		if (!matched) { throw new Error(label + ' did not correlate with the operation identity') }
+	}
+
+	async function waitAutomationPeerInputState(target : string, conversationID : string, userID : string, expectedPlatform : number, expectedPresent : boolean, operationPrefix : string) : Promise<void> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const payload : UTSJSONObject = {
+				conversationID: conversationID,
+				userID: userID,
+				operationID: operationPrefix + '_' + attempt.toString()
+			}
+			const result = await runAutomationPeerCommand('get_input_states', buildAutomationPeerPayload(target, payload), automationSideEffectReadTimeoutMilliseconds)
+			const rawStates = result['states']
+			let found = false
+			if (rawStates != null) {
+				const states = rawStates as Array<number>
+				let index = 0
+				while (index < states.length) {
+					if (states[index] == expectedPlatform) { found = true }
+					index = index + 1
+				}
+			}
+			if (found == expectedPresent) { return }
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('Public peer did not observe the expected input state')
 	}
 
 	async function runAutomationStepWithTimeout<T>(group : string, name : string, promise : Promise<T>, onSuccess : (value : T) => void, timeoutMilliseconds : number, evidence : OpenIMAutomationEvidence | null = null) : Promise<T> {
@@ -2804,6 +2982,54 @@
 		return params
 	}
 
+	function findAutomationHistoryMessage(history : OpenIMAdvancedHistoryMessageListResult | null, clientMsgID : string) : OpenIMMessageItem | null {
+		if (history == null) { return null }
+		let index = 0
+		while (index < history.messageList.length) {
+			if (history.messageList[index].clientMsgID == clientMsgID) { return history.messageList[index] }
+			index = index + 1
+		}
+		return null
+	}
+
+	async function waitAutomationHistoryMessageState(conversationID : string, clientMsgID : string, expectedPresent : boolean, expectedContentType : number | null, operationPrefix : string) : Promise<OpenIMMessageItem | null> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: conversationID, startClientMsgID: '', count: 100 }
+			try {
+				const history = await withAutomationTimeout<OpenIMAdvancedHistoryMessageListResult | null>(getAdvancedHistoryMessageList(params, operationPrefix + '_' + attempt.toString()), 'message-storage/getAdvancedHistoryMessageListReadback', automationSideEffectReadTimeoutMilliseconds)
+				const message = findAutomationHistoryMessage(history, clientMsgID)
+				if (!expectedPresent && message == null) { return null }
+				if (expectedPresent && message != null && (expectedContentType == null || message.contentType == expectedContentType as number)) { return message }
+			} catch (_error) {
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('message history state did not match before timeout')
+	}
+
+	async function waitAutomationMessageLocalEx(key : OpenIMMessageKeyParams, expectedLocalEx : string, operationPrefix : string) : Promise<void> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const message = await waitAutomationHistoryMessageState(key.conversationID, key.clientMsgID, true, null, operationPrefix + '_' + attempt.toString())
+			if (message != null && message.localEx == expectedLocalEx) { return }
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('message localEx did not match before timeout')
+	}
+
+	function parseAutomationInsertedMessageJSON(payloadJSON : string, method : string) : OpenIMMessageItem {
+		const message = JSON.parseObject<OpenIMMessageItem>(payloadJSON)
+		if (message == null || message.clientMsgID == null || (message.clientMsgID as string).length == 0) {
+			throw new Error(method + ' returned no concrete clientMsgID')
+		}
+		return message as OpenIMMessageItem
+	}
+
 	function findFriendApplication(result : OpenIMFriendApplicationListResult | null, fromUserID : string, toUserID : string) : OpenIMFriendApplicationItem | null {
 		if (result == null) {
 			return null
@@ -2879,6 +3105,24 @@
 		return false
 	}
 
+	function automationUserStatusEventContains(payloadText : string, userID : string) : boolean {
+		try {
+			const parsed = JSON.parseObject<UTSJSONObject>(payloadText)
+			if (parsed == null) { return false }
+			const rawStatuses = parsed['statuses']
+			if (rawStatuses == null) { return false }
+			const statuses = rawStatuses as Array<UTSJSONObject>
+			let index = 0
+			while (index < statuses.length) {
+				const rawUserID = statuses[index]['userID']
+				if (rawUserID != null && (rawUserID as string) == userID) { return true }
+				index = index + 1
+			}
+		} catch (_error) {
+		}
+		return false
+	}
+
 	async function waitAutomationSubscribedStatus(userID : string, expectedPresent : boolean, operationPrefix : string) : Promise<boolean> {
 		const startedAt = Date.now()
 		let attempt = 0
@@ -2902,7 +3146,27 @@
 		const selfReadback = await runAutomationStep<OpenIMUserInfo | null>('user-status', 'getSelfUserInfo', getSelfUserInfo('uvue_auto_self_info_readback'), (value : OpenIMUserInfo | null) => { requireAutomationUser(value, config.primaryUserID, 'getSelfUserInfo readback') })
 		requireAutomation(selfReadback != null && (selfReadback as OpenIMUserInfo).ex == selfInfo.ex, 'setSelfInfo ex was not observable through getSelfUserInfo')
 		recordAutomationSideEffect('user-status', 'setSelfInfoReadback', 'getSelfUserInfo returned the exact updated ex', false, 'setSelfInfo')
+		const statusEventSequence = readAutomationEventSequence()
 		await runAutomationStep<string>('user-status', 'subscribeUsersStatus', subscribeUsersStatus([config.secondaryUserID], 'uvue_auto_subscribe_status'), noCache)
+		let peerLoggedOut = false
+		try {
+			peerLoggedOut = true
+			await runAutomationPeerCommand('logout_session', buildAutomationPeerPayload('secondary', null), automationDefaultStepTimeoutMilliseconds)
+			const statusDeadline = Date.now() + automationSideEffectTimeoutMilliseconds
+			let statusOccurrence : OpenIMAutomationEventOccurrence | null = null
+			while (Date.now() < statusDeadline) {
+				statusOccurrence = findAutomationEventOccurrence('onUserStatusChanged', automationCurrentLifecycleEpoch, statusEventSequence)
+				if (statusOccurrence != null && automationUserStatusEventContains((statusOccurrence as OpenIMAutomationEventOccurrence).payloadText, config.secondaryUserID)) { break }
+				statusOccurrence = null
+				await sleepAutomation(automationSideEffectPollMilliseconds)
+			}
+			if (statusOccurrence == null) { throw new Error('secondary peer logout did not emit an exact user-status event') }
+			markAutomationEventEvidence('onUserStatusChanged', true, true, true)
+		} finally {
+			if (peerLoggedOut) {
+				await runAutomationPeerCommand('login_session', buildAutomationPeerPayload('secondary', null), automationDefaultStepTimeoutMilliseconds)
+			}
+		}
 		await runAutomationStep<OpenIMUserStatusListResult | null>('user-status', 'getUserStatus', getUserStatus([config.secondaryUserID], 'uvue_auto_user_status'), noCache)
 		await runAutomationStep<OpenIMUserStatusListResult | null>('user-status', 'getSubscribeUsersStatus', getSubscribeUsersStatus('uvue_auto_subscribed_status'), noCache)
 		const subscribedObserved = await waitAutomationSubscribedStatus(config.secondaryUserID, true, 'uvue_auto_subscribed_status_readback')
@@ -2991,17 +3255,21 @@
 		const message = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessage from unixsdk public automation', 'uvue_auto_create_send_text'), cacheRequiredAutomationMessage)
 		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text', message: message as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const sendClientMsgID = message != null && message.clientMsgID != null ? message.clientMsgID as string : ''
+		const secondarySendCursor = await captureAutomationPeerCursor('secondary')
 		beginAutomationOperation('sendMessage', sendClientMsgID, false)
 		const sent = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
 		const sentClientMsgID = sent.clientMsgID != null ? sent.clientMsgID as string : ''
 		completeAutomationOperation('sendMessage', sentClientMsgID)
+		await waitAutomationPeerOperationEvent('secondary', 'OnRecvNewMessage', 'sendMessage', secondarySendCursor, 'sendMessage secondary delivery')
 		const notOssMessage = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessageNotOss from unixsdk public automation', 'uvue_auto_create_send_not_oss_text'), cacheRequiredAutomationMessage)
 		const notOssOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text_not_oss', message: notOssMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const notOssClientMsgID = notOssMessage != null && notOssMessage.clientMsgID != null ? notOssMessage.clientMsgID as string : ''
+		const secondaryNotOssCursor = await captureAutomationPeerCursor('secondary')
 		beginAutomationOperation('sendMessageNotOss', notOssClientMsgID, false)
 		const sentNotOss = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessageNotOss', sendMessageNotOss(notOssOptions), cacheSentAutomationMessage)
 		const sentNotOssClientMsgID = sentNotOss.clientMsgID != null ? sentNotOss.clientMsgID as string : ''
 		completeAutomationOperation('sendMessageNotOss', sentNotOssClientMsgID)
+		await waitAutomationPeerOperationEvent('secondary', 'OnRecvNewMessage', 'sendMessageNotOss', secondaryNotOssCursor, 'sendMessageNotOss secondary delivery')
 		const id = sentClientMsgID
 		if (id.length > 0) {
 			cachedClientMsgID = id
@@ -3074,6 +3342,38 @@
 		throw new Error('conversation mutation did not become observable before timeout')
 	}
 
+	async function sendAutomationPeerUnreadMessageToPrimary(config : OpenIMAutomationConfig, label : string) : Promise<OpenIMMessageItem> {
+		const payload : UTSJSONObject = {
+			recvID: config.primaryUserID,
+			text: 'unread readback from unixsdk public automation',
+			operationID: 'uvue_auto_' + label + '_peer_send'
+		}
+		const result = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', payload), automationDefaultStepTimeoutMilliseconds)
+		const encodedMessage = JSON.stringify(result['message'])
+		if (encodedMessage == null) { throw new Error(label + ' peer send returned no message') }
+		const message = JSON.parseObject<OpenIMMessageItem>(encodedMessage as string)
+		if (message == null || message.clientMsgID == null || (message.clientMsgID as string).length == 0) {
+			throw new Error(label + ' peer send returned no concrete clientMsgID')
+		}
+		return message as OpenIMMessageItem
+	}
+
+	async function waitAutomationConversationUnreadCount(params : OpenIMGetOneConversationParams, expectPositive : boolean, operationPrefix : string) : Promise<number> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		let lastUnreadCount = -1
+		while (Date.now() < deadline) {
+			const conversation = await withAutomationTimeout<OpenIMConversationItem | null>(getOneConversation(params, operationPrefix + '_' + attempt.toString()), 'conversation/getOneConversationUnreadReadback', automationSideEffectReadTimeoutMilliseconds)
+			if (conversation != null) {
+				lastUnreadCount = conversation.unreadCount
+				if ((expectPositive && lastUnreadCount > 0) || (!expectPositive && lastUnreadCount == 0)) { return lastUnreadCount }
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('conversation unreadCount did not reach the expected state; last=' + lastUnreadCount.toString())
+	}
+
 	async function runAutomationConversationSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await switchAutomationPrimary(config, 'A_conversation')
 		const conversationParams : OpenIMGetOneConversationParams = { sourceID: config.secondaryUserID, sessionType: OpenIMSessionTypeSingle }
@@ -3120,7 +3420,16 @@
 			}
 		}
 		const inputParams : OpenIMInputStateParams = { conversationID: automationConversationID, userID: config.secondaryUserID, focus: true }
+		let automationAppPlatform = OpenIMPlatformIOS
+		// #ifdef APP-ANDROID
+		automationAppPlatform = OpenIMPlatformAndroid
+		// #endif
 		await runAutomationStep<string>('conversation', 'changeInputStates', changeInputStates(inputParams, 'uvue_auto_change_input'), noCache)
+		await waitAutomationPeerInputState('secondary', automationConversationID, config.primaryUserID, automationAppPlatform, true, 'uvue_auto_peer_input_readback')
+		recordAutomationSideEffect('conversation', 'changeInputStatesPeerReadback', 'independent secondary Core observed the active app platform input state', false, 'changeInputStates')
+		const inputCleanupParams : OpenIMInputStateParams = { conversationID: automationConversationID, userID: config.secondaryUserID, focus: false }
+		await withAutomationTimeout<string>(changeInputStates(inputCleanupParams, 'uvue_auto_change_input_cleanup'), 'conversation/changeInputStatesCleanup', automationDefaultStepTimeoutMilliseconds)
+		await waitAutomationPeerInputState('secondary', automationConversationID, config.primaryUserID, automationAppPlatform, false, 'uvue_auto_peer_input_cleanup')
 		const historyParams : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: automationConversationID, startClientMsgID: '', count: 20 }
 		await runAutomationStep<OpenIMAdvancedHistoryMessageListResult | null>('conversation', 'getAdvancedHistoryMessageList', getAdvancedHistoryMessageList(historyParams, 'uvue_auto_history'), (value : OpenIMAdvancedHistoryMessageListResult | null) => { requireAutomationHistory(value, cachedClientMsgID); cacheHistory(value) })
 		const searchParams : OpenIMSearchLocalMessagesParams = { conversationID: automationConversationID, keywordList: ['automation'], keywordListMatchType: 0, senderUserIDList: [], messageTypeList: [OpenIMMessageTypeText], searchTimePosition: 0, searchTimePeriod: 0, pageIndex: 1, count: 20 }
@@ -3131,45 +3440,70 @@
 		} else {
 			recordAutomationSkip('conversation', 'findMessageList', 'no cached clientMsgID')
 		}
+		const readReceiptMessage = await sendAutomationPeerUnreadMessageToPrimary(config, 'mark_conversation_read')
+		const readReceiptClientMsgID = readReceiptMessage.clientMsgID as string
+		const secondaryReadReceiptCursor = await captureAutomationPeerCursor('secondary')
+		const unreadBeforeMark = await waitAutomationConversationUnreadCount(conversationParams, true, 'uvue_auto_mark_conversation_read_before')
+		beginAutomationOperation('markConversationMessageAsRead', config.primaryUserID + ':' + readReceiptClientMsgID, true)
 		await runAutomationStep<string>('conversation', 'markConversationMessageAsRead', markConversationMessageAsRead(automationConversationID, 'uvue_auto_mark_conversation_read'), noCache)
+		completeAutomationOperation('markConversationMessageAsRead', config.primaryUserID + ':' + readReceiptClientMsgID)
+		await waitAutomationPeerOperationEvent('secondary', 'OnRecvC2CReadReceipt', 'markConversationMessageAsRead', secondaryReadReceiptCursor, 'markConversationMessageAsRead sender receipt delivery')
+		const unreadAfterMark = await waitAutomationConversationUnreadCount(conversationParams, false, 'uvue_auto_mark_conversation_read_after')
+		recordAutomationSideEffect('conversation', 'markConversationMessageAsReadReadback', 'unreadCount changed from ' + unreadBeforeMark.toString() + ' to ' + unreadAfterMark.toString(), false, 'markConversationMessageAsRead')
+
+		await sendAutomationPeerUnreadMessageToPrimary(config, 'mark_all_conversations_read')
+		const unreadBeforeMarkAll = await waitAutomationConversationUnreadCount(conversationParams, true, 'uvue_auto_mark_all_read_before')
 		await runAutomationStep<string>('conversation', 'markAllConversationMessageAsRead', markAllConversationMessageAsRead('uvue_auto_mark_all_read'), noCache)
+		const unreadAfterMarkAll = await waitAutomationConversationUnreadCount(conversationParams, false, 'uvue_auto_mark_all_read_after')
+		recordAutomationSideEffect('conversation', 'markAllConversationMessageAsReadReadback', 'unreadCount changed from ' + unreadBeforeMarkAll.toString() + ' to ' + unreadAfterMarkAll.toString(), false, 'markAllConversationMessageAsRead')
 	}
 
 	async function runAutomationMessageStorageSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await switchAutomationPrimary(config, 'A_message_storage')
+		const storageConversationParams : OpenIMGetOneConversationParams = { sourceID: config.secondaryUserID, sessionType: OpenIMSessionTypeSingle }
+		await runAutomationStep<string>('message-storage', 'getConversationIDBySessionType', getConversationIDBySessionType(storageConversationParams, 'uvue_auto_storage_conversation_id'), cacheAutomationConversationID)
 		const localMessage = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('local ex from unixsdk public automation', 'uvue_auto_storage_local_ex_create'), cacheRequiredAutomationMessage)
 		const sendOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_storage_local_ex_send', message: localMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const sentLocal = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
 		const localKey = messageKeyFromMessage(sentLocal)
-		if (localKey != null) {
-			const params : OpenIMSetMessageLocalExParams = { conversationID: (localKey as OpenIMMessageKeyParams).conversationID, clientMsgID: (localKey as OpenIMMessageKeyParams).clientMsgID, localEx: 'uvue-public-local-ex' }
-			await runAutomationStep<string>('message-storage', 'setMessageLocalEx', setMessageLocalEx(params, 'uvue_auto_set_local_ex'), noCache)
-		} else {
-			recordAutomationSkip('message-storage', 'setMessageLocalEx', 'sent message key unavailable')
-		}
+		if (localKey == null) { throw new Error('setMessageLocalEx requires a concrete message key') }
+		const localExParams : OpenIMSetMessageLocalExParams = { conversationID: localKey.conversationID, clientMsgID: localKey.clientMsgID, localEx: 'uvue-public-local-ex' }
+		await waitAutomationHistoryMessageState(localKey.conversationID, localKey.clientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_set_local_ex_precondition')
+		await runAutomationStep<string>('message-storage', 'setMessageLocalEx', setMessageLocalEx(localExParams, 'uvue_auto_set_local_ex'), noCache)
+		await waitAutomationMessageLocalEx(localKey, localExParams.localEx, 'uvue_auto_set_local_ex_readback')
+		recordAutomationSideEffect('message-storage', 'setMessageLocalExReadback', 'history returned the expected localEx for the exact clientMsgID', false, 'setMessageLocalEx')
+		await runAutomationStep<string>('message-storage', 'deleteMessageFromLocalStorage', deleteMessageFromLocalStorage(localKey, 'uvue_auto_delete_local_message'), noCache)
+		await waitAutomationHistoryMessageState(localKey.conversationID, localKey.clientMsgID, false, null, 'uvue_auto_delete_local_message_readback')
+		recordAutomationSideEffect('message-storage', 'deleteMessageFromLocalStorageReadback', 'history omitted the exact locally deleted clientMsgID', false, 'deleteMessageFromLocalStorage')
+
 		const revokeMessageTarget = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('revoke from unixsdk public automation', 'uvue_auto_revoke_create'), cacheRequiredAutomationMessage)
 		const revokeOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_revoke_send', message: revokeMessageTarget as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const sentRevoke = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(revokeOptions), cacheSentAutomationMessage)
 		const revokeKey = messageKeyFromMessage(sentRevoke)
-		if (revokeKey != null) {
-			await runAutomationOptionalStep<string>('message-storage', 'revokeMessage', revokeMessage(revokeKey as OpenIMMessageKeyParams, 'uvue_auto_revoke_message'), noCache, 'sent message seq was not synced before revoke')
-		} else {
-			recordAutomationSkip('message-storage', 'revokeMessage', 'sent message key unavailable')
-		}
+		if (revokeKey == null) { throw new Error('revokeMessage requires a concrete message key') }
+		await waitAutomationHistoryMessageState(revokeKey.conversationID, revokeKey.clientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_revoke_precondition')
+		beginAutomationOperation('revokeMessage', revokeKey.clientMsgID, true)
+		await runAutomationStep<string>('message-storage', 'revokeMessage', revokeMessage(revokeKey, 'uvue_auto_revoke_message'), noCache)
+		completeAutomationOperation('revokeMessage', revokeKey.clientMsgID)
+		await waitAutomationHistoryMessageState(revokeKey.conversationID, revokeKey.clientMsgID, true, OpenIMMessageTypeRevokeMessage, 'uvue_auto_revoke_message_readback')
+		recordAutomationSideEffect('message-storage', 'revokeMessageReadback', 'history returned the exact clientMsgID as a revoke notification', false, 'revokeMessage')
+
 		const deleteMessageTarget = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('delete from unixsdk public automation', 'uvue_auto_delete_create'), cacheRequiredAutomationMessage)
 		const deleteOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_delete_send', message: deleteMessageTarget as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const sentDelete = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(deleteOptions), cacheSentAutomationMessage)
 		const deleteKey = messageKeyFromMessage(sentDelete)
-		if (deleteKey != null) {
-			await runAutomationStep<string>('message-storage', 'deleteMessageFromLocalStorage', deleteMessageFromLocalStorage(deleteKey as OpenIMMessageKeyParams, 'uvue_auto_delete_local_message'), noCache)
-			await runAutomationStep<string>('message-storage', 'deleteMessage', deleteMessage(deleteKey as OpenIMMessageKeyParams, 'uvue_auto_delete_message'), noCache)
-		} else {
-			recordAutomationSkip('message-storage', 'deleteMessageFromLocalStorage', 'sent message key unavailable')
-			recordAutomationSkip('message-storage', 'deleteMessage', 'sent message key unavailable')
-		}
+		if (deleteKey == null) { throw new Error('deleteMessage requires a concrete message key') }
+		await waitAutomationHistoryMessageState(deleteKey.conversationID, deleteKey.clientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_delete_message_precondition')
+		await runAutomationStep<string>('message-storage', 'deleteMessage', deleteMessage(deleteKey, 'uvue_auto_delete_message'), noCache)
+		await waitAutomationHistoryMessageState(deleteKey.conversationID, deleteKey.clientMsgID, false, null, 'uvue_auto_delete_message_readback')
+		recordAutomationSideEffect('message-storage', 'deleteMessageReadback', 'history omitted the exact server-deleted clientMsgID', false, 'deleteMessage')
+
 		const insertMessage = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('insert from unixsdk public automation', 'uvue_auto_insert_create'), cacheRequiredAutomationMessage)
 		const singleParams : OpenIMInsertSingleMessageParams = { message: insertMessage as OpenIMMessageItem, recvID: config.secondaryUserID, sendID: config.primaryUserID }
-		await runAutomationStep<string>('message-storage', 'insertSingleMessageToLocalStorage', insertSingleMessageToLocalStorage(singleParams, 'uvue_auto_insert_single'), noCache)
+		const insertSingleResult = await runAutomationStep<string>('message-storage', 'insertSingleMessageToLocalStorage', insertSingleMessageToLocalStorage(singleParams, 'uvue_auto_insert_single'), noCache)
+		const insertedSingleMessage = parseAutomationInsertedMessageJSON(insertSingleResult, 'insertSingleMessageToLocalStorage')
+		await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_single_readback')
+		recordAutomationSideEffect('message-storage', 'insertSingleMessageToLocalStorageReadback', 'history returned the inserted single message with exact generated clientMsgID', false, 'insertSingleMessageToLocalStorage')
 		let groupID = ''
 		const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public storage ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-storage-group' }
 		const groupParams : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
@@ -3181,11 +3515,90 @@
 			await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(seedOptions), cacheSentAutomationMessage)
 			await sleepAutomation(500)
 			const groupMessageParams : OpenIMInsertGroupMessageParams = { message: insertMessage as OpenIMMessageItem, groupID: groupID, sendID: config.primaryUserID }
-			await runAutomationStep<string>('message-storage', 'insertGroupMessageToLocalStorage', insertGroupMessageToLocalStorage(groupMessageParams, 'uvue_auto_insert_group'), noCache)
+			const groupConversationParams : OpenIMGetOneConversationParams = { sourceID: groupID, sessionType: OpenIMSessionTypeGroup }
+			const groupConversationID = await runAutomationStep<string>('message-storage', 'getConversationIDBySessionType', getConversationIDBySessionType(groupConversationParams, 'uvue_auto_storage_group_conversation_id'), noCache)
+			const insertGroupResult = await runAutomationStep<string>('message-storage', 'insertGroupMessageToLocalStorage', insertGroupMessageToLocalStorage(groupMessageParams, 'uvue_auto_insert_group'), noCache)
+			const insertedGroupMessage = parseAutomationInsertedMessageJSON(insertGroupResult, 'insertGroupMessageToLocalStorage')
+			await waitAutomationHistoryMessageState(groupConversationID, insertedGroupMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_group_readback')
+			recordAutomationSideEffect('message-storage', 'insertGroupMessageToLocalStorageReadback', 'history returned the inserted group message with exact generated clientMsgID', false, 'insertGroupMessageToLocalStorage')
+
+			await runAutomationStep<string>('message-storage', 'deleteAllMsgFromLocal', deleteAllMsgFromLocal('uvue_auto_delete_all_local'), noCache)
+			await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, false, null, 'uvue_auto_delete_all_local_single_readback')
+			await waitAutomationHistoryMessageState(groupConversationID, insertedGroupMessage.clientMsgID as string, false, null, 'uvue_auto_delete_all_local_group_readback')
+			recordAutomationSideEffect('message-storage', 'deleteAllMsgFromLocalReadback', 'single and group histories omitted both exact locally deleted clientMsgIDs', false, 'deleteAllMsgFromLocal')
+
+			const serverDeleteSingleDraft = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('server delete all single seed from unixsdk public automation', 'uvue_auto_delete_all_server_single_create'), cacheRequiredAutomationMessage)
+			const serverDeleteSingleOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_delete_all_server_single_send', message: serverDeleteSingleDraft as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+			const serverDeleteSingle = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(serverDeleteSingleOptions), cacheSentAutomationMessage)
+			const serverDeleteSingleID = serverDeleteSingle.clientMsgID == null ? '' : serverDeleteSingle.clientMsgID as string
+			if (serverDeleteSingleID.length == 0) { throw new Error('deleteAllMsgFromLocalAndSvr requires a single-message clientMsgID') }
+			await waitAutomationHistoryMessageState(automationConversationID, serverDeleteSingleID, true, OpenIMMessageTypeText, 'uvue_auto_delete_all_server_single_precondition')
+			const serverDeleteGroupDraft = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('server delete all group seed from unixsdk public automation', 'uvue_auto_delete_all_server_group_create'), cacheRequiredAutomationMessage)
+			const serverDeleteGroupOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_delete_all_server_group_send', message: serverDeleteGroupDraft as OpenIMMessageItem, recvID: '', groupID: groupID, isOnlineOnly: false }
+			const serverDeleteGroup = await runAutomationStep<OpenIMMessageItem>('message-storage', 'sendMessage', sendMessage(serverDeleteGroupOptions), cacheSentAutomationMessage)
+			const serverDeleteGroupID = serverDeleteGroup.clientMsgID == null ? '' : serverDeleteGroup.clientMsgID as string
+			if (serverDeleteGroupID.length == 0) { throw new Error('deleteAllMsgFromLocalAndSvr requires a group-message clientMsgID') }
+			await waitAutomationHistoryMessageState(groupConversationID, serverDeleteGroupID, true, OpenIMMessageTypeText, 'uvue_auto_delete_all_server_group_precondition')
+			await runAutomationStep<string>('message-storage', 'deleteAllMsgFromLocalAndSvr', deleteAllMsgFromLocalAndSvr('uvue_auto_delete_all_server'), noCache)
+			await waitAutomationHistoryMessageState(automationConversationID, serverDeleteSingleID, false, null, 'uvue_auto_delete_all_server_single_readback')
+			await waitAutomationHistoryMessageState(groupConversationID, serverDeleteGroupID, false, null, 'uvue_auto_delete_all_server_group_readback')
+			recordAutomationSideEffect('message-storage', 'deleteAllMsgFromLocalAndSvrReadback', 'single and group histories omitted both exact server-deleted clientMsgIDs', false, 'deleteAllMsgFromLocalAndSvr')
 			await runAutomationOptionalStep<string>('message-storage', 'dismissGroup', dismissGroup(groupID, 'uvue_auto_storage_group_dismiss'), noCache, 'storage group cleanup failed')
 		} else {
 			recordAutomationSkip('message-storage', 'insertGroupMessageToLocalStorage', 'storage group setup failed')
 		}
+	}
+
+	async function waitAutomationFriendState(friendUserID : string, expectedPresent : boolean, expectedEx : string, operationPrefix : string) : Promise<void> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const params : OpenIMGetSpecifiedFriendsInfoParams = { userIDList: [friendUserID], filterBlack: false }
+			try {
+				const value = await withAutomationTimeout<OpenIMFriendListResult | null>(getSpecifiedFriendsInfo(params, operationPrefix + '_' + attempt.toString()), 'friend/getSpecifiedFriendsInfoReadback', automationSideEffectReadTimeoutMilliseconds)
+				let found = false
+				let exMatched = expectedEx.length == 0
+				if (value != null) {
+					let index = 0
+					while (index < value.friends.length) {
+						const friend = value.friends[index]
+						if (friend.userID == friendUserID) {
+							found = true
+							exMatched = expectedEx.length == 0 || friend.ex == expectedEx
+						}
+						index = index + 1
+					}
+				}
+				if (found == expectedPresent && (!expectedPresent || exMatched)) { return }
+			} catch (_error) {
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('friend state did not match before timeout')
+	}
+
+	async function waitAutomationBlackState(userID : string, expectedPresent : boolean, operationPrefix : string) : Promise<void> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			try {
+				const value = await withAutomationTimeout<OpenIMBlackListResult | null>(getBlackList(operationPrefix + '_' + attempt.toString()), 'friend/getBlackListReadback', automationSideEffectReadTimeoutMilliseconds)
+				let found = false
+				if (value != null) {
+					let index = 0
+					while (index < value.blackUsers.length) {
+						if (value.blackUsers[index].userID == userID) { found = true }
+						index = index + 1
+					}
+				}
+				if (found == expectedPresent) { return }
+			} catch (_error) {
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('black-list state did not match before timeout')
 	}
 
 	async function runAutomationFriendSuite(config : OpenIMAutomationConfig) : Promise<void> {
@@ -3195,30 +3608,47 @@
 		await runAutomationOptionalStep<string>('friend', 'deleteFriend', deleteFriend(config.primaryUserID, 'uvue_auto_friend_cleanup_delete_secondary'), noCache, 'friend may not exist before automation')
 		await switchAutomationPrimary(config, 'A_friend_reject')
 		const rejectAddParams : OpenIMAddFriendParams = { toUserID: config.secondaryUserID, reqMsg: 'friend reject request from unixsdk public automation', ex: 'uvue-public-friend-reject' }
+		const secondaryRejectAddCursor = await captureAutomationPeerCursor('secondary')
+		beginAutomationOperation('addFriend', config.primaryUserID, true)
 		await runAutomationStep<string>('friend', 'addFriend', addFriend(rejectAddParams, 'uvue_auto_friend_add_reject'), noCache)
+		completeAutomationOperation('addFriend', config.primaryUserID)
+		await waitAutomationPeerOperationEvent('secondary', 'OnFriendApplicationAdded', 'addFriend', secondaryRejectAddCursor, 'addFriend reject request delivery')
 		await runAutomationStep<OpenIMFriendApplicationListResult | null>('friend', 'getFriendApplicationListAsApplicant', getFriendApplicationListAsApplicant(defaultApplicationParams(), 'uvue_auto_friend_apps_applicant_reject'), cacheFriendApplications)
 		await switchAutomationSecondary(config, 'B_friend_reject')
 		const recipientReject = await runAutomationStep<OpenIMFriendApplicationListResult | null>('friend', 'getFriendApplicationListAsRecipient', getFriendApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_friend_apps_recipient_reject'), cacheFriendApplications)
 		const rejectApplication = findFriendApplication(recipientReject, config.primaryUserID, config.secondaryUserID)
 		if (rejectApplication != null) {
 			const rejectHandle : OpenIMFriendApplicationHandleParams = { toUserID: config.primaryUserID, handleMsg: 'refused by uni-app x public automation' }
+			const primaryRejectCursor = await captureAutomationPeerCursor('primary')
+			beginAutomationOperation('refuseFriendApplication', config.primaryUserID, true)
 			await runAutomationStep<string>('friend', 'refuseFriendApplication', refuseFriendApplication(rejectHandle, 'uvue_auto_friend_refuse'), noCache)
+			completeAutomationOperation('refuseFriendApplication', config.primaryUserID)
+			await waitAutomationPeerOperationEvent('primary', 'OnFriendApplicationRejected', 'refuseFriendApplication', primaryRejectCursor, 'refuseFriendApplication applicant delivery')
 		} else {
 			recordAutomationSkip('friend', 'refuseFriendApplication', 'friend application not found')
 		}
 		await switchAutomationPrimary(config, 'A_friend_accept')
 		const acceptAddParams : OpenIMAddFriendParams = { toUserID: config.secondaryUserID, reqMsg: 'friend accept request from unixsdk public automation', ex: 'uvue-public-friend-accept' }
+		const secondaryAcceptAddCursor = await captureAutomationPeerCursor('secondary')
+		beginAutomationOperation('addFriend', config.primaryUserID, true)
 		await runAutomationStep<string>('friend', 'addFriend', addFriend(acceptAddParams, 'uvue_auto_friend_add_accept'), noCache)
+		completeAutomationOperation('addFriend', config.primaryUserID)
+		await waitAutomationPeerOperationEvent('secondary', 'OnFriendApplicationAdded', 'addFriend', secondaryAcceptAddCursor, 'addFriend accept request delivery')
 		await switchAutomationSecondary(config, 'B_friend_accept')
 		const recipientAccept = await runAutomationStep<OpenIMFriendApplicationListResult | null>('friend', 'getFriendApplicationListAsRecipient', getFriendApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_friend_apps_recipient_accept'), cacheFriendApplications)
 		const acceptApplication = findFriendApplication(recipientAccept, config.primaryUserID, config.secondaryUserID)
 		if (acceptApplication != null) {
 			const acceptHandle : OpenIMFriendApplicationHandleParams = { toUserID: config.primaryUserID, handleMsg: 'accepted by uni-app x public automation' }
+			const primaryAcceptCursor = await captureAutomationPeerCursor('primary')
+			beginAutomationOperation('acceptFriendApplication', config.primaryUserID + ':' + config.secondaryUserID, true)
 			await runAutomationStep<string>('friend', 'acceptFriendApplication', acceptFriendApplication(acceptHandle, 'uvue_auto_friend_accept'), noCache)
+			completeAutomationOperation('acceptFriendApplication', config.secondaryUserID)
+			await waitAutomationPeerOperationEvent('primary', 'OnFriendAdded', 'acceptFriendApplication', primaryAcceptCursor, 'acceptFriendApplication applicant delivery')
 		} else {
 			recordAutomationSkip('friend', 'acceptFriendApplication', 'friend application not found')
 		}
 		await switchAutomationPrimary(config, 'A_friend_verify')
+		await waitAutomationFriendState(config.secondaryUserID, true, '', 'uvue_auto_friend_accept_readback')
 		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendList', getFriendList(false, 'uvue_auto_friend_list'), cacheFriends)
 		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendListPage', getFriendListPage(defaultPageParams(), 'uvue_auto_friend_page'), cacheFriends)
 		const searchParams : OpenIMSearchFriendsParams = { keywordList: [config.secondaryUserID], isSearchUserID: true, isSearchNickname: true, isSearchRemark: true }
@@ -3227,13 +3657,24 @@
 		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getSpecifiedFriendsInfo', getSpecifiedFriendsInfo(specifiedParams, 'uvue_auto_specified_friends'), cacheFriends)
 		await runAutomationStep<OpenIMCheckFriendResult | null>('friend', 'checkFriend', checkFriend([config.secondaryUserID], 'uvue_auto_check_friend'), (value : OpenIMCheckFriendResult | null) => { requireAutomationCheckFriend(value, config.secondaryUserID) })
 		await runAutomationStep<number | null>('friend', 'getFriendApplicationUnhandledCount', getFriendApplicationUnhandledCount(defaultPageParams(), 'uvue_auto_friend_app_count'), noCache)
-		const updateParams : OpenIMUpdateFriendsParams = { friendUserIDs: [config.secondaryUserID], ex: 'uvue-public-update-friend' }
+		const updateParams : OpenIMUpdateFriendsParams = { friendUserIDs: [config.secondaryUserID], ex: 'uvue-public-update-friend-' + Date.now().toString() }
 		await runAutomationStep<string>('friend', 'updateFriends', updateFriends(updateParams, 'uvue_auto_update_friends'), noCache)
+		await waitAutomationFriendState(config.secondaryUserID, true, updateParams.ex as string, 'uvue_auto_update_friends_readback')
+		recordAutomationSideEffect('friend', 'updateFriendsReadback', 'specified friend returned the exact updated ex', false, 'updateFriends')
 		const addBlackParams : OpenIMAddBlackParams = { toUserID: config.secondaryUserID, ex: 'uvue-public-add-black' }
+		const primaryBlackCursor = await captureAutomationPeerCursor('primary')
+		beginAutomationOperation('addBlack', config.secondaryUserID, true)
 		await runAutomationStep<string>('friend', 'addBlack', addBlack(addBlackParams, 'uvue_auto_add_black'), noCache)
+		completeAutomationOperation('addBlack', config.secondaryUserID)
+		await waitAutomationPeerOperationEvent('primary', 'OnBlackAdded', 'addBlack', primaryBlackCursor, 'addBlack actor delivery')
+		await waitAutomationBlackState(config.secondaryUserID, true, 'uvue_auto_add_black_readback')
 		await runAutomationStep<OpenIMBlackListResult | null>('friend', 'getBlackList', getBlackList('uvue_auto_black_list'), noCache)
 		await runAutomationStep<string>('friend', 'removeBlack', removeBlack(config.secondaryUserID, 'uvue_auto_remove_black'), noCache)
+		await waitAutomationBlackState(config.secondaryUserID, false, 'uvue_auto_remove_black_readback')
+		recordAutomationSideEffect('friend', 'removeBlackReadback', 'black list excluded the exact removed user', false, 'removeBlack')
 		await runAutomationStep<string>('friend', 'deleteFriend', deleteFriend(config.secondaryUserID, 'uvue_auto_delete_friend'), noCache)
+		await waitAutomationFriendState(config.secondaryUserID, false, '', 'uvue_auto_delete_friend_readback')
+		recordAutomationSideEffect('friend', 'deleteFriendReadback', 'specified friend list excluded the exact deleted user', false, 'deleteFriend')
 	}
 
 	async function waitAutomationGroupMembership(groupID : string, userID : string, operationID : string) : Promise<void> {
@@ -3270,16 +3711,89 @@
 		throw new Error('secondary account did not observe quit-group membership before ownership transfer')
 	}
 
+	async function waitAutomationGroupInfoUpdate(params : OpenIMSetGroupInfoParams, operationPrefix : string) : Promise<OpenIMGroupItem> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const value = await withAutomationTimeout<OpenIMGroupListResult | null>(getSpecifiedGroupsInfo([params.groupID], operationPrefix + '_' + attempt.toString()), 'group/getSpecifiedGroupsInfoReadback', automationSideEffectReadTimeoutMilliseconds)
+			if (value != null && value.groups.length > 0) {
+				const group = value.groups[0]
+				let matched = group.groupID == params.groupID
+				if (params.groupName != null) { matched = matched && group.groupName == params.groupName as string }
+				if (params.notification != null) { matched = matched && group.notification == params.notification as string }
+				if (params.introduction != null) { matched = matched && group.introduction == params.introduction as string }
+				if (params.ex != null) { matched = matched && group.ex == params.ex as string }
+				if (params.needVerification != null) { matched = matched && group.needVerification == params.needVerification as number }
+				if (matched) { return group }
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('group info mutation did not become observable')
+	}
+
+	async function waitAutomationGroupMemberUpdate(params : OpenIMSetGroupMemberInfoParams, operationPrefix : string) : Promise<OpenIMGroupMemberItem> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const query : OpenIMGroupUserListParams = { groupID: params.groupID, userIDList: [params.userID] }
+			const value = await withAutomationTimeout<OpenIMGroupMemberListResult | null>(getSpecifiedGroupMembersInfo(query, operationPrefix + '_' + attempt.toString()), 'group/getSpecifiedGroupMembersInfoReadback', automationSideEffectReadTimeoutMilliseconds)
+			if (value != null && value.members.length > 0) {
+				const member = value.members[0]
+				let matched = member.groupID == params.groupID && member.userID == params.userID
+				if (params.nickname != null) { matched = matched && member.nickname == params.nickname as string }
+				if (params.ex != null) { matched = matched && member.ex == params.ex as string }
+				if (matched) { return member }
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('group member mutation did not become observable')
+	}
+
+	async function waitAutomationGroupStatus(groupID : string, expectedStatus : number, operationPrefix : string) : Promise<void> {
+		const params : OpenIMSetGroupInfoParams = { groupID: groupID }
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const group = await waitAutomationGroupInfoUpdate(params, operationPrefix + '_' + attempt.toString())
+			if (group.status == expectedStatus) { return }
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('group status did not match before timeout')
+	}
+
+	async function waitAutomationGroupMemberMute(groupID : string, userID : string, expectedMuted : boolean, operationPrefix : string) : Promise<void> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			const params : OpenIMSetGroupMemberInfoParams = { groupID: groupID, userID: userID }
+			const member = await waitAutomationGroupMemberUpdate(params, operationPrefix + '_' + attempt.toString())
+			const muted = member.muteEndTime > Date.now()
+			if (muted == expectedMuted) { return }
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('group member mute state did not match before timeout')
+	}
+
 	async function runAutomationGroupSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await switchAutomationPrimary(config, 'A_group')
 		let groupID = ''
 		const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public group ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-group' }
 		const groupParams : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
+		const primaryCreateGroupCursor = await captureAutomationPeerCursor('primary')
+		beginAutomationOperation('createGroup', null, true)
 		await runAutomationStep<OpenIMGroupItem | null>('group', 'createGroup', createGroup(groupParams, 'uvue_auto_create_group'), (value : OpenIMGroupItem | null) => {
 			requireAutomation(value != null, 'createGroup returned null')
 			groupID = (value as OpenIMGroupItem).groupID
 			cachedGroupID = groupID
 		})
+		const createGroupWindow = findLatestAutomationOperation('createGroup')
+		if (createGroupWindow != null) { createGroupWindow.payloadNeedle = groupID }
+		completeAutomationOperation('createGroup', groupID)
+		await waitAutomationPeerOperationEvent('primary', 'OnJoinedGroupAdded', 'createGroup', primaryCreateGroupCursor, 'createGroup owner delivery')
 		await sleepAutomation(1000)
 		await runAutomationStep<OpenIMGroupListResult | null>('group', 'getJoinedGroupList', getJoinedGroupList('uvue_auto_joined_groups'), cacheGroups)
 		await runAutomationStep<OpenIMGroupListResult | null>('group', 'getJoinedGroupListPage', getJoinedGroupListPage(defaultPageParams(), 'uvue_auto_joined_group_page'), cacheGroups)
@@ -3296,10 +3810,22 @@
 		await runAutomationStep<OpenIMGroupMemberListResult | null>('group', 'searchGroupMembers', searchGroupMembers(searchMembersParams, 'uvue_auto_search_members'), cacheGroupMembers)
 		const setInfoParams : OpenIMSetGroupInfoParams = { groupID: groupID, groupName: 'uvue public group renamed ' + new Date().getTime().toString(), notification: 'uvue public notice', introduction: 'uvue public intro', ex: 'uvue-public-group-info' }
 		await runAutomationStep<string>('group', 'setGroupInfo', setGroupInfo(setInfoParams, 'uvue_auto_set_group_info'), noCache)
+		await waitAutomationGroupInfoUpdate(setInfoParams, 'uvue_auto_set_group_info_readback')
+		recordAutomationSideEffect('group', 'setGroupInfoReadback', 'specified group returned the exact updated public fields', false, 'setGroupInfo')
 		const setMemberParams : OpenIMSetGroupMemberInfoParams = { groupID: groupID, userID: config.primaryUserID, nickname: 'uvue public owner', ex: 'uvue-public-member' }
 		await runAutomationStep<string>('group', 'setGroupMemberInfo', setGroupMemberInfo(setMemberParams, 'uvue_auto_set_member_info'), noCache)
-		await runAutomationStep<string>('group', 'changeGroupMute', changeGroupMute({ groupID: groupID, isMute: false }, 'uvue_auto_group_mute'), noCache)
-		await runAutomationStep<string>('group', 'changeGroupMemberMute', changeGroupMemberMute({ groupID: groupID, userID: config.secondaryUserID, mutedSeconds: 0 }, 'uvue_auto_member_mute'), noCache)
+		await waitAutomationGroupMemberUpdate(setMemberParams, 'uvue_auto_set_member_info_readback')
+		recordAutomationSideEffect('group', 'setGroupMemberInfoReadback', 'specified member returned the exact updated nickname and ex', false, 'setGroupMemberInfo')
+		await runAutomationStep<string>('group', 'changeGroupMute', changeGroupMute({ groupID: groupID, isMute: true }, 'uvue_auto_group_mute'), noCache)
+		await waitAutomationGroupStatus(groupID, 3, 'uvue_auto_group_mute_readback')
+		recordAutomationSideEffect('group', 'changeGroupMuteReadback', 'specified group returned muted status', false, 'changeGroupMute')
+		await withAutomationTimeout<string>(changeGroupMute({ groupID: groupID, isMute: false }, 'uvue_auto_group_mute_restore'), 'group/changeGroupMuteRestore', automationDefaultStepTimeoutMilliseconds)
+		await waitAutomationGroupStatus(groupID, 0, 'uvue_auto_group_mute_restore_readback')
+		await runAutomationStep<string>('group', 'changeGroupMemberMute', changeGroupMemberMute({ groupID: groupID, userID: config.secondaryUserID, mutedSeconds: 60 }, 'uvue_auto_member_mute'), noCache)
+		await waitAutomationGroupMemberMute(groupID, config.secondaryUserID, true, 'uvue_auto_member_mute_readback')
+		recordAutomationSideEffect('group', 'changeGroupMemberMuteReadback', 'specified member returned a future muteEndTime', false, 'changeGroupMemberMute')
+		await withAutomationTimeout<string>(changeGroupMemberMute({ groupID: groupID, userID: config.secondaryUserID, mutedSeconds: 0 }, 'uvue_auto_member_mute_restore'), 'group/changeGroupMemberMuteRestore', automationDefaultStepTimeoutMilliseconds)
+		await waitAutomationGroupMemberMute(groupID, config.secondaryUserID, false, 'uvue_auto_member_mute_restore_readback')
 		const kickGroupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public kick group ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-kick-group' }
 		const kickGroupParams : OpenIMCreateGroupParams = { groupInfo: kickGroupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
 		const kickGroup = await runAutomationOptionalStep<OpenIMGroupItem | null>('group', 'createGroup', createGroup(kickGroupParams, 'uvue_auto_kick_group_create'), noCache, 'kick group setup failed')
@@ -3307,10 +3833,18 @@
 			const kickGroupID = (kickGroup as OpenIMGroupItem).groupID
 			const kickSeedSeq = await seedAutomationGroupConversation(kickGroupID, 'uvue_auto_kick_group_seq_seed')
 			const kickParams : OpenIMGroupInviteParams = { groupID: kickGroupID, reason: 'kick from unixsdk public automation', userIDList: [config.secondaryUserID] }
+			const secondaryKickCursor = await captureAutomationPeerCursor('secondary')
+			beginAutomationOperation('kickGroupMember', kickGroupID, true)
 			await runAutomationStep<string>('group', 'kickGroupMember', kickGroupMember(kickParams, 'uvue_auto_kick_member'), noCache)
+			completeAutomationOperation('kickGroupMember', config.secondaryUserID)
+			await waitAutomationPeerOperationEvent('secondary', 'OnJoinedGroupDeleted', 'kickGroupMember', secondaryKickCursor, 'kickGroupMember affected-member delivery')
 			await waitAutomationGroupHistorySeq(kickGroupID, kickSeedSeq + 1, 'uvue_auto_group_after_kick')
 			const inviteParams : OpenIMGroupInviteParams = { groupID: kickGroupID, reason: 'invite from unixsdk public automation', userIDList: [config.secondaryUserID] }
+			const secondaryInviteCursor = await captureAutomationPeerCursor('secondary')
+			beginAutomationOperation('inviteUserToGroup', kickGroupID, true)
 			await runAutomationOptionalStep<string>('group', 'inviteUserToGroup', inviteUserToGroup(inviteParams, 'uvue_auto_invite_user'), noCache, 'server/protocol can reject invite after applying member join side effect')
+			completeAutomationOperation('inviteUserToGroup', kickGroupID)
+			await waitAutomationPeerOperationEvent('secondary', 'OnJoinedGroupAdded', 'inviteUserToGroup', secondaryInviteCursor, 'inviteUserToGroup invited-member delivery')
 			await waitAutomationGroupHistorySeq(kickGroupID, kickSeedSeq + 2, 'uvue_auto_group_after_invite')
 			await runAutomationOptionalStep<string>('group', 'dismissGroup', dismissGroup(kickGroupID, 'uvue_auto_dismiss_kick_group'), noCache, 'kick group cleanup failed')
 		} else {
@@ -3328,26 +3862,42 @@
 			await runAutomationOptionalStep<string>('group', 'setGroupInfo', setGroupInfo(verificationParams, 'uvue_auto_apply_group_verification'), noCache, 'set group verification failed')
 			await switchAutomationSecondary(config, 'B_group_apply_reject')
 			const rejectJoinParams : OpenIMJoinGroupParams = { groupID: applyGroupID, reqMsg: 'group reject join from unixsdk public automation', joinSource: 3, ex: 'uvue-public-group-join-reject' }
+			const primaryRejectJoinCursor = await captureAutomationPeerCursor('primary')
+			beginAutomationOperation('joinGroup', applyGroupID, true)
 			await runAutomationOptionalStep<string>('group', 'joinGroup', joinGroup(rejectJoinParams, 'uvue_auto_join_group_reject'), noCache, 'join group reject setup failed')
+			completeAutomationOperation('joinGroup', applyGroupID)
+			await waitAutomationPeerOperationEvent('primary', 'OnGroupApplicationAdded', 'joinGroup', primaryRejectJoinCursor, 'joinGroup reject request delivery')
 			await switchAutomationPrimary(config, 'A_group_apply_reject')
 			const rejectApps = await runAutomationOptionalStep<OpenIMGroupApplicationListResult | null>('group', 'getGroupApplicationListAsRecipient', getGroupApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_group_apps_recipient_reject'), cacheGroupApplications, 'group application recipient list unavailable')
 			const rejectApp = findGroupApplication(rejectApps, applyGroupID, config.secondaryUserID)
 			if (rejectApp != null) {
 				const rejectHandle : OpenIMGroupApplicationHandleParams = { groupID: applyGroupID, fromUserID: config.secondaryUserID, handleMsg: 'refused by uni-app x public automation' }
+				const secondaryRejectGroupCursor = await captureAutomationPeerCursor('secondary')
+				beginAutomationOperation('refuseGroupApplication', applyGroupID, true)
 				await runAutomationStep<string>('group', 'refuseGroupApplication', refuseGroupApplication(rejectHandle, 'uvue_auto_refuse_group_app'), noCache)
+				completeAutomationOperation('refuseGroupApplication', applyGroupID)
+				await waitAutomationPeerOperationEvent('secondary', 'OnGroupApplicationRejected', 'refuseGroupApplication', secondaryRejectGroupCursor, 'refuseGroupApplication applicant delivery')
 			} else {
 				recordAutomationSkip('group', 'refuseGroupApplication', 'group reject application not found')
 			}
 			await switchAutomationSecondary(config, 'B_group_apply_accept')
 			const acceptJoinParams : OpenIMJoinGroupParams = { groupID: applyGroupID, reqMsg: 'group accept join from unixsdk public automation', joinSource: 3, ex: 'uvue-public-group-join-accept' }
+			const primaryAcceptJoinCursor = await captureAutomationPeerCursor('primary')
+			beginAutomationOperation('joinGroup', applyGroupID, true)
 			await runAutomationOptionalStep<string>('group', 'joinGroup', joinGroup(acceptJoinParams, 'uvue_auto_join_group_accept'), noCache, 'join group accept setup failed')
+			completeAutomationOperation('joinGroup', applyGroupID)
+			await waitAutomationPeerOperationEvent('primary', 'OnGroupApplicationAdded', 'joinGroup', primaryAcceptJoinCursor, 'joinGroup accept request delivery')
 			await runAutomationOptionalStep<OpenIMGroupApplicationListResult | null>('group', 'getGroupApplicationListAsApplicant', getGroupApplicationListAsApplicant(defaultApplicationParams(), 'uvue_auto_group_apps_applicant'), cacheGroupApplications, 'group application applicant list unavailable')
 			await switchAutomationPrimary(config, 'A_group_apply_accept')
 			const acceptApps = await runAutomationOptionalStep<OpenIMGroupApplicationListResult | null>('group', 'getGroupApplicationListAsRecipient', getGroupApplicationListAsRecipient(defaultApplicationParams(), 'uvue_auto_group_apps_recipient_accept'), cacheGroupApplications, 'group application recipient list unavailable')
 			const acceptApp = findGroupApplication(acceptApps, applyGroupID, config.secondaryUserID)
 			if (acceptApp != null) {
 				const acceptHandle : OpenIMGroupApplicationHandleParams = { groupID: applyGroupID, fromUserID: config.secondaryUserID, handleMsg: 'accepted by uni-app x public automation' }
+				const primaryAcceptGroupCursor = await captureAutomationPeerCursor('primary')
+				beginAutomationOperation('acceptGroupApplication', applyGroupID, true)
 				await runAutomationOptionalStep<string>('group', 'acceptGroupApplication', acceptGroupApplication(acceptHandle, 'uvue_auto_accept_group_app'), noCache, 'server/protocol can reject group application accept after applying member join side effect')
+				completeAutomationOperation('acceptGroupApplication', config.secondaryUserID)
+				await waitAutomationPeerOperationEvent('primary', 'OnGroupMemberAdded', 'acceptGroupApplication', primaryAcceptGroupCursor, 'acceptGroupApplication owner delivery')
 			} else {
 				recordAutomationSkip('group', 'acceptGroupApplication', 'group accept application not found')
 			}
@@ -3374,7 +3924,14 @@
 				await switchAutomationPrimary(config, 'A_group_quit_transfer')
 			}
 			await runAutomationStep<string>('group', 'transferGroupOwner', transferGroupOwner({ groupID: quitGroupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_quit_group'), noCache)
+			const transferReadback = await waitAutomationGroupInfoUpdate({ groupID: quitGroupID }, 'uvue_auto_transfer_quit_group_readback')
+			if (transferReadback.ownerUserID != config.secondaryUserID) { throw new Error('transferGroupOwner readback did not match secondary owner') }
+			recordAutomationSemanticEvidence('group', 'transferGroupOwnerReadback', 'specified group returned the exact transferred owner', 'transferGroupOwner')
+			const primaryQuitCursor = await captureAutomationPeerCursor('primary')
+			beginAutomationOperation('quitGroup', quitGroupID, true)
 			await runAutomationOptionalStep<string>('group', 'quitGroup', quitGroup(quitGroupID, 'uvue_auto_quit_group'), noCache, 'quit can fail while group maxSeq is still syncing')
+			completeAutomationOperation('quitGroup', config.primaryUserID)
+			await waitAutomationPeerOperationEvent('primary', 'OnJoinedGroupDeleted', 'quitGroup', primaryQuitCursor, 'quitGroup actor-device delivery')
 			await switchAutomationSecondary(config, 'B_group_quit_cleanup')
 			await runAutomationOptionalStep<string>('group', 'dismissGroup', dismissGroup(quitGroupID, 'uvue_auto_dismiss_quit_group'), noCache, 'quit group cleanup failed')
 			await switchAutomationPrimary(config, 'A_group_transfer')
@@ -3383,7 +3940,14 @@
 		}
 		await runAutomationStep<string>('group', 'transferGroupOwner', transferGroupOwner({ groupID: groupID, newOwnerUserID: config.secondaryUserID }, 'uvue_auto_transfer_group_owner'), noCache)
 		await switchAutomationSecondary(config, 'B_group_dismiss')
+		const transferredGroup = await waitAutomationGroupInfoUpdate({ groupID: groupID }, 'uvue_auto_transfer_group_owner_readback')
+		if (transferredGroup.ownerUserID != config.secondaryUserID) { throw new Error('main transferGroupOwner readback did not match secondary owner') }
+		recordAutomationSemanticEvidence('group', 'transferGroupOwnerMainReadback', 'specified group returned the exact transferred owner', 'transferGroupOwner')
+		const primaryDismissCursor = await captureAutomationPeerCursor('primary')
+		beginAutomationOperation('dismissGroup', groupID, true)
 		await runAutomationStep<string>('group', 'dismissGroup', dismissGroup(groupID, 'uvue_auto_dismiss_group'), noCache)
+		completeAutomationOperation('dismissGroup', groupID)
+		await waitAutomationPeerOperationEvent('primary', 'OnGroupDismissed', 'dismissGroup', primaryDismissCursor, 'dismissGroup former-member delivery')
 		await switchAutomationPrimary(config, 'A_group_done')
 	}
 
@@ -3421,20 +3985,122 @@
 		}
 	}
 
+	async function createAndSendAutomationText(config : OpenIMAutomationConfig, text : string, operationPrefix : string) : Promise<OpenIMMessageItem> {
+		const draft = await runAutomationStep<OpenIMMessageItem | null>('conversation-mutation', 'createTextMessage', createTextMessage(text, operationPrefix + '_create'), cacheRequiredAutomationMessage)
+		const options : OpenIMSendMessageOptions = { operationID: operationPrefix + '_send', message: draft as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		return await runAutomationStep<OpenIMMessageItem>('conversation-mutation', 'sendMessage', sendMessage(options), cacheSentAutomationMessage)
+	}
+
+	async function readAutomationConversationIDs(operationID : string) : Promise<Array<string>> {
+		const result = await withAutomationTimeout<OpenIMConversationListResult | null>(getAllConversationList(operationID), 'conversation/getAllConversationListVisibilityReadback', automationSideEffectReadTimeoutMilliseconds)
+		if (result == null) { throw new Error('getAllConversationList returned null during visibility readback') }
+		const conversationIDs : Array<string> = []
+		let index = 0
+		while (index < result.conversations.length) {
+			const conversationID = result.conversations[index].conversationID
+			if (conversationID.length == 0 || conversationIDs.indexOf(conversationID) >= 0) { throw new Error('getAllConversationList returned an invalid conversation identity') }
+			conversationIDs.push(conversationID)
+			index = index + 1
+		}
+		return conversationIDs
+	}
+
+	async function waitAutomationConversationVisibility(conversationIDs : Array<string>, expectedPresent : boolean, operationPrefix : string) : Promise<void> {
+		if (conversationIDs.length == 0) { throw new Error(operationPrefix + ' requires at least one conversationID') }
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			try {
+				const visible = await readAutomationConversationIDs(operationPrefix + '_' + attempt.toString())
+				let matched = 0
+				let index = 0
+				while (index < conversationIDs.length) {
+					if ((visible.indexOf(conversationIDs[index]) >= 0) == expectedPresent) { matched = matched + 1 }
+					index = index + 1
+				}
+				if (matched == conversationIDs.length) { return }
+			} catch (_error) {
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error(operationPrefix + ' conversation visibility did not reach the expected state')
+	}
+
+	async function waitAutomationConversationAndMessageDeleted(conversationID : string, clientMsgID : string, operationPrefix : string) : Promise<void> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			let conversationAbsent = false
+			let messageAbsent = false
+			try {
+				const visible = await readAutomationConversationIDs(operationPrefix + '_conversations_' + attempt.toString())
+				conversationAbsent = visible.indexOf(conversationID) < 0
+				const params : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: conversationID, startClientMsgID: '', count: 100 }
+				const history = await withAutomationTimeout<OpenIMAdvancedHistoryMessageListResult | null>(getAdvancedHistoryMessageList(params, operationPrefix + '_history_' + attempt.toString()), 'conversation/getAdvancedHistoryMessageListDeleteReadback', automationSideEffectReadTimeoutMilliseconds)
+				messageAbsent = history != null && findAutomationHistoryMessage(history, clientMsgID) == null
+			} catch (_error) {
+			}
+			if (conversationAbsent && messageAbsent) { return }
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('conversation and message deletion did not become observable')
+	}
+
 	async function runAutomationConversationMutationSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await switchAutomationPrimary(config, 'A_conversation_mutation')
 		if (automationConversationID.length == 0) {
 			const params : OpenIMGetOneConversationParams = { sourceID: config.secondaryUserID, sessionType: OpenIMSessionTypeSingle }
 			await runAutomationStep<string>('conversation-mutation', 'getConversationIDBySessionType', getConversationIDBySessionType(params, 'uvue_auto_mutation_conversation_id'), cacheAutomationConversationID)
 		}
-		await runAutomationStep<OpenIMMessageItem | null>('conversation-mutation', 'createTextMessage', createTextMessage('clear conversation from unixsdk public automation', 'uvue_auto_mutation_clear_create'), cacheRequiredAutomationMessage)
+		const clearSource = await createAndSendAutomationText(config, 'clear conversation from unixsdk public automation', 'uvue_auto_mutation_clear')
+		const clearClientMsgID = clearSource.clientMsgID == null ? '' : clearSource.clientMsgID as string
+		if (clearClientMsgID.length == 0) { throw new Error('clearConversationAndDeleteAllMsg requires a source clientMsgID') }
+		await waitAutomationHistoryMessageState(automationConversationID, clearClientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_clear_conversation_precondition')
+		await waitAutomationConversationVisibility([automationConversationID], true, 'uvue_auto_clear_conversation_visibility_precondition')
 		await runAutomationStep<string>('conversation-mutation', 'clearConversationAndDeleteAllMsg', clearConversationAndDeleteAllMsg(automationConversationID, 'uvue_auto_clear_conversation'), noCache)
+		await waitAutomationHistoryMessageState(automationConversationID, clearClientMsgID, false, null, 'uvue_auto_clear_conversation_readback')
+		await waitAutomationConversationVisibility([automationConversationID], true, 'uvue_auto_clear_conversation_visibility_readback')
+		recordAutomationSideEffect('conversation-mutation', 'clearConversationAndDeleteAllMsgReadback', 'history omitted the exact cleared message while the conversation remained visible', false, 'clearConversationAndDeleteAllMsg')
+
+		const hideSource = await createAndSendAutomationText(config, 'hide conversation from unixsdk public automation', 'uvue_auto_mutation_hide')
+		const hideClientMsgID = hideSource.clientMsgID == null ? '' : hideSource.clientMsgID as string
+		if (hideClientMsgID.length == 0) { throw new Error('hideConversation requires a source clientMsgID') }
+		await waitAutomationHistoryMessageState(automationConversationID, hideClientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_hide_conversation_precondition')
+		await waitAutomationConversationVisibility([automationConversationID], true, 'uvue_auto_hide_conversation_visibility_precondition')
 		await runAutomationStep<string>('conversation-mutation', 'hideConversation', hideConversation(automationConversationID, 'uvue_auto_hide_conversation'), noCache)
+		await waitAutomationConversationVisibility([automationConversationID], false, 'uvue_auto_hide_conversation_readback')
+		await waitAutomationHistoryMessageState(automationConversationID, hideClientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_hide_conversation_history_readback')
+		recordAutomationSideEffect('conversation-mutation', 'hideConversationReadback', 'conversation list omitted the exact hidden conversation while history retained its message', false, 'hideConversation')
+
+		const hideAllSource = await createAndSendAutomationText(config, 'hide all conversations from unixsdk public automation', 'uvue_auto_mutation_hide_all')
+		const hideAllClientMsgID = hideAllSource.clientMsgID == null ? '' : hideAllSource.clientMsgID as string
+		if (hideAllClientMsgID.length == 0) { throw new Error('hideAllConversations requires a source clientMsgID') }
+		await waitAutomationHistoryMessageState(automationConversationID, hideAllClientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_hide_all_precondition')
+		await waitAutomationConversationVisibility([automationConversationID], true, 'uvue_auto_hide_all_visibility_precondition')
+		const visibleConversationIDs = await readAutomationConversationIDs('uvue_auto_hide_all_visible')
 		await runAutomationStep<string>('conversation-mutation', 'hideAllConversations', hideAllConversations('uvue_auto_hide_all_conversations'), noCache)
+		await waitAutomationConversationVisibility(visibleConversationIDs, false, 'uvue_auto_hide_all_readback')
+		await waitAutomationHistoryMessageState(automationConversationID, hideAllClientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_hide_all_history_readback')
+		recordAutomationSideEffect('conversation-mutation', 'hideAllConversationsReadback', 'conversation list omitted every pre-mutation conversation while history retained the exact message', false, 'hideAllConversations')
+
+		const deleteMessagesSource = await createAndSendAutomationText(config, 'delete conversation messages from unixsdk public automation', 'uvue_auto_mutation_delete_messages')
+		const deleteMessagesClientMsgID = deleteMessagesSource.clientMsgID == null ? '' : deleteMessagesSource.clientMsgID as string
+		if (deleteMessagesClientMsgID.length == 0) { throw new Error('deleteConversationAndDeleteAllMsg requires a source clientMsgID') }
+		await waitAutomationHistoryMessageState(automationConversationID, deleteMessagesClientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_delete_conversation_msgs_precondition')
 		await runAutomationStep<string>('conversation-mutation', 'deleteConversationAndDeleteAllMsg', deleteConversationAndDeleteAllMsg(automationConversationID, 'uvue_auto_delete_conversation_msgs'), noCache)
+		await waitAutomationConversationAndMessageDeleted(automationConversationID, deleteMessagesClientMsgID, 'uvue_auto_delete_conversation_msgs_readback')
+		recordAutomationSideEffect('conversation-mutation', 'deleteConversationAndDeleteAllMsgReadback', 'conversation list and history omitted the exact deleted identities', false, 'deleteConversationAndDeleteAllMsg')
+
+		const deleteSource = await createAndSendAutomationText(config, 'delete conversation from unixsdk public automation', 'uvue_auto_mutation_delete')
+		const deleteClientMsgID = deleteSource.clientMsgID == null ? '' : deleteSource.clientMsgID as string
+		if (deleteClientMsgID.length == 0) { throw new Error('deleteConversation requires a source clientMsgID') }
+		await waitAutomationHistoryMessageState(automationConversationID, deleteClientMsgID, true, OpenIMMessageTypeText, 'uvue_auto_delete_conversation_precondition')
+		await waitAutomationConversationVisibility([automationConversationID], true, 'uvue_auto_delete_conversation_visibility_precondition')
 		await runAutomationStep<string>('conversation-mutation', 'deleteConversation', deleteConversation(automationConversationID, 'uvue_auto_delete_conversation'), noCache)
-		await runAutomationStep<string>('conversation-mutation', 'deleteAllMsgFromLocal', deleteAllMsgFromLocal('uvue_auto_delete_all_local'), noCache)
-		await runAutomationStep<string>('conversation-mutation', 'deleteAllMsgFromLocalAndSvr', deleteAllMsgFromLocalAndSvr('uvue_auto_delete_all_server'), noCache)
+		await waitAutomationConversationVisibility([automationConversationID], false, 'uvue_auto_delete_conversation_readback')
+		recordAutomationSideEffect('conversation-mutation', 'deleteConversationReadback', 'conversation list omitted the exact deleted conversationID', false, 'deleteConversation')
 	}
 
 	function recordRequiredAutomationEventDelivery(eventName : string) {
@@ -3877,6 +4543,11 @@
 				recordAutomationStep('setup', 'readConfig', false, 'Missing openim-test-config storage/static data. Run scripts/register-openim-test-accounts.mjs first.')
 			} else {
 				const readyConfig = config as OpenIMAutomationConfig
+				automationPeerBridgeEnabled = readyConfig.peerBridgeEnabled
+				automationPeerBridgeRunNonce = readyConfig.peerBridgeRunNonce
+				if (!automationPeerBridgeEnabled || automationPeerBridgeRunNonce.length == 0) {
+					throw new Error('Full Public automation requires the independent peer bridge')
+				}
 				automationExpectedSecondaryUserID = readyConfig.secondaryUserID
 				recordAutomationStep('setup', 'readConfig', true, 'api=' + readyConfig.apiAddr + ' ws=' + readyConfig.wsAddr)
 				await runAutomationSetupSuite(readyConfig)
@@ -3974,6 +4645,8 @@
 		handleSendCachedMessageNotOss,
 		handleInsertSingleMessage,
 		handleInsertGroupMessage,
+		handleAutomationPeerBridgeReadRequest,
+		handleAutomationPeerBridgeWriteResponse,
 		handleRunAutomation
 	})
 </script>
