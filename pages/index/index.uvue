@@ -463,12 +463,7 @@
 		OpenIMLogLevelVerbose
 	} from '@/uni_modules/unix-openim-sdk'
 
-	// #ifdef APP-IOS
-	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload } from '@/uni_modules/unix-openim-sdk/utssdk/app-ios/native-call.uts'
-	// #endif
-	// #ifdef APP-ANDROID
-	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload } from '@/uni_modules/unix-openim-sdk/utssdk/app-android/native-call.uts'
-	// #endif
+	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload } from '@/uni_modules/unix-openim-sdk/utssdk/common/message-json-writer.uts'
 
 	// Page state
 	const statusText = ref('Ready')
