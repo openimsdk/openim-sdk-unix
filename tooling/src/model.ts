@@ -1,4 +1,48 @@
 export type Platform = 'android' | 'ios' | 'harmony'
+export type AutomationProducerPlatforms = [Platform, ...Platform[]]
+
+export interface AutomationProducerRef {
+  key: string
+  suite: string
+  scenario: string
+  platforms: AutomationProducerPlatforms
+}
+
+export interface AutomationNegativeProducer {
+  profile: string
+  producer: AutomationProducerRef
+}
+
+export interface AutomationCleanupProducer {
+  action: string
+  rule: string
+  producer: AutomationProducerRef
+}
+
+export interface AutomationEpochProducer {
+  rule: string
+  producer: AutomationProducerRef
+}
+
+export interface AutomationCallableTestPlan {
+  apiName: string
+  capabilityByPlatform?: Partial<Record<Platform, 'core' | 'speech' | 'translation' | 'push-launch'>>
+  negative?: AutomationNegativeProducer[]
+  cleanup?: AutomationCleanupProducer
+}
+
+export interface AutomationEventTestPlan {
+  eventName: string
+  negative?: AutomationNegativeProducer[]
+  cleanup?: AutomationCleanupProducer
+  epoch?: AutomationEpochProducer
+}
+
+export interface AutomationTestPlan {
+  schemaVersion: 1
+  callables: AutomationCallableTestPlan[]
+  events: AutomationEventTestPlan[]
+}
 
 export type CompletionMode = 'promise' | 'sync' | 'void'
 
@@ -166,6 +210,8 @@ export interface ContractCallable {
   testProfile: {
     semanticProfile: string
     sideEffectProbe: string
+    cleanupAction?: string
+    cleanupRule?: string
     expectedEvents?: string[]
     eventIdentityPaths?: Record<string, string>
   }
@@ -215,6 +261,7 @@ export interface ContractDocument {
   types: ContractType[]
   callables: ContractCallable[]
   events: ContractEvent[]
+  automationTestPlan?: AutomationTestPlan
 }
 
 export interface SurfaceSnapshot {
@@ -260,6 +307,7 @@ export interface EnterpriseDeltaDocument {
     declaration?: SourceByPlatform
     lowering?: CallableLowering
     binding?: Record<Platform, NativeBinding | undefined>
+    testProfile?: ContractCallable['testProfile']
   }>
   approvedBaseTypeOverrides?: Array<{
     name: string
@@ -284,6 +332,7 @@ export interface EnterpriseDeltaDocument {
     }>
   }
   rawIOSImplementationBoundaries?: HashedImplementationBoundaryAuthority
+  automationTestPlan?: AutomationTestPlan
   constants: ContractConstant[]
   types: ContractType[]
   typeExtensions: EnterpriseTypeExtension[]

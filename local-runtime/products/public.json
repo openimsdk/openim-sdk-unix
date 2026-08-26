@@ -37,6 +37,10 @@
       "destination": "tooling/runtime"
     },
     {
+      "source": "../../tooling/src",
+      "destination": "tooling/src"
+    },
+    {
       "source": "../../jest.config.js",
       "destination": "jest.config.js"
     },

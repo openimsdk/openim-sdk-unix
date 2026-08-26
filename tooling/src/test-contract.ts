@@ -1,5 +1,20 @@
 import ts from 'typescript'
-import type { ContractCallable, ContractDocument, ContractEvent, ContractType, EnterpriseDeltaDocument, EnterpriseTypeExtension } from './model.js'
+import type {
+  AutomationCallableTestPlan,
+  AutomationCleanupProducer,
+  AutomationEpochProducer,
+  AutomationEventTestPlan,
+  AutomationNegativeProducer,
+  AutomationProducerRef,
+  ContractCallable,
+  ContractDocument,
+  ContractEvent,
+  ContractType,
+  EnterpriseDeltaDocument,
+  EnterpriseTypeExtension,
+  Platform,
+} from './model.js'
+import { composeAutomationTestPlan } from './automation-plan.js'
 import { requireCallableTestProfile } from './test-profile.js'
 
 export type ContractValueSchema =
@@ -11,6 +26,7 @@ export type ContractValueSchema =
   | { kind: 'null' }
   | { kind: 'literal'; value: string | number | boolean }
   | { kind: 'array'; items: ContractValueSchema }
+  | { kind: 'string-map' }
   | { kind: 'reference'; name: string }
   | { kind: 'union'; options: ContractValueSchema[] }
   | { kind: 'object'; fields: Record<string, { required: boolean; schema: ContractValueSchema }> }
@@ -60,8 +76,13 @@ export interface TestDispositionDocument {
     expectedEvents: string[]
     eventIdentityPaths?: Record<string, string>
     negativeProfiles: string[]
+    negativeProducers: AutomationNegativeProducer[]
     cleanupAction: string
+    cleanupRule?: string
+    cleanupProducer?: AutomationProducerRef
+    capabilityByPlatform: { android: string; ios: string; harmony: string }
     validationAxes: CallableValidationAxis[]
+    validationAxesByPlatform: { android: CallableValidationAxis[]; ios: CallableValidationAxis[]; harmony: CallableValidationAxis[] }
     approvedKnownIssue?: Partial<Record<'android' | 'ios' | 'harmony', ApprovedKnownIssueDisposition>>
   }>
   events: Array<{
@@ -76,8 +97,13 @@ export interface TestDispositionDocument {
     sideEffectProbe: string
     expectedEvents: string[]
     negativeProfiles: string[]
+    negativeProducers: AutomationNegativeProducer[]
     cleanupAction: string
+    cleanupRule?: string
+    cleanupProducer?: AutomationProducerRef
+    epochProducer?: { rule: string; producer: AutomationProducerRef }
     validationAxes: EventValidationAxis[]
+    validationAxesByPlatform: { android: EventValidationAxis[]; ios: EventValidationAxis[]; harmony: EventValidationAxis[] }
     approvedKnownIssue?: Partial<Record<'android' | 'ios' | 'harmony', ApprovedEventKnownIssueDisposition>>
   }>
 }
@@ -162,6 +188,7 @@ function schemaFromNode(node: ts.TypeNode): ContractValueSchema {
   if (ts.isArrayTypeNode(node)) return { kind: 'array', items: schemaFromNode(node.elementType) }
   if (ts.isTypeReferenceNode(node)) {
     const name = node.typeName.getText()
+    if (name === 'OpenIMStringMap') return { kind: 'string-map' }
     if (name === 'Array') {
       assert(node.typeArguments?.length === 1, 'Array contract type must have exactly one type argument')
       return { kind: 'array', items: schemaFromNode(node.typeArguments[0]!) }
@@ -187,7 +214,9 @@ function schemaMap(types: ContractType[]): Record<string, ContractValueSchema> {
   const result: Record<string, ContractValueSchema> = {}
   for (const type of types) {
     const alias = parseAlias(type.declaration)
-    if (!ts.isFunctionTypeNode(alias.type)) result[type.name] = schemaFromNode(alias.type)
+    if (!ts.isFunctionTypeNode(alias.type)) {
+      result[type.name] = type.name === 'OpenIMStringMap' ? { kind: 'string-map' } : schemaFromNode(alias.type)
+    }
   }
   return result
 }
@@ -267,7 +296,12 @@ export function buildPublicResponseSchemas(contract: ContractDocument): Response
 }
 
 export function buildEnterpriseResponseSchemas(base: ContractDocument, delta: EnterpriseDeltaDocument): ResponseSchemaDocument {
-  return buildResponseSchemas('enterprise', [...base.types, ...delta.types], [...base.callables, ...delta.callables], [...base.events, ...delta.events], delta.typeExtensions)
+  const overrides = new Map((delta.approvedBaseTypeOverrides ?? []).map((value) => [value.name, value]))
+  const enterpriseBaseTypes = base.types.map((type) => {
+    const override = overrides.get(type.name)
+    return override == null ? type : { ...type, declaration: override.enterpriseDeclaration }
+  })
+  return buildResponseSchemas('enterprise', [...enterpriseBaseTypes, ...delta.types], [...base.callables, ...delta.callables], [...base.events, ...delta.events], delta.typeExtensions)
 }
 
 function callablePlatformDisposition(
@@ -291,49 +325,172 @@ function eventPlatformDisposition(
   return event.binding[platform] === 'unsupported-by-native-abi' ? 'platform-unsupported' : 'required'
 }
 
-function negativeProfiles(callable: ContractCallable, capability: string): string[] {
-  if (callable.role === 'event-control') return ['forged-or-stale-subscription', 'callback-removal-during-dispatch']
-  if (callable.role === 'event-subscription') return ['off-subscription', 'off-all-event-name', 'stale-epoch']
-  if (capability === 'speech' || capability === 'translation') return ['feature-disabled-1080', 'invalid-input']
-  if (capability === 'push-launch') return ['missing-push-payload', 'expired-invitation']
-  if (callable.name === 'initSDK') return ['invalid-config', 'duplicate-init']
-  if (callable.name === 'login') return ['uninitialized', 'invalid-token']
-  if (callable.name === 'getSdkVersion' || callable.name === 'getOpenIMDataPath') return ['unsupported-callable-id']
-  return ['uninitialized', 'invalid-input']
+type AutomationCapability = 'core' | 'speech' | 'translation' | 'push-launch'
+type PlatformDispositionMap = { android: PlatformTestDisposition; ios: PlatformTestDisposition; harmony: PlatformTestDisposition }
+
+function isPlatform(value: string): value is Platform {
+  return value === 'android' || value === 'ios' || value === 'harmony'
 }
 
-function executableNegativeProfiles(
-  profiles: string[],
-  platforms: { android: PlatformTestDisposition; ios: PlatformTestDisposition; harmony: PlatformTestDisposition },
-): string[] {
-  const executable = new Set(profiles)
-  if (Object.values(platforms).includes('platform-unsupported')) executable.add('platform-unsupported')
-  return [...executable]
+function assertProducerRef(value: AutomationProducerRef, target: string, axis: string): void {
+  assert(value != null && typeof value === 'object', `${target} ${axis} producer is missing`)
+  assert(typeof value.key === 'string' && value.key.length > 0 && !value.key.includes('*'), `${target} ${axis} producer key is missing or wildcarded`)
+  assert(typeof value.suite === 'string' && value.suite.length > 0 && !value.suite.includes('*'), `${target} ${axis} producer suite is missing or wildcarded`)
+  assert(typeof value.scenario === 'string' && value.scenario.length > 0 && !value.scenario.includes('*'), `${target} ${axis} producer scenario is missing or wildcarded`)
+  assert(Array.isArray(value.platforms) && value.platforms.length > 0, `${target} ${axis} producer platforms are required and cannot be empty`)
+  assert(new Set(value.platforms).size === value.platforms.length, `${target} ${axis} producer platforms contain duplicates`)
+  assert(value.platforms.every(isPlatform), `${target} ${axis} producer platform is invalid`)
 }
 
-function cleanupAction(callable: ContractCallable, probe: string): string {
-  if (callable.role === 'event-subscription') return 'off(subscription)'
-  if (callable.role === 'event-control') return 'none'
-  if (callable.name === 'initSDK') return 'unInitSDK()'
-  if (callable.name === 'login') return 'logout()'
-  if (callable.name === 'uploadFile' || callable.name === 'uploadLogs') return 'cancelUpload(cancelID)'
-  if (probe === 'read-after-write') return 'restore-via-read-before-write'
-  if (probe === 'cross-account-event-observation') return 'fixture-cleanup'
-  if (probe === 'cross-account-state-observation') return 'restore-via-inverse-mutation'
-  return 'none'
+function validatePlanProducer(target: string, axis: string, value: AutomationNegativeProducer | AutomationCleanupProducer | { rule: string; producer: AutomationProducerRef }): void {
+  assertProducerRef(value.producer, target, axis)
+  if ('profile' in value) {
+    assert(typeof value.profile === 'string' && value.profile.length > 0, `${target} negative producer profile is missing`)
+    return
+  }
+  if ('action' in value) {
+    assert(typeof value.action === 'string' && value.action.length > 0, `${target} cleanup producer action is missing`)
+    assert(value.action !== 'none', `${target} cleanup producer cannot declare a no-op action`)
+  }
+  assert(typeof value.rule === 'string' && value.rule.length > 0, `${target} ${axis} producer rule is missing`)
 }
 
-function callableValidationAxes(callable: ContractCallable, probe: string, expectedEvents: string[]): CallableValidationAxis[] {
+function validateAutomationTestPlan(
+  plan: ContractDocument['automationTestPlan'],
+  callables: ContractCallable[],
+  events: ContractEvent[],
+): { callables: Map<string, AutomationCallableTestPlan>; events: Map<string, AutomationEventTestPlan> } {
+  const callableNames = new Set(callables.map((value) => value.name))
+  const eventNames = new Set(events.map((value) => value.name))
+  const callablePlans = new Map<string, AutomationCallableTestPlan>()
+  const eventPlans = new Map<string, AutomationEventTestPlan>()
+  if (plan == null) return { callables: callablePlans, events: eventPlans }
+  assert(plan.schemaVersion === 1, `Unsupported automation test plan schema: ${String(plan.schemaVersion)}`)
+  for (const item of plan.callables) {
+    assert(typeof item.apiName === 'string' && item.apiName.length > 0 && !item.apiName.includes('*'), 'Automation callable plan target must be exact')
+    assert(callableNames.has(item.apiName), `Automation callable plan target is unknown: ${item.apiName}`)
+    assert(!callablePlans.has(item.apiName), `Duplicate automation callable plan target: ${item.apiName}`)
+    if (item.capabilityByPlatform != null) {
+      for (const [platform, capability] of Object.entries(item.capabilityByPlatform)) {
+        assert(isPlatform(platform), `Invalid automation capability platform: ${platform}`)
+        assert(capability === 'core' || capability === 'speech' || capability === 'translation' || capability === 'push-launch', `Invalid automation capability: ${String(capability)}`)
+      }
+    }
+    for (const producer of item.negative ?? []) validatePlanProducer(item.apiName, 'negative', producer)
+    if (item.negative != null) {
+      const profiles = item.negative.map((value) => value.profile)
+      assert(new Set(profiles).size === profiles.length, `Duplicate automation negative profile: ${item.apiName}`)
+    }
+    if (item.cleanup != null) validatePlanProducer(item.apiName, 'cleanup', item.cleanup)
+    callablePlans.set(item.apiName, item)
+  }
+  for (const item of plan.events) {
+    assert(typeof item.eventName === 'string' && item.eventName.length > 0 && !item.eventName.includes('*'), 'Automation event plan target must be exact')
+    assert(eventNames.has(item.eventName), `Automation event plan target is unknown: ${item.eventName}`)
+    assert(!eventPlans.has(item.eventName), `Duplicate automation event plan target: ${item.eventName}`)
+    for (const producer of item.negative ?? []) validatePlanProducer(item.eventName, 'negative', producer)
+    if (item.negative != null) {
+      const profiles = item.negative.map((value) => value.profile)
+      assert(new Set(profiles).size === profiles.length, `Duplicate automation event negative profile: ${item.eventName}`)
+    }
+    if (item.cleanup != null) validatePlanProducer(item.eventName, 'cleanup', item.cleanup)
+    if (item.epoch != null) validatePlanProducer(item.eventName, 'epoch', item.epoch)
+    eventPlans.set(item.eventName, item)
+  }
+  return { callables: callablePlans, events: eventPlans }
+}
+
+function producerAppliesToPlatform(producer: AutomationProducerRef, platform: Platform): boolean {
+  return producer.platforms.includes(platform)
+}
+
+function negativeProducersForPlatform(plan: AutomationCallableTestPlan | AutomationEventTestPlan | undefined, platform: Platform): AutomationNegativeProducer[] {
+  return (plan?.negative ?? []).filter((value) => producerAppliesToPlatform(value.producer, platform))
+}
+
+function callableCapability(plan: AutomationCallableTestPlan | undefined, platform: Platform): AutomationCapability {
+  return plan?.capabilityByPlatform?.[platform] ?? 'core'
+}
+
+function callableBaseValidationAxes(
+  callable: ContractCallable,
+  probe: string,
+  expectedEvents: string[],
+): CallableValidationAxis[] {
   const axes: CallableValidationAxis[] = ['completion']
   if (callable.role === 'event-control') {
-    axes.push('semantic', 'side-effect', 'negative', 'cleanup')
+    axes.push('semantic', 'side-effect')
     return axes
   }
   axes.push('structure', 'semantic')
   if (probe !== 'none') axes.push('side-effect')
   if (expectedEvents.length > 0 && callable.role === 'operation') axes.push('event')
-  axes.push('negative', 'cleanup')
   return axes
+}
+
+function uniqueAxes<T extends string>(axesByPlatform: Record<Platform, T[]>): T[] {
+  const result: T[] = []
+  for (const platform of ['android', 'ios', 'harmony'] as Platform[]) {
+    for (const axis of axesByPlatform[platform]) {
+      if (!result.includes(axis)) result.push(axis)
+    }
+  }
+  return result
+}
+
+function callableValidationAxesByPlatform(
+  callable: ContractCallable,
+  probe: string,
+  expectedEvents: string[],
+  platforms: PlatformDispositionMap,
+  negativeByPlatform: Record<Platform, AutomationNegativeProducer[]>,
+  cleanup: AutomationCleanupProducer | undefined,
+): Record<Platform, CallableValidationAxis[]> {
+  const result: Record<Platform, CallableValidationAxis[]> = {
+    android: [],
+    ios: [],
+    harmony: [],
+  }
+  for (const platform of ['android', 'ios', 'harmony'] as Platform[]) {
+    const disposition = platforms[platform]
+    if (disposition === 'not-in-edition') continue
+    if (disposition === 'capability-negative' || disposition === 'platform-unsupported') {
+      result[platform] = ['negative']
+      continue
+    }
+    const axes = callableBaseValidationAxes(callable, probe, expectedEvents)
+    if (negativeByPlatform[platform].length > 0) axes.push('negative')
+    if (cleanup != null && producerAppliesToPlatform(cleanup.producer, platform)) axes.push('cleanup')
+    result[platform] = axes
+  }
+  return result
+}
+
+function eventValidationAxesByPlatform(
+  platforms: PlatformDispositionMap,
+  negativeByPlatform: Record<Platform, AutomationNegativeProducer[]>,
+  cleanup: AutomationCleanupProducer | undefined,
+  epoch: AutomationEpochProducer | undefined,
+): Record<Platform, EventValidationAxis[]> {
+  const result: Record<Platform, EventValidationAxis[]> = {
+    android: [],
+    ios: [],
+    harmony: [],
+  }
+  for (const platform of ['android', 'ios', 'harmony'] as Platform[]) {
+    const disposition = platforms[platform]
+    if (disposition === 'not-in-edition') continue
+    if (disposition === 'capability-negative' || disposition === 'platform-unsupported') {
+      result[platform] = ['negative']
+      continue
+    }
+    const axes: EventValidationAxis[] = ['delivery', 'structure', 'semantic', 'ordering']
+    if (epoch != null && producerAppliesToPlatform(epoch.producer, platform)) axes.push('epoch')
+    if (negativeByPlatform[platform].length > 0) axes.push('negative')
+    if (cleanup != null && producerAppliesToPlatform(cleanup.producer, platform)) axes.push('cleanup')
+    result[platform] = axes
+  }
+  return result
 }
 
 function buildDisposition(
@@ -341,28 +498,59 @@ function buildDisposition(
   callables: ContractCallable[],
   events: ContractEvent[],
   responseSchemas: ResponseSchemaDocument,
+  automationTestPlan: ContractDocument['automationTestPlan'] = undefined,
   editionKnownIssues: Readonly<Record<string, ApprovedKnownIssueDisposition>> = {},
 ): TestDispositionDocument {
   const responseSchemaDocument = edition === 'public'
     ? 'contracts/base/response-schemas.json'
     : 'contracts/enterprise/response-schemas.json'
+  const plan = validateAutomationTestPlan(automationTestPlan, callables, events)
   return {
     schemaVersion: 2,
     edition,
     counts: { callables: callables.length, events: events.length },
     callables: callables.map((callable) => {
-      const capability = 'core'
+      const callablePlan = plan.callables.get(callable.name)
+      const capabilityByPlatform = {
+        android: callableCapability(callablePlan, 'android'),
+        ios: callableCapability(callablePlan, 'ios'),
+        harmony: callableCapability(callablePlan, 'harmony'),
+      }
+      const capability = capabilityByPlatform.harmony === 'core' ? 'core' : capabilityByPlatform.harmony
       const unsupported = callable.binding.android?.kind === 'unsupported' && callable.binding.ios?.kind === 'unsupported'
       const { semanticProfile: profile, sideEffectProbe: probe } = requireCallableTestProfile(callable)
       const expectedEvents = callable.role === 'event-subscription'
         ? [callable.name]
         : [...(callable.testProfile.expectedEvents ?? expectedEventsByCallable.get(callable.name) ?? [])]
       const platforms = {
-        android: callablePlatformDisposition(edition, callable, capability, 'android'),
-        ios: callablePlatformDisposition(edition, callable, capability, 'ios'),
-        harmony: callablePlatformDisposition(edition, callable, capability, 'harmony'),
+        android: callablePlatformDisposition(edition, callable, capabilityByPlatform.android, 'android'),
+        ios: callablePlatformDisposition(edition, callable, capabilityByPlatform.ios, 'ios'),
+        harmony: callablePlatformDisposition(edition, callable, capabilityByPlatform.harmony, 'harmony'),
       }
-      const validationAxes = callableValidationAxes(callable, probe, expectedEvents)
+      const negative = {
+        android: negativeProducersForPlatform(callablePlan, 'android'),
+        ios: negativeProducersForPlatform(callablePlan, 'ios'),
+        harmony: negativeProducersForPlatform(callablePlan, 'harmony'),
+      }
+      const negativeProducers = callablePlan?.negative ?? []
+      const cleanup = callablePlan?.cleanup
+      for (const [platform, disposition] of Object.entries(platforms) as Array<[Platform, PlatformTestDisposition]>) {
+        if ((disposition === 'capability-negative' || disposition === 'platform-unsupported') && negative[platform].length === 0) {
+          throw new Error(`${callable.name} ${platform} ${disposition} requires an explicit negative producer`)
+        }
+        if (disposition === 'required' && negative[platform].some((producer) => producer.profile === 'platform-unsupported')) {
+          throw new Error(`${callable.name} ${platform} required capability cannot retain a platform-unsupported producer`)
+        }
+      }
+      const validationAxesByPlatform = callableValidationAxesByPlatform(
+        callable,
+        probe,
+        expectedEvents,
+        platforms,
+        negative,
+        cleanup,
+      )
+      const validationAxes = uniqueAxes(validationAxesByPlatform)
       const approvedKnownIssue = editionKnownIssues[callable.name]
       if (approvedKnownIssue != null) {
         assert(
@@ -376,6 +564,7 @@ function buildDisposition(
         priority: capability !== 'core' ? 'P2' : p0CallableNames.has(callable.name) || callable.role !== 'operation' ? 'P0' : 'P1',
         disposition: unsupported ? 'platform-unsupported' : capability !== 'core' ? 'capability-gated' : 'required',
         capability,
+        capabilityByPlatform,
         responseCodec: callable.responseCodec,
         platforms,
         responseSchema: { document: responseSchemaDocument, root: `callables.${callable.name}.schema` },
@@ -385,9 +574,15 @@ function buildDisposition(
         ...(callable.testProfile.eventIdentityPaths == null
           ? {}
           : { eventIdentityPaths: callable.testProfile.eventIdentityPaths }),
-        negativeProfiles: executableNegativeProfiles(negativeProfiles(callable, capability), platforms),
-        cleanupAction: cleanupAction(callable, probe),
+        negativeProfiles: negativeProducers.map((value) => value.profile),
+        negativeProducers,
+        cleanupAction: cleanup?.action ?? '',
+        ...(cleanup == null ? {} : {
+          cleanupRule: cleanup.rule,
+          cleanupProducer: cleanup.producer,
+        }),
         validationAxes,
+        validationAxesByPlatform,
         ...(approvedKnownIssue == null ? {} : {
           approvedKnownIssue: {
             harmony: {
@@ -399,11 +594,28 @@ function buildDisposition(
       }
     }),
     events: events.map((event) => {
+      const eventPlan = plan.events.get(event.name)
       const unsupported = event.binding.android === 'unsupported-by-native-abi' && event.binding.ios === 'unsupported-by-native-abi'
       const platforms = {
         android: eventPlatformDisposition(edition, event, 'android'),
         ios: eventPlatformDisposition(edition, event, 'ios'),
         harmony: eventPlatformDisposition(edition, event, 'harmony'),
+      }
+      const negativeByPlatform = {
+        android: negativeProducersForPlatform(eventPlan, 'android'),
+        ios: negativeProducersForPlatform(eventPlan, 'ios'),
+        harmony: negativeProducersForPlatform(eventPlan, 'harmony'),
+      }
+      const negative = eventPlan?.negative ?? []
+      const cleanup = eventPlan?.cleanup
+      const epoch = eventPlan?.epoch
+      for (const [platform, disposition] of Object.entries(platforms) as Array<[Platform, PlatformTestDisposition]>) {
+        if ((disposition === 'capability-negative' || disposition === 'platform-unsupported') && negativeByPlatform[platform].length === 0) {
+          throw new Error(`${event.name} ${platform} ${disposition} requires an explicit negative producer`)
+        }
+        if (disposition === 'required' && negativeByPlatform[platform].some((producer) => producer.profile === 'platform-unsupported')) {
+          throw new Error(`${event.name} ${platform} required capability cannot retain a platform-unsupported producer`)
+        }
       }
       return {
         caseId: `event/${event.name}`,
@@ -416,9 +628,13 @@ function buildDisposition(
         semanticProfile: event.rawPayload ? 'opaque-event-correlation' : 'typed-event-correlation',
         sideEffectProbe: 'emitted-event-observation',
         expectedEvents: [event.name],
-        negativeProfiles: executableNegativeProfiles(['off-subscription', 'off-all-event-name', 'stale-epoch'], platforms),
-        cleanupAction: 'off(subscription)',
-        validationAxes: ['delivery', 'structure', 'semantic', 'ordering', 'epoch', 'negative', 'cleanup'],
+        negativeProfiles: negative.map((value) => value.profile),
+        negativeProducers: negative,
+        cleanupAction: cleanup?.action ?? '',
+        ...(cleanup == null ? {} : { cleanupRule: cleanup.rule, cleanupProducer: cleanup.producer }),
+        ...(epoch == null ? {} : { epochProducer: epoch }),
+        validationAxes: uniqueAxes(eventValidationAxesByPlatform(platforms, negativeByPlatform, cleanup, epoch)),
+        validationAxesByPlatform: eventValidationAxesByPlatform(platforms, negativeByPlatform, cleanup, epoch),
       }
     }),
   }
@@ -426,7 +642,7 @@ function buildDisposition(
 
 export function buildPublicTestDisposition(contract: ContractDocument): TestDispositionDocument {
   const schemas = buildPublicResponseSchemas(contract)
-  return buildDisposition('public', contract.callables, contract.events, schemas)
+  return buildDisposition('public', contract.callables, contract.events, schemas, contract.automationTestPlan)
 }
 
 export function buildEnterpriseTestDisposition(base: ContractDocument, delta: EnterpriseDeltaDocument): TestDispositionDocument {
@@ -441,6 +657,7 @@ export function buildEnterpriseTestDisposition(base: ContractDocument, delta: En
         ...(override.declaration == null ? {} : { declaration: override.declaration }),
         ...(override.lowering == null ? {} : { lowering: override.lowering }),
         binding: override.binding ?? callable.binding,
+        testProfile: override.testProfile ?? callable.testProfile,
       }
     }),
     ...delta.callables,
@@ -448,7 +665,7 @@ export function buildEnterpriseTestDisposition(base: ContractDocument, delta: En
   const events = [...base.events, ...delta.events]
   const schemas = buildEnterpriseResponseSchemas(base, delta)
   const knownIssues = (delta.editionExtensions?.testKnownIssues ?? {}) as Record<string, ApprovedKnownIssueDisposition>
-  return buildDisposition('enterprise', callables, events, schemas, knownIssues)
+  return buildDisposition('enterprise', callables, events, schemas, composeAutomationTestPlan(base.automationTestPlan, delta.automationTestPlan), knownIssues)
 }
 
 function actualKind(value: unknown): string {
@@ -476,6 +693,7 @@ function schemaMatchesActualKind(
   if (schema.kind === 'null') return value === null
   if (schema.kind === 'literal') return typeof value === typeof schema.value
   if (schema.kind === 'array') return Array.isArray(value)
+  if (schema.kind === 'string-map') return value != null && typeof value === 'object' && !Array.isArray(value)
   if (schema.kind === 'object') return value != null && typeof value === 'object' && !Array.isArray(value)
   if (schema.kind === 'union') return schema.options.some((option) => schemaMatchesActualKind(document, option, value, referenceStack))
   const target = document.schemas[schema.name]
@@ -522,6 +740,12 @@ export function validateContractValue(
   if (schema.kind === 'array') {
     if (!Array.isArray(value)) return [{ path, rule: 'type', expected: 'array', actual: actualKind(value), severity: 'error' }]
     return value.flatMap((item, index) => validateContractValue(document, schema.items, item, `${path}[${index}]`, referenceStack))
+  }
+  if (schema.kind === 'string-map') {
+    if (value == null || typeof value !== 'object' || Array.isArray(value)) return [{ path, rule: 'type', expected: 'string map', actual: actualKind(value), severity: 'error' }]
+    return Object.entries(value as Record<string, unknown>).flatMap(([name, item]) => (
+      typeof item === 'string' ? [] : [{ path: `${path}.${name}`, rule: 'type', expected: 'string', actual: actualKind(item), severity: 'error' as const }]
+    ))
   }
   if (value == null || typeof value !== 'object' || Array.isArray(value)) return [{ path, rule: 'type', expected: 'object', actual: actualKind(value), severity: 'error' }]
   const record = value as Record<string, unknown>

@@ -16,41 +16,127 @@ const eventAxisFlags = {
 }
 
 const nonWaivableValidationAxes = new Set(['negative', 'cleanup'])
-const focusedEventDeliveryRequiredAxes = new Set(['delivery', 'structure', 'semantic', 'ordering'])
+const focusedOptionalCallableAxes = new Set(['side-effect', 'event', 'negative', 'cleanup'])
 const focusedSuiteRequiredCallables = {
+  conversation: new Set(['setConversation', 'setConversationDraft']),
+  group: new Set(['setGroupInfo']),
   'event-delivery': new Set(['sendMessage', 'sendMessageNotOss', 'uploadFile', 'uploadLogs']),
 }
+const focusedEventDeliveryRequiredAxes = new Set(['delivery', 'structure', 'semantic', 'ordering'])
 const focusedSuiteRequiredEventPolicies = {
   'event-delivery': {
-    onConnecting: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
-    onConnectSuccess: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
-    onSyncServerStart: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
-    onSyncServerFinish: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
-    onSendMessageProgress: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
-    onRecvNewMessage: { platforms: new Set(['android']), axes: focusedEventDeliveryRequiredAxes },
-    onUploadFileProgress: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
-    onUploadLogsProgress: { platforms: new Set(['android', 'ios']), axes: focusedEventDeliveryRequiredAxes },
+    onConnectFailed: { platforms: new Set(['harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onConnecting: { platforms: new Set(['android', 'ios', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onConnectSuccess: { platforms: new Set(['android', 'ios', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onSyncServerStart: { platforms: new Set(['android', 'ios', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onSyncServerFinish: { platforms: new Set(['android', 'ios', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onRecvOfflineNewMessage: { platforms: new Set(['harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onSendMessageProgress: { platforms: new Set(['android', 'ios', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onRecvNewMessage: { platforms: new Set(['android', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onUploadFileProgress: { platforms: new Set(['android', 'ios', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
+    onUploadLogsProgress: { platforms: new Set(['android', 'ios', 'harmony']), axes: focusedEventDeliveryRequiredAxes },
   },
 }
+const focusedSuiteRequiredCallableAxes = {
+  conversation: {
+    setConversation: new Set(['side-effect', 'cleanup']),
+    setConversationDraft: new Set(['side-effect', 'cleanup']),
+    changeInputStates: new Set(['side-effect']),
+    markConversationMessageAsRead: new Set(['side-effect']),
+    markAllConversationMessageAsRead: new Set(['side-effect']),
+  },
+  group: {
+    setGroupInfo: new Set(['side-effect', 'event', 'cleanup']),
+  },
+  'event-delivery': {
+    sendMessage: new Set(['event']),
+    sendMessageNotOss: new Set(['event']),
+    uploadFile: new Set(['event']),
+    uploadLogs: new Set(['event']),
+  },
+}
+// Focused callable evidence follows the producers that the selected platform
+// can actually create. The generated manifest remains the full-run contract;
+// this map only filters declared correlations for a focused suite and never
+// invents an event that the manifest did not declare.
 const focusedSuiteCallableEventPolicies = {
   'event-delivery': {
     sendMessage: {
       android: { requiresEvent: true, allowedEvents: ['onSendMessageProgress', 'onRecvNewMessage'] },
       ios: { requiresEvent: true, allowedEvents: ['onSendMessageProgress'] },
+      harmony: { requiresEvent: true, allowedEvents: ['onSendMessageProgress', 'onRecvNewMessage'] },
     },
     sendMessageNotOss: {
       android: { requiresEvent: true, allowedEvents: ['onRecvNewMessage'] },
       ios: { requiresEvent: false, allowedEvents: [] },
+      harmony: { requiresEvent: true, allowedEvents: ['onRecvNewMessage'] },
     },
     uploadFile: {
       android: { requiresEvent: true, allowedEvents: ['onUploadFileProgress'] },
       ios: { requiresEvent: true, allowedEvents: ['onUploadFileProgress'] },
+      harmony: { requiresEvent: true, allowedEvents: ['onUploadFileProgress'] },
     },
     uploadLogs: {
       android: { requiresEvent: true, allowedEvents: ['onUploadLogsProgress'] },
       ios: { requiresEvent: true, allowedEvents: ['onUploadLogsProgress'] },
+      harmony: { requiresEvent: true, allowedEvents: ['onUploadLogsProgress'] },
     },
   },
+}
+const harmonyCompatibilityCanonicalNegativeProducerSuites = new Set(['app', 'events'])
+
+function focusedRunRequiresCallable(fullRun, focusedSuite, apiName) {
+  if (fullRun) return true
+  const requiredCallables = focusedSuiteRequiredCallables[focusedSuite]
+  return requiredCallables instanceof Set && requiredCallables.has(apiName)
+}
+
+function focusedRunRequiredEventPolicy(focusedSuite, eventName) {
+  const suitePolicy = focusedSuiteRequiredEventPolicies[focusedSuite]
+  return isRecord(suitePolicy) ? suitePolicy[eventName] : null
+}
+
+function focusedRunRequiresEvent(fullRun, focusedSuite, platform, eventName) {
+  if (fullRun) return true
+  const eventPolicy = focusedRunRequiredEventPolicy(focusedSuite, eventName)
+  return isRecord(eventPolicy)
+    && eventPolicy.platforms instanceof Set
+    && eventPolicy.platforms.has(platform)
+}
+
+function focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase) {
+  if (fullRun) return null
+  const suitePolicy = focusedSuiteCallableEventPolicies[focusedSuite]
+  if (!isRecord(suitePolicy) || !Object.prototype.hasOwnProperty.call(suitePolicy, contractCase.apiName)) return null
+  const callablePolicy = suitePolicy[contractCase.apiName]
+  if (!isRecord(callablePolicy) || !Object.prototype.hasOwnProperty.call(callablePolicy, platform)) {
+    return { requiresEvent: true, allowedEvents: [] }
+  }
+  const platformPolicy = callablePolicy[platform]
+  if (!isRecord(platformPolicy)
+    || typeof platformPolicy.requiresEvent !== 'boolean'
+    || !Array.isArray(platformPolicy.allowedEvents)) {
+    return { requiresEvent: true, allowedEvents: [] }
+  }
+  return {
+    requiresEvent: platformPolicy.requiresEvent,
+    allowedEvents: platformPolicy.allowedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0),
+  }
+}
+
+function focusedCallableExpectedEvents(fullRun, focusedSuite, platform, contractCase) {
+  const policy = focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase)
+  if (policy == null) return null
+  const declaredEvents = Array.isArray(contractCase.expectedEvents) ? contractCase.expectedEvents : []
+  return [...new Set(declaredEvents.filter((eventName) => typeof eventName === 'string'
+    && eventName.length > 0
+    && policy.allowedEvents.includes(eventName)))]
+}
+
+function effectiveCallableExpectedEvents(fullRun, focusedSuite, platform, contractCase) {
+  const focusedExpectedEvents = focusedCallableExpectedEvents(fullRun, focusedSuite, platform, contractCase)
+  if (focusedExpectedEvents != null) return focusedExpectedEvents
+  return Array.isArray(contractCase.expectedEvents) ? contractCase.expectedEvents : []
 }
 
 function isRecord(value) {
@@ -80,52 +166,6 @@ function callableEvidenceSuite(item) {
     return item.group
   }
   return typeof item.suite === 'string' ? item.suite : ''
-}
-
-function focusedRunRequiresCallable(fullRun, focusedSuite, apiName) {
-  if (fullRun) return true
-  const required = focusedSuiteRequiredCallables[focusedSuite]
-  return required instanceof Set && required.has(apiName)
-}
-
-function focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase) {
-  if (fullRun) return null
-  const suitePolicy = focusedSuiteCallableEventPolicies[focusedSuite]
-  if (!isRecord(suitePolicy) || !Object.hasOwn(suitePolicy, contractCase.apiName)) return null
-  const callablePolicy = suitePolicy[contractCase.apiName]
-  if (!isRecord(callablePolicy) || !Object.hasOwn(callablePolicy, platform)) {
-    return { requiresEvent: true, allowedEvents: [] }
-  }
-  const platformPolicy = callablePolicy[platform]
-  if (!isRecord(platformPolicy)
-    || typeof platformPolicy.requiresEvent !== 'boolean'
-    || !Array.isArray(platformPolicy.allowedEvents)) {
-    return { requiresEvent: true, allowedEvents: [] }
-  }
-  return {
-    requiresEvent: platformPolicy.requiresEvent,
-    allowedEvents: platformPolicy.allowedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0),
-  }
-}
-
-function focusedRunRequiredEventPolicy(focusedSuite, eventName) {
-  const suitePolicy = focusedSuiteRequiredEventPolicies[focusedSuite]
-  return isRecord(suitePolicy) ? suitePolicy[eventName] : null
-}
-
-function focusedRunRequiresEvent(fullRun, focusedSuite, platform, eventName) {
-  if (fullRun) return true
-  const policy = focusedRunRequiredEventPolicy(focusedSuite, eventName)
-  return isRecord(policy) && policy.platforms instanceof Set && policy.platforms.has(platform)
-}
-
-function effectiveCallableExpectedEvents(fullRun, focusedSuite, platform, contractCase) {
-  const policy = focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase)
-  const declared = Array.isArray(contractCase.expectedEvents)
-    ? contractCase.expectedEvents.filter((eventName) => typeof eventName === 'string' && eventName.length > 0)
-    : []
-  if (policy == null) return declared
-  return declared.filter((eventName) => policy.allowedEvents.includes(eventName))
 }
 
 function eventEvidenceName(item) {
@@ -236,6 +276,14 @@ function validateSchemaValue(document, schema, value, path = '$', referenceStack
     if (!Array.isArray(value)) return [schemaIssue(path, 'type', 'array', actualKind(value))]
     return value.flatMap((item, index) => validateSchemaValue(document, schema.items, item, `${path}[${index}]`, referenceStack))
   }
+  if (schema.kind === 'string-map') {
+    if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+      return [schemaIssue(path, 'type', 'string map', actualKind(value))]
+    }
+    return Object.entries(value).flatMap(([name, item]) => (
+      typeof item === 'string' ? [] : [schemaIssue(`${path}.${name}`, 'type', 'string', actualKind(item))]
+    ))
+  }
   if (schema.kind !== 'object') {
     return [schemaIssue(path, 'schema', 'known schema kind', schema.kind)]
   }
@@ -330,7 +378,7 @@ function eventStructureResult(candidates, eventName, responseSchemas) {
   return { passed: issues.length === 0, issues }
 }
 
-function itemAssertionPassed(item, axis, profile) {
+function itemAssertionPassed(item, axis, profile, requiredRule = null) {
   if (typeof profile !== 'string' || profile.length === 0) return false
   if (!isRecord(item) || !Array.isArray(item.assertions)) return false
   return item.assertions.some((assertion) => isRecord(assertion)
@@ -338,9 +386,103 @@ function itemAssertionPassed(item, axis, profile) {
     && assertion.profile === profile
     && typeof assertion.rule === 'string'
     && assertion.rule.length > 0
+    && (requiredRule == null || assertion.rule === requiredRule)
     && typeof assertion.expected === 'string'
     && typeof assertion.actual === 'string'
     && assertion.ok === true)
+}
+
+function itemDeclaresCallableAxis(item, axis) {
+  if (!isRecord(item)) return false
+  if (Array.isArray(item.assertions)
+    && item.assertions.some((assertion) => isRecord(assertion) && assertion.axis === axis)) return true
+  if (axis === 'side-effect') return item.sideEffectValidated === true
+  if (axis === 'event') return item.eventCorrelated === true
+    || (Array.isArray(item.eventCorrelations) && item.eventCorrelations.length > 0)
+  if (axis === 'negative') return item.negativeValidated === true
+    || (typeof item.negativeProfile === 'string' && item.negativeProfile.length > 0)
+  if (axis === 'cleanup') return item.cleanupValidated === true
+    || (typeof item.cleanupAction === 'string' && item.cleanupAction.length > 0)
+  return true
+}
+
+function producerRunsInFocusedSuites(producer, focusedSuites, platform) {
+  return isRecord(producer)
+    && producerAppliesToPlatform(producer, platform)
+    && focusedSuites instanceof Set
+    && focusedSuites.has(producer.suite)
+}
+
+function harmonyCompatibilityRunsCanonicalNegativeProducer(profile, producer, focusedSuites, platform) {
+  return profile === 'platform-unsupported'
+    && platform === 'harmony'
+    && focusedSuites instanceof Set
+    && focusedSuites.size === 1
+    && focusedSuites.has('harmony-compatibility')
+    && producerAppliesToPlatform(producer, platform)
+    && harmonyCompatibilityCanonicalNegativeProducerSuites.has(producer.suite)
+}
+
+function focusedRunIncludesPlannedCallableAxis(focusedSuites, contractCase, platform, axis) {
+  if (axis === 'negative') {
+    return Array.isArray(contractCase.negativeProducers)
+      && contractCase.negativeProducers.some((item) => isRecord(item)
+        && isRecord(item.producer)
+        && (producerRunsInFocusedSuites(item.producer, focusedSuites, platform)
+          || harmonyCompatibilityRunsCanonicalNegativeProducer(item.profile, item.producer, focusedSuites, platform)))
+  }
+  if (axis === 'cleanup') {
+    return producerRunsInFocusedSuites(contractCase.cleanupProducer, focusedSuites, platform)
+  }
+  return false
+}
+
+function focusedRunIncludesCallableAxis(fullRun, focusedSuite, focusedSuites, contractCase, candidates, platform, axis) {
+  const suitePolicy = focusedSuiteRequiredCallableAxes[focusedSuite]
+  const apiPolicy = isRecord(suitePolicy) ? suitePolicy[contractCase.apiName] : null
+  if (fullRun) return true
+  const eventPolicy = focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase)
+  if (axis === 'event' && eventPolicy != null && eventPolicy.requiresEvent === false) {
+    return false
+  }
+  const explicitlyOwned = (apiPolicy instanceof Set && apiPolicy.has(axis))
+    || focusedRunIncludesPlannedCallableAxis(focusedSuites, contractCase, platform, axis)
+  if (focusedSuite === 'event-delivery') {
+    return explicitlyOwned
+  }
+  return !focusedOptionalCallableAxes.has(axis)
+    || explicitlyOwned
+    || candidates.some((item) => itemDeclaresCallableAxis(item, axis))
+}
+
+function focusedRunIncludesPlannedEventAxis(focusedSuites, contractEvent, platform, axis) {
+  const includesProducer = (producer) => {
+    return producerRunsInFocusedSuites(producer, focusedSuites, platform)
+  }
+  if (axis === 'negative') {
+    return Array.isArray(contractEvent.negativeProducers)
+      && contractEvent.negativeProducers.some((item) => isRecord(item)
+        && isRecord(item.producer)
+        && (includesProducer(item.producer)
+          || harmonyCompatibilityRunsCanonicalNegativeProducer(item.profile, item.producer, focusedSuites, platform)))
+  }
+  if (axis === 'cleanup') return includesProducer(contractEvent.cleanupProducer)
+  if (axis === 'epoch') {
+    return isRecord(contractEvent.epochProducer)
+      && includesProducer(contractEvent.epochProducer.producer)
+  }
+  return false
+}
+
+function focusedRunIncludesEventAxis(fullRun, focusedSuite, focusedSuites, contractEvent, platform, axis) {
+  if (fullRun || focusedSuites == null) return true
+  const eventPolicy = focusedRunRequiredEventPolicy(focusedSuite, contractEvent.eventName)
+  const policyAxisOwned = focusedRunRequiresEvent(false, focusedSuite, platform, contractEvent.eventName)
+    && isRecord(eventPolicy)
+    && eventPolicy.axes instanceof Set
+    && eventPolicy.axes.has(axis)
+  return policyAxisOwned
+    || focusedRunIncludesPlannedEventAxis(focusedSuites, contractEvent, platform, axis)
 }
 
 function profileAssertionPassed(candidates, axis, profile) {
@@ -464,12 +606,37 @@ function eventCorrelationPayloadMatches(eventName, recorded, payloadIdentity) {
   return identityField.length > 0 && recorded[identityField] === payloadIdentity
 }
 
+// Keep this policy aligned with buildAutomationEventCorrelations in the page
+// runner.  The correlation kind is part of the evidence contract: a caller
+// must not downgrade an identity-bearing event to an exclusive timing window.
+const lifecycleCorrelationCallables = new Set([
+  'initSDK', 'login', 'logout', 'unInitSDK', 'getLoginStatus', 'getLoginUserID',
+])
+const uploadCorrelationCallables = new Set(['uploadFile', 'uploadLogs'])
+const crossAccountCorrelationCallables = new Set([
+  'sendMessageNotOss',
+  'addFriend', 'acceptFriendApplication', 'refuseFriendApplication', 'addBlack',
+  'createGroup', 'joinGroup', 'acceptGroupApplication', 'refuseGroupApplication',
+  'kickGroupMember', 'inviteUserToGroup', 'quitGroup', 'dismissGroup',
+])
+const operationCorrelationCallables = new Set([
+  'updateFriends', 'deleteFriend', 'removeBlack', 'setGroupInfo',
+  'setGroupMemberInfo', 'setConversation', 'changeInputStates',
+  'markConversationMessageAsRead',
+])
+
 function requiredCallableEventCorrelationKind(apiName, eventName) {
-  if (apiName === 'sendMessage' && eventName === 'onSendMessageProgress') return 'operation-payload-identity'
-  if ((apiName === 'sendMessage' || apiName === 'sendMessageNotOss') && eventName === 'onRecvNewMessage') {
+  if (apiName === 'sendMessage' && eventName === 'onSendMessageProgress') {
+    return 'operation-payload-identity'
+  }
+  if ((apiName === 'sendMessage' || apiName === 'sendMessageNotOss')
+    && eventName === 'onRecvNewMessage') {
     return 'cross-account-payload-identity'
   }
-  if (apiName === 'uploadFile' || apiName === 'uploadLogs') return 'exclusive-operation-window'
+  if (lifecycleCorrelationCallables.has(apiName)) return 'lifecycle-order'
+  if (uploadCorrelationCallables.has(apiName)) return 'exclusive-operation-window'
+  if (crossAccountCorrelationCallables.has(apiName)) return 'cross-account-payload-identity'
+  if (operationCorrelationCallables.has(apiName)) return 'operation-payload-identity'
   return ''
 }
 
@@ -488,9 +655,11 @@ function validCallableEventCorrelation(value, apiName, eventName, identityPath) 
   if (value.operationApiName !== apiName || value.eventName !== eventName || value.payloadMatched !== true) return false
   const requiredKind = requiredCallableEventCorrelationKind(apiName, eventName)
   if (requiredKind.length > 0 && value.correlationKind !== requiredKind) return false
+  // This window kind is reserved for upload progress, whose payload has no
+  // stable operation identity.  Do not let an unclassified operation bypass
+  // the exact payload checks by claiming the weaker form.
   if (value.correlationKind === 'exclusive-operation-window'
-    && apiName !== 'uploadFile'
-    && apiName !== 'uploadLogs') return false
+    && !uploadCorrelationCallables.has(apiName)) return false
   if (!Number.isFinite(value.operationSequence) || !Number.isFinite(value.eventSequence)) return false
   if (!Number.isFinite(value.operationEpoch) || !Number.isFinite(value.eventEpoch)) return false
   const crossAccountCorrelation = value.correlationKind === 'cross-account-payload-identity'
@@ -503,11 +672,21 @@ function validCallableEventCorrelation(value, apiName, eventName, identityPath) 
   if (value.correlationKind === 'lifecycle-order') {
     return value.exclusiveOperation === false && value.payloadIdentity === ''
   }
-  if (value.correlationKind === 'payload-identity' || value.correlationKind === 'operation-payload-identity') {
+  if (value.correlationKind === 'payload-identity') {
     if (typeof value.payloadIdentity !== 'string' || value.payloadIdentity.length === 0) return false
     if (typeof value.eventPayloadDetail !== 'string' || !Number.isFinite(value.operationTerminalSequence)) return false
     if (value.operationTerminalSequence <= value.operationSequence) return false
     const recorded = normalizeRecordedValue(parseRecordedValue(value.eventPayloadDetail, 'any'), 'uts-typed-json-v1')
+    return eventCorrelationPayloadMatches(eventName, recorded, value.payloadIdentity)
+  }
+  if (value.correlationKind === 'operation-payload-identity') {
+    if (typeof value.payloadIdentity !== 'string' || value.payloadIdentity.length === 0) return false
+    if (typeof value.eventPayloadDetail !== 'string' || !Number.isFinite(value.operationTerminalSequence)) return false
+    if (value.operationTerminalSequence <= value.operationSequence) return false
+    const recorded = normalizeRecordedValue(parseRecordedValue(value.eventPayloadDetail, 'any'), 'uts-typed-json-v1')
+    if (typeof identityPath === 'string' && identityPath.length > 0) {
+      return valueAtPath(recorded, identityPath) === value.payloadIdentity
+    }
     return eventCorrelationPayloadMatches(eventName, recorded, value.payloadIdentity)
   }
   if (value.correlationKind === 'exclusive-operation-window') {
@@ -608,49 +787,245 @@ function callableEventCorrelationResult(candidates, contractCase, expectedEvents
   return { passed: missing.length === 0 && invalid.length === 0 && coherentWindow, missing, invalid, undeclared: false }
 }
 
-function negativeProfileEvidencePassed(candidates, profile) {
+function producerAppliesToPlatform(producer, platform) {
+  return isRecord(producer)
+    && typeof producer.key === 'string'
+    && producer.key.length > 0
+    && typeof producer.suite === 'string'
+    && producer.suite.length > 0
+    && typeof producer.scenario === 'string'
+    && producer.scenario.length > 0
+    && Array.isArray(producer.platforms)
+    && producer.platforms.length > 0
+    && producer.platforms.includes(platform)
+}
+
+function validEpochProducer(producer, platform) {
+  return isRecord(producer)
+    && typeof producer.rule === 'string'
+    && producer.rule.length > 0
+    && producerAppliesToPlatform(producer.producer, platform)
+}
+
+function producerEvidenceMatches(item, producer) {
+  if (producer == null) return true
+  return isRecord(item)
+    && typeof producer.key === 'string'
+    && producer.key.length > 0
+    && typeof producer.suite === 'string'
+    && producer.suite.length > 0
+    && typeof producer.scenario === 'string'
+    && producer.scenario.length > 0
+    && item.producerKey === producer.key
+    && callableEvidenceSuite(item) === producer.suite
+    && item.caseId === producer.scenario
+}
+
+function focusedCompatibilityCanonicalNegativeEvidenceMatches(item, contractCase, focusedSuites, platform) {
+  if (!Array.isArray(contractCase.negativeProducers)) return false
+  return contractCase.negativeProducers.some((declared) => isRecord(declared)
+    && isRecord(declared.producer)
+    && item.negativeProfile === declared.profile
+    && harmonyCompatibilityRunsCanonicalNegativeProducer(declared.profile, declared.producer, focusedSuites, platform)
+    && producerEvidenceMatches(item, declared.producer))
+}
+
+function callableEvidenceMatchesFocusedScope(item, name, contractCase, focusedSuites, platform) {
+  if (callableEvidenceName(item) !== name) return false
+  return focusedSuites == null
+    || focusedSuites.has(callableEvidenceSuite(item))
+    || focusedCompatibilityCanonicalNegativeEvidenceMatches(item, contractCase, focusedSuites, platform)
+}
+
+function negativeProfileEvidencePassed(candidates, profile, producer = null) {
   return candidates.some((item) => {
     if (!isSuccessfulEvidence(item)
       || item.invoked !== true
       || item.negativeValidated !== true
-      || item.negativeProfile !== profile) return false
+      || item.negativeProfile !== profile
+      || !producerEvidenceMatches(item, producer)) return false
     if (item.resolved === false) return typeof item.errCode === 'number' && Number.isFinite(item.errCode)
     return item.resolved === true && itemAssertionPassed(item, 'negative', profile)
   })
 }
 
-function negativeEvidencePassed(candidates, disposition, contractCase) {
+function declaredNegativeProducers(contractCase, platform, requireProducerPlan = false) {
+  if (Array.isArray(contractCase.negativeProducers) && contractCase.negativeProducers.length > 0) {
+    return contractCase.negativeProducers.filter((item) => isRecord(item)
+      && typeof item.profile === 'string'
+      && isRecord(item.producer)
+      && producerAppliesToPlatform(item.producer, platform))
+  }
+  if (requireProducerPlan) return []
+  const profiles = Array.isArray(contractCase.negativeProfiles)
+    ? contractCase.negativeProfiles.filter((profile) => typeof profile === 'string' && profile.length > 0)
+    : []
+  return profiles.map((profile) => ({ profile, producer: null }))
+}
+
+function negativeProducerProfileMismatch(contractCase) {
+  if (!Array.isArray(contractCase.negativeProducers) || contractCase.negativeProducers.length === 0) return false
+  const declared = Array.isArray(contractCase.negativeProfiles)
+    ? contractCase.negativeProfiles.filter((profile) => typeof profile === 'string' && profile.length > 0)
+    : []
+  const producers = contractCase.negativeProducers
+    .filter((item) => isRecord(item))
+    .map((item) => item.profile)
+    .filter((profile) => typeof profile === 'string' && profile.length > 0)
+  return declared.length !== producers.length
+    || new Set(declared).size !== declared.length
+    || new Set(producers).size !== producers.length
+    || declared.some((profile) => !producers.includes(profile))
+    || producers.some((profile) => !declared.includes(profile))
+}
+
+function negativeEvidencePassed(candidates, disposition, contractCase, platform, requireProducerPlan = false) {
+  const producers = declaredNegativeProducers(contractCase, platform, requireProducerPlan)
+  const hasProducerPlan = Array.isArray(contractCase.negativeProducers) && contractCase.negativeProducers.length > 0
+  if (requireProducerPlan && !hasProducerPlan) return false
   const declaredProfiles = Array.isArray(contractCase.negativeProfiles)
     ? contractCase.negativeProfiles.filter((profile) => typeof profile === 'string' && profile.length > 0)
     : []
   if (disposition === 'platform-unsupported') {
+    const unsupportedProducers = producers.filter((item) => item.profile === 'platform-unsupported')
     return declaredProfiles.includes('platform-unsupported')
-      && negativeProfileEvidencePassed(candidates, 'platform-unsupported')
+      && unsupportedProducers.length > 0
+      && unsupportedProducers.every((item) => negativeProfileEvidencePassed(candidates, item.profile, item.producer))
   }
-  return declaredProfiles.some((profile) => negativeProfileEvidencePassed(candidates, profile))
+  if (!hasProducerPlan) {
+    return producers.some((item) => negativeProfileEvidencePassed(candidates, item.profile, item.producer))
+  }
+  return producers.length > 0
+    && producers.every((item) => negativeProfileEvidencePassed(candidates, item.profile, item.producer))
 }
 
-function requiredNegativeEvidenceResult(candidates, contractCase) {
-  const profiles = Array.isArray(contractCase.negativeProfiles)
-    ? [...new Set(contractCase.negativeProfiles.filter((profile) => typeof profile === 'string' && profile.length > 0))]
-    : []
+function requiredNegativeEvidenceResult(candidates, contractCase, platform, requireProducerPlan = false) {
+  const producers = declaredNegativeProducers(contractCase, platform, requireProducerPlan)
+  const hasProducerPlan = Array.isArray(contractCase.negativeProducers)
+    && contractCase.negativeProducers.length > 0
+  if ((requireProducerPlan && !hasProducerPlan) || (hasProducerPlan && producers.length === 0)) {
+    return { passed: false, missing: [], undeclared: true }
+  }
+  const profiles = hasProducerPlan
+    ? producers.map((item) => item.profile)
+    : Array.isArray(contractCase.negativeProfiles)
+      ? [...new Set(contractCase.negativeProfiles.filter((profile) => typeof profile === 'string' && profile.length > 0))]
+      : []
   if (profiles.length === 0) return { passed: false, missing: [], undeclared: true }
-  const missing = profiles.filter((profile) => !negativeProfileEvidencePassed(candidates, profile))
+  const missing = hasProducerPlan
+    ? producers
+      .filter((item) => !negativeProfileEvidencePassed(candidates, item.profile, item.producer))
+      .map((item) => item.profile)
+    : profiles.filter((profile) => !negativeProfileEvidencePassed(candidates, profile))
   return { passed: missing.length === 0, missing, undeclared: false }
 }
 
-function cleanupEvidencePassed(candidates, contractCase) {
+function cleanupEvidencePassed(candidates, contractCase, platform, requireProducerPlan = false) {
   const action = typeof contractCase.cleanupAction === 'string' ? contractCase.cleanupAction : ''
-  if (action.length === 0) return false
+  const requiredRule = typeof contractCase.cleanupRule === 'string' && contractCase.cleanupRule.length > 0
+    ? contractCase.cleanupRule
+    : null
+  if (action.length === 0 || (requireProducerPlan && action === 'none')) return false
+  const producer = isRecord(contractCase.cleanupProducer)
+    && producerAppliesToPlatform(contractCase.cleanupProducer, platform)
+    ? contractCase.cleanupProducer
+    : null
+  if ((requireProducerPlan && producer == null) || (isRecord(contractCase.cleanupProducer) && producer == null)) return false
   return candidates.some((item) => isSuccessfulEvidence(item)
     && item.invoked === true
     && item.resolved === true
     && item.cleanupValidated === true
     && item.cleanupAction === action
-    && itemAssertionPassed(item, 'cleanup', action))
+    && producerEvidenceMatches(item, producer)
+    && itemAssertionPassed(item, 'cleanup', action, requiredRule))
 }
 
-function knownIssueDeclarationIssues(contractCase, platform, kind) {
+function cleanupActionManifestIssue(contractCase, axes) {
+  if (!axes.includes('cleanup')) return null
+  const action = typeof contractCase.cleanupAction === 'string' ? contractCase.cleanupAction : ''
+  if (action.length === 0) return 'cleanup cases must declare an action'
+  if (action === 'none') return 'cleanup cases cannot use a no-op action'
+  return null
+}
+
+function explicitProducerPlanIssues(contractCase, platform, kind, axes, explicit) {
+  if (!explicit) return []
+  const issues = []
+  const identifier = kind === 'event' ? contractCase.eventName : contractCase.apiName
+  const caseId = String(contractCase.caseId)
+  if (axes.includes('negative') && declaredNegativeProducers(contractCase, platform, true).length === 0) {
+    issues.push(issue(caseId, 'manifest', 'missing-negative-producer', `${identifier} requires a platform-scoped negative producer on ${platform}`))
+  }
+  if (axes.includes('negative') && negativeProducerProfileMismatch(contractCase)) {
+    issues.push(issue(caseId, 'manifest', 'negative-producer-profile-mismatch', `${identifier} negative profiles must match its declared producer profiles`))
+  }
+  const cleanupAction = typeof contractCase.cleanupAction === 'string' ? contractCase.cleanupAction : ''
+  if (axes.includes('cleanup')
+    && cleanupAction.length > 0
+    && cleanupAction !== 'none'
+    && !isRecord(contractCase.cleanupProducer)) {
+    issues.push(issue(caseId, 'manifest', 'missing-cleanup-producer', `${identifier} requires a platform-scoped cleanup producer on ${platform}`))
+  } else if (axes.includes('cleanup')
+    && cleanupAction.length > 0
+    && cleanupAction !== 'none'
+    && !producerAppliesToPlatform(contractCase.cleanupProducer, platform)) {
+    issues.push(issue(caseId, 'manifest', 'invalid-cleanup-producer', `${identifier} cleanup producer is incomplete or out of scope for ${platform}`))
+  }
+  if (kind === 'event' && axes.includes('epoch') && !isRecord(contractCase.epochProducer)) {
+    issues.push(issue(caseId, 'manifest', 'missing-epoch-producer', `${identifier} requires a platform-scoped epoch producer on ${platform}`))
+  } else if (kind === 'event' && axes.includes('epoch') && !validEpochProducer(contractCase.epochProducer, platform)) {
+    issues.push(issue(caseId, 'manifest', 'invalid-epoch-producer', `${identifier} epoch producer is incomplete or out of scope for ${platform}`))
+  }
+  return issues
+}
+
+function epochEvidencePassed(candidates, contractEvent, platform, requireProducerPlan = false) {
+  const producer = isRecord(contractEvent.epochProducer) ? contractEvent.epochProducer : null
+  if (producer == null) return requireProducerPlan ? false : axisPassed(candidates, 'epoch', 'event')
+  if (!validEpochProducer(producer, platform)) return false
+  return candidates.some((item) => !isSkipped(item)
+    && item.epochValidated === true
+    && item.epochProducerKey === producer.producer.key
+    && item.epochRule === producer.rule
+    && item.epochProducerSuite === producer.producer.suite
+    && item.epochProducerScenario === producer.producer.scenario)
+}
+
+function platformValidationAxes(contractCase, platform) {
+  const legacyAxes = Array.isArray(contractCase.validationAxes)
+    ? contractCase.validationAxes.filter((axis) => typeof axis === 'string' && axis.length > 0)
+    : []
+  if (!Object.prototype.hasOwnProperty.call(contractCase, 'validationAxesByPlatform')) {
+    return { axes: legacyAxes, explicit: false, valid: true }
+  }
+  const axesByPlatform = contractCase.validationAxesByPlatform
+  if (!isRecord(axesByPlatform) || !Array.isArray(axesByPlatform[platform])) {
+    return { axes: [], explicit: true, valid: false }
+  }
+  const axes = axesByPlatform[platform]
+  if (!axes.every((axis) => typeof axis === 'string' && axis.length > 0)) {
+    return { axes: [], explicit: true, valid: false }
+  }
+  return { axes, explicit: true, valid: true }
+}
+
+function platformAxesDispositionIssue(contractCase, disposition, axes, explicit) {
+  if (!explicit) return null
+  if (disposition === 'not-in-edition') {
+    return axes.length === 0 ? null : 'not-in-edition cases cannot require validation axes'
+  }
+  if (disposition === 'capability-negative' || disposition === 'platform-unsupported') {
+    return axes.length === 1 && axes[0] === 'negative'
+      ? null
+      : `${disposition} cases must require only the negative axis`
+  }
+  if (disposition === 'required') {
+    return axes.length > 0 ? null : 'required cases must require at least one validation axis'
+  }
+  return null
+}
+
+function knownIssueDeclarationIssues(contractCase, platform, kind, requiredAxes) {
   if (!isRecord(contractCase.approvedKnownIssue)
     || !Object.prototype.hasOwnProperty.call(contractCase.approvedKnownIssue, platform)) return []
   const declared = contractCase.approvedKnownIssue[platform]
@@ -661,7 +1036,6 @@ function knownIssueDeclarationIssues(contractCase, platform, kind) {
     || declared.waivedAxes.length === 0) {
     return [issue(String(contractCase.caseId), 'known-issue', 'malformed-known-issue-waiver', `${kind} known-issue waiver on ${platform} must declare a code and at least one waived axis`)]
   }
-  const requiredAxes = Array.isArray(contractCase.validationAxes) ? contractCase.validationAxes : []
   const invalidAxes = declared.waivedAxes.filter((axis) => typeof axis !== 'string'
     || !requiredAxes.includes(axis)
     || nonWaivableValidationAxes.has(axis))
@@ -672,6 +1046,33 @@ function knownIssueDeclarationIssues(contractCase, platform, kind) {
     'invalid-known-issue-waiver-axis',
     `${kind} known-issue waiver on ${platform} cannot waive undeclared, negative, or cleanup axes: ${invalidAxes.map(String).join(', ')}`,
   )]
+}
+
+function manifestEntryIssues(contractCase, disposition, platform, kind, platformAxes) {
+  const issues = []
+  if (!platformAxes.valid) {
+    const identifier = kind === 'event' ? contractCase.eventName : contractCase.apiName
+    issues.push(issue(String(contractCase.caseId), 'manifest', 'malformed-validation-axes-by-platform', `${identifier} has no valid ${platform} validation axis map`))
+  }
+  const dispositionAxesIssue = platformAxesDispositionIssue(contractCase, disposition, platformAxes.axes, platformAxes.explicit)
+  if (dispositionAxesIssue != null) {
+    const identifier = kind === 'event' ? contractCase.eventName : contractCase.apiName
+    issues.push(issue(String(contractCase.caseId), 'manifest', 'invalid-platform-validation-axes', `${identifier} ${dispositionAxesIssue}`))
+  }
+  // schema-v2 manifests represented "no cleanup required" as an explicit
+  // cleanup axis with cleanupAction: "none".  The producer-aware schema-v3
+  // contract intentionally forbids that no-op declaration, but legacy report
+  // verification must retain its historical semantics.
+  const cleanupActionIssue = platformAxes.explicit
+    ? cleanupActionManifestIssue(contractCase, platformAxes.axes)
+    : null
+  if (cleanupActionIssue != null) {
+    const identifier = kind === 'event' ? contractCase.eventName : contractCase.apiName
+    issues.push(issue(String(contractCase.caseId), 'manifest', 'invalid-cleanup-action', `${identifier} ${cleanupActionIssue}`))
+  }
+  issues.push(...explicitProducerPlanIssues(contractCase, platform, kind, platformAxes.axes, platformAxes.explicit))
+  issues.push(...knownIssueDeclarationIssues(contractCase, platform, kind, platformAxes.axes))
+  return issues
 }
 
 function issue(caseId, axis, rule, detail) {
@@ -696,13 +1097,40 @@ function validateAutomationEvidence(input) {
   }
 
   const fullRun = input.fullRun !== false
+  const expectedSuiteFilter = !fullRun && typeof input.expectedSuiteFilter === 'string'
+    ? input.expectedSuiteFilter.trim()
+    : ''
   const reportCases = Array.isArray(report.cases) ? report.cases.filter(isRecord) : []
   const reportEvents = Array.isArray(report.events) ? report.events.filter(isRecord) : []
-  const filteredSuiteGroups = !fullRun && typeof report.suiteFilter === 'string' && report.suiteFilter.length > 0 && Array.isArray(report.executedSuites)
-    ? new Set(report.executedSuites.filter((item) => typeof item === 'string' && item.length > 0))
-    : null
-  const focusedSuite = !fullRun && typeof report.suiteFilter === 'string' ? report.suiteFilter : ''
+  const rawReportExecutedSuites = report.executedSuites
+  const reportExecutedSuites = Array.isArray(rawReportExecutedSuites)
+    ? rawReportExecutedSuites.filter((item) => typeof item === 'string' && item.length > 0)
+    : []
+  const reportSuiteFilter = !fullRun && typeof report.suiteFilter === 'string'
+    ? report.suiteFilter.trim()
+    : ''
+  const focusedSuite = expectedSuiteFilter.length > 0
+    ? expectedSuiteFilter
+    : reportSuiteFilter
+  const focusedSuiteAuthorityMatches = expectedSuiteFilter.length === 0
+    || (report.suiteFilter === expectedSuiteFilter
+      && Array.isArray(rawReportExecutedSuites)
+      && rawReportExecutedSuites.length === 1
+      && rawReportExecutedSuites[0] === expectedSuiteFilter)
+  const filteredSuiteGroups = !fullRun && expectedSuiteFilter.length > 0
+    ? new Set([expectedSuiteFilter])
+    : !fullRun && reportSuiteFilter.length > 0 && Array.isArray(report.executedSuites)
+      ? new Set(reportExecutedSuites)
+      : null
   const issues = []
+  if (!focusedSuiteAuthorityMatches) {
+    issues.push(issue(
+      'runtime-summary',
+      'suite',
+      'focused-suite-authority-mismatch',
+      'focused report suite metadata did not match the runner authority',
+    ))
+  }
   const knownIssueWaivers = []
   let checkedCallables = 0
   let passedCallables = 0
@@ -716,30 +1144,57 @@ function validateAutomationEvidence(input) {
       throw new Error('Malformed callable entry in test disposition manifest')
     }
     const disposition = isRecord(contractCase.platforms) ? contractCase.platforms[platform] : undefined
+    const platformAxes = platformValidationAxes(contractCase, platform)
+    const manifestIssues = manifestEntryIssues(contractCase, disposition, platform, 'callable', platformAxes)
     if (disposition === 'not-in-edition') {
+      issues.push(...manifestIssues)
       continue
     }
-    if (!fullRun && focusedSuite === 'event-delivery' && !focusedRunRequiresCallable(fullRun, focusedSuite, contractCase.apiName)) {
+    const candidates = reportCases.filter((item) => callableEvidenceMatchesFocusedScope(
+      item,
+      contractCase.apiName,
+      contractCase,
+      filteredSuiteGroups,
+      platform,
+    ))
+    const axes = platformAxes.axes.filter((axis) => focusedRunIncludesCallableAxis(
+      fullRun,
+      focusedSuite,
+      filteredSuiteGroups,
+      contractCase,
+      candidates,
+      platform,
+      axis,
+    ))
+    if (!fullRun && axes.length === 0) {
+      if (manifestIssues.length > 0) {
+        checkedCallables += 1
+        issues.push(...manifestIssues)
+      }
       continue
     }
-    const candidates = reportCases.filter((item) => callableEvidenceName(item) === contractCase.apiName
-      && (filteredSuiteGroups == null || filteredSuiteGroups.has(callableEvidenceSuite(item))))
-    const focusedEventPolicy = focusedCallableEventPolicy(fullRun, focusedSuite, platform, contractCase)
-    const validationAxes = focusedEventPolicy == null
-      ? (Array.isArray(contractCase.validationAxes) ? contractCase.validationAxes : [])
-      : focusedEventPolicy.requiresEvent ? ['event'] : []
-    if (!fullRun && validationAxes.length === 0) {
-      continue
-    }
-    if (!fullRun && candidates.length === 0 && !focusedRunRequiresCallable(fullRun, focusedSuite, contractCase.apiName)) {
+    const focusedProducerRequiresCallable = !fullRun
+      && platformAxes.axes.some((axis) => focusedRunIncludesPlannedCallableAxis(
+        filteredSuiteGroups,
+        contractCase,
+        platform,
+        axis,
+      ))
+    if (!fullRun && candidates.length === 0
+      && !focusedRunRequiresCallable(fullRun, focusedSuite, contractCase.apiName)
+      && !focusedProducerRequiresCallable) {
+      if (manifestIssues.length > 0) {
+        checkedCallables += 1
+        issues.push(...manifestIssues)
+      }
       continue
     }
     checkedCallables += 1
     const before = issues.length
     const waiversBefore = knownIssueWaivers.length
-    issues.push(...knownIssueDeclarationIssues(contractCase, platform, 'callable'))
+    issues.push(...manifestIssues)
     if (disposition === 'capability-negative' || disposition === 'platform-unsupported') {
-      if (!negativeEvidencePassed(candidates, disposition, contractCase)) {
+      if (!negativeEvidencePassed(candidates, disposition, contractCase, platform, platformAxes.explicit)) {
         issues.push(issue(
           String(contractCase.caseId),
           'negative',
@@ -748,12 +1203,14 @@ function validateAutomationEvidence(input) {
         ))
       }
     } else if (disposition === 'required') {
-      const axes = validationAxes
       const approvedKnownIssueCandidates = candidates.filter((item) => approvedKnownIssueMatches(item, contractCase, platform))
       const evidenceCandidates = approvedKnownIssueCandidates.length > 0 ? approvedKnownIssueCandidates : candidates
       for (const axis of axes) {
+        if (!focusedRunIncludesCallableAxis(fullRun, focusedSuite, filteredSuiteGroups, contractCase, candidates, platform, axis)) {
+          continue
+        }
         if (axis === 'negative') {
-          const negative = requiredNegativeEvidenceResult(candidates, contractCase)
+          const negative = requiredNegativeEvidenceResult(candidates, contractCase, platform, platformAxes.explicit)
           if (!negative.passed) {
             issues.push(issue(
               String(contractCase.caseId),
@@ -767,7 +1224,7 @@ function validateAutomationEvidence(input) {
           continue
         }
         if (axis === 'cleanup') {
-          if (!cleanupEvidencePassed(candidates, contractCase)) {
+          if (!cleanupEvidencePassed(candidates, contractCase, platform, platformAxes.explicit)) {
             issues.push(issue(
               String(contractCase.caseId),
               'cleanup',
@@ -854,36 +1311,74 @@ function validateAutomationEvidence(input) {
       throw new Error('Malformed event entry in test disposition manifest')
     }
     const disposition = isRecord(contractEvent.platforms) ? contractEvent.platforms[platform] : undefined
+    const platformAxes = platformValidationAxes(contractEvent, platform)
+    const manifestIssues = manifestEntryIssues(contractEvent, disposition, platform, 'event', platformAxes)
     if (disposition === 'not-in-edition') {
+      issues.push(...manifestIssues)
       continue
     }
     const requiresNegativeEvidence = disposition === 'platform-unsupported' || disposition === 'capability-negative'
-    const focusedEventRequired = focusedRunRequiresEvent(fullRun, focusedSuite, platform, contractEvent.eventName)
-    if (!fullRun && focusedSuite === 'event-delivery' && !focusedEventRequired) {
+    const axes = platformAxes.axes.filter((axis) => focusedRunIncludesEventAxis(
+      fullRun,
+      focusedSuite,
+      filteredSuiteGroups,
+      contractEvent,
+      platform,
+      axis,
+    ))
+    if (!fullRun && axes.length === 0) {
+      if (manifestIssues.length > 0) {
+        checkedEvents += 1
+        issues.push(...manifestIssues)
+      }
       continue
     }
-    if (filteredSuiteGroups != null && !filteredSuiteGroups.has('event-delivery')) {
-      continue
-    }
-    const caseCandidates = reportCases.filter((item) => callableEvidenceName(item) === contractEvent.eventName
-      && (filteredSuiteGroups == null || filteredSuiteGroups.has(callableEvidenceSuite(item))))
+    const caseCandidates = reportCases.filter((item) => callableEvidenceMatchesFocusedScope(
+      item,
+      contractEvent.eventName,
+      contractEvent,
+      filteredSuiteGroups,
+      platform,
+    ))
     const eventCandidates = reportEvents.filter((item) => eventEvidenceName(item) === contractEvent.eventName)
     const candidates = requiresNegativeEvidence ? caseCandidates : eventCandidates
     const allCandidates = [...eventCandidates, ...caseCandidates]
-    if (!fullRun && allCandidates.length === 0 && !focusedEventRequired) {
+    const plannedFocusedEvent = !fullRun
+      && filteredSuiteGroups != null
+      && !filteredSuiteGroups.has('event-delivery')
+      && axes.length > 0
+    const focusedEventRequiresEvidence = !fullRun
+      && focusedRunRequiresEvent(fullRun, focusedSuite, platform, contractEvent.eventName)
+      && axes.length > 0
+    if (!fullRun && allCandidates.length === 0 && !plannedFocusedEvent && !focusedEventRequiresEvidence) {
+      if (manifestIssues.length > 0) {
+        checkedEvents += 1
+        issues.push(...manifestIssues)
+      }
       continue
     }
-    if (!requiresNegativeEvidence
+    const unobservedPassiveEvent = !requiresNegativeEvidence
+      && !focusedEventRequiresEvidence
       && contractEvent.deliveryDisposition === 'passive-only'
-      && candidates.every((item) => !eventEvidenceObserved(item))) {
+      && candidates.every((item) => !eventEvidenceObserved(item))
+    const validationAxes = unobservedPassiveEvent && platformAxes.explicit
+      ? axes.filter((axis) => axis === 'negative' || axis === 'cleanup' || axis === 'epoch')
+      : unobservedPassiveEvent
+        ? []
+        : axes
+    if (unobservedPassiveEvent && validationAxes.length === 0) {
+      if (manifestIssues.length > 0) {
+        checkedEvents += 1
+        issues.push(...manifestIssues)
+      }
       continue
     }
     checkedEvents += 1
     const before = issues.length
     const waiversBefore = knownIssueWaivers.length
-    issues.push(...knownIssueDeclarationIssues(contractEvent, platform, 'event'))
+    issues.push(...manifestIssues)
     if (disposition === 'platform-unsupported') {
-      if (!negativeEvidencePassed(candidates, disposition, contractEvent)) {
+      if (!negativeEvidencePassed(candidates, disposition, contractEvent, platform, platformAxes.explicit)) {
         issues.push(issue(
           String(contractEvent.caseId),
           'negative',
@@ -892,13 +1387,9 @@ function validateAutomationEvidence(input) {
         ))
       }
     } else if (disposition === 'required') {
-      const focusedEventPolicy = focusedRunRequiredEventPolicy(focusedSuite, contractEvent.eventName)
-      const axes = !fullRun && focusedEventRequired && isRecord(focusedEventPolicy) && focusedEventPolicy.axes instanceof Set
-        ? (Array.isArray(contractEvent.validationAxes) ? contractEvent.validationAxes.filter((axis) => focusedEventPolicy.axes.has(axis)) : [])
-        : (Array.isArray(contractEvent.validationAxes) ? contractEvent.validationAxes : [])
-      for (const axis of axes) {
+      for (const axis of validationAxes) {
         if (axis === 'negative') {
-          const negative = requiredNegativeEvidenceResult(caseCandidates, contractEvent)
+          const negative = requiredNegativeEvidenceResult(caseCandidates, contractEvent, platform, platformAxes.explicit)
           if (!negative.passed) {
             issues.push(issue(
               String(contractEvent.caseId),
@@ -912,7 +1403,7 @@ function validateAutomationEvidence(input) {
           continue
         }
         if (axis === 'cleanup') {
-          if (!cleanupEvidencePassed(allCandidates, contractEvent)) {
+          if (!cleanupEvidencePassed(allCandidates, contractEvent, platform, platformAxes.explicit)) {
             issues.push(issue(
               String(contractEvent.caseId),
               'cleanup',
@@ -940,6 +1431,20 @@ function validateAutomationEvidence(input) {
           }
           continue
         }
+        if (axis === 'epoch' && !epochEvidencePassed(candidates, contractEvent, platform, platformAxes.explicit)) {
+          const waiver = approvedEventKnownIssueWaiver(reportCases, manifest, contractEvent, platform, axis)
+          if (waiver != null) {
+            knownIssueWaivers.push(waiver)
+          } else {
+            issues.push(issue(
+              String(contractEvent.caseId),
+              'epoch',
+              candidates.length === 0 ? 'missing-evidence' : 'epoch-producer-invalid',
+              `${contractEvent.eventName} has no passing epoch evidence from its generated producer on ${platform}`,
+            ))
+          }
+          continue
+        }
         if (!axisPassed(candidates, axis, 'event')) {
           const waiver = approvedEventKnownIssueWaiver(reportCases, manifest, contractEvent, platform, axis)
           if (waiver != null) {
@@ -955,7 +1460,7 @@ function validateAutomationEvidence(input) {
         }
       }
     } else if (disposition === 'capability-negative') {
-      if (!negativeEvidencePassed(candidates, disposition, contractEvent)) {
+      if (!negativeEvidencePassed(candidates, disposition, contractEvent, platform, platformAxes.explicit)) {
         issues.push(issue(String(contractEvent.caseId), 'negative', 'missing-negative-evidence', `${contractEvent.eventName} has no executable capability-negative evidence`))
       }
     } else {

@@ -47,6 +47,18 @@ test('Public workspace exposes local build, run, and automation entrypoints for 
   assert.equal(scripts['local:test:ios'], 'npm run local -- test --product public --surface uniappx --platform ios --suite full')
 })
 
+test('Public automation staging carries the executable summary verifier source', () => {
+  const descriptor = JSON.parse(readFileSync(resolve(root, 'local-runtime/products/public.json'), 'utf8')) as {
+    automationAssets?: Array<{ source: string; destination: string }>
+  }
+  const assets = descriptor.automationAssets ?? []
+
+  assert.equal(
+    assets.some((asset) => asset.source === '../../tooling/src' && asset.destination === 'tooling/src'),
+    true,
+  )
+})
+
 test('local runtime harness is source-only and carries every regenerable entrypoint', () => {
   const required = [
     'README.md',

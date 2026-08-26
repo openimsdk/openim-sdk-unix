@@ -9,7 +9,7 @@ import { buildEnterpriseTestDisposition, buildPublicResponseSchemas, buildPublic
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const contract = JSON.parse(readFileSync(resolve(root, 'contracts/base/contract.json'), 'utf8')) as ContractDocument
 
-test('classifies every public callable and event without gaps', () => {
+test('classifies every public callable and event without inferring optional producer axes', () => {
   const schemas = buildPublicResponseSchemas(contract)
   const disposition = buildPublicTestDisposition(contract)
   assert.equal(disposition.schemaVersion, 2)
@@ -23,9 +23,10 @@ test('classifies every public callable and event without gaps', () => {
   assert.equal(disposition.callables.some((item) => item.platforms.android == null || item.platforms.ios == null), false)
   assert.equal(disposition.callables.some((item) => item.responseSchema.root !== `callables.${item.apiName}.schema`), false)
   assert.equal(disposition.callables.some((item) => item.semanticProfile.length === 0 || item.sideEffectProbe.length === 0), false)
-  assert.equal(disposition.callables.some((item) => item.validationAxes.length === 0 || item.negativeProfiles.length === 0), false)
-  assert.equal(disposition.callables.some((item) => !item.validationAxes.includes('negative') || !item.validationAxes.includes('cleanup')), false)
-  assert.equal(disposition.callables.some((item) => item.cleanupAction.length === 0), false)
+  assert.equal(contract.automationTestPlan, undefined)
+  assert.equal(disposition.callables.some((item) => item.validationAxes.length === 0), false)
+  assert.equal(disposition.callables.some((item) => item.negativeProfiles.length > 0 || item.cleanupAction.length > 0), false)
+  assert.equal(disposition.callables.some((item) => item.validationAxes.includes('negative') || item.validationAxes.includes('cleanup')), false)
   assert.equal(contract.callables.some((item) => {
     const profile = (item as unknown as { testProfile?: { semanticProfile?: string; sideEffectProbe?: string } }).testProfile
     return profile == null || profile.semanticProfile == null || profile.semanticProfile.length === 0 || profile.sideEffectProbe == null || profile.sideEffectProbe.length === 0
@@ -34,12 +35,12 @@ test('classifies every public callable and event without gaps', () => {
   assert.equal(disposition.events.some((item) => item.platforms.android == null || item.platforms.ios == null), false)
   assert.equal(disposition.events.some((item) => item.eventSchema.root !== `events.${item.eventName}.arguments`), false)
   assert.equal(disposition.events.some((item) => item.semanticProfile.length === 0 || item.sideEffectProbe.length === 0), false)
-  assert.equal(disposition.events.some((item) => item.validationAxes.length === 0 || item.negativeProfiles.length === 0), false)
-  assert.equal(disposition.events.some((item) => !item.validationAxes.includes('negative') || !item.validationAxes.includes('cleanup')), false)
-  assert.equal(disposition.events.some((item) => item.cleanupAction !== 'off(subscription)'), false)
+  assert.equal(disposition.events.some((item) => item.validationAxes.length === 0), false)
+  assert.equal(disposition.events.some((item) => item.negativeProfiles.length > 0 || item.cleanupAction.length > 0), false)
+  assert.equal(disposition.events.some((item) => item.validationAxes.includes('epoch') || item.validationAxes.includes('negative') || item.validationAxes.includes('cleanup')), false)
 })
 
-test('case manifest reads callable profiles from Contract IR instead of name heuristics', () => {
+test('case manifest reads callable profiles and optional producers from Contract IR instead of heuristics', () => {
   const modified = structuredClone(contract)
   const login = modified.callables.find((item) => item.name === 'login') as typeof modified.callables[number] & {
     testProfile: { semanticProfile: string; sideEffectProbe: string }
@@ -55,6 +56,18 @@ test('case manifest reads callable profiles from Contract IR instead of name heu
   }
   assert.ok(stateProbe)
   stateProbe.testProfile = { semanticProfile: 'contract-owned-state', sideEffectProbe: 'cross-account-state-observation' }
+  modified.automationTestPlan = {
+    schemaVersion: 1,
+    callables: [{
+      apiName: 'getLoginStatus',
+      cleanup: {
+        action: 'restore-via-inverse-mutation',
+        rule: 'explicit-contract-cleanup',
+        producer: { key: 'login-status-cleanup', suite: 'setup', scenario: 'login-status-cleanup', platforms: ['harmony'] },
+      },
+    }],
+    events: [],
+  }
   const stateItem = buildPublicTestDisposition(modified).callables.find((value) => value.apiName === 'getLoginStatus')
   assert.equal(stateItem?.cleanupAction, 'restore-via-inverse-mutation')
 })
@@ -73,7 +86,7 @@ test('case manifest rejects a callable whose reviewed profile is missing', () =>
 test('case manifest assigns concrete semantic and side-effect probes to P0 flows', () => {
   const manifest = buildPublicTestDisposition(contract)
   const byAPI = new Map(manifest.callables.map((item) => [item.apiName, item]))
-  assert.deepEqual(byAPI.get('getAdvancedHistoryMessageList')?.validationAxes, ['completion', 'structure', 'semantic', 'negative', 'cleanup'])
+  assert.deepEqual(byAPI.get('getAdvancedHistoryMessageList')?.validationAxes, ['completion', 'structure', 'semantic'])
   assert.equal(byAPI.get('getAdvancedHistoryMessageList')?.semanticProfile, 'pagination-integrity')
   assert.equal(byAPI.get('sendMessage')?.semanticProfile, 'message-delivery-correlation')
   assert.equal(byAPI.get('sendMessage')?.sideEffectProbe, 'cross-account-event-observation')
@@ -84,17 +97,17 @@ test('case manifest assigns concrete semantic and side-effect probes to P0 flows
     'sendMessageNotOss bypasses OSS upload and therefore has no send-progress callback',
   )
   assert.equal(byAPI.get('setSelfInfo')?.sideEffectProbe, 'read-after-write')
-  assert.equal(byAPI.get('setSelfInfo')?.cleanupAction, 'restore-via-read-before-write')
+  assert.equal(byAPI.get('setSelfInfo')?.cleanupAction, '')
   assert.equal(byAPI.get('uploadFile')?.semanticProfile, 'progress-terminal-correlation')
-  assert.equal(byAPI.get('uploadFile')?.cleanupAction, 'cancelUpload(cancelID)')
+  assert.equal(byAPI.get('uploadFile')?.cleanupAction, '')
   assert.equal(byAPI.get('offAll')?.semanticProfile, 'subscription-lifecycle')
   assert.equal(byAPI.get('offAll')?.sideEffectProbe, 'registry-observation')
   assert.equal(byAPI.get('getLoginStatus')?.sideEffectProbe, 'none')
   assert.equal(byAPI.get('getLoginUserID')?.sideEffectProbe, 'none')
-  assert.deepEqual(byAPI.get('getLoginStatus')?.validationAxes, ['completion', 'structure', 'semantic', 'negative', 'cleanup'])
+  assert.deepEqual(byAPI.get('getLoginStatus')?.validationAxes, ['completion', 'structure', 'semantic'])
   assert.deepEqual(
     byAPI.get('onConnecting')?.validationAxes,
-    ['completion', 'structure', 'semantic', 'side-effect', 'negative', 'cleanup'],
+    ['completion', 'structure', 'semantic', 'side-effect'],
     'event subscriptions validate the returned registry handle; event delivery is verified by the event case',
   )
 
@@ -132,12 +145,12 @@ test('case manifest makes edition boundaries and cancelled subscriptions explici
   assert.equal(login?.platforms.android, 'required')
   assert.equal(login?.platforms.ios, 'required')
   assert.equal(login?.platforms.harmony, 'not-in-edition')
-  assert.ok(login?.negativeProfiles.includes('invalid-token'))
+  assert.deepEqual(login?.negativeProfiles, [])
 
   const event = manifest.events.find((item) => item.eventName === 'onRecvNewMessage')
   assert.deepEqual(event?.expectedEvents, ['onRecvNewMessage'])
-  assert.deepEqual(event?.negativeProfiles, ['off-subscription', 'off-all-event-name', 'stale-epoch'])
-  assert.deepEqual(event?.validationAxes, ['delivery', 'structure', 'semantic', 'ordering', 'epoch', 'negative', 'cleanup'])
+  assert.deepEqual(event?.negativeProfiles, [])
+  assert.deepEqual(event?.validationAxes, ['delivery', 'structure', 'semantic', 'ordering'])
 })
 
 test('platform-unsupported surfaces allow their executable negative profile', () => {
@@ -148,14 +161,37 @@ test('platform-unsupported surfaces allow their executable negative profile', ()
   assert.ok(recvMessage)
   login.binding.android = { kind: 'unsupported', symbol: 'test-unsupported' }
   recvMessage.binding.android = 'unsupported-by-native-abi'
+  modified.automationTestPlan = {
+    schemaVersion: 1,
+    callables: [{
+      apiName: 'login',
+      negative: [{
+        profile: 'platform-unsupported',
+        producer: { key: 'android-login-unsupported', suite: 'setup', scenario: 'android-login-unsupported', platforms: ['android'] },
+      }],
+    }],
+    events: [{
+      eventName: 'onRecvNewMessage',
+      negative: [{
+        profile: 'platform-unsupported',
+        producer: { key: 'android-message-event-unsupported', suite: 'events', scenario: 'android-message-event-unsupported', platforms: ['android'] },
+      }],
+    }],
+  }
 
   const manifest = buildPublicTestDisposition(modified)
   const callable = manifest.callables.find((item) => item.apiName === 'login')
   const event = manifest.events.find((item) => item.eventName === 'onRecvNewMessage')
   assert.equal(callable?.platforms.android, 'platform-unsupported')
   assert.ok(callable?.negativeProfiles.includes('platform-unsupported'))
+  assert.deepEqual(callable?.validationAxesByPlatform.android, ['negative'])
+  assert.deepEqual(callable?.validationAxesByPlatform.ios, ['completion', 'structure', 'semantic', 'side-effect', 'event'])
+  assert.deepEqual(callable?.validationAxesByPlatform.harmony, [])
   assert.equal(event?.platforms.android, 'platform-unsupported')
   assert.ok(event?.negativeProfiles.includes('platform-unsupported'))
+  assert.deepEqual(event?.validationAxesByPlatform.android, ['negative'])
+  assert.deepEqual(event?.validationAxesByPlatform.ios, ['delivery', 'structure', 'semantic', 'ordering'])
+  assert.deepEqual(event?.validationAxesByPlatform.harmony, [])
 })
 
 test('edition native ABI gaps are explicit unsupported dispositions', () => {
@@ -179,6 +215,17 @@ test('edition native ABI gaps are explicit unsupported dispositions', () => {
     expectedTotal: { constants: 0, types: 0, callables: 1, events: 0 },
     expectedDelta: { constants: 0, types: 0, callables: 1, events: 0, typeExtensions: 0 },
     approvedBaseCallableOverrides: [],
+    automationTestPlan: {
+      schemaVersion: 1,
+      callables: [{
+        apiName: 'editionOperation',
+        negative: [{
+          profile: 'platform-unsupported',
+          producer: { key: 'harmony-edition-operation-unsupported', suite: 'compatibility', scenario: 'harmony-edition-operation-unsupported', platforms: ['harmony'] },
+        }],
+      }],
+      events: [],
+    },
     constants: [],
     types: [],
     typeExtensions: [],
@@ -223,6 +270,17 @@ test('Enterprise test projection applies approved base bindings and edition-owne
         harmony: { kind: 'unsupported', symbol: 'unsupported-by-native-abi' },
       },
     }],
+    automationTestPlan: {
+      schemaVersion: 1,
+      callables: [{
+        apiName: 'updateFcmToken',
+        negative: [{
+          profile: 'platform-unsupported',
+          producer: { key: 'harmony-update-fcm-token-unsupported', suite: 'app', scenario: 'harmony-update-fcm-token-unsupported', platforms: ['harmony'] },
+        }],
+      }],
+      events: [],
+    },
     constants: [], types: [], typeExtensions: [], callables: [signaling], events: [],
   }
 
@@ -419,4 +477,112 @@ test('selects an object reference union branch by runtime kind before ranking it
   assert.ok(issues.some((issue) => issue.path === '$.label' && issue.rule === 'type'))
   assert.ok(issues.some((issue) => issue.path === '$.count' && issue.rule === 'finite-number'))
   assert.ok(issues.some((issue) => issue.path === '$.futureField' && issue.severity === 'contract-drift'))
+})
+
+test('test disposition derives optional callable axes from a platform-scoped producer plan', () => {
+  const modified = structuredClone(contract) as ContractDocument & {
+    automationTestPlan?: unknown
+  }
+  const loginStatus = modified.callables.find((item) => item.name === 'getLoginStatus')
+  assert.ok(loginStatus)
+  loginStatus.testProfile = {
+    semanticProfile: 'response-identity',
+    sideEffectProbe: 'none',
+  }
+  modified.automationTestPlan = {
+    schemaVersion: 1,
+    callables: [{
+      apiName: 'getLoginStatus',
+      cleanup: {
+        action: 'restore-via-read-before-write',
+        rule: 'read-before-write-login-status-restored',
+        producer: {
+          key: 'login-status-state-restore',
+          suite: 'setup',
+          scenario: 'authenticated-status-readback',
+          platforms: ['android'],
+        },
+      },
+    }],
+    events: [],
+  }
+
+  const item = buildPublicTestDisposition(modified).callables.find((value) => value.apiName === 'getLoginStatus')
+  assert.deepEqual(item?.validationAxes, ['completion', 'structure', 'semantic', 'cleanup'])
+  assert.deepEqual(item?.validationAxesByPlatform.android, ['completion', 'structure', 'semantic', 'cleanup'])
+  assert.deepEqual(item?.validationAxesByPlatform.ios, ['completion', 'structure', 'semantic'])
+  assert.deepEqual(item?.validationAxesByPlatform.harmony, [])
+  assert.deepEqual(item?.negativeProfiles, [])
+  assert.equal(item?.cleanupAction, 'restore-via-read-before-write')
+  assert.equal(item?.cleanupRule, 'read-before-write-login-status-restored')
+  assert.equal(item?.cleanupProducer?.key, 'login-status-state-restore')
+})
+
+test('test disposition rejects a declared optional producer without a stable scenario identity', () => {
+  const modified = structuredClone(contract) as ContractDocument & {
+    automationTestPlan?: unknown
+  }
+  modified.automationTestPlan = {
+    schemaVersion: 1,
+    callables: [{
+      apiName: 'getLoginStatus',
+      negative: [{
+        profile: 'uninitialized',
+        producer: { key: '', suite: 'setup', scenario: '', platforms: ['harmony'] },
+      }],
+    }],
+    events: [],
+  }
+
+  assert.throws(
+    () => buildPublicTestDisposition(modified),
+    /producer.*key|scenario/i,
+  )
+})
+
+test('test disposition rejects no-op and unscoped producers', () => {
+  const noOp = structuredClone(contract) as ContractDocument & { automationTestPlan?: unknown }
+  noOp.automationTestPlan = {
+    schemaVersion: 1,
+    callables: [{
+      apiName: 'getLoginStatus',
+      cleanup: {
+        action: 'none',
+        rule: 'no-resource',
+        producer: { key: 'no-op-cleanup', suite: 'setup', scenario: 'setup/no-op', platforms: ['harmony'] },
+      },
+    }],
+    events: [],
+  }
+  assert.throws(() => buildPublicTestDisposition(noOp), /no-op action|cleanup.*none/i)
+
+  const missingScope = structuredClone(contract) as ContractDocument & { automationTestPlan?: unknown }
+  const missingScopeTarget = missingScope as unknown as { automationTestPlan?: unknown }
+  missingScopeTarget.automationTestPlan = {
+    schemaVersion: 1,
+    callables: [{
+      apiName: 'getLoginStatus',
+      negative: [{
+        profile: 'uninitialized',
+        producer: { key: 'missing-scope', suite: 'setup', scenario: 'setup/missing-scope' },
+      }],
+    }],
+    events: [],
+  }
+  assert.throws(() => buildPublicTestDisposition(missingScope), /platforms/i)
+
+  const emptyScope = structuredClone(contract) as ContractDocument & { automationTestPlan?: unknown }
+  const emptyScopeTarget = emptyScope as unknown as { automationTestPlan?: unknown }
+  emptyScopeTarget.automationTestPlan = {
+    schemaVersion: 1,
+    callables: [{
+      apiName: 'getLoginStatus',
+      negative: [{
+        profile: 'uninitialized',
+        producer: { key: 'empty-scope', suite: 'setup', scenario: 'setup/empty-scope', platforms: [] },
+      }],
+    }],
+    events: [],
+  }
+  assert.throws(() => buildPublicTestDisposition(emptyScope), /platforms/i)
 })
