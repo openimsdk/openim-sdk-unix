@@ -91,6 +91,21 @@
       "releaseStatus": "blocked",
       "lastVerified": "2026-08-26",
       "nextCheck": "2026-09-02"
+    },
+    {
+      "id": "UTS-COMPAT-PUBLIC-CORE-WS-SERVER-CONFIG-001",
+      "editions": ["public"],
+      "classification": "upstream-core-defect",
+      "platforms": ["android", "ios"],
+      "reason": "The locked Public Core treats the valid binary WebSocket server-config frame (request identifier 2100) as an unsupported message type and terminates readPump. The current server advertises encryption=false, but the closed long connection prevents sends and independent peer event delivery.",
+      "versions": ["openim-sdk-core@d6e0b549db904d0327d76ef7c9c283203879a095"],
+      "probe": "Public iOS custom-base runtime plus redacted Core stage analysis and an authenticated frame-type probe: the first frame is binary, request identifier 2100, error code 0, and the server-config payload advertises encryption=false.",
+      "removeWhen": "A replacement locked Public Core recognizes the server-config frame without closing the long connection and the Public message-send, friend, and event-delivery focused suites pass on Android and iOS.",
+      "owner": "OpenIM Core maintainers",
+      "status": "active",
+      "releaseStatus": "blocked",
+      "lastVerified": "2026-08-26",
+      "nextCheck": "2026-09-02"
     }
   ]
 }

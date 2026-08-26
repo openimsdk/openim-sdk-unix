@@ -3445,10 +3445,12 @@
 	}
 
 	async function runAutomationSetupSuite(config : OpenIMAutomationConfig) : Promise<void> {
+		await runAutomationConnectFailureProbe(config)
 		automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
 		automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
 		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence('initSDK', 'init-result-is-true'))
 		await normalizeAutomationExistingSession()
+		await runAutomationEventControlScenario(config)
 		const dataPath = getOpenIMDataPath()
 		requireAutomationString(dataPath, 'getOpenIMDataPath returned empty path')
 		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence('getOpenIMDataPath', 'data-path-is-non-empty'), stringifyAPIValue(dataPath), null)
@@ -4776,8 +4778,6 @@
 	async function runAutomationEventDeliverySuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await runAutomationBatchedMessageEventProbe(config)
 		await runAutomationOfflineMessageEventProbe(config)
-		await runAutomationEventControlScenario(config)
-		await runAutomationConnectFailureProbe(config)
 		validateAutomationObservedLifecycleAncillaryEvents()
 		await sleepAutomation(1500)
 		let requiredIndex = 0
