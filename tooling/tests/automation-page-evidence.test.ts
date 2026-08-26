@@ -289,10 +289,13 @@ test('public producer plan binds remaining deterministic events to concrete oper
 
   const friendSuite = functionSource('runAutomationFriendSuite')
   assert.match(friendSuite, /recordAutomationRequiredEventCorrelation\('acceptFriendApplication', 'onFriendAdded'/)
+  assert.match(friendSuite, /recordAutomationCallableEventCorrelations\('acceptFriendApplication', \['onFriendAdded', 'onFriendApplicationAccepted'\]\)/)
   assert.doesNotMatch(friendSuite, /acceptFriendApplication applicant delivery/)
 
   const groupSuite = functionSource('runAutomationGroupSuite')
   assert.match(groupSuite, /recordAutomationRequiredEventCorrelation\('kickGroupMember', 'onGroupMemberDeleted'/)
+  assert.match(groupSuite, /recordAutomationCallableEventCorrelations\('kickGroupMember', \['onGroupMemberDeleted'\]\)/)
+  assert.match(groupSuite, /recordAutomationCallableEventCorrelations\('acceptGroupApplication', \['onGroupApplicationAccepted', 'onGroupMemberAdded'\]\)/)
   assert.doesNotMatch(groupSuite, /kickGroupMember affected-member delivery/)
 })
 
@@ -319,11 +322,23 @@ test('Android-generated local functions declare helpers before their first consu
     ['createAutomationProfileAssertion', 'mergeAutomationValidationEvidence'],
     ['requireAutomationSemanticProfile', 'mergeAutomationValidationEvidence'],
     ['readAutomationPeerMessage', 'sendAutomationPeerUnreadMessageToPrimary'],
+    ['recordAutomationCallableEventCorrelations', 'runAutomationFriendSuite'],
   ] as Array<[string, string]>) {
     assert.ok(functionIndex(helper) < functionIndex(consumer), `${helper} must be declared before ${consumer}`)
   }
   assert.match(functionSource('validateAutomationResponse'), /const content = message\.textElem == null \? null/)
   assert.match(functionSource('validateAutomationResponse'), /if \(content == null \|\| content\.length == 0\)/)
+})
+
+test('producer correlations carry one complete mutation witness and disconnect before the offline send', () => {
+  const correlations = functionSource('recordAutomationCallableEventCorrelations')
+  assert.match(correlations, /mutationAutomationEvidence\(apiName, 'operation-event-identity', 'cross-account-event-observed', allMatched\)/)
+  assert.match(correlations, /evidence\.eventCorrelated = allMatched/)
+
+  const offline = functionSource('runAutomationOfflineMessageEventProbe')
+  const disconnect = offline.indexOf("networkStatusChanged('uvue_auto_offline_event_network_changed')")
+  const peerSend = offline.indexOf("runAutomationPeerCommand('send_text'")
+  assert.ok(disconnect >= 0 && disconnect < peerSend, 'offline producer must disconnect before the peer sends')
 })
 
 test('quote producers use a deterministic message writer instead of typed JSON stringify', () => {

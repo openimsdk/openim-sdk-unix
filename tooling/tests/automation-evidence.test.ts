@@ -1454,8 +1454,8 @@ test('raw Core group events receive only declared public string defaults', () =>
   assert.equal(result.passed, true)
 })
 
-test('raw Core message normalization does not admit undeclared incremental fields', () => {
-  const result = validateAutomationEvidence({
+test('raw Core message normalization strips only the known Core-only signalInfo increment', () => {
+  const input = {
     manifest: {
       schemaVersion: 2,
       edition: 'public',
@@ -1492,11 +1492,21 @@ test('raw Core message normalization does not admit undeclared incremental field
       schemas: {},
     },
     platform: 'ios',
-    report: { cases: [], events: [{ eventName: 'onRecvNewMessage', count: 1, deliveryValidated: true, payloadEvidence: true, payloadEncoding: 'openim-core-json-v1', payloadDetails: [JSON.stringify({ clientMsgID: 'message-1', offlinePush: { title: 'title', signalInfo: 'undeclared' } })] }] },
-  })
+    report: { cases: [], events: [{ eventName: 'onRecvNewMessage', count: 1, deliveryValidated: true, payloadEvidence: true, payloadEncoding: 'openim-core-json-v1', payloadDetails: [JSON.stringify({ clientMsgID: 'message-1', offlinePush: { title: 'title', signalInfo: 'core-only' } })] }] },
+  }
 
-  assert.equal(result.passed, false)
-  assert.equal(result.issues.some((issue) => issue.rule === 'event-schema-invalid'), true)
+  const normalized = validateAutomationEvidence(input)
+  assert.equal(normalized.passed, true)
+
+  const undeclared = validateAutomationEvidence({
+    ...input,
+    report: {
+      ...input.report,
+      events: [{ ...input.report.events[0]!, payloadDetails: [JSON.stringify({ clientMsgID: 'message-1', offlinePush: { title: 'title', unexpectedIncrement: 'undeclared' } })] }],
+    },
+  })
+  assert.equal(undeclared.passed, false)
+  assert.equal(undeclared.issues.some((issue) => issue.rule === 'event-schema-invalid'), true)
 })
 
 test('opaque string event payloads remain strings even when their contents are JSON', () => {

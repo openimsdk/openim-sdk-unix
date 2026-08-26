@@ -61,6 +61,10 @@ test('Public automation staging carries the executable summary verifier and peer
     assets.some((asset) => asset.source === '../../tooling/public-peer' && asset.destination === 'tooling/public-peer'),
     true,
   )
+  assert.equal(
+    assets.some((asset) => asset.source === '../../tooling/package.json' && asset.destination === 'tooling/package.json'),
+    true,
+  )
 })
 
 test('local runtime harness is source-only and carries every regenerable entrypoint', () => {

@@ -227,11 +227,27 @@ const rawCoreGroupItemEventNames = new Set([
   'onJoinedGroupDeleted',
 ])
 
+const rawCoreMessageEventNames = new Set([
+  'onRecvNewMessage',
+  'onRecvOfflineNewMessage',
+  'onRecvOnlineOnlyMessage',
+  'onMsgDeleted',
+])
+
+function normalizeRawCoreMessage(value) {
+  if (!isRecord(value) || !isRecord(value.offlinePush) || !Object.hasOwn(value.offlinePush, 'signalInfo')) return value
+  const { signalInfo: _signalInfo, ...offlinePush } = value.offlinePush
+  return { ...value, offlinePush }
+}
+
 function normalizeRecordedEventValue(eventName, value, encoding) {
   const normalized = normalizeRecordedValue(value, encoding)
   if (encoding !== 'openim-core-json-v1') return normalized
   if (eventName === 'onRecvC2CReadReceipt' && Array.isArray(normalized)) {
     return { receipts: normalized }
+  }
+  if (rawCoreMessageEventNames.has(eventName)) {
+    return normalizeRawCoreMessage(normalized)
   }
   if (rawCoreGroupItemEventNames.has(eventName) && isRecord(normalized)) {
     return Object.hasOwn(normalized, 'attachedInfo')

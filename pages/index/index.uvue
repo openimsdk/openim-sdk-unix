@@ -3199,6 +3199,21 @@
 		return false
 	}
 
+	function recordAutomationCallableEventCorrelations(apiName : string, expectedEvents : Array<string>) {
+		const correlations = buildAutomationEventCorrelations(apiName, expectedEvents)
+		let allMatched = correlations.length == expectedEvents.length
+		let index = 0
+		while (index < correlations.length) {
+			if (!correlations[index].payloadMatched) { allMatched = false }
+			index = index + 1
+		}
+		if (correlations.length == 0) { return }
+		const evidence = mutationAutomationEvidence(apiName, 'operation-event-identity', 'cross-account-event-observed', allMatched)
+		evidence.eventCorrelated = allMatched
+		const detail = (allMatched ? 'complete' : 'partial') + ' operation-window event correlation ' + correlations.length.toString() + '/' + expectedEvents.length.toString()
+		recordAutomationCase('event-delivery', apiName, 'passed', detail, new Date().getTime(), evidence, apiName, true, true, null, correlations)
+	}
+
 	function cacheAutomationConversationID(value : string) {
 		requireAutomationString(value, 'getConversationIDBySessionType returned empty conversationID')
 		automationConversationID = value
@@ -3944,6 +3959,7 @@
 			completeAutomationOperation('acceptFriendApplication', config.secondaryUserID)
 			await recordAutomationRequiredEventCorrelation('acceptFriendApplication', 'onFriendAdded', friendAddedCount)
 			await recordAutomationRequiredEventCorrelation('acceptFriendApplication', 'onFriendApplicationAccepted', friendApplicationAcceptedCount)
+			recordAutomationCallableEventCorrelations('acceptFriendApplication', ['onFriendAdded', 'onFriendApplicationAccepted'])
 		} else {
 			recordAutomationSkip('friend', 'acceptFriendApplication', 'friend application not found')
 		}
@@ -4176,6 +4192,7 @@
 			await runAutomationStep<string>('group', 'kickGroupMember', kickGroupMember(kickParams, 'uvue_auto_kick_member'), noCache)
 			completeAutomationOperation('kickGroupMember', kickGroupID + ':' + config.secondaryUserID)
 			await recordAutomationRequiredEventCorrelation('kickGroupMember', 'onGroupMemberDeleted', groupMemberDeletedCount)
+			recordAutomationCallableEventCorrelations('kickGroupMember', ['onGroupMemberDeleted'])
 			await waitAutomationGroupHistorySeq(kickGroupID, kickSeedSeq + 1, 'uvue_auto_group_after_kick')
 			const inviteParams : OpenIMGroupInviteParams = { groupID: kickGroupID, reason: 'invite from unixsdk public automation', userIDList: [config.secondaryUserID] }
 			const secondaryInviteCursor = await captureAutomationPeerCursor('secondary')
@@ -4238,6 +4255,7 @@
 				completeAutomationOperation('acceptGroupApplication', applyGroupID + ':' + config.secondaryUserID)
 				await recordAutomationRequiredEventCorrelation('acceptGroupApplication', 'onGroupApplicationAccepted', groupApplicationAcceptedCount)
 				await waitAutomationPeerOperationEvent('primary', 'OnGroupMemberAdded', 'acceptGroupApplication', primaryAcceptGroupCursor, 'acceptGroupApplication owner delivery')
+				recordAutomationCallableEventCorrelations('acceptGroupApplication', ['onGroupApplicationAccepted', 'onGroupMemberAdded'])
 			} else {
 				recordAutomationSkip('group', 'acceptGroupApplication', 'group accept application not found')
 			}
@@ -4465,21 +4483,6 @@
 		}
 	}
 
-	function recordAutomationCallableEventCorrelations(apiName : string, expectedEvents : Array<string>) {
-		const correlations = buildAutomationEventCorrelations(apiName, expectedEvents)
-		let allMatched = correlations.length == expectedEvents.length
-		let index = 0
-		while (index < correlations.length) {
-			if (!correlations[index].payloadMatched) { allMatched = false }
-			index = index + 1
-		}
-		if (correlations.length == 0) { return }
-		const evidence = emptyAutomationEvidence()
-		evidence.eventCorrelated = allMatched
-		const detail = (allMatched ? 'complete' : 'partial') + ' operation-window event correlation ' + correlations.length.toString() + '/' + expectedEvents.length.toString()
-		recordAutomationCase('event-delivery', apiName, 'passed', detail, new Date().getTime(), evidence, apiName, true, true, null, correlations)
-	}
-
 	function readAutomationMessageText(message : OpenIMMessageItem) : string {
 		if (message.textElem == null) { return '' }
 		const content = (message.textElem as OpenIMTextElem).content
@@ -4523,11 +4526,11 @@
 			const afterSequence = readAutomationEventSequence()
 			const messageText = 'offline-event-' + new Date().getTime().toString()
 			const peerPayload : UTSJSONObject = { recvID: config.primaryUserID, text: messageText, operationID: 'uvue_auto_peer_offline_message' }
+			await runAutomationStep<string>('event-delivery', 'networkStatusChangedForOfflineMessage', networkStatusChanged('uvue_auto_offline_event_network_changed'), noCache)
 			const peerResult = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', peerPayload), automationSendStepTimeoutMilliseconds)
 			const peerMessage = readAutomationPeerMessage(peerResult, 'offline send_text')
 			const clientMsgID = peerMessage.clientMsgID == null ? '' : peerMessage.clientMsgID as string
 			if (clientMsgID.length == 0) { throw new Error('offline send_text peer command returned no clientMsgID') }
-			await runAutomationStep<string>('event-delivery', 'networkStatusChangedForOfflineMessage', networkStatusChanged('uvue_auto_offline_event_network_changed'), noCache)
 			if (!await waitAutomationEventCountIncrease(eventName, previousCount, automationSideEffectTimeoutMilliseconds)) { throw new Error('background delivery did not emit onRecvOfflineNewMessage') }
 			const occurrence = findAutomationEventOccurrenceByMessageIdentityAfter(eventName, afterSequence, clientMsgID)
 			if (occurrence == null) { throw new Error('onRecvOfflineNewMessage did not correlate with the peer clientMsgID') }
