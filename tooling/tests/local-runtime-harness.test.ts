@@ -16,13 +16,20 @@ import test from 'node:test'
 import {
   automationTarget,
   inspectAndroidBaseEntries,
+  iosBaseHasWebSocket,
 } from '../../scripts/lib/local-base-inspection.mjs'
+import { hashNativeArtifact } from '../../scripts/lib/native-artifact-hash.mjs'
 import {
   buildAutomationEnvironment,
   renderAutomationEnvironment,
   resolveAutomationProjectRoot,
 } from '../../local-runtime/scripts/configure-automation-env.mjs'
+import {
+  sha256Directory as localNativeDirectorySha256,
+  sha256File as localNativeFileSha256,
+} from '../../local-runtime/scripts/prepare-local-native-artifacts.mjs'
 import { runWithLocalNativeProfile } from '../../local-runtime/scripts/run-with-local-native-profile.mjs'
+import { writeIOSUTSDependencies } from '../../local-runtime/hosts/write-ios-uts-dependencies.mjs'
 
 const root = resolve(import.meta.dirname, '../..')
 
@@ -62,6 +69,7 @@ test('local runtime harness is source-only and carries every regenerable entrypo
     'hosts/verify-runtime-ready.mjs',
     'hosts/verify-stable-bmp.mjs',
     'hosts/verify-ios-product-plugins.mjs',
+    'hosts/write-ios-uts-dependencies.mjs',
     'server/configure-isolated-openim-server.rb',
     'server/start-isolated-openim-server.sh',
     'server/stop-isolated-openim-server.sh',
@@ -128,6 +136,58 @@ test('iOS automation target follows simulator versus physical-device selection',
   assert.equal(automationTarget('android', 'device'), 'app-android')
   assert.equal(automationTarget('ios', 'simulator'), 'app-ios-simulator')
   assert.equal(automationTarget('ios', 'device'), 'app-ios')
+})
+
+test('Public runner hashes native artifacts with the same canonical inventory as native preparation', () => {
+  const temporary = mkdtempSync(resolve(tmpdir(), 'openim-public-native-hash-'))
+  try {
+    const framework = resolve(temporary, 'OpenIMCore.xcframework')
+    mkdirSync(resolve(framework, 'ios-arm64/OpenIMCore.framework/Headers'), { recursive: true })
+    writeFileSync(resolve(framework, 'Info.plist'), 'fixture-info')
+    writeFileSync(resolve(framework, 'ios-arm64/OpenIMCore.framework/OpenIMCore'), 'fixture-binary')
+    writeFileSync(resolve(framework, 'ios-arm64/OpenIMCore.framework/Headers/OpenIMCore.h'), 'fixture-header')
+    const aar = resolve(temporary, 'open_im_sdk.aar')
+    writeFileSync(aar, 'fixture-aar')
+
+    assert.equal(
+      hashNativeArtifact(framework, 'xcframework-inventory'),
+      localNativeDirectorySha256(framework),
+    )
+    assert.equal(hashNativeArtifact(aar, 'aar'), localNativeFileSha256(aar))
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
+})
+
+test('matrix iOS host writes a websocket receipt only when manifest and runtime binary agree', () => {
+  const temporary = mkdtempSync(resolve(tmpdir(), 'openim-public-ios-dependencies-'))
+  try {
+    const app = resolve(temporary, 'Public.app')
+    const manifestPath = resolve(temporary, 'manifest.json')
+    const extAPIBinary = resolve(app, 'Frameworks/DCloudUTSExtAPI.framework/DCloudUTSExtAPI')
+    mkdirSync(resolve(extAPIBinary, '..'), { recursive: true })
+    writeFileSync(manifestPath, `{
+      /* fixture manifest */
+      "app-ios": { "distribute": { "modules": { "uni-websocket": {} } } }
+    }`)
+    writeFileSync(extAPIBinary, 'fixture DCloudUTSExtAPI/uni-websocket-index.swift payload')
+
+    const receipt = writeIOSUTSDependencies({ appPath: app, manifestPath, extAPIBinary })
+    assert.deepEqual(receipt, { duts: ['uni-websocket'] })
+    assert.equal(iosBaseHasWebSocket(app), true)
+
+    const missingRuntime = resolve(temporary, 'MissingRuntime.app')
+    const missingBinary = resolve(missingRuntime, 'Frameworks/DCloudUTSExtAPI.framework/DCloudUTSExtAPI')
+    mkdirSync(resolve(missingBinary, '..'), { recursive: true })
+    writeFileSync(missingBinary, 'fixture without the required module')
+    assert.throws(
+      () => writeIOSUTSDependencies({ appPath: missingRuntime, manifestPath, extAPIBinary: missingBinary }),
+      /does not contain uni-websocket/,
+    )
+    assert.equal(iosBaseHasWebSocket(missingRuntime), false)
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
 })
 
 test('local iOS build compiles the simulator module before assembling the locked host', () => {

@@ -17,6 +17,7 @@ import {
   inspectAndroidBase,
   iosBaseHasWebSocket,
 } from './lib/local-base-inspection.mjs';
+import { hashNativeArtifact } from './lib/native-artifact-hash.mjs';
 
 const projectRoot = resolve(new URL('..', import.meta.url).pathname);
 const platform = process.argv[2] || '';
@@ -380,7 +381,7 @@ function readPublicCoreAuthority(platformName, sdkRoot, lock) {
   const expectedNativeSha256 = String(platformName === 'ios' ? platformLock?.localOverrideInventorySha256 : platformLock?.sha256 || '');
   const nativeArtifactPath = resolve(sdkRoot, String(platformLock?.localOverridePath || ''));
   if (!/^[0-9a-f]{64}$/.test(expectedNativeSha256) || !existsSync(nativeArtifactPath)) fail(`locked ${nativeArtifactKind} authority is missing`);
-  const nativeArtifactSha256 = hashArtifact(nativeArtifactPath);
+  const nativeArtifactSha256 = hashNativeArtifact(nativeArtifactPath, nativeArtifactKind);
   if (nativeArtifactSha256 !== expectedNativeSha256) fail(`local ${nativeArtifactKind} does not match toolchain.lock.json`);
   return { ...core, root: coreRoot, nativeArtifactKind, nativeArtifactSha256 };
 }
