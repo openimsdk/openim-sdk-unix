@@ -34,6 +34,8 @@ test('typed native messages are reconstructed through the declared public messag
   assert.match(parser, /parseNativeMessageItem\(typedRaw, helpers\)/)
   assert.doesNotMatch(parser, /return typedMessage\s*}/)
   assert.doesNotMatch(parser, /return typedList\[0\]\s*}/)
+  assert.match(ios, /const parsed = value\.getNumber\(key\)/)
+  assert.match(ios, /return value\.getNumber\(key\) != null/)
 })
 
 test('iOS preserves canonical native message JSON for later sends and evidence', () => {

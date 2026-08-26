@@ -151,6 +151,10 @@ export function readStringParam(value : any | null, key : string) : string {
 }
 
 export function readNumberParam(value : any | null, key : string) : number {
+  if (value instanceof UTSJSONObject) {
+    const parsed = value.getNumber(key)
+    if (parsed != null) { return parsed as number }
+  }
   const raw = readNativeValue(value, key)
   if (raw != null) {
     if (typeof raw == 'number') {
@@ -209,8 +213,7 @@ export { stringifyOpenIMPicture, stringifyOpenIMSoundElem, stringifyOpenIMVideoE
 }
 
 function isRequiredNumberField(value : UTSJSONObject, key : string) : boolean {
-  const raw = readNativeValue(value, key)
-  return raw != null && typeof raw == 'number'
+  return value.getNumber(key) != null
 }
 
 function isRequiredStringField(value : UTSJSONObject, key : string) : boolean {
@@ -224,7 +227,7 @@ function isRequiredBooleanField(value : UTSJSONObject, key : string) : boolean {
 
 function isOptionalNumberField(value : UTSJSONObject, key : string) : boolean {
   const raw = readNativeValue(value, key)
-  return raw == null || typeof raw == 'number'
+  return raw == null || value.getNumber(key) != null
 }
 
 function isCommonRequiredField(value : UTSJSONObject, key : string) : boolean {
