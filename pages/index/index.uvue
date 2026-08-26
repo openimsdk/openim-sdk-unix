@@ -3449,7 +3449,6 @@
 		automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
 		await runAutomationStep<boolean>('setup', 'initSDK', initSDK(buildAutomationInitConfig(config), 'uvue_auto_init_sdk'), (value : boolean) => { requireAutomation(value, 'initSDK returned false') }, responseAutomationEvidence('initSDK', 'init-result-is-true'))
 		await normalizeAutomationExistingSession()
-		await runAutomationEventControlScenario(config)
 		const dataPath = getOpenIMDataPath()
 		requireAutomationString(dataPath, 'getOpenIMDataPath returned empty path')
 		recordAutomationEvidenceStep('setup', 'getOpenIMDataPath', true, dataPath, responseAutomationEvidence('getOpenIMDataPath', 'data-path-is-non-empty'), stringifyAPIValue(dataPath), null)
@@ -4668,18 +4667,27 @@
 		const eventName = 'onRecvNewMessages'
 		const previousCount = readAutomationEventCount(eventName)
 		const afterSequence = readAutomationEventSequence()
+		let coreInitialized = true
 		try {
 			await runAutomationStep<string>('event-delivery', 'logoutForBatchedMessage', logout('uvue_auto_batched_message_logout'), (_value : string) => {
 				automationLoggedIn = false
 				automationActiveUserID = ''
 			})
-			if (isIOSRuntime()) { await sleepAutomation(500) }
+			unInitSDK('uvue_auto_batched_message_uninit')
+			automationCurrentLifecycleEpoch = 0
+			coreInitialized = false
+			await sleepAutomation(750)
 			const messageText = 'batched-message-event-' + new Date().getTime().toString()
 			const peerPayload : UTSJSONObject = { recvID: config.primaryUserID, text: messageText, operationID: 'uvue_auto_peer_batched_message' }
 			const peerResult = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', peerPayload), automationSendStepTimeoutMilliseconds)
 			const peerMessage = readAutomationPeerMessage(peerResult, 'batched send_text')
 			const clientMsgID = peerMessage.clientMsgID == null ? '' : peerMessage.clientMsgID as string
 			if (clientMsgID.length == 0) { throw new Error('batched send_text peer command returned no clientMsgID') }
+			automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
+			automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
+			const initialized = await withAutomationTimeout<boolean>(initSDK(buildAutomationInitConfig(config), 'uvue_auto_batched_message_reinit'), 'event-delivery/initSDKForBatchedMessage', automationDefaultStepTimeoutMilliseconds)
+			requireAutomation(initialized, 'batched-message Core re-init returned false')
+			coreInitialized = true
 			await switchAutomationPrimary(config, 'A_batched_message_event_reconnect')
 			if (!await waitAutomationEventCountIncrease(eventName, previousCount, automationSideEffectTimeoutMilliseconds)) { throw new Error('offline peer message did not emit onRecvNewMessages after reconnect') }
 			const occurrence = findAutomationEventOccurrenceByMessageIdentityAfter(eventName, afterSequence, clientMsgID)
@@ -4697,6 +4705,13 @@
 			markAutomationEventEvidence(eventName, true, true, true)
 			recordAutomationStep('event-delivery', 'onRecvNewMessagesScenario', true, 'reconnect sync callback matched the exact offline peer message identity')
 		} finally {
+			if (!coreInitialized) {
+				automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
+				automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
+				const restored = await withAutomationTimeout<boolean>(initSDK(buildAutomationInitConfig(config), 'uvue_auto_batched_message_restore_init'), 'event-delivery/initSDKRestoreAfterBatchedMessage', automationDefaultStepTimeoutMilliseconds)
+				requireAutomation(restored, 'batched-message restore init returned false')
+				coreInitialized = true
+			}
 			if (!automationLoggedIn || automationActiveUserID != config.primaryUserID) {
 				await switchAutomationPrimary(config, 'A_batched_message_event_restore')
 			}
@@ -4761,6 +4776,7 @@
 	async function runAutomationEventDeliverySuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await runAutomationBatchedMessageEventProbe(config)
 		await runAutomationOfflineMessageEventProbe(config)
+		await runAutomationEventControlScenario(config)
 		await runAutomationConnectFailureProbe(config)
 		validateAutomationObservedLifecycleAncillaryEvents()
 		await sleepAutomation(1500)
