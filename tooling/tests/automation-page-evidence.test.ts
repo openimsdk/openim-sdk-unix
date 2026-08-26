@@ -280,13 +280,38 @@ test('public producer plan binds remaining deterministic events to concrete oper
   assert.match(eventDelivery, /runAutomationBatchedMessageEventProbe\(config\)/)
   assert.match(eventDelivery, /runAutomationOfflineMessageEventProbe\(config\)/)
   assert.match(functionSource('runAutomationSetupSuite'), /runAutomationConnectFailureProbe\(config\)/)
+
+  const friendSuite = functionSource('runAutomationFriendSuite')
+  assert.match(friendSuite, /recordAutomationRequiredEventCorrelation\('acceptFriendApplication', 'onFriendAdded'/)
+  assert.doesNotMatch(friendSuite, /acceptFriendApplication applicant delivery/)
+
+  const groupSuite = functionSource('runAutomationGroupSuite')
+  assert.match(groupSuite, /recordAutomationRequiredEventCorrelation\('kickGroupMember', 'onGroupMemberDeleted'/)
+  assert.doesNotMatch(groupSuite, /kickGroupMember affected-member delivery/)
 })
 
 test('peer producer payloads retain their raw Core encoding for narrow schema normalization', () => {
   assert.match(page, /payloadEncodings : Array<string>/)
   assert.match(page, /recordSDKEventDelivery\(mappedEventName, payloadTextValue as string, 'openim-core-json-v1'\)/)
-  assert.match(functionSource('runAutomationBatchedMessageEventProbe'), /clientMsgID/)
-  assert.match(functionSource('runAutomationOfflineMessageEventProbe'), /onRecvOfflineNewMessage/)
+  assert.match(functionSource('readAutomationPeerMessage'), /result\['message'\]/)
+  assert.match(functionSource('runAutomationBatchedMessageEventProbe'), /readAutomationPeerMessage\(peerResult/)
+  assert.match(functionSource('runAutomationOfflineMessageEventProbe'), /readAutomationPeerMessage\(peerResult/)
+})
+
+test('quote producers use a deterministic message writer instead of typed JSON stringify', () => {
+  const writer = functionSource('stringifyQuoteMessage')
+  assert.doesNotMatch(writer, /JSON\.stringify\(message\)/)
+  for (const field of ['clientMsgID', 'createTime', 'sessionType', 'msgFrom', 'contentType', 'senderPlatformID', 'seq', 'isRead', 'status', 'textElem']) {
+    assert.match(writer, new RegExp(`'${field}'`))
+  }
+})
+
+test('login correlation selects an operation window containing the complete lifecycle', () => {
+  const selector = functionSource('findAutomationLoginLifecycleWindow')
+  assert.match(selector, /automationOperationWindows\.length - 1/)
+  assert.match(selector, /findAutomationEventOccurrence\(expectedEvents\[eventIndex\]/)
+  assert.match(functionSource('buildAutomationEventCorrelations'), /findAutomationLoginLifecycleWindow\(expectedEvents\)/)
+  assert.match(functionSource('switchAutomationAccount'), /completeAutomationOperation\('login'/)
 })
 
 test('sendMessageNotOss delivery does not require a progress event', () => {

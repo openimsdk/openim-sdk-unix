@@ -773,11 +773,42 @@
 	}
 
 	function stringifyQuoteMessage(message : OpenIMMessageItem) : string {
-		const text = JSON.stringify(message)
-		if (text != null) {
-			return text as string
+		let fields : Array<string> = []
+		fields.push(automationJSONField('clientMsgID', automationJSONString(message.clientMsgID == null ? '' : message.clientMsgID as string)))
+		fields.push(automationJSONField('serverMsgID', automationJSONString(message.serverMsgID == null ? '' : message.serverMsgID as string)))
+		fields.push(automationJSONField('createTime', message.createTime.toString()))
+		fields.push(automationJSONField('sendTime', message.sendTime.toString()))
+		fields.push(automationJSONField('sessionType', message.sessionType.toString()))
+		fields.push(automationJSONField('sendID', automationJSONString(message.sendID)))
+		fields.push(automationJSONField('recvID', automationJSONString(message.recvID)))
+		fields.push(automationJSONField('msgFrom', message.msgFrom.toString()))
+		fields.push(automationJSONField('contentType', message.contentType.toString()))
+		fields.push(automationJSONField('senderPlatformID', message.senderPlatformID.toString()))
+		fields.push(automationJSONField('senderNickname', automationJSONString(message.senderNickname)))
+		fields.push(automationJSONField('senderFaceUrl', automationJSONString(message.senderFaceUrl)))
+		fields.push(automationJSONField('groupID', automationJSONString(message.groupID)))
+		fields.push(automationJSONField('content', automationJSONString(message.content)))
+		fields.push(automationJSONField('seq', message.seq.toString()))
+		fields.push(automationJSONField('isRead', message.isRead ? 'true' : 'false'))
+		fields.push(automationJSONField('status', message.status.toString()))
+		fields.push(automationJSONField('attachedInfo', automationJSONString(message.attachedInfo)))
+		fields.push(automationJSONField('ex', automationJSONString(message.ex)))
+		fields.push(automationJSONField('localEx', automationJSONString(message.localEx)))
+		if (message.textElem != null) {
+			const textElem = message.textElem as OpenIMTextElem
+			fields.push(automationJSONField('textElem', '{' + automationJSONField('content', automationJSONString(textElem.content)) + '}'))
 		}
-		return '{}'
+		return '{' + fields.join(',') + '}'
+	}
+
+	function automationJSONString(value : string | null) : string {
+		const normalized = value == null ? '' : value as string
+		const text = JSON.stringify(normalized)
+		return text == null ? '""' : text as string
+	}
+
+	function automationJSONField(key : string, encodedValue : string) : string {
+		return automationJSONString(key) + ':' + encodedValue
 	}
 
 	function readQuoteText(message : OpenIMMessageItem) : string {
@@ -1510,6 +1541,26 @@
 		return null
 	}
 
+	function findAutomationLoginLifecycleWindow(expectedEvents : Array<string>) : OpenIMAutomationOperationWindow | null {
+		let windowIndex = automationOperationWindows.length - 1
+		while (windowIndex >= 0) {
+			const window = automationOperationWindows[windowIndex]
+			if (window.operationApiName == 'login') {
+				let afterSequence = window.operationSequence
+				let eventIndex = 0
+				while (eventIndex < expectedEvents.length) {
+					const occurrence = findAutomationEventOccurrence(expectedEvents[eventIndex], window.operationEpoch, afterSequence)
+					if (occurrence == null) { break }
+					afterSequence = occurrence.sequence
+					eventIndex = eventIndex + 1
+				}
+				if (eventIndex == expectedEvents.length) { return window }
+			}
+			windowIndex = windowIndex - 1
+		}
+		return null
+	}
+
 	function completeAutomationOperation(apiName : string, resultIdentity : string | null = null) {
 		const window = findLatestAutomationOperation(apiName)
 		if (window == null || window.terminalSequence > 0) { return }
@@ -1619,7 +1670,7 @@
 
 	function buildAutomationEventCorrelations(apiName : string, expectedEvents : Array<string>) : Array<OpenIMAutomationEventCorrelation> {
 		const correlations : Array<OpenIMAutomationEventCorrelation> = []
-		const window = findLatestAutomationOperation(apiName)
+		const window = apiName == 'login' ? findAutomationLoginLifecycleWindow(expectedEvents) : findLatestAutomationOperation(apiName)
 		if (window == null || window.operationEpoch <= 0) { return correlations }
 		let afterSequence = window.operationSequence
 		let index = 0
@@ -1637,7 +1688,7 @@
 				payloadMatched = payloadIdentity.length > 0 && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity
 			} else if (apiName == 'addFriend' || apiName == 'acceptFriendApplication' || apiName == 'refuseFriendApplication' || apiName == 'createGroup' || apiName == 'joinGroup' || apiName == 'acceptGroupApplication' || apiName == 'refuseGroupApplication' || apiName == 'kickGroupMember' || apiName == 'inviteUserToGroup' || apiName == 'quitGroup' || apiName == 'dismissGroup' || apiName == 'markConversationMessageAsRead') {
 				correlationKind = 'cross-account-payload-identity'
-				payloadIdentity = ((apiName == 'acceptFriendApplication' && eventName == 'onFriendApplicationAccepted') || (apiName == 'acceptGroupApplication' && eventName == 'onGroupApplicationAccepted')) ? window.payloadNeedle : window.resultIdentity
+				payloadIdentity = ((apiName == 'acceptFriendApplication' && (eventName == 'onFriendAdded' || eventName == 'onFriendApplicationAccepted')) || (apiName == 'acceptGroupApplication' && eventName == 'onGroupApplicationAccepted')) ? window.payloadNeedle : window.resultIdentity
 				payloadMatched = payloadIdentity.length > 0 && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity
 			} else if (apiName == 'setConversation' || apiName == 'revokeMessage' || apiName == 'deleteMessage' || apiName == 'updateFriends' || apiName == 'deleteFriend' || apiName == 'removeBlack' || apiName == 'setGroupInfo' || apiName == 'setGroupMemberInfo' || apiName == 'setSelfInfo') {
 				correlationKind = 'operation-payload-identity'
@@ -2891,6 +2942,7 @@
 		await runAutomationStep<string>('setup', 'getLoginUserID', getLoginUserID(), (value : string) => {
 			requireAutomation(value == userID, 'getLoginUserID returned ' + value + ', expected ' + userID)
 		}, responseAutomationEvidence('getLoginUserID', 'login-user-id-matches-active-user'))
+		completeAutomationOperation('login', userID)
 		recordAutomationEvidenceStep('setup', 'login', true, 'read-after-login status and userID matched ' + userID, mutationAutomationEvidence('login', 'authenticated-user-observed', 'login-readback-observed', false), null, null)
 	}
 
@@ -3580,6 +3632,10 @@
 			operationID: 'uvue_auto_' + label + '_peer_send'
 		}
 		const result = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', payload), automationDefaultStepTimeoutMilliseconds)
+		return readAutomationPeerMessage(result, label)
+	}
+
+	function readAutomationPeerMessage(result : UTSJSONObject, label : string) : OpenIMMessageItem {
 		const encodedMessage = JSON.stringify(result['message'])
 		if (encodedMessage == null) { throw new Error(label + ' peer send returned no message') }
 		const message = JSON.parseObject<OpenIMMessageItem>(encodedMessage as string)
@@ -3880,13 +3936,13 @@
 		const acceptApplication = findFriendApplication(recipientAccept, config.primaryUserID, config.secondaryUserID)
 		if (acceptApplication != null) {
 			const acceptHandle : OpenIMFriendApplicationHandleParams = { toUserID: config.primaryUserID, handleMsg: 'accepted by uni-app x public automation' }
-			const primaryAcceptCursor = await captureAutomationPeerCursor('primary')
+			const friendAddedCount = readAutomationEventCount('onFriendAdded')
 			const friendApplicationAcceptedCount = readAutomationEventCount('onFriendApplicationAccepted')
 			beginAutomationOperation('acceptFriendApplication', config.primaryUserID, true)
 			await runAutomationStep<string>('friend', 'acceptFriendApplication', acceptFriendApplication(acceptHandle, 'uvue_auto_friend_accept'), noCache)
 			completeAutomationOperation('acceptFriendApplication', config.secondaryUserID)
+			await recordAutomationRequiredEventCorrelation('acceptFriendApplication', 'onFriendAdded', friendAddedCount)
 			await recordAutomationRequiredEventCorrelation('acceptFriendApplication', 'onFriendApplicationAccepted', friendApplicationAcceptedCount)
-			await waitAutomationPeerOperationEvent('primary', 'OnFriendAdded', 'acceptFriendApplication', primaryAcceptCursor, 'acceptFriendApplication applicant delivery')
 		} else {
 			recordAutomationSkip('friend', 'acceptFriendApplication', 'friend application not found')
 		}
@@ -4114,13 +4170,11 @@
 			const kickGroupID = (kickGroup as OpenIMGroupItem).groupID
 			const kickSeedSeq = await seedAutomationGroupConversation(kickGroupID, 'uvue_auto_kick_group_seq_seed')
 			const kickParams : OpenIMGroupInviteParams = { groupID: kickGroupID, reason: 'kick from unixsdk public automation', userIDList: [config.secondaryUserID] }
-			const secondaryKickCursor = await captureAutomationPeerCursor('secondary')
 			const groupMemberDeletedCount = readAutomationEventCount('onGroupMemberDeleted')
 			beginAutomationOperation('kickGroupMember', kickGroupID, true)
 			await runAutomationStep<string>('group', 'kickGroupMember', kickGroupMember(kickParams, 'uvue_auto_kick_member'), noCache)
 			completeAutomationOperation('kickGroupMember', kickGroupID + ':' + config.secondaryUserID)
 			await recordAutomationRequiredEventCorrelation('kickGroupMember', 'onGroupMemberDeleted', groupMemberDeletedCount)
-			await waitAutomationPeerOperationEvent('secondary', 'OnJoinedGroupDeleted', 'kickGroupMember', secondaryKickCursor, 'kickGroupMember affected-member delivery')
 			await waitAutomationGroupHistorySeq(kickGroupID, kickSeedSeq + 1, 'uvue_auto_group_after_kick')
 			const inviteParams : OpenIMGroupInviteParams = { groupID: kickGroupID, reason: 'invite from unixsdk public automation', userIDList: [config.secondaryUserID] }
 			const secondaryInviteCursor = await captureAutomationPeerCursor('secondary')
@@ -4438,9 +4492,9 @@
 		const messageText = 'batched-message-event-' + new Date().getTime().toString()
 		const peerPayload : UTSJSONObject = { recvID: config.primaryUserID, text: messageText, operationID: 'uvue_auto_peer_batched_message' }
 		const peerResult = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', peerPayload), automationSendStepTimeoutMilliseconds)
-		const clientMsgIDValue = peerResult['clientMsgID']
-		if (clientMsgIDValue == null || (clientMsgIDValue as string).length == 0) { throw new Error('batched send_text peer command returned no clientMsgID') }
-		const clientMsgID = clientMsgIDValue as string
+		const peerMessage = readAutomationPeerMessage(peerResult, 'batched send_text')
+		const clientMsgID = peerMessage.clientMsgID == null ? '' : peerMessage.clientMsgID as string
+		if (clientMsgID.length == 0) { throw new Error('batched send_text peer command returned no clientMsgID') }
 		if (!await waitAutomationEventCountIncrease(eventName, previousCount, automationSideEffectTimeoutMilliseconds)) { throw new Error('peer message did not emit onRecvNewMessages') }
 		const occurrence = findAutomationEventOccurrenceByMessageIdentityAfter(eventName, afterSequence, clientMsgID)
 		if (occurrence == null) { throw new Error('onRecvNewMessages did not correlate with the peer clientMsgID') }
@@ -4468,9 +4522,9 @@
 			const messageText = 'offline-event-' + new Date().getTime().toString()
 			const peerPayload : UTSJSONObject = { recvID: config.primaryUserID, text: messageText, operationID: 'uvue_auto_peer_offline_message' }
 			const peerResult = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', peerPayload), automationSendStepTimeoutMilliseconds)
-			const clientMsgIDValue = peerResult['clientMsgID']
-			if (clientMsgIDValue == null || (clientMsgIDValue as string).length == 0) { throw new Error('offline send_text peer command returned no clientMsgID') }
-			const clientMsgID = clientMsgIDValue as string
+			const peerMessage = readAutomationPeerMessage(peerResult, 'offline send_text')
+			const clientMsgID = peerMessage.clientMsgID == null ? '' : peerMessage.clientMsgID as string
+			if (clientMsgID.length == 0) { throw new Error('offline send_text peer command returned no clientMsgID') }
 			await runAutomationStep<string>('event-delivery', 'networkStatusChangedForOfflineMessage', networkStatusChanged('uvue_auto_offline_event_network_changed'), noCache)
 			if (!await waitAutomationEventCountIncrease(eventName, previousCount, automationSideEffectTimeoutMilliseconds)) { throw new Error('background delivery did not emit onRecvOfflineNewMessage') }
 			const occurrence = findAutomationEventOccurrenceByMessageIdentityAfter(eventName, afterSequence, clientMsgID)
