@@ -39,12 +39,10 @@ test('typed native messages are reconstructed through the declared public messag
   assert.match(ios, /return value\.getNumber\(key\) != null/)
 })
 
-test('iOS preserves canonical native message JSON for later sends and evidence', () => {
-  assert.match(writerSource, /export function rememberOpenIMMessageJSON/)
-  assert.match(writerSource, /readRememberedOpenIMMessageJSON/)
+test('public message writers normalize every item instead of forwarding raw Core JSON', () => {
+  assert.doesNotMatch(writerSource, /rememberOpenIMMessageJSON/)
   assert.match(writerSource, /items\.push\(stringifyOpenIMMessage\(message\)\)/)
-  assert.match(ios, /rememberOpenIMMessageJSON\(message, itemJSON\)/)
-  assert.match(ios, /rememberNativeMessageListJSON\(result\.messages, data\)/)
+  assert.doesNotMatch(ios, /rememberNativeMessageJSON/)
 })
 
 test('quote producers preserve the public canonical message JSON string contract', () => {
