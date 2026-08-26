@@ -28,11 +28,20 @@ type peerService struct {
 	nextSeq     int64
 	loggedIn    bool
 	loginConfig loginPayload
-	syncReady   chan struct{}
+	syncReady   chan error
 }
 
+var (
+	errPeerConnectFailed = errors.New("public peer connection failed")
+	errPeerSyncFailed    = errors.New("public peer initial sync failed")
+	errPeerSyncTimedOut  = errors.New("public peer initial sync timed out")
+	errPeerTokenExpired  = errors.New("public peer token expired")
+	errPeerTokenInvalid  = errors.New("public peer token invalid")
+	errPeerKickedOffline = errors.New("public peer kicked offline")
+)
+
 func newPeerService() *peerService {
-	return &peerService{eventSignal: make(chan struct{}), syncReady: make(chan struct{}, 1)}
+	return &peerService{eventSignal: make(chan struct{}), syncReady: make(chan error, 1)}
 }
 
 func (s *peerService) operationContext(operationID string) context.Context {
@@ -64,7 +73,7 @@ func (s *peerService) login(payload loginPayload) error {
 		return err
 	}
 	s.client = new(open_im_sdk.LoginMgr)
-	s.syncReady = make(chan struct{}, 1)
+	s.syncReady = make(chan error, 1)
 	listener := &peerListener{service: s}
 	config := sdk_struct.IMConfig{
 		SystemType:          "unix-public-peer",
@@ -93,9 +102,12 @@ func (s *peerService) login(payload loginPayload) error {
 		timeout = 60 * time.Second
 	}
 	select {
-	case <-s.syncReady:
+	case err := <-s.syncReady:
+		if err != nil {
+			return err
+		}
 	case <-time.After(timeout):
-		return errors.New("public peer initial sync timed out")
+		return errPeerSyncTimedOut
 	}
 	s.mu.Lock()
 	s.loggedIn = true
@@ -126,7 +138,7 @@ func (s *peerService) loginSession() error {
 	if loggedIn || s.client == nil {
 		return errors.New("public peer session state is invalid")
 	}
-	s.syncReady = make(chan struct{}, 1)
+	s.syncReady = make(chan error, 1)
 	if err := s.client.Login(s.operationContext("public_peer_relogin"), s.loginConfig.UserID, s.loginConfig.Token); err != nil {
 		return err
 	}
@@ -135,9 +147,12 @@ func (s *peerService) loginSession() error {
 		timeout = 60 * time.Second
 	}
 	select {
-	case <-s.syncReady:
+	case err := <-s.syncReady:
+		if err != nil {
+			return err
+		}
 	case <-time.After(timeout):
-		return errors.New("public peer relogin sync timed out")
+		return errPeerSyncTimedOut
 	}
 	s.mu.Lock()
 	s.loggedIn = true
@@ -247,15 +262,22 @@ func (s *peerService) shutdown() error {
 
 type peerListener struct{ service *peerService }
 
+func (l *peerListener) signalSync(err error) {
+	select {
+	case l.service.syncReady <- err:
+	default:
+	}
+}
+
 func (l *peerListener) OnConnecting()                          {}
-func (l *peerListener) OnConnectSuccess()                      {}
-func (l *peerListener) OnConnectFailed(int32, string)          {}
-func (l *peerListener) OnKickedOffline()                       {}
-func (l *peerListener) OnUserTokenExpired()                    {}
-func (l *peerListener) OnUserTokenInvalid(string)              {}
+func (l *peerListener) OnConnectSuccess()                      { l.signalSync(nil) }
+func (l *peerListener) OnConnectFailed(int32, string)          { l.signalSync(errPeerConnectFailed) }
+func (l *peerListener) OnKickedOffline()                       { l.signalSync(errPeerKickedOffline) }
+func (l *peerListener) OnUserTokenExpired()                    { l.signalSync(errPeerTokenExpired) }
+func (l *peerListener) OnUserTokenInvalid(string)              { l.signalSync(errPeerTokenInvalid) }
 func (l *peerListener) OnSyncServerStart(bool)                 {}
 func (l *peerListener) OnSyncServerProgress(int)               {}
-func (l *peerListener) OnSyncServerFailed(bool)                {}
+func (l *peerListener) OnSyncServerFailed(bool)                { l.signalSync(errPeerSyncFailed) }
 func (l *peerListener) OnNewConversation(string)               {}
 func (l *peerListener) OnConversationChanged(string)           {}
 func (l *peerListener) OnTotalUnreadMessageCountChanged(int32) {}
@@ -263,10 +285,7 @@ func (l *peerListener) OnConversationUserInputStatusChanged(v string) {
 	l.service.emitEvent("OnConversationUserInputStatusChanged", v)
 }
 func (l *peerListener) OnSyncServerFinish(bool) {
-	select {
-	case l.service.syncReady <- struct{}{}:
-	default:
-	}
+	l.signalSync(nil)
 }
 func (l *peerListener) OnRecvNewMessage(v string)     { l.service.emitEvent("OnRecvNewMessage", v) }
 func (l *peerListener) OnRecvC2CReadReceipt(v string) { l.service.emitEvent("OnRecvC2CReadReceipt", v) }

@@ -7,6 +7,25 @@ import (
 	"os"
 )
 
+func publicPeerErrorCode(err error) string {
+	switch {
+	case errors.Is(err, errPeerConnectFailed):
+		return "connection_failed"
+	case errors.Is(err, errPeerSyncFailed):
+		return "initial_sync_failed"
+	case errors.Is(err, errPeerSyncTimedOut):
+		return "initial_sync_timed_out"
+	case errors.Is(err, errPeerTokenExpired):
+		return "token_expired"
+	case errors.Is(err, errPeerTokenInvalid):
+		return "token_invalid"
+	case errors.Is(err, errPeerKickedOffline):
+		return "kicked_offline"
+	default:
+		return "command_failed"
+	}
+}
+
 func writeResponse(encoder *json.Encoder, response responseEnvelope) error {
 	return encoder.Encode(response)
 }
@@ -69,7 +88,7 @@ func main() {
 		}
 		result, err := handleRequest(service, request)
 		if err != nil {
-			_ = writeResponse(encoder, responseEnvelope{Kind: "response", ID: request.ID, OK: false, Error: &errorEnvelope{Code: "command_failed", Message: "public peer command failed"}})
+			_ = writeResponse(encoder, responseEnvelope{Kind: "response", ID: request.ID, OK: false, Error: &errorEnvelope{Code: publicPeerErrorCode(err), Message: "public peer command failed"}})
 			continue
 		}
 		_ = writeResponse(encoder, responseEnvelope{Kind: "response", ID: request.ID, OK: true, Result: result})

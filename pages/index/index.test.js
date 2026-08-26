@@ -82,7 +82,10 @@ function createPublicPeerClient(binaryPath, name, loginPayload) {
     pending.delete(id)
     clearTimeout(entry.timer)
     if (response.ok === true) entry.resolve(response.result || {})
-    else entry.reject(new Error(`public peer ${name} command failed`))
+    else {
+      const safeCode = /^[a-z_]+$/.test(String(response.error?.code || '')) ? response.error.code : 'command_failed'
+      entry.reject(new Error(`public peer ${name} command failed (${safeCode})`))
+    }
   })
   child.on('exit', () => {
     exited = true

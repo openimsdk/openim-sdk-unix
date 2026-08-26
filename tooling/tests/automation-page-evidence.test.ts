@@ -29,6 +29,8 @@ function functionIndex(name: string): number {
 test('Jest failure narrative reads the report status field emitted by the UTS page', () => {
   assert.match(pageTest, /item\.status === 'failed'/)
   assert.doesNotMatch(pageTest, /item\.ok === false/)
+  assert.match(pageTest, /public peer \$\{name\} command failed \(\$\{safeCode\}\)/)
+  assert.doesNotMatch(pageTest, /response\.error\?\.message/)
 })
 
 test('runtime cases carry explicit contract evidence instead of deriving validation from Promise success', () => {
