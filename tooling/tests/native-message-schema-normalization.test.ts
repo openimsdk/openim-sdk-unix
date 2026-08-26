@@ -35,6 +35,7 @@ test('typed native messages are reconstructed through the declared public messag
   assert.doesNotMatch(parser, /return typedMessage\s*}/)
   assert.doesNotMatch(parser, /return typedList\[0\]\s*}/)
   assert.match(ios, /const parsed = value\.getNumber\(key\)/)
+  assert.match(ios, /parseFloat\(\(parsed as number\)\.toString\(\)\)/)
   assert.match(ios, /return value\.getNumber\(key\) != null/)
 })
 

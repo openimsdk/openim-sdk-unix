@@ -153,7 +153,10 @@ export function readStringParam(value : any | null, key : string) : string {
 export function readNumberParam(value : any | null, key : string) : number {
   if (value instanceof UTSJSONObject) {
     const parsed = value.getNumber(key)
-    if (parsed != null) { return parsed as number }
+    if (parsed != null) {
+      const normalized = parseFloat((parsed as number).toString())
+      if (isFinite(normalized)) { return normalized }
+    }
   }
   const raw = readNativeValue(value, key)
   if (raw != null) {
