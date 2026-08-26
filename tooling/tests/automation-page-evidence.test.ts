@@ -365,6 +365,7 @@ test('runtime evidence uses explicit writers for iOS messages and conversation e
 
   const recorder = functionSource('recordAutomationCase')
   assert.match(recorder, /automationResponseEncoding\(contractAPIName\)/)
+  assert.match(page, /function stringifyAutomationMessageEvidencePayload\(value : any \| null\) : string/)
 })
 
 test('login correlation selects an operation window containing the complete lifecycle', () => {
@@ -403,6 +404,10 @@ test('identity correlations skip unrelated same-event noise inside the operation
   assert.match(correlations, /findAutomationEventOccurrenceByPayloadIdentity\(eventName, occurrenceEpoch, afterSequence, payloadIdentity\)/)
   assert.match(correlations, /correlationKind == 'operation-payload-identity'/)
   assert.match(correlations, /correlationKind == 'cross-account-payload-identity'/)
+  assert.ok(
+    functionIndex('findAutomationEventOccurrenceByPayloadIdentity') > functionIndex('readAutomationEventPayloadIdentity'),
+    'Kotlin generation requires the local identity reader before its caller',
+  )
 })
 
 test('quitGroup waits until the secondary account can observe membership', () => {

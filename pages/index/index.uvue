@@ -463,7 +463,15 @@
 		OpenIMLogLevelVerbose
 	} from '@/uni_modules/unix-openim-sdk'
 
-	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload, stringifyOpenIMMessageEvidencePayload as stringifyAutomationMessageEvidencePayload } from '@/uni_modules/unix-openim-sdk/utssdk/common/message-json-writer.uts'
+	import { stringifyOpenIMMessagePayload as stringifyAutomationNativeMessagePayload } from '@/uni_modules/unix-openim-sdk/utssdk/common/message-json-writer.uts'
+	// #ifdef APP-IOS
+	import { stringifyOpenIMMessageEvidencePayload as stringifyAutomationMessageEvidencePayload } from '@/uni_modules/unix-openim-sdk/utssdk/common/message-json-writer.uts'
+	// #endif
+	// #ifdef APP-ANDROID
+	function stringifyAutomationMessageEvidencePayload(value : any | null) : string {
+		return JSON.stringify(value)
+	}
+	// #endif
 
 	// Page state
 	const statusText = ref('Ready')
@@ -1556,19 +1564,6 @@
 		return null
 	}
 
-	function findAutomationEventOccurrenceByPayloadIdentity(eventName : string, epoch : number, afterSequence : number, payloadIdentity : string) : OpenIMAutomationEventOccurrence | null {
-		if (payloadIdentity.length == 0) { return null }
-		let index = 0
-		while (index < automationEventOccurrences.length) {
-			const occurrence = automationEventOccurrences[index]
-			if (occurrence.eventName == eventName && (epoch <= 0 || occurrence.epoch == epoch) && occurrence.sequence > afterSequence && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity) {
-				return occurrence
-			}
-			index = index + 1
-		}
-		return null
-	}
-
 	function beginAutomationOperation(apiName : string, payloadNeedle : string | null = null, exclusiveOperation : boolean | null = null) {
 		automationEvidenceSequenceCounter = automationEvidenceSequenceCounter + 1
 		let exclusive = exclusiveOperation == true
@@ -1699,6 +1694,19 @@
 			return ''
 		}
 		return ''
+	}
+
+	function findAutomationEventOccurrenceByPayloadIdentity(eventName : string, epoch : number, afterSequence : number, payloadIdentity : string) : OpenIMAutomationEventOccurrence | null {
+		if (payloadIdentity.length == 0) { return null }
+		let index = 0
+		while (index < automationEventOccurrences.length) {
+			const occurrence = automationEventOccurrences[index]
+			if (occurrence.eventName == eventName && (epoch <= 0 || occurrence.epoch == epoch) && occurrence.sequence > afterSequence && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity) {
+				return occurrence
+			}
+			index = index + 1
+		}
+		return null
 	}
 
 	function findAutomationEventOccurrenceByMessageIdentityAfter(eventName : string, afterSequence : number, clientMsgID : string) : OpenIMAutomationEventOccurrence | null {
