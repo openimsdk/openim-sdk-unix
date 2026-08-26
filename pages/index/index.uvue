@@ -2613,13 +2613,19 @@
 		return sequence as number
 	}
 
-	async function waitAutomationPeerOperationEvent(target : string, peerEventName : string, apiName : string, afterSequence : number, label : string) : Promise<void> {
+	async function waitAutomationPeerOperationEvent(target : string, peerEventName : string, apiName : string, afterSequence : number, label : string, expectedTextContent : string | null = null) : Promise<void> {
 		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
 		let peerCursor = afterSequence
+		let identityMismatchCount = 0
 		while (Date.now() < deadline) {
 			const remaining = deadline - Date.now()
 			const waitPayload : UTSJSONObject = { name: peerEventName, afterSeq: peerCursor, timeoutMs: remaining }
-			const result = await runAutomationPeerCommand('wait_event', buildAutomationPeerPayload(target, waitPayload), remaining + automationSideEffectReadTimeoutMilliseconds)
+			let result : UTSJSONObject
+			try {
+				result = await runAutomationPeerCommand('wait_event', buildAutomationPeerPayload(target, waitPayload), remaining + automationSideEffectReadTimeoutMilliseconds)
+			} catch (_error) {
+				break
+			}
 			const sequence = result['seq']
 			if (sequence == null || (sequence as number) <= peerCursor) { throw new Error(label + ' returned an invalid peer event sequence') }
 			peerCursor = sequence as number
@@ -2630,7 +2636,17 @@
 				const window = findLatestAutomationOperation(apiName)
 				const expectedIdentity = window == null ? '' : window.resultIdentity
 				const observedIdentity = readAutomationEventPayloadIdentity(mappedEventName, payloadTextValue as string)
-				if (expectedIdentity.length == 0 || observedIdentity != expectedIdentity) { continue }
+				if (expectedIdentity.length == 0 || observedIdentity != expectedIdentity) {
+					identityMismatchCount = identityMismatchCount + 1
+					if (expectedTextContent != null) {
+						const message = JSON.parseObject<UTSJSONObject>(payloadTextValue as string)
+						const textElem = message == null ? null : message['textElem']
+						if (textElem instanceof UTSJSONObject && textElem['content'] == expectedTextContent as string) {
+							throw new Error(label + ' delivered the exact scenario content with a different clientMsgID')
+						}
+					}
+					continue
+				}
 			}
 			recordSDKEventDelivery(mappedEventName, payloadTextValue as string)
 			const correlations = buildAutomationEventCorrelations(apiName, [mappedEventName])
@@ -2641,7 +2657,7 @@
 			recordAutomationCase('event-delivery', apiName, 'passed', label, new Date().getTime(), evidence, apiName, true, true, null, correlations)
 			return
 		}
-		throw new Error(label + ' did not correlate with the operation identity before timeout')
+		throw new Error(label + ' did not correlate with the operation identity before timeout; nonmatching events=' + identityMismatchCount.toString())
 	}
 
 	async function waitAutomationPeerInputState(target : string, conversationID : string, userID : string, expectedPlatform : number, expectedPresent : boolean, operationPrefix : string) : Promise<void> {
@@ -3271,7 +3287,7 @@
 		const sent = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(sendOptions), cacheSentAutomationMessage)
 		const sentClientMsgID = sent.clientMsgID != null ? sent.clientMsgID as string : ''
 		completeAutomationOperation('sendMessage', sentClientMsgID)
-		await waitAutomationPeerOperationEvent('secondary', 'OnRecvNewMessage', 'sendMessage', secondarySendCursor, 'sendMessage secondary delivery')
+		await waitAutomationPeerOperationEvent('secondary', 'OnRecvNewMessage', 'sendMessage', secondarySendCursor, 'sendMessage secondary delivery', 'sendMessage from unixsdk public automation')
 		const notOssMessage = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createTextMessage', createTextMessage('sendMessageNotOss from unixsdk public automation', 'uvue_auto_create_send_not_oss_text'), cacheRequiredAutomationMessage)
 		const notOssOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_text_not_oss', message: notOssMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
 		const notOssClientMsgID = notOssMessage != null && notOssMessage.clientMsgID != null ? notOssMessage.clientMsgID as string : ''
