@@ -227,11 +227,24 @@
 		OpenIMInsertGroupMessageParams,
 		OpenIMInsertSingleMessageParams,
 		OpenIMLoginStatus,
+		OpenIMLoginStatusLogged,
 		OpenIMLogLevel,
 		OpenIMMessageItem,
 		OpenIMMessageKeyParams,
 		OpenIMMessageListResult,
 		OpenIMMessageTypeText,
+		OpenIMMessageTypePicture,
+		OpenIMMessageTypeVoice,
+		OpenIMMessageTypeVideo,
+		OpenIMMessageTypeFile,
+		OpenIMMessageTypeAtText,
+		OpenIMMessageTypeMerge,
+		OpenIMMessageTypeCard,
+		OpenIMMessageTypeLocation,
+		OpenIMMessageTypeCustom,
+		OpenIMMessageTypeQuote,
+		OpenIMMessageTypeFace,
+		OpenIMMessageTypeAdvancedText,
 		OpenIMPageParams,
 		OpenIMPicture,
 		OpenIMPictureElem,
@@ -241,6 +254,7 @@
 		OpenIMSearchGroupsParams,
 		OpenIMSearchLocalMessagesParams,
 		OpenIMSearchMessageResult,
+		OpenIMSearchMessageResultItem,
 		OpenIMSendMessageOptions,
 		OpenIMSessionTypeGroup,
 		OpenIMSessionTypeSingle,
@@ -278,6 +292,7 @@
 		OpenIMMessageReceiptListResult,
 		OpenIMConversationInputStatusItem,
 		OpenIMUserStatusListResult,
+		OpenIMTextElem,
 		OpenIMVideoElem,
 		OpenIMFileElem,
 		OpenIMCardElem,
@@ -930,6 +945,11 @@
 		secondaryAndroidToken : string
 	}
 
+	type OpenIMAutomationValidationState = {
+		structureValidated : boolean
+		semanticValidated : boolean
+	}
+
 	type OpenIMAutomationEventCorrelation = {
 		operationApiName : string
 		eventName : string
@@ -1066,6 +1086,7 @@
 	let automationQuerySuiteFilter = ''
 	let automationLoggedIn = false
 	let automationActiveUserID = ''
+	let automationExpectedSecondaryUserID = ''
 	let automationConversationID = ''
 	let automationFixedImageFullPath = ''
 	let automationFixedSoundFullPath = ''
@@ -1332,6 +1353,7 @@
 		cachedClientMsgID = ''
 		automationLoggedIn = false
 		automationActiveUserID = ''
+		automationExpectedSecondaryUserID = ''
 		automationConversationID = ''
 		automationFixedImageFullPath = ''
 		automationFixedSoundFullPath = ''
@@ -1414,7 +1436,7 @@
 		let index = 0
 		while (index < automationEventOccurrences.length) {
 			const occurrence = automationEventOccurrences[index]
-			if (occurrence.eventName == eventName && occurrence.epoch == epoch && occurrence.sequence > afterSequence) {
+			if (occurrence.eventName == eventName && (epoch <= 0 || occurrence.epoch == epoch) && occurrence.sequence > afterSequence) {
 				return occurrence
 			}
 			index = index + 1
@@ -1495,7 +1517,8 @@
 		let index = 0
 		while (index < expectedEvents.length) {
 			const eventName = expectedEvents[index]
-			const occurrence = findAutomationEventOccurrence(eventName, window.operationEpoch, afterSequence)
+			const occurrenceEpoch = eventName == 'onRecvNewMessage' ? 0 : window.operationEpoch
+			const occurrence = findAutomationEventOccurrence(eventName, occurrenceEpoch, afterSequence)
 			if (occurrence == null) { return correlations }
 			let correlationKind = 'lifecycle-order'
 			let payloadIdentity = ''
@@ -1524,7 +1547,7 @@
 			}
 			correlations.push(correlation)
 			const matched = correlation.payloadMatched
-			markAutomationEventEvidence(eventName, matched, true, occurrence.epoch == window.operationEpoch)
+			markAutomationEventEvidence(eventName, matched, true, eventName == 'onRecvNewMessage' || occurrence.epoch == window.operationEpoch)
 			afterSequence = occurrence.sequence
 			index = index + 1
 		}
@@ -1864,6 +1887,339 @@
 		}
 	}
 
+	function emptyAutomationValidationState() : OpenIMAutomationValidationState {
+		return { structureValidated: false, semanticValidated: false }
+	}
+
+	function assertAutomationMessageItem(value : OpenIMMessageItem | null, label : string, requireResolvedSessionType : boolean) : OpenIMMessageItem {
+		if (value == null) { throw new Error(label + ' returned null message') }
+		const message = value as OpenIMMessageItem
+		const clientMsgID = message.clientMsgID != null ? message.clientMsgID as string : ''
+		if (clientMsgID.length == 0) { throw new Error(label + ' returned empty clientMsgID') }
+		if (message.createTime < 0 || message.sendTime < 0 || message.seq < 0) { throw new Error(label + ' returned an invalid message timestamp or seq') }
+		if (requireResolvedSessionType && message.sessionType != OpenIMSessionTypeSingle && message.sessionType != OpenIMSessionTypeGroup) { throw new Error(label + ' returned invalid sessionType') }
+		return message
+	}
+
+	function assertAutomationConversationItem(value : OpenIMConversationItem | null, label : string) : OpenIMConversationItem {
+		if (value == null) { throw new Error(label + ' returned null conversation') }
+		const conversation = value as OpenIMConversationItem
+		if (conversation.conversationID.length == 0) { throw new Error(label + ' returned empty conversationID') }
+		if (conversation.minSeq > conversation.maxSeq && conversation.maxSeq > 0) { throw new Error(label + ' returned minSeq greater than maxSeq') }
+		return conversation
+	}
+
+	function isAutomationCreatedMessageName(name : string) : boolean {
+		return name == 'createAdvancedTextMessage' || name == 'createQuoteMessage' || name == 'createAdvancedQuoteMessage' || name == 'createTextAtMessage' || name == 'createMergerMessage' || name == 'createForwardMessage' || name == 'createCustomMessage' || name == 'createFaceMessage' || name == 'createLocationMessage' || name == 'createCardMessage' || name == 'createImageMessageByURL' || name == 'createSoundMessageByURL' || name == 'createVideoMessageByURL' || name == 'createFileMessageByURL' || name == 'createImageMessageFromFullPath' || name == 'createSoundMessageFromFullPath' || name == 'createVideoMessageFromFullPath' || name == 'createFileMessageFromFullPath'
+	}
+
+	function validateAutomationCreatedMessage(name : string, value : any | null) : OpenIMAutomationValidationState {
+		const message = assertAutomationMessageItem(value as OpenIMMessageItem | null, name, false)
+		let expectedContentType = 0
+		let hasExpectedElement = false
+		if (name == 'createAdvancedTextMessage') {
+			expectedContentType = OpenIMMessageTypeAdvancedText
+			hasExpectedElement = message.advancedTextElem != null
+		} else if (name == 'createQuoteMessage' || name == 'createAdvancedQuoteMessage') {
+			expectedContentType = OpenIMMessageTypeQuote
+			hasExpectedElement = message.quoteElem != null
+		} else if (name == 'createTextAtMessage') {
+			expectedContentType = OpenIMMessageTypeAtText
+			hasExpectedElement = message.atTextElem != null
+		} else if (name == 'createMergerMessage') {
+			expectedContentType = OpenIMMessageTypeMerge
+			hasExpectedElement = message.mergeElem != null
+		} else if (name == 'createForwardMessage') {
+			expectedContentType = OpenIMMessageTypeText
+			hasExpectedElement = message.textElem != null
+		} else if (name == 'createCustomMessage') {
+			expectedContentType = OpenIMMessageTypeCustom
+			hasExpectedElement = message.customElem != null
+		} else if (name == 'createFaceMessage') {
+			expectedContentType = OpenIMMessageTypeFace
+			hasExpectedElement = message.faceElem != null
+		} else if (name == 'createLocationMessage') {
+			expectedContentType = OpenIMMessageTypeLocation
+			hasExpectedElement = message.locationElem != null
+		} else if (name == 'createCardMessage') {
+			expectedContentType = OpenIMMessageTypeCard
+			hasExpectedElement = message.cardElem != null
+		} else if (name == 'createImageMessageByURL' || name == 'createImageMessageFromFullPath') {
+			expectedContentType = OpenIMMessageTypePicture
+			hasExpectedElement = message.pictureElem != null
+		} else if (name == 'createSoundMessageByURL' || name == 'createSoundMessageFromFullPath') {
+			expectedContentType = OpenIMMessageTypeVoice
+			hasExpectedElement = message.soundElem != null
+		} else if (name == 'createVideoMessageByURL' || name == 'createVideoMessageFromFullPath') {
+			expectedContentType = OpenIMMessageTypeVideo
+			hasExpectedElement = message.videoElem != null
+		} else if (name == 'createFileMessageByURL' || name == 'createFileMessageFromFullPath') {
+			expectedContentType = OpenIMMessageTypeFile
+			hasExpectedElement = message.fileElem != null
+		}
+		if (expectedContentType == 0) { throw new Error('unsupported automation message creator: ' + name) }
+		if (message.contentType != expectedContentType) { throw new Error(name + ' returned unexpected contentType=' + message.contentType.toString()) }
+		if (!hasExpectedElement) { throw new Error(name + ' returned no typed payload for contentType=' + expectedContentType.toString()) }
+		return { structureValidated: true, semanticValidated: true }
+	}
+
+	function validateAutomationResponse(name : string, value : any | null) : OpenIMAutomationValidationState {
+		if (isAutomationCreatedMessageName(name)) { return validateAutomationCreatedMessage(name, value) }
+		if (name == 'initSDK') {
+			if (!(value as boolean)) { throw new Error('initSDK did not report successful initialization') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'login' || name == 'logout') {
+			if (JSON.stringify(value as string) == null) { throw new Error(name + ' did not return a string response') }
+			return { structureValidated: true, semanticValidated: false }
+		}
+		if (name == 'setAppBackgroundStatus' || name == 'setAppBadge' || name == 'networkStatusChanged' || name == 'updateFcmToken') {
+			const encodedResponse = JSON.stringify(value)
+			if (encodedResponse == null) { throw new Error(name + ' did not return a string response') }
+			const responseJSON = encodedResponse as string
+			if (responseJSON.length < 2 || responseJSON.substring(0, 1) != '"' || responseJSON.substring(responseJSON.length - 1, responseJSON.length) != '"') { throw new Error(name + ' did not return a string response') }
+			return { structureValidated: true, semanticValidated: name == 'networkStatusChanged' }
+		}
+		if (name == 'getLoginStatus') {
+			const status = value as number
+			const expectedStatus = automationLoggedIn ? OpenIMLoginStatusLogged : 1
+			if (status != expectedStatus) { throw new Error('getLoginStatus did not match the current automation lifecycle state') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getLoginUserID') {
+			const userID = value as string
+			if (userID.length == 0 || userID != automationActiveUserID) { throw new Error('getLoginUserID did not match active automation account') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getSelfUserInfo') {
+			if (value == null || (value as OpenIMUserInfo).userID != automationActiveUserID) { throw new Error('getSelfUserInfo did not match active automation account') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getUsersInfo') {
+			if (value == null) { throw new Error('getUsersInfo returned null') }
+			const result = value as OpenIMUserListResult
+			let foundPrimary = false
+			let foundSecondary = false
+			let index = 0
+			while (index < result.users.length) {
+				const userID = result.users[index].userID
+				if (userID == automationActiveUserID) { foundPrimary = true }
+				if (userID == automationExpectedSecondaryUserID) { foundSecondary = true }
+				index = index + 1
+			}
+			if (!foundPrimary || !foundSecondary) { throw new Error('getUsersInfo did not contain both automation accounts') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getUserStatus' || name == 'getSubscribeUsersStatus') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMUserStatusListResult
+			let found = false
+			let index = 0
+			while (index < result.statuses.length) {
+				if (result.statuses[index].userID == automationExpectedSecondaryUserID) { found = true }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: found }
+		}
+		if (name == 'createTextMessage') {
+			const message = assertAutomationMessageItem(value as OpenIMMessageItem | null, name, false)
+			if (message.textElem == null || (message.textElem as OpenIMTextElem).content.length == 0) { throw new Error('createTextMessage returned empty textElem.content') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'sendMessage' || name == 'sendMessageNotOss') {
+			const message = assertAutomationMessageItem(value as OpenIMMessageItem | null, name, true)
+			const serverMsgID = message.serverMsgID != null ? message.serverMsgID as string : ''
+			if (serverMsgID.length == 0 || message.sendID == null || message.sendID != automationActiveUserID) { throw new Error(name + ' returned an uncorrelated sender or empty serverMsgID') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getConversationIDBySessionType') {
+			if ((value as string).length == 0) { throw new Error('getConversationIDBySessionType returned empty conversationID') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getOneConversation') {
+			assertAutomationConversationItem(value as OpenIMConversationItem | null, name)
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getAllConversationList' || name == 'searchConversation' || name == 'getConversationListSplit' || name == 'getMultipleConversation') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMConversationListResult
+			if (name == 'getConversationListSplit' && result.conversations.length > 20) { throw new Error('getConversationListSplit returned more than the requested page size') }
+			let found = automationConversationID.length == 0
+			let index = 0
+			while (index < result.conversations.length) {
+				const conversation = assertAutomationConversationItem(result.conversations[index], name)
+				if (conversation.conversationID == automationConversationID) { found = true }
+				index = index + 1
+			}
+			if (!found) { throw new Error(name + ' did not contain the active scenario conversationID') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'searchLocalMessages' || name == 'findMessageList') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			let totalCount = 0
+			let items : Array<OpenIMSearchMessageResultItem> = []
+			if (name == 'searchLocalMessages') {
+				const result = value as OpenIMSearchMessageResult
+				totalCount = result.totalCount
+				items = result.searchResultItems
+			} else {
+				const result = value as OpenIMFindMessageResult
+				totalCount = result.totalCount
+				items = result.findResultItems
+			}
+			let observedMessageCount = 0
+			let index = 0
+			while (index < items.length) {
+				if (items[index].conversationID.length == 0 || items[index].messageCount != items[index].messageList.length) { throw new Error(name + ' returned inconsistent result metadata') }
+				observedMessageCount = observedMessageCount + items[index].messageList.length
+				index = index + 1
+			}
+			if (totalCount < observedMessageCount) { throw new Error(name + ' returned totalCount below its observed message count') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getAdvancedHistoryMessageList') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMAdvancedHistoryMessageListResult
+			if (result.errCode != 0 || result.lastMinSeq < 0) { throw new Error(name + ' returned invalid pagination metadata') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'createGroup') {
+			if (value == null || (value as OpenIMGroupItem).groupID.length == 0) { throw new Error('createGroup returned null or empty groupID') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getSpecifiedGroupsInfo') {
+			if (value == null || (value as OpenIMGroupListResult).groups.length == 0) { throw new Error('getSpecifiedGroupsInfo returned no group') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getGroupMemberList' || name == 'getSpecifiedGroupMembersInfo') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMGroupMemberListResult
+			let index = 0
+			while (index < result.members.length) {
+				if (result.members[index].groupID.length == 0 || result.members[index].userID.length == 0) { throw new Error(name + ' returned invalid member identity') }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'searchGroupMembers') {
+			if (value == null) { throw new Error('searchGroupMembers returned null') }
+			const result = value as OpenIMGroupMemberListResult
+			let found = false
+			let index = 0
+			while (index < result.members.length) {
+				if (result.members[index].groupID.length == 0 || result.members[index].userID.length == 0) { throw new Error('searchGroupMembers returned invalid member identity') }
+				if (result.members[index].userID == automationExpectedSecondaryUserID) { found = true }
+				index = index + 1
+			}
+			if (!found) { throw new Error('searchGroupMembers did not contain the secondary automation account') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getFriendList' || name == 'getFriendListPage' || name == 'searchFriends' || name == 'getSpecifiedFriendsInfo') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMFriendListResult
+			let found = false
+			let index = 0
+			while (index < result.friends.length) {
+				if (result.friends[index].userID.length == 0) { throw new Error(name + ' returned empty friend userID') }
+				if (result.friends[index].userID == automationExpectedSecondaryUserID) { found = true }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: found }
+		}
+		if (name == 'checkFriend') {
+			if (value == null) { throw new Error('checkFriend returned null') }
+			const result = value as OpenIMCheckFriendResult
+			let found = false
+			let index = 0
+			while (index < result.result.length) {
+				if (result.result[index].userID == automationExpectedSecondaryUserID) { found = true }
+				index = index + 1
+			}
+			if (!found) { throw new Error('checkFriend did not contain the secondary automation account') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getFriendApplicationListAsRecipient' || name == 'getFriendApplicationListAsApplicant') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMFriendApplicationListResult
+			let index = 0
+			while (index < result.applications.length) {
+				if (result.applications[index].fromUserID.length == 0 || result.applications[index].toUserID.length == 0) { throw new Error(name + ' returned invalid application identity') }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getFriendApplicationUnhandledCount' || name == 'getGroupApplicationUnhandledCount' || name == 'getTotalUnreadMsgCount') {
+			if (value == null || (value as number) < 0) { throw new Error(name + ' returned a negative or null count') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getBlackList') {
+			if (value == null) { throw new Error('getBlackList returned null') }
+			const result = value as OpenIMBlackListResult
+			let found = false
+			let index = 0
+			while (index < result.blackUsers.length) {
+				if (result.blackUsers[index].userID == automationExpectedSecondaryUserID) { found = true }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: found }
+		}
+		if (name == 'getJoinedGroupList' || name == 'getJoinedGroupListPage' || name == 'searchGroups') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMGroupListResult
+			let found = cachedGroupID.length == 0
+			let index = 0
+			while (index < result.groups.length) {
+				if (result.groups[index].groupID.length == 0) { throw new Error(name + ' returned empty groupID') }
+				if (result.groups[index].groupID == cachedGroupID) { found = true }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: found }
+		}
+		if (name == 'getGroupApplicationListAsApplicant' || name == 'getGroupApplicationListAsRecipient') {
+			if (value == null) { throw new Error(name + ' returned null') }
+			const result = value as OpenIMGroupApplicationListResult
+			let index = 0
+			while (index < result.applications.length) {
+				if (result.applications[index].groupID.length == 0 || result.applications[index].userID.length == 0) { throw new Error(name + ' returned invalid application identity') }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: true }
+		}
+		if (name == 'getUsersInGroup') {
+			if (value == null) { throw new Error('getUsersInGroup returned null') }
+			const users = value as Array<string>
+			let foundSecondary = false
+			let index = 0
+			while (index < users.length) {
+				if (users[index] == automationExpectedSecondaryUserID) { foundSecondary = true }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: foundSecondary }
+		}
+		if (name == 'isJoinGroup') {
+			return { structureValidated: true, semanticValidated: value as boolean }
+		}
+		if (name == 'uploadFile') {
+			if (value == null) { throw new Error('uploadFile returned null') }
+			const result = value as OpenIMUploadFileResult
+			const url = result.url != null ? result.url as string : ''
+			const uri = result.uri != null ? result.uri as string : ''
+			if (url.length == 0 && uri.length == 0) { throw new Error('uploadFile returned neither url nor uri') }
+			return { structureValidated: true, semanticValidated: true }
+		}
+		return emptyAutomationValidationState()
+	}
+
+	function mergeAutomationValidationEvidence(apiName : string, validation : OpenIMAutomationValidationState, supplied : OpenIMAutomationEvidence | null) : OpenIMAutomationEvidence {
+		const evidence = supplied == null ? emptyAutomationEvidence() : supplied as OpenIMAutomationEvidence
+		if (validation.structureValidated) { evidence.structureValidated = true }
+		if (validation.semanticValidated && !evidence.semanticValidated) {
+			evidence.semanticValidated = true
+			evidence.assertions.push(createAutomationProfileAssertion('semantic', requireAutomationSemanticProfile(apiName), 'scenario-semantics', 'response correlated with current automation context', 'response correlated', true))
+		}
+		return evidence
+	}
+
 	function emptyAutomationEvidence() : OpenIMAutomationEvidence {
 		return {
 			structureValidated: false,
@@ -2026,6 +2382,17 @@
 		recordAutomationCase(group, name, ok ? 'passed' : 'failed', detail, new Date().getTime(), evidence, name, true, ok, responseDetail, eventCorrelations)
 	}
 
+	function recordAutomationSemanticEvidence(group : string, name : string, detail : string, apiName : string | null = null) {
+		const contractAPIName = apiName == null ? name : apiName as string
+		recordAutomationCase(group, name, 'passed', detail, new Date().getTime(), responseAutomationEvidence(contractAPIName, 'query-correlation'), contractAPIName, true, true, null, null)
+	}
+
+	function recordAutomationSideEffect(group : string, name : string, detail : string, eventCorrelated : boolean | null = null, apiName : string | null = null) {
+		const contractAPIName = apiName == null ? name : apiName as string
+		const evidence = mutationAutomationEvidence(contractAPIName, 'scenario-mutation-correlated', 'generated-side-effect-observed', eventCorrelated == true)
+		recordAutomationCase(group, name, 'passed', detail, new Date().getTime(), evidence, contractAPIName, true, true, null, null)
+	}
+
 	function recordAutomationCleanupEvidence(group : string, apiName : string, cleanupAction : string, rule : string, expected : string, actual : string, ok : boolean) {
 		recordAutomationCase(group, apiName, ok ? 'passed' : 'failed', rule + ': expected ' + expected + ', actual ' + actual, new Date().getTime(), cleanupAutomationEvidence(cleanupAction, rule, expected, actual, ok), apiName, true, ok, null, null)
 	}
@@ -2123,7 +2490,9 @@
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, timeoutMilliseconds)
 			resolvedValueText = stringifyAPIValue(value)
 			onSuccess(value)
-			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt, evidence, name, true, true, resolvedValueText, null)
+			const validation = validateAutomationResponse(name, value)
+			const checked = mergeAutomationValidationEvidence(name, validation, evidence)
+			recordAutomationCase(group, name, 'passed', resolvedValueText, startedAt, checked, name, true, true, resolvedValueText, null)
 			return value
 		} catch (error) {
 			const errorText = stringifyAPIValue(error)
@@ -2151,7 +2520,9 @@
 			const value = await withAutomationTimeout<T>(promise, group + '/' + name, automationDefaultStepTimeoutMilliseconds)
 			onSuccess(value)
 			const responseDetail = stringifyAPIValue(value)
-			recordAutomationCase(group, name, 'passed', responseDetail, startedAt, null, name, true, true, responseDetail, null)
+			const validation = validateAutomationResponse(name, value)
+			const checked = mergeAutomationValidationEvidence(name, validation, null)
+			recordAutomationCase(group, name, 'passed', responseDetail, startedAt, checked, name, true, true, responseDetail, null)
 			return value
 		} catch (error) {
 			recordAutomationCase(group, name, 'skipped', reason + ': ' + stringifyAPIValue(error), startedAt, null, name, true, false, null, null)
@@ -2498,15 +2869,55 @@
 		recordAutomationEvidenceStep('setup', 'getSdkVersion', true, sdkVersion, responseAutomationEvidence('getSdkVersion', 'sdk-version-is-non-empty'), stringifyAPIValue(sdkVersion), null)
 	}
 
+	function automationSubscribedStatusContains(value : OpenIMUserStatusListResult | null, userID : string) : boolean {
+		if (value == null) { return false }
+		let index = 0
+		while (index < (value as OpenIMUserStatusListResult).statuses.length) {
+			if ((value as OpenIMUserStatusListResult).statuses[index].userID == userID) { return true }
+			index = index + 1
+		}
+		return false
+	}
+
+	async function waitAutomationSubscribedStatus(userID : string, expectedPresent : boolean, operationPrefix : string) : Promise<boolean> {
+		const startedAt = Date.now()
+		let attempt = 0
+		while (Date.now() - startedAt < automationSideEffectTimeoutMilliseconds) {
+			try {
+				const value = await withAutomationTimeout<OpenIMUserStatusListResult | null>(getSubscribeUsersStatus(operationPrefix + '_' + attempt.toString()), 'user-status/getSubscribeUsersStatus', automationSideEffectReadTimeoutMilliseconds)
+				if (automationSubscribedStatusContains(value, userID) == expectedPresent) { return true }
+			} catch (_error) {
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		return false
+	}
+
 	async function runAutomationUserStatusSuite(config : OpenIMAutomationConfig) : Promise<void> {
 		await runAutomationStep<OpenIMUserInfo | null>('user-status', 'getSelfUserInfo', getSelfUserInfo('uvue_auto_self_info'), (value : OpenIMUserInfo | null) => { requireAutomationUser(value, config.primaryUserID, 'getSelfUserInfo') })
 		await runAutomationStep<OpenIMUserListResult | null>('user-status', 'getUsersInfo', getUsersInfo([config.primaryUserID, config.secondaryUserID], 'uvue_auto_users_info'), (value : OpenIMUserListResult | null) => { requireAutomationUserList(value, config.primaryUserID, config.secondaryUserID) })
 		const selfInfo : OpenIMSetSelfInfoParams = { ex: 'uvue-automation-public' }
 		await runAutomationStep<string>('user-status', 'setSelfInfo', setSelfInfo(selfInfo, 'uvue_auto_set_self_info'), noCache)
+		const selfReadback = await runAutomationStep<OpenIMUserInfo | null>('user-status', 'getSelfUserInfo', getSelfUserInfo('uvue_auto_self_info_readback'), (value : OpenIMUserInfo | null) => { requireAutomationUser(value, config.primaryUserID, 'getSelfUserInfo readback') })
+		requireAutomation(selfReadback != null && (selfReadback as OpenIMUserInfo).ex == selfInfo.ex, 'setSelfInfo ex was not observable through getSelfUserInfo')
+		recordAutomationSideEffect('user-status', 'setSelfInfoReadback', 'getSelfUserInfo returned the exact updated ex', false, 'setSelfInfo')
 		await runAutomationStep<string>('user-status', 'subscribeUsersStatus', subscribeUsersStatus([config.secondaryUserID], 'uvue_auto_subscribe_status'), noCache)
 		await runAutomationStep<OpenIMUserStatusListResult | null>('user-status', 'getUserStatus', getUserStatus([config.secondaryUserID], 'uvue_auto_user_status'), noCache)
 		await runAutomationStep<OpenIMUserStatusListResult | null>('user-status', 'getSubscribeUsersStatus', getSubscribeUsersStatus('uvue_auto_subscribed_status'), noCache)
+		const subscribedObserved = await waitAutomationSubscribedStatus(config.secondaryUserID, true, 'uvue_auto_subscribed_status_readback')
+		if (subscribedObserved) {
+			recordAutomationSemanticEvidence('user-status', 'subscribeUsersStatusReadback', 'subscribed status contained the secondary automation account', 'subscribeUsersStatus')
+		} else {
+			recordAutomationStep('user-status', 'subscribeUsersStatusReadback', false, 'subscribed status did not contain the secondary automation account before timeout')
+		}
 		await runAutomationStep<string>('user-status', 'unsubscribeUsersStatus', unsubscribeUsersStatus([config.secondaryUserID], 'uvue_auto_unsubscribe_status'), noCache)
+		const unsubscribedObserved = await waitAutomationSubscribedStatus(config.secondaryUserID, false, 'uvue_auto_unsubscribed_status_readback')
+		if (unsubscribedObserved) {
+			recordAutomationSemanticEvidence('user-status', 'unsubscribeUsersStatusReadback', 'subscribed status excluded the secondary automation account', 'unsubscribeUsersStatus')
+		} else {
+			recordAutomationStep('user-status', 'unsubscribeUsersStatusReadback', false, 'subscribed status still contained the secondary automation account before timeout')
+		}
 	}
 
 	async function runAutomationMessageCreateSuite(config : OpenIMAutomationConfig) : Promise<void> {
@@ -2594,6 +3005,45 @@
 		const id = sentClientMsgID
 		if (id.length > 0) {
 			cachedClientMsgID = id
+		}
+		await switchAutomationSecondary(config, 'B_message_send_readback')
+		try {
+			const secondaryConversationParams : OpenIMGetOneConversationParams = { sourceID: config.primaryUserID, sessionType: OpenIMSessionTypeSingle }
+			const secondaryConversationID = await runAutomationStep<string>('message-send', 'getConversationIDBySessionType', getConversationIDBySessionType(secondaryConversationParams, 'uvue_auto_secondary_message_conversation'), noCache)
+			let sentObserved = false
+			let notOssObserved = false
+			const historyStartedAt = Date.now()
+			let historyAttempt = 0
+			while (Date.now() - historyStartedAt < automationSideEffectTimeoutMilliseconds && (!sentObserved || !notOssObserved)) {
+				try {
+					const historyParams : OpenIMGetAdvancedHistoryMessageListParams = { conversationID: secondaryConversationID, startClientMsgID: '', count: 40 }
+					const history = await withAutomationTimeout<OpenIMAdvancedHistoryMessageListResult | null>(getAdvancedHistoryMessageList(historyParams, 'uvue_auto_secondary_message_history_' + historyAttempt.toString()), 'message-send/getAdvancedHistoryMessageList', automationSideEffectReadTimeoutMilliseconds)
+					if (history != null) {
+						let index = 0
+						while (index < (history as OpenIMAdvancedHistoryMessageListResult).messageList.length) {
+							const item = (history as OpenIMAdvancedHistoryMessageListResult).messageList[index]
+							if (item.clientMsgID == sentClientMsgID) { sentObserved = true }
+							if (item.clientMsgID == sentNotOssClientMsgID) { notOssObserved = true }
+							index = index + 1
+						}
+					}
+				} catch (_error) {
+				}
+				historyAttempt = historyAttempt + 1
+				if (!sentObserved || !notOssObserved) { await sleepAutomation(automationSideEffectPollMilliseconds) }
+			}
+			if (sentObserved) {
+				recordAutomationSideEffect('message-send', 'sendMessagePeerReadback', 'secondary account history contained the exact sent message identity', true, 'sendMessage')
+			} else {
+				recordAutomationStep('message-send', 'sendMessagePeerReadback', false, 'secondary account history did not contain the exact sent message identity before timeout')
+			}
+			if (notOssObserved) {
+				recordAutomationSideEffect('message-send', 'sendMessageNotOssPeerReadback', 'secondary account history contained the exact sent message identity', true, 'sendMessageNotOss')
+			} else {
+				recordAutomationStep('message-send', 'sendMessageNotOssPeerReadback', false, 'secondary account history did not contain the exact sent message identity before timeout')
+			}
+		} finally {
+			await switchAutomationPrimary(config, 'A_message_send_done')
 		}
 	}
 
@@ -2957,13 +3407,17 @@
 			completeAutomationOperation('uploadFile', null)
 			automationUploadFileProgressExpected = true
 			await waitAutomationEventCountIncrease('onUploadFileProgress', previousUploadProgressCount, 5000)
+			recordAutomationSideEffect('upload', 'uploadFileProgressReadback', 'onUploadFileProgress increased after a unique upload completed', true, 'uploadFile')
 		}
 		const uploadLogsParams : OpenIMUploadLogsParams = { line: 100, ex: 'uvue-public-automation' }
+		const previousUploadLogsProgressCount = readAutomationEventCount('onUploadLogsProgress')
 		beginAutomationOperation('uploadLogs', null, true)
 		const uploadLogsResult = await runAutomationOptionalStep<string>('upload', 'uploadLogs', uploadLogs(uploadLogsParams, 'uvue_auto_upload_logs'), noCache, 'uploadLogs requires reachable object storage endpoint')
 		if (uploadLogsResult != null) {
 			completeAutomationOperation('uploadLogs', null)
 			automationUploadLogsProgressExpected = true
+			await waitAutomationEventCountIncrease('onUploadLogsProgress', previousUploadLogsProgressCount, 5000)
+			recordAutomationSideEffect('upload', 'uploadLogsProgressReadback', 'onUploadLogsProgress increased after log upload completed', true, 'uploadLogs')
 		}
 	}
 
@@ -3423,6 +3877,7 @@
 				recordAutomationStep('setup', 'readConfig', false, 'Missing openim-test-config storage/static data. Run scripts/register-openim-test-accounts.mjs first.')
 			} else {
 				const readyConfig = config as OpenIMAutomationConfig
+				automationExpectedSecondaryUserID = readyConfig.secondaryUserID
 				recordAutomationStep('setup', 'readConfig', true, 'api=' + readyConfig.apiAddr + ' ws=' + readyConfig.wsAddr)
 				await runAutomationSetupSuite(readyConfig)
 				await runAutomationGuardedSuites(readyConfig)

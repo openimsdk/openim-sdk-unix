@@ -307,6 +307,40 @@ test('conversation and draft mutations are read back and restore the original st
   assert.doesNotMatch(wait, /withAutomationTimeout<[^>]+>\('conversation', 'getOneConversation'/)
 })
 
+test('successful public calls emit semantic evidence only after response validation', () => {
+	assert.match(page, /OpenIMLoginStatusLogged,/)
+  const runner = functionSource('runAutomationStepWithTimeout')
+  const callback = runner.indexOf('onSuccess(value)')
+  const validation = runner.indexOf('validateAutomationResponse(name, value)')
+  const merge = runner.indexOf('mergeAutomationValidationEvidence(name, validation, evidence)')
+  const record = runner.indexOf("recordAutomationCase(group, name, 'passed'")
+  assert.ok(callback >= 0)
+  assert.ok(validation > callback, 'scenario callback checks must finish before evidence validation')
+  assert.ok(merge > validation, 'validated response must be merged into contract evidence')
+  assert.ok(record > merge, 'a passing case must be recorded only after evidence is built')
+
+  const responseValidation = functionSource('validateAutomationResponse')
+  assert.match(responseValidation, /validateAutomationCreatedMessage\(name, value\)/)
+  assert.match(responseValidation, /getUsersInfo did not contain both automation accounts/)
+	assert.match(responseValidation, /const expectedStatus = automationLoggedIn \? OpenIMLoginStatusLogged : 1/)
+  assert.match(responseValidation, /did not contain the active scenario conversationID/)
+  assert.match(responseValidation, /totalCount below its observed message count/)
+  assert.match(responseValidation, /uploadFile returned neither url nor uri/)
+	assert.match(responseValidation, /semanticValidated: found/)
+  assert.doesNotMatch(responseValidation, /return \{ structureValidated: true, semanticValidated: true \}\s*$/)
+
+  const mergeEvidence = functionSource('mergeAutomationValidationEvidence')
+  assert.match(mergeEvidence, /if \(validation\.semanticValidated && !evidence\.semanticValidated\)/)
+  assert.match(mergeEvidence, /requireAutomationSemanticProfile\(apiName\)/)
+  assert.match(mergeEvidence, /'scenario-semantics'/)
+
+	const messageSend = functionSource('runAutomationMessageSendSuite')
+	assert.match(messageSend, /while \(Date\.now\(\) - historyStartedAt < automationSideEffectTimeoutMilliseconds/)
+	assert.match(messageSend, /sendMessagePeerReadback/)
+	assert.match(messageSend, /sendMessageNotOssPeerReadback/)
+	assert.match(functionSource('waitAutomationSubscribedStatus'), /automationSideEffectTimeoutMilliseconds/)
+})
+
 test('suiteFilter runs one public automation suite without applying full-run coverage gates', () => {
   assert.match(page, /suiteFilter : string/)
   assert.match(functionSource('normalizeAutomationConfig'), /suiteFilter: readAutomationString\(value, 'suiteFilter'\)/)
