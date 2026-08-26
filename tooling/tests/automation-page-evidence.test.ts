@@ -345,6 +345,21 @@ test('friend pagination producer proves count-one partitions against the complet
   assert.doesNotMatch(validator, /name == 'getFriendList' \|\| name == 'getFriendListPage'/)
 })
 
+test('friend producer clears a stale pending application before requiring a new peer event', () => {
+  const cleanup = functionSource('clearAutomationPendingFriendApplication')
+  assert.match(cleanup, /getFriendApplicationListAsRecipient/)
+  assert.match(cleanup, /findFriendApplication\(applications, fromUserID, toUserID\)/)
+  assert.match(cleanup, /application\.handleResult != 0/)
+  assert.match(cleanup, /refuseFriendApplication/)
+
+  const friendSuite = functionSource('runAutomationFriendSuite')
+  const cleanupCall = friendSuite.indexOf('clearAutomationPendingFriendApplication(config.primaryUserID, config.secondaryUserID')
+  const settledCursor = friendSuite.indexOf("captureAutomationPeerSettledCursor('secondary')")
+  const addRequest = friendSuite.indexOf("addFriend(rejectAddParams")
+  assert.ok(cleanupCall >= 0 && cleanupCall < settledCursor, 'stale application cleanup must precede the peer cursor')
+  assert.ok(settledCursor < addRequest, 'the peer stream must settle before the new addFriend request')
+})
+
 test('peer message text normalization never returns nullable Core content', () => {
   const reader = functionSource('readAutomationMessageText')
   assert.match(reader, /const content = \(message\.textElem as OpenIMTextElem\)\.content/)

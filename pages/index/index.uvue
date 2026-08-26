@@ -4009,6 +4009,14 @@
 		throw new Error('friend state did not match before timeout')
 	}
 
+	async function clearAutomationPendingFriendApplication(fromUserID : string, toUserID : string, operationPrefix : string) : Promise<void> {
+		const applications = await withAutomationTimeout<OpenIMFriendApplicationListResult | null>(getFriendApplicationListAsRecipient(defaultApplicationParams(), operationPrefix + '_list'), 'friend/cleanupPendingFriendApplicationList', automationSideEffectReadTimeoutMilliseconds)
+		const application = findFriendApplication(applications, fromUserID, toUserID)
+		if (application == null || application.handleResult != 0) { return }
+		const params : OpenIMFriendApplicationHandleParams = { toUserID: fromUserID, handleMsg: 'cleared by uni-app x public automation' }
+		await withAutomationTimeout<string>(refuseFriendApplication(params, operationPrefix + '_refuse'), 'friend/cleanupPendingFriendApplicationRefuse', automationSideEffectTimeoutMilliseconds)
+	}
+
 	async function readAutomationFriendPagination(fullFriendList : OpenIMFriendListResult | null, operationPrefix : string) : Promise<OpenIMFriendListResult | null> {
 		if (fullFriendList == null) { throw new Error('friend pagination requires a complete friend list') }
 		const fullUserIDs : Array<string> = []
@@ -4085,9 +4093,10 @@
 		await runAutomationOptionalStep<string>('friend', 'deleteFriend', deleteFriend(config.secondaryUserID, 'uvue_auto_friend_cleanup_delete'), noCache, 'friend may not exist before automation')
 		await switchAutomationSecondary(config, 'B_friend_cleanup')
 		await runAutomationOptionalStep<string>('friend', 'deleteFriend', deleteFriend(config.primaryUserID, 'uvue_auto_friend_cleanup_delete_secondary'), noCache, 'friend may not exist before automation')
+		await clearAutomationPendingFriendApplication(config.primaryUserID, config.secondaryUserID, 'uvue_auto_friend_cleanup_application')
 		await switchAutomationPrimary(config, 'A_friend_reject')
 		const rejectAddParams : OpenIMAddFriendParams = { toUserID: config.secondaryUserID, reqMsg: 'friend reject request from unixsdk public automation', ex: 'uvue-public-friend-reject' }
-		const secondaryRejectAddCursor = await captureAutomationPeerCursor('secondary')
+		const secondaryRejectAddCursor = await captureAutomationPeerSettledCursor('secondary')
 		beginAutomationOperation('addFriend', config.primaryUserID, true)
 		await runAutomationStep<string>('friend', 'addFriend', addFriend(rejectAddParams, 'uvue_auto_friend_add_reject'), noCache)
 		completeAutomationOperation('addFriend', config.primaryUserID)
