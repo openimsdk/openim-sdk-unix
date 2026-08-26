@@ -19,7 +19,7 @@ const artifactDir = path.join(projectRoot, 'test-results/openim-automation')
 
 function readPublicPeerPlatformID() {
   const uniOSName = String(process.env.UNI_OS_NAME || '').toLowerCase()
-  const fallback = uniOSName === 'ios' ? 1 : 2
+  const fallback = uniOSName === 'ios' ? 2 : 1
   const value = Number(process.env.OPENIM_AUTOMATION_PEER_PLATFORM_ID || fallback)
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error('OPENIM_AUTOMATION_PEER_PLATFORM_ID must be a positive integer')

@@ -411,6 +411,9 @@ test('local automation pre-provisions accounts and requires an explicit server s
   assert.match(iosTest, /OPENIM_AUTOMATION_PREPROVISION=1/)
   assert.match(register, /env\.IM_SECRET \|\| ''/)
   assert.match(register, /IM_SECRET is required/)
+  assert.match(register, /overrideURLPort\(env\.OPENIM_API_BASE[^\n]+env\.OPENIM_API_PORT/)
+  assert.match(register, /overrideURLPort\(env\.OPENIM_WS_BASE[^\n]+env\.OPENIM_WS_PORT/)
+  assert.match(register, /port > 65535/)
   assert.doesNotMatch(register, /openIM123/)
 })
 

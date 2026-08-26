@@ -34,7 +34,7 @@ test('Jest failure narrative reads the report status field emitted by the UTS pa
 })
 
 test('independent Public peer uses the other mobile platform identity', () => {
-  assert.match(pageTest, /const fallback = uniOSName === 'ios' \? 1 : 2/)
+  assert.match(pageTest, /const fallback = uniOSName === 'ios' \? 2 : 1/)
   assert.match(pageTest, /PLATFORM_IDS: process\.env\.PLATFORM_IDS \|\| '1,2'/)
 })
 
