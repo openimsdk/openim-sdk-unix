@@ -2391,7 +2391,17 @@
 			if (!found) { throw new Error('searchGroupMembers did not contain the secondary automation account') }
 			return { structureValidated: true, semanticValidated: true }
 		}
-		if (name == 'getFriendList' || name == 'getFriendListPage' || name == 'searchFriends' || name == 'getSpecifiedFriendsInfo') {
+		if (name == 'getFriendListPage') {
+			if (value == null) { throw new Error('getFriendListPage returned null') }
+			const result = value as OpenIMFriendListResult
+			let index = 0
+			while (index < result.friends.length) {
+				if (result.friends[index].userID.length == 0) { throw new Error('getFriendListPage returned empty friend userID') }
+				index = index + 1
+			}
+			return { structureValidated: true, semanticValidated: false }
+		}
+		if (name == 'getFriendList' || name == 'searchFriends' || name == 'getSpecifiedFriendsInfo') {
 			if (value == null) { throw new Error(name + ' returned null') }
 			const result = value as OpenIMFriendListResult
 			let found = false
@@ -3999,6 +4009,54 @@
 		throw new Error('friend state did not match before timeout')
 	}
 
+	async function readAutomationFriendPagination(fullFriendList : OpenIMFriendListResult | null, operationPrefix : string) : Promise<OpenIMFriendListResult | null> {
+		if (fullFriendList == null) { throw new Error('friend pagination requires a complete friend list') }
+		const fullUserIDs : Array<string> = []
+		let fullIndex = 0
+		while (fullIndex < fullFriendList.friends.length) {
+			const userID = fullFriendList.friends[fullIndex].userID
+			if (userID.length == 0 || fullUserIDs.indexOf(userID) >= 0) { throw new Error('complete friend list contained an invalid identity') }
+			fullUserIDs.push(userID)
+			fullIndex = fullIndex + 1
+		}
+		if (fullUserIDs.length == 0) { throw new Error('friend pagination requires at least one friend') }
+
+		const seenUserIDs : Array<string> = []
+		let firstPage : OpenIMFriendListResult | null = null
+		let offset = 0
+		while (offset < fullUserIDs.length) {
+			const pageParams : OpenIMPageParams = { offset: offset, count: 1 }
+			const page = await withAutomationTimeout<OpenIMFriendListResult | null>(getFriendListPage(pageParams, operationPrefix + '_' + offset.toString()), 'friend/getFriendListPagePartition', automationSideEffectReadTimeoutMilliseconds)
+			if (page == null || page.friends.length != 1) { throw new Error('friend page did not honor count=1') }
+			const friend = page.friends[0]
+			if (friend.userID.length == 0 || seenUserIDs.indexOf(friend.userID) >= 0) { throw new Error('friend pages contained an invalid or duplicate identity') }
+			if (fullUserIDs.indexOf(friend.userID) < 0) { throw new Error('friend page contained an identity outside the complete list') }
+			seenUserIDs.push(friend.userID)
+			if (offset == 0) { firstPage = page }
+			offset = offset + 1
+		}
+
+		const tailParams : OpenIMPageParams = { offset: fullUserIDs.length, count: 1 }
+		const tail = await withAutomationTimeout<OpenIMFriendListResult | null>(getFriendListPage(tailParams, operationPrefix + '_tail'), 'friend/getFriendListPageTail', automationSideEffectReadTimeoutMilliseconds)
+		if (tail == null || tail.friends.length != 0) { throw new Error('friend pagination tail was not empty') }
+		if (seenUserIDs.length != fullUserIDs.length) { throw new Error('friend pages did not cover the complete friend list') }
+		return firstPage
+	}
+
+	async function waitAutomationFriendPagination(fullFriendList : OpenIMFriendListResult | null, operationPrefix : string) : Promise<OpenIMFriendListResult | null> {
+		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
+		let attempt = 0
+		while (Date.now() < deadline) {
+			try {
+				return await readAutomationFriendPagination(fullFriendList, operationPrefix + '_' + attempt.toString())
+			} catch (_error) {
+			}
+			attempt = attempt + 1
+			await sleepAutomation(automationSideEffectPollMilliseconds)
+		}
+		throw new Error('friend pagination did not converge before timeout')
+	}
+
 	async function waitAutomationBlackState(userID : string, expectedPresent : boolean, operationPrefix : string) : Promise<void> {
 		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
 		let attempt = 0
@@ -4073,8 +4131,8 @@
 		}
 		await switchAutomationPrimary(config, 'A_friend_verify')
 		await waitAutomationFriendState(config.secondaryUserID, true, '', 'uvue_auto_friend_accept_readback')
-		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendList', getFriendList(false, 'uvue_auto_friend_list'), cacheFriends)
-		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendListPage', getFriendListPage(defaultPageParams(), 'uvue_auto_friend_page'), cacheFriends)
+		const fullFriendList = await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendList', getFriendList(false, 'uvue_auto_friend_list'), cacheFriends)
+		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'getFriendListPage', waitAutomationFriendPagination(fullFriendList, 'uvue_auto_friend_page'), cacheFriends, responseAutomationEvidence('getFriendListPage', 'count-one-pages-partition-full-friend-list'))
 		const searchParams : OpenIMSearchFriendsParams = { keywordList: [config.secondaryUserID], isSearchUserID: true, isSearchNickname: true, isSearchRemark: true }
 		await runAutomationStep<OpenIMFriendListResult | null>('friend', 'searchFriends', searchFriends(searchParams, 'uvue_auto_search_friends'), cacheFriends)
 		const specifiedParams : OpenIMGetSpecifiedFriendsInfoParams = { userIDList: [config.secondaryUserID], filterBlack: false }
@@ -4602,27 +4660,39 @@
 		const eventName = 'onRecvNewMessages'
 		const previousCount = readAutomationEventCount(eventName)
 		const afterSequence = readAutomationEventSequence()
-		const messageText = 'batched-message-event-' + new Date().getTime().toString()
-		const peerPayload : UTSJSONObject = { recvID: config.primaryUserID, text: messageText, operationID: 'uvue_auto_peer_batched_message' }
-		const peerResult = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', peerPayload), automationSendStepTimeoutMilliseconds)
-		const peerMessage = readAutomationPeerMessage(peerResult, 'batched send_text')
-		const clientMsgID = peerMessage.clientMsgID == null ? '' : peerMessage.clientMsgID as string
-		if (clientMsgID.length == 0) { throw new Error('batched send_text peer command returned no clientMsgID') }
-		if (!await waitAutomationEventCountIncrease(eventName, previousCount, automationSideEffectTimeoutMilliseconds)) { throw new Error('peer message did not emit onRecvNewMessages') }
-		const occurrence = findAutomationEventOccurrenceByMessageIdentityAfter(eventName, afterSequence, clientMsgID)
-		if (occurrence == null) { throw new Error('onRecvNewMessages did not correlate with the peer clientMsgID') }
-		const result = JSON.parseObject<OpenIMMessageListResult>(occurrence.payloadText)
-		if (result == null) { throw new Error('onRecvNewMessages returned an invalid list wrapper') }
-		let matched = false
-		let index = 0
-		while (index < result.messages.length) {
-			const message = result.messages[index]
-			if (message.clientMsgID == clientMsgID && message.sendID == config.secondaryUserID && message.recvID == config.primaryUserID && readAutomationMessageText(message) == messageText) { matched = true }
-			index = index + 1
+		try {
+			await runAutomationStep<string>('event-delivery', 'logoutForBatchedMessage', logout('uvue_auto_batched_message_logout'), (_value : string) => {
+				automationLoggedIn = false
+				automationActiveUserID = ''
+			})
+			if (isIOSRuntime()) { await sleepAutomation(500) }
+			const messageText = 'batched-message-event-' + new Date().getTime().toString()
+			const peerPayload : UTSJSONObject = { recvID: config.primaryUserID, text: messageText, operationID: 'uvue_auto_peer_batched_message' }
+			const peerResult = await runAutomationPeerCommand('send_text', buildAutomationPeerPayload('secondary', peerPayload), automationSendStepTimeoutMilliseconds)
+			const peerMessage = readAutomationPeerMessage(peerResult, 'batched send_text')
+			const clientMsgID = peerMessage.clientMsgID == null ? '' : peerMessage.clientMsgID as string
+			if (clientMsgID.length == 0) { throw new Error('batched send_text peer command returned no clientMsgID') }
+			await switchAutomationPrimary(config, 'A_batched_message_event_reconnect')
+			if (!await waitAutomationEventCountIncrease(eventName, previousCount, automationSideEffectTimeoutMilliseconds)) { throw new Error('offline peer message did not emit onRecvNewMessages after reconnect') }
+			const occurrence = findAutomationEventOccurrenceByMessageIdentityAfter(eventName, afterSequence, clientMsgID)
+			if (occurrence == null) { throw new Error('onRecvNewMessages did not correlate with the offline peer clientMsgID') }
+			const result = JSON.parseObject<OpenIMMessageListResult>(occurrence.payloadText)
+			if (result == null) { throw new Error('onRecvNewMessages returned an invalid list wrapper') }
+			let matched = false
+			let index = 0
+			while (index < result.messages.length) {
+				const message = result.messages[index]
+				if (message.clientMsgID == clientMsgID && message.sendID == config.secondaryUserID && message.recvID == config.primaryUserID && readAutomationMessageText(message) == messageText) { matched = true }
+				index = index + 1
+			}
+			if (!matched) { throw new Error('onRecvNewMessages did not contain the exact offline peer message identity') }
+			markAutomationEventEvidence(eventName, true, true, true)
+			recordAutomationStep('event-delivery', 'onRecvNewMessagesScenario', true, 'reconnect sync callback matched the exact offline peer message identity')
+		} finally {
+			if (!automationLoggedIn || automationActiveUserID != config.primaryUserID) {
+				await switchAutomationPrimary(config, 'A_batched_message_event_restore')
+			}
 		}
-		if (!matched) { throw new Error('onRecvNewMessages did not contain the exact peer message identity') }
-		markAutomationEventEvidence(eventName, true, true, true)
-		recordAutomationStep('event-delivery', 'onRecvNewMessagesScenario', true, 'batched C2C callback matched the exact peer message identity')
 	}
 
 	async function runAutomationOfflineMessageEventProbe(config : OpenIMAutomationConfig) : Promise<void> {

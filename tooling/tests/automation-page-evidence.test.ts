@@ -314,6 +314,37 @@ test('peer producer payloads retain their raw Core encoding for narrow schema no
   assert.match(functionSource('runAutomationOfflineMessageEventProbe'), /readAutomationPeerMessage\(peerResult/)
 })
 
+test('batched-message producer creates an offline sync window before requiring onRecvNewMessages', () => {
+  const producer = functionSource('runAutomationBatchedMessageEventProbe')
+  const logout = producer.indexOf("logout('uvue_auto_batched_message_logout')")
+  const peerSend = producer.indexOf("runAutomationPeerCommand('send_text'")
+  const reconnect = producer.indexOf("switchAutomationPrimary(config, 'A_batched_message_event_reconnect')")
+  assert.ok(logout >= 0 && logout < peerSend, 'primary must log out before the peer sends the batched fixture')
+  assert.ok(peerSend < reconnect, 'primary must reconnect only after the peer sends the batched fixture')
+  assert.match(producer, /finally/)
+  assert.match(producer, /automationActiveUserID != config\.primaryUserID/)
+  assert.match(producer, /findAutomationEventOccurrenceByMessageIdentityAfter\(eventName, afterSequence, clientMsgID\)/)
+})
+
+test('friend pagination producer proves count-one partitions against the complete friend set', () => {
+  const proof = functionSource('readAutomationFriendPagination')
+  assert.match(proof, /const pageParams : OpenIMPageParams = \{ offset: offset, count: 1 \}/)
+  assert.match(proof, /seenUserIDs\.indexOf\(friend\.userID\) >= 0/)
+  assert.match(proof, /fullUserIDs\.indexOf\(friend\.userID\) < 0/)
+  assert.match(proof, /tail\.friends\.length != 0/)
+  assert.match(proof, /seenUserIDs\.length != fullUserIDs\.length/)
+  assert.match(functionSource('waitAutomationFriendPagination'), /readAutomationFriendPagination\(fullFriendList/)
+
+  const friendSuite = functionSource('runAutomationFriendSuite')
+  assert.match(friendSuite, /const fullFriendList = await runAutomationStep<OpenIMFriendListResult \| null>\('friend', 'getFriendList'/)
+  assert.match(friendSuite, /waitAutomationFriendPagination\(fullFriendList/)
+  assert.match(friendSuite, /responseAutomationEvidence\('getFriendListPage', 'count-one-pages-partition-full-friend-list'\)/)
+
+  const validator = functionSource('validateAutomationResponse')
+  assert.match(validator, /if \(name == 'getFriendListPage'\)/)
+  assert.doesNotMatch(validator, /name == 'getFriendList' \|\| name == 'getFriendListPage'/)
+})
+
 test('peer message text normalization never returns nullable Core content', () => {
   const reader = functionSource('readAutomationMessageText')
   assert.match(reader, /const content = \(message\.textElem as OpenIMTextElem\)\.content/)

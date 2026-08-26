@@ -76,6 +76,21 @@
       "releaseStatus": "certified",
       "lastVerified": "2026-08-08",
       "nextCheck": "2026-09-08"
+    },
+    {
+      "id": "UTS-COMPAT-PUBLIC-CORE-ADDBLACK-001",
+      "editions": ["public"],
+      "classification": "upstream-core-defect",
+      "platforms": ["android", "ios"],
+      "reason": "The locked Public Core can run AddBlack's direct full blacklist sync concurrently with the BlackAdded notification sync. Both paths can observe the same missing local row and attempt to insert it, producing an intermittent unique-key failure.",
+      "versions": ["openim-sdk-core@d6e0b549db904d0327d76ef7c9c283203879a095"],
+      "probe": "Locked Core source-path concurrency review plus repeated Public iOS custom-base runtime reproduction; the SDK runner retains the failure without a skip or waiver.",
+      "removeWhen": "A replacement locked Public Core serializes both blacklist sync paths and the full Public friend suite passes without the duplicate-row failure on Android and iOS.",
+      "owner": "OpenIM Core maintainers",
+      "status": "active",
+      "releaseStatus": "blocked",
+      "lastVerified": "2026-08-26",
+      "nextCheck": "2026-09-02"
     }
   ]
 }
