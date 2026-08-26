@@ -33,6 +33,11 @@ test('Jest failure narrative reads the report status field emitted by the UTS pa
   assert.doesNotMatch(pageTest, /response\.error\?\.message/)
 })
 
+test('independent Public peer uses the other mobile platform identity', () => {
+  assert.match(pageTest, /const fallback = uniOSName === 'ios' \? 1 : 2/)
+  assert.match(pageTest, /PLATFORM_IDS: process\.env\.PLATFORM_IDS \|\| '1,2'/)
+})
+
 test('runtime cases carry explicit contract evidence instead of deriving validation from Promise success', () => {
   for (const field of [
     'invoked',
