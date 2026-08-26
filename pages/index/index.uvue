@@ -1524,6 +1524,24 @@
 				const clientMsgID = parsed['clientMsgID']
 				return clientMsgID == null ? '' : clientMsgID as string
 			}
+			if (eventName == 'onFriendApplicationAdded' || eventName == 'onFriendApplicationRejected') {
+				const fromUserID = parsed['fromUserID']
+				return fromUserID == null ? '' : fromUserID as string
+			}
+			if (eventName == 'onFriendAdded' || eventName == 'onBlackAdded') {
+				const userID = parsed['userID']
+				return userID == null ? '' : userID as string
+			}
+			if (eventName == 'onGroupMemberAdded' || eventName == 'onGroupMemberDeleted') {
+				const groupID = parsed['groupID']
+				const userID = parsed['userID']
+				if (groupID == null || userID == null) { return '' }
+				return (groupID as string) + ':' + (userID as string)
+			}
+			if (eventName == 'onJoinedGroupAdded' || eventName == 'onJoinedGroupDeleted' || eventName == 'onGroupApplicationAdded' || eventName == 'onGroupApplicationRejected' || eventName == 'onGroupDismissed') {
+				const groupID = parsed['groupID']
+				return groupID == null ? '' : groupID as string
+			}
 		} catch (error) {
 			return ''
 		}
@@ -1547,6 +1565,10 @@
 			if (apiName == 'sendMessage' || apiName == 'sendMessageNotOss') {
 				correlationKind = eventName == 'onRecvNewMessage' ? 'cross-account-payload-identity' : 'operation-payload-identity'
 				payloadIdentity = eventName == 'onRecvNewMessage' ? window.resultIdentity : window.payloadNeedle
+				payloadMatched = payloadIdentity.length > 0 && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity
+			} else if (apiName == 'addFriend' || apiName == 'acceptFriendApplication' || apiName == 'refuseFriendApplication' || apiName == 'createGroup' || apiName == 'joinGroup' || apiName == 'acceptGroupApplication' || apiName == 'refuseGroupApplication' || apiName == 'kickGroupMember' || apiName == 'inviteUserToGroup' || apiName == 'quitGroup' || apiName == 'dismissGroup') {
+				correlationKind = 'cross-account-payload-identity'
+				payloadIdentity = window.resultIdentity
 				payloadMatched = payloadIdentity.length > 0 && readAutomationEventPayloadIdentity(eventName, occurrence.payloadText) == payloadIdentity
 			} else if (apiName == 'uploadFile' || apiName == 'uploadLogs') {
 				correlationKind = 'exclusive-operation-window'
@@ -2631,7 +2653,7 @@
 		throw new Error('Public automation peer event stream did not settle before the scenario')
 	}
 
-	async function waitAutomationPeerOperationEvent(target : string, peerEventName : string, apiName : string, afterSequence : number, label : string, expectedTextContent : string | null = null) : Promise<void> {
+	async function waitAutomationPeerOperationEvent(target : string, peerEventName : string, apiName : string, afterSequence : number, label : string, expectedTextContent : string | null = null, requireSendProgress : boolean = false) : Promise<void> {
 		const deadline = Date.now() + automationSideEffectTimeoutMilliseconds
 		let peerCursor = afterSequence
 		let identityMismatchCount = 0
@@ -2667,9 +2689,14 @@
 				}
 			}
 			recordSDKEventDelivery(mappedEventName, payloadTextValue as string)
-			const correlations = buildAutomationEventCorrelations(apiName, [mappedEventName])
-			let matched = correlations.length == 1
-			if (matched) { matched = correlations[0].payloadMatched }
+			const expectedEvents : Array<string> = requireSendProgress ? ['onSendMessageProgress', mappedEventName] : [mappedEventName]
+			const correlations = buildAutomationEventCorrelations(apiName, expectedEvents)
+			let matched = correlations.length == expectedEvents.length
+			let correlationIndex = 0
+			while (correlationIndex < correlations.length) {
+				if (!correlations[correlationIndex].payloadMatched) { matched = false }
+				correlationIndex = correlationIndex + 1
+			}
 			if (!matched) { continue }
 			const evidence = mutationAutomationEvidence(apiName, 'independent-peer-event-identity', 'cross-account-event-observed', true)
 			recordAutomationCase('event-delivery', apiName, 'passed', label, new Date().getTime(), evidence, apiName, true, true, null, correlations)
@@ -3315,6 +3342,18 @@
 		const sentNotOssClientMsgID = sentNotOss.clientMsgID != null ? sentNotOss.clientMsgID as string : ''
 		completeAutomationOperation('sendMessageNotOss', sentNotOssClientMsgID)
 		await waitAutomationPeerOperationEvent('secondary', 'OnRecvNewMessage', 'sendMessageNotOss', secondaryNotOssCursor, 'sendMessageNotOss secondary delivery')
+		const progressParams : OpenIMCreateFileMessageParams = { filePath: automationFixedFileFullPath, fileName: demoFixedFileName }
+		const progressMessage = await runAutomationStep<OpenIMMessageItem | null>('message-send', 'createFileMessageFromFullPath', createFileMessageFromFullPath(progressParams, 'uvue_auto_create_send_progress_file'), cacheRequiredAutomationMessage)
+		const progressClientMsgID = progressMessage != null && progressMessage.clientMsgID != null ? progressMessage.clientMsgID as string : ''
+		const progressOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_send_progress_file', message: progressMessage as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
+		const previousProgressCount = readAutomationEventCount('onSendMessageProgress')
+		const secondaryProgressCursor = await captureAutomationPeerCursor('secondary')
+		beginAutomationOperation('sendMessage', progressClientMsgID, true)
+		const sentProgress = await runAutomationStep<OpenIMMessageItem>('message-send', 'sendMessage', sendMessage(progressOptions), cacheSentAutomationMessage)
+		const sentProgressClientMsgID = sentProgress.clientMsgID != null ? sentProgress.clientMsgID as string : ''
+		completeAutomationOperation('sendMessage', sentProgressClientMsgID)
+		if (!await waitAutomationEventCountIncrease('onSendMessageProgress', previousProgressCount, 5000)) { throw new Error('sendMessage did not emit progress for a unique local file') }
+		await waitAutomationPeerOperationEvent('secondary', 'OnRecvNewMessage', 'sendMessage', secondaryProgressCursor, 'sendMessage local-file secondary delivery', null, true)
 		const id = sentClientMsgID
 		if (id.length > 0) {
 			cachedClientMsgID = id
@@ -3956,7 +3995,7 @@
 				const primaryAcceptGroupCursor = await captureAutomationPeerCursor('primary')
 				beginAutomationOperation('acceptGroupApplication', applyGroupID, true)
 				await runAutomationOptionalStep<string>('group', 'acceptGroupApplication', acceptGroupApplication(acceptHandle, 'uvue_auto_accept_group_app'), noCache, 'server/protocol can reject group application accept after applying member join side effect')
-				completeAutomationOperation('acceptGroupApplication', config.secondaryUserID)
+			completeAutomationOperation('acceptGroupApplication', applyGroupID + ':' + config.secondaryUserID)
 				await waitAutomationPeerOperationEvent('primary', 'OnGroupMemberAdded', 'acceptGroupApplication', primaryAcceptGroupCursor, 'acceptGroupApplication owner delivery')
 			} else {
 				recordAutomationSkip('group', 'acceptGroupApplication', 'group accept application not found')
