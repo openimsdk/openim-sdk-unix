@@ -461,6 +461,9 @@ test('message storage continues after an isolated local-delete Core readback fai
   const revoke = suite.indexOf("revokeMessage(revokeKey")
   assert.ok(localDelete >= 0 && failure > localDelete)
   assert.ok(revoke > failure, 'later producers must still execute after a local-delete readback failure')
+  for (const apiName of ['revokeMessage', 'deleteMessage', 'insertSingleMessageToLocalStorage', 'insertGroupMessageToLocalStorage', 'deleteAllMsgFromLocal', 'deleteAllMsgFromLocalAndSvr']) {
+    assert.match(suite, new RegExp(`recordAutomationSideEffectFailure\\('message-storage', '${apiName}Readback'`))
+  }
 })
 
 test('successful public calls emit semantic evidence only after response validation', () => {

@@ -3878,8 +3878,12 @@
 		await runAutomationStep<string>('message-storage', 'revokeMessage', revokeMessage(revokeKey, 'uvue_auto_revoke_message'), noCache)
 		completeAutomationOperation('revokeMessage', revokeKey.clientMsgID)
 		await recordAutomationRequiredEventCorrelation('revokeMessage', 'onNewRecvMessageRevoked', revokeEventCount)
-		await waitAutomationHistoryMessageState(revokeKey.conversationID, revokeKey.clientMsgID, true, OpenIMMessageTypeRevokeMessage, 'uvue_auto_revoke_message_readback')
-		recordAutomationSideEffect('message-storage', 'revokeMessageReadback', 'history returned the exact clientMsgID as a revoke notification', false, 'revokeMessage')
+		try {
+			await waitAutomationHistoryMessageState(revokeKey.conversationID, revokeKey.clientMsgID, true, OpenIMMessageTypeRevokeMessage, 'uvue_auto_revoke_message_readback')
+			recordAutomationSideEffect('message-storage', 'revokeMessageReadback', 'history returned the exact clientMsgID as a revoke notification', false, 'revokeMessage')
+		} catch (error) {
+			recordAutomationSideEffectFailure('message-storage', 'revokeMessageReadback', stringifyAPIValue(error), 'revokeMessage')
+		}
 
 		const deleteMessageTarget = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('delete from unixsdk public automation', 'uvue_auto_delete_create'), cacheRequiredAutomationMessage)
 		const deleteOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_delete_send', message: deleteMessageTarget as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
@@ -3892,15 +3896,23 @@
 		await runAutomationStep<string>('message-storage', 'deleteMessage', deleteMessage(deleteKey, 'uvue_auto_delete_message'), noCache)
 		completeAutomationOperation('deleteMessage', deleteKey.clientMsgID)
 		await recordAutomationRequiredEventCorrelation('deleteMessage', 'onMsgDeleted', deleteEventCount)
-		await waitAutomationHistoryMessageState(deleteKey.conversationID, deleteKey.clientMsgID, false, null, 'uvue_auto_delete_message_readback')
-		recordAutomationSideEffect('message-storage', 'deleteMessageReadback', 'history omitted the exact server-deleted clientMsgID', false, 'deleteMessage')
+		try {
+			await waitAutomationHistoryMessageState(deleteKey.conversationID, deleteKey.clientMsgID, false, null, 'uvue_auto_delete_message_readback')
+			recordAutomationSideEffect('message-storage', 'deleteMessageReadback', 'history omitted the exact server-deleted clientMsgID', false, 'deleteMessage')
+		} catch (error) {
+			recordAutomationSideEffectFailure('message-storage', 'deleteMessageReadback', stringifyAPIValue(error), 'deleteMessage')
+		}
 
 		const insertMessage = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('insert from unixsdk public automation', 'uvue_auto_insert_create'), cacheRequiredAutomationMessage)
 		const singleParams : OpenIMInsertSingleMessageParams = { message: insertMessage as OpenIMMessageItem, recvID: config.secondaryUserID, sendID: config.primaryUserID }
 		const insertSingleResult = await runAutomationStep<string>('message-storage', 'insertSingleMessageToLocalStorage', insertSingleMessageToLocalStorage(singleParams, 'uvue_auto_insert_single'), noCache)
 		const insertedSingleMessage = parseAutomationInsertedMessageJSON(insertSingleResult, 'insertSingleMessageToLocalStorage')
-		await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_single_readback')
-		recordAutomationSemanticEvidence('message-storage', 'insertSingleMessageToLocalStorageReadback', 'history returned the inserted single message with exact generated clientMsgID', 'insertSingleMessageToLocalStorage')
+		try {
+			await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_single_readback')
+			recordAutomationSemanticEvidence('message-storage', 'insertSingleMessageToLocalStorageReadback', 'history returned the inserted single message with exact generated clientMsgID', 'insertSingleMessageToLocalStorage')
+		} catch (error) {
+			recordAutomationSideEffectFailure('message-storage', 'insertSingleMessageToLocalStorageReadback', stringifyAPIValue(error), 'insertSingleMessageToLocalStorage')
+		}
 		let groupID = ''
 		const groupInfo : OpenIMCreateGroupInfo = { groupName: 'uvue public storage ' + new Date().getTime().toString(), groupType: 2, ex: 'uvue-public-storage-group' }
 		const groupParams : OpenIMCreateGroupParams = { groupInfo: groupInfo, memberUserIDs: [config.secondaryUserID], adminUserIDs: [] }
@@ -3916,13 +3928,21 @@
 			const groupConversationID = await runAutomationStep<string>('message-storage', 'getConversationIDBySessionType', getConversationIDBySessionType(groupConversationParams, 'uvue_auto_storage_group_conversation_id'), noCache)
 			const insertGroupResult = await runAutomationStep<string>('message-storage', 'insertGroupMessageToLocalStorage', insertGroupMessageToLocalStorage(groupMessageParams, 'uvue_auto_insert_group'), noCache)
 			const insertedGroupMessage = parseAutomationInsertedMessageJSON(insertGroupResult, 'insertGroupMessageToLocalStorage')
-			await waitAutomationHistoryMessageState(groupConversationID, insertedGroupMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_group_readback')
-			recordAutomationSemanticEvidence('message-storage', 'insertGroupMessageToLocalStorageReadback', 'history returned the inserted group message with exact generated clientMsgID', 'insertGroupMessageToLocalStorage')
+			try {
+				await waitAutomationHistoryMessageState(groupConversationID, insertedGroupMessage.clientMsgID as string, true, OpenIMMessageTypeText, 'uvue_auto_insert_group_readback')
+				recordAutomationSemanticEvidence('message-storage', 'insertGroupMessageToLocalStorageReadback', 'history returned the inserted group message with exact generated clientMsgID', 'insertGroupMessageToLocalStorage')
+			} catch (error) {
+				recordAutomationSideEffectFailure('message-storage', 'insertGroupMessageToLocalStorageReadback', stringifyAPIValue(error), 'insertGroupMessageToLocalStorage')
+			}
 
 			await runAutomationStep<string>('message-storage', 'deleteAllMsgFromLocal', deleteAllMsgFromLocal('uvue_auto_delete_all_local'), noCache)
-			await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, false, null, 'uvue_auto_delete_all_local_single_readback')
-			await waitAutomationHistoryMessageState(groupConversationID, insertedGroupMessage.clientMsgID as string, false, null, 'uvue_auto_delete_all_local_group_readback')
-			recordAutomationSideEffect('message-storage', 'deleteAllMsgFromLocalReadback', 'single and group histories omitted both exact locally deleted clientMsgIDs', false, 'deleteAllMsgFromLocal')
+			try {
+				await waitAutomationHistoryMessageState(automationConversationID, insertedSingleMessage.clientMsgID as string, false, null, 'uvue_auto_delete_all_local_single_readback')
+				await waitAutomationHistoryMessageState(groupConversationID, insertedGroupMessage.clientMsgID as string, false, null, 'uvue_auto_delete_all_local_group_readback')
+				recordAutomationSideEffect('message-storage', 'deleteAllMsgFromLocalReadback', 'single and group histories omitted both exact locally deleted clientMsgIDs', false, 'deleteAllMsgFromLocal')
+			} catch (error) {
+				recordAutomationSideEffectFailure('message-storage', 'deleteAllMsgFromLocalReadback', stringifyAPIValue(error), 'deleteAllMsgFromLocal')
+			}
 
 			const serverDeleteSingleDraft = await runAutomationStep<OpenIMMessageItem | null>('message-storage', 'createTextMessage', createTextMessage('server delete all single seed from unixsdk public automation', 'uvue_auto_delete_all_server_single_create'), cacheRequiredAutomationMessage)
 			const serverDeleteSingleOptions : OpenIMSendMessageOptions = { operationID: 'uvue_auto_delete_all_server_single_send', message: serverDeleteSingleDraft as OpenIMMessageItem, recvID: config.secondaryUserID, groupID: '', isOnlineOnly: false }
@@ -3937,9 +3957,13 @@
 			if (serverDeleteGroupID.length == 0) { throw new Error('deleteAllMsgFromLocalAndSvr requires a group-message clientMsgID') }
 			await waitAutomationHistoryMessageState(groupConversationID, serverDeleteGroupID, true, OpenIMMessageTypeText, 'uvue_auto_delete_all_server_group_precondition')
 			await runAutomationStep<string>('message-storage', 'deleteAllMsgFromLocalAndSvr', deleteAllMsgFromLocalAndSvr('uvue_auto_delete_all_server'), noCache)
-			await waitAutomationHistoryMessageState(automationConversationID, serverDeleteSingleID, false, null, 'uvue_auto_delete_all_server_single_readback')
-			await waitAutomationHistoryMessageState(groupConversationID, serverDeleteGroupID, false, null, 'uvue_auto_delete_all_server_group_readback')
-			recordAutomationSideEffect('message-storage', 'deleteAllMsgFromLocalAndSvrReadback', 'single and group histories omitted both exact server-deleted clientMsgIDs', false, 'deleteAllMsgFromLocalAndSvr')
+			try {
+				await waitAutomationHistoryMessageState(automationConversationID, serverDeleteSingleID, false, null, 'uvue_auto_delete_all_server_single_readback')
+				await waitAutomationHistoryMessageState(groupConversationID, serverDeleteGroupID, false, null, 'uvue_auto_delete_all_server_group_readback')
+				recordAutomationSideEffect('message-storage', 'deleteAllMsgFromLocalAndSvrReadback', 'single and group histories omitted both exact server-deleted clientMsgIDs', false, 'deleteAllMsgFromLocalAndSvr')
+			} catch (error) {
+				recordAutomationSideEffectFailure('message-storage', 'deleteAllMsgFromLocalAndSvrReadback', stringifyAPIValue(error), 'deleteAllMsgFromLocalAndSvr')
+			}
 			await runAutomationOptionalStep<string>('message-storage', 'dismissGroup', dismissGroup(groupID, 'uvue_auto_storage_group_dismiss'), noCache, 'storage group cleanup failed')
 		} else {
 			recordAutomationSkip('message-storage', 'insertGroupMessageToLocalStorage', 'storage group setup failed')
