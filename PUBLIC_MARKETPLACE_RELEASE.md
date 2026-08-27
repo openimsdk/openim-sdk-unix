@@ -11,7 +11,7 @@
 - Tag 固定为 `unix-openim-sdk-public-v<version>`，必须指向 release PR 的 `main` merge commit。
 - DCloud 上传完成并核对后删除临时 release 分支；Tag 和发布产物永久保留。
 
-`0.2.1` 已于 2026-08-27 更新到 DCloud，但仍为 `release-pending`，`releaseApproved=false`。市场分发事实不能替代正式运行证据或解除 compatibility ledger 阻断。
+`0.2.1` 已于 2026-08-27 上传到 DCloud，但随后确认市场分发包误含本地原生制品，不能作为发布 authority，也不应继续导入使用。当前修正候选为 `0.2.2`，仍保持 `release-pending`、`releaseApproved=false`。市场分发事实不能替代正式运行证据或解除 compatibility ledger 阻断。
 
 ## 市场包边界
 
@@ -93,7 +93,7 @@ HBuilderX 不以 Git tracked 状态作为上传边界。发布前必须同时执
 - iOS 同样需要三次连续证据，但不强制真机；模拟器证据可进入正式系列。
 - schema-v2 及更早结果只作为历史摘要，不能认证当前发布。`latest` 文件只用于导航，发布结论必须引用不可变的 per-run evidence 与 matching manifest。
 - Public 与 Private 的证据不能互相复用。Private Android/iOS 必须使用其锁定的 Enterprise Core，不能用 Public Core 结果替代。
-- 大型 runner 或 matrix 结构性重构登记为 `0.2.1` 发布后的技术债；候选收口阶段不扩大此类改动。
+- 大型 runner 或 matrix 结构性重构登记为当前修正版本发布后的技术债；候选收口阶段不扩大此类改动。
 
 ## 正式发布门禁
 
