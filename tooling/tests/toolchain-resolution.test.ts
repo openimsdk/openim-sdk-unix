@@ -62,16 +62,17 @@ test('Public native dependencies use the approved patch.15 release coordinates',
   }
 })
 
-test('package candidate version is consistent across platform metadata', () => {
+test('package and platform implementation versions match marketplace metadata', () => {
   const pluginPackage = JSON.parse(readFileSync(resolve(
     root,
     'uni_modules/unix-openim-sdk/package.json',
   ), 'utf8'))
   assert.equal(pluginPackage.version, '0.2.2')
-  for (const clientName of ['uni-app', 'uni-app-x']) {
+  const expectedVersions = { 'uni-app': '0.2.2', 'uni-app-x': '0.1.0' }
+  for (const clientName of ['uni-app', 'uni-app-x'] as const) {
     const app = pluginPackage.uni_modules.platforms.client[clientName].app
-    assert.equal(app.android.extVersion, pluginPackage.version)
-    assert.equal(app.ios.extVersion, pluginPackage.version)
+    assert.equal(app.android.extVersion, expectedVersions[clientName])
+    assert.equal(app.ios.extVersion, expectedVersions[clientName])
   }
 })
 

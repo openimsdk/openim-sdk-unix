@@ -37,7 +37,7 @@
           },
           "app": {
             "vue": "√",
-            "nvue": "x",
+            "nvue": "√",
             "android": {
               "extVersion": "0.2.2",
               "minVersion": "5.0"
@@ -60,12 +60,12 @@
         "uni-app-x": {
           "app": {
             "android": {
-              "extVersion": "0.2.2",
+              "extVersion": "0.1.0",
               "minVersion": "5.0"
             },
             "harmony": "x",
             "ios": {
-              "extVersion": "0.2.2",
+              "extVersion": "0.1.0",
               "minVersion": "14"
             }
           },

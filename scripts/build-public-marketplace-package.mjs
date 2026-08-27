@@ -80,13 +80,18 @@ function validatePluginPackage(pluginPackage, files, candidate) {
   if (pluginPackage.engines?.['uni-app'] !== '^5.23' || pluginPackage.engines?.['uni-app-x'] !== '^5.23') {
     throw new Error('Marketplace package must require uni-app and uni-app-x 5.23')
   }
+  const expectedPlatformVersions = { 'uni-app': pluginPackage.version, 'uni-app-x': '0.1.0' }
   for (const clientName of ['uni-app', 'uni-app-x']) {
     const client = pluginPackage.uni_modules?.platforms?.client?.[clientName]
     const app = client?.app
     if (app?.harmony !== 'x') throw new Error(`Public marketplace package must declare HarmonyOS unsupported for ${clientName}`)
-    if (app.android?.extVersion !== pluginPackage.version || app.ios?.extVersion !== pluginPackage.version) {
-      throw new Error(`Marketplace version and ${clientName} Android/iOS extVersion must match`)
+    const expectedVersion = expectedPlatformVersions[clientName]
+    if (app.android?.extVersion !== expectedVersion || app.ios?.extVersion !== expectedVersion) {
+      throw new Error(`${clientName} Android/iOS extVersion must match ${expectedVersion}`)
     }
+  }
+  if (pluginPackage.uni_modules?.platforms?.client?.['uni-app']?.app?.nvue !== '√') {
+    throw new Error('Public marketplace package must declare traditional uni-app nvue support')
   }
   const requiredEntries = ['license.md', 'readme.md', 'changelog.md', 'utssdk']
   if (JSON.stringify(files) !== JSON.stringify(requiredEntries)) {

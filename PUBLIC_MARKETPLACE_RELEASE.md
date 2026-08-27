@@ -13,6 +13,8 @@
 
 `0.2.1` 已于 2026-08-27 上传到 DCloud，但随后确认市场分发包误含本地原生制品，不能作为发布 authority，也不应继续导入使用。当前修正候选为 `0.2.2`，仍保持 `release-pending`、`releaseApproved=false`。市场分发事实不能替代正式运行证据或解除 compatibility ledger 阻断。
 
+DCloud 顶层市场版本与各运行形态的 `extVersion` 是不同维度，不能自动强制相等。当前 `0.2.2` 元数据中，传统 `uni-app` 支持 Vue、nvue、Android 和 iOS，其 Android/iOS `extVersion` 为 `0.2.2`；`uni-app x` Android/iOS 实现版本继续标记为 `0.1.0`。发布向导和自动校验必须保留这组已确认的平台元数据。
+
 ## 市场包边界
 
 市场上传内容由 `uni_modules/unix-openim-sdk/package.json` 的 `files` allowlist 与当前提交的 Git tracked 文件交集控制。ignored 文件即使残留在长期 worktree 中，也不得进入候选包：
