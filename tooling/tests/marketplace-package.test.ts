@@ -44,6 +44,7 @@ test('Public marketplace package is deterministic and contains only the explicit
     assert.ok(entries.includes('uni_modules/unix-openim-sdk/utssdk/interface.uts'))
     assert.ok(entries.includes('uni_modules/unix-openim-sdk/utssdk/unierror.uts'))
     assert.equal(entries.some((path) => /app-harmony|\/libs\/|\/Frameworks\/|\.aar$|\.har$|\.xcframework/i.test(path)), false)
+    assert.equal(entries.some((path) => /\/_CodeSignature\/|\/CodeResources$/.test(path)), false)
     assert.equal(entries.some((path) => /(?:^|\/)(?:local-runtime|tooling|pages|test-results)(?:\/|$)/.test(path)), false)
     assert.equal(entries.includes('uni_modules/unix-openim-sdk/.npmignore'), false)
 
@@ -79,4 +80,10 @@ test('Public marketplace metadata declares both traditional uni-app and uni-app 
   const uniAppX = pluginPackage.uni_modules.platforms.client['uni-app-x']
   assert.equal(uniAppX.app.android.minVersion, '5.0')
   assert.equal(uniAppX.app.ios.minVersion, '14')
+})
+
+test('Public marketplace packager derives archive inputs from tracked plugin files', () => {
+  const source = readFileSync(join(root, 'scripts/build-public-marketplace-package.mjs'), 'utf8')
+  assert.match(source, /\['ls-files', '-z', '--', pluginRelativePath\]/)
+  assert.doesNotMatch(source, /readdirSync\(absolutePath\)/)
 })

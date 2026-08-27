@@ -2,7 +2,7 @@
 
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -51,21 +51,15 @@ function packagePathAllowed(path, files) {
 }
 
 function packageFiles(files) {
-  const paths = ['package.json']
-  const visit = (relativePath) => {
-    const absolutePath = resolve(pluginRoot, relativePath)
-    const stat = statSync(absolutePath)
-    if (stat.isFile()) {
-      paths.push(relativePath)
-      return
-    }
-    if (!stat.isDirectory()) throw new Error(`Marketplace entry is not a regular file or directory: ${relativePath}`)
-    for (const child of readdirSync(absolutePath).sort((left, right) => left.localeCompare(right, 'en'))) {
-      visit(`${relativePath}/${child}`)
-    }
-  }
-  for (const entry of files) visit(entry)
-  return [...new Set(paths)]
+  const prefix = `${pluginRelativePath}/`
+  const tracked = execFileSync('git', ['ls-files', '-z', '--', pluginRelativePath], {
+    cwd: projectRoot,
+    encoding: 'utf8',
+  }).split('\0').filter(Boolean).map((path) => {
+    if (!path.startsWith(prefix)) throw new Error(`Marketplace tracked path escaped the plugin root: ${path}`)
+    return path.slice(prefix.length)
+  })
+  return [...new Set(tracked)]
     .filter((path) => packagePathAllowed(path, files) && !forbiddenPathPattern.test(path))
     .sort((left, right) => left.localeCompare(right, 'en'))
 }
