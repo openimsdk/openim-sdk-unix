@@ -304,6 +304,12 @@ test('public producer plan binds remaining deterministic events to concrete oper
 	const firstLoginWindow = eventControlScenario.indexOf("switchAutomationPrimary(config, 'A_event_control_first')")
 	const forcedLogout = eventControlScenario.indexOf("logout('uvue_auto_event_control_logout')")
 	assert.ok(forcedLogout >= 0 && forcedLogout < firstLoginWindow, 'event-control must force a fresh login before requiring connection events')
+	const failureProbe = functionSource('runAutomationConnectFailureProbe')
+	const failureProbeLogout = failureProbe.indexOf("logout('uvue_auto_connect_failure_pre_logout')")
+	const failureProbeUninit = failureProbe.indexOf("unInitSDK('uvue_auto_connect_failure_pre_uninit')")
+	const failureProbeInit = failureProbe.indexOf("initSDK(buildAutomationInitConfigWithWS(config, unavailableWSAddr)")
+	assert.ok(failureProbeLogout >= 0 && failureProbeLogout < failureProbeUninit, 'connection failure probe must log out the active session')
+	assert.ok(failureProbeUninit < failureProbeInit, 'connection failure probe must initialize its unavailable endpoint in a fresh Core epoch')
 
   const friendSuite = functionSource('runAutomationFriendSuite')
   assert.match(friendSuite, /recordAutomationRequiredEventCorrelation\('acceptFriendApplication', 'onFriendAdded'/)

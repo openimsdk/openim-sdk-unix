@@ -3415,6 +3415,15 @@
 		const eventName = 'onConnectFailed'
 		const beforeCount = readAutomationEventCount(eventName)
 		const afterSequence = readAutomationEventSequence()
+		const preProbeStatus = await withAutomationTimeout<OpenIMLoginStatus>(getLoginStatus('uvue_auto_connect_failure_pre_status'), 'events/getLoginStatusBeforeConnectFailureProbe', automationDefaultStepTimeoutMilliseconds)
+		if (preProbeStatus == 3) {
+			await withAutomationTimeout<string>(logout('uvue_auto_connect_failure_pre_logout'), 'events/logoutBeforeConnectFailureProbe', automationDefaultStepTimeoutMilliseconds)
+		}
+		automationLoggedIn = false
+		automationActiveUserID = ''
+		unInitSDK('uvue_auto_connect_failure_pre_uninit')
+		automationCurrentLifecycleEpoch = 0
+		await sleepAutomation(500)
 		automationLifecycleEpochCounter = automationLifecycleEpochCounter + 1
 		automationCurrentLifecycleEpoch = automationLifecycleEpochCounter
 		let primaryError : Error | null = null
