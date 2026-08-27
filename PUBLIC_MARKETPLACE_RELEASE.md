@@ -40,7 +40,7 @@ Android 和 iOS 原生 SDK 由市场插件配置引用远端制品，不随源�
 
 ## 发布候选生成
 
-必须从 clean checkout 执行：
+候选验证 checkout 必须从 clean checkout 执行：
 
 ```bash
 npm ci
@@ -56,6 +56,12 @@ npm run verify:release-policy
 npm run compile:public
 npm run verify:consumer:uniapp:android
 npm run verify:consumer:uniapp:ios
+```
+
+编译会生成 ignored `unpackage/`，因此不得直接从上述验证 checkout 发布。必须从同一完整提交重新创建专用发布 checkout；该 checkout 不执行 compile/runtime，只执行：
+
+```bash
+npm ci
 npm run marketplace:preflight
 npm run marketplace:build
 ```
@@ -71,6 +77,7 @@ ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_module
 HBuilderX 不以 Git tracked 状态作为上传边界。发布前必须同时执行以下检查：
 
 - `git status --porcelain` 为空；
+- 仓库顶层不存在 `unpackage/` 或 `.hbuilderx/`；验证产生的缓存只能保留在独立验证 checkout；
 - `git status --ignored --short -- uni_modules/unix-openim-sdk` 不包含二进制、`libs`、`Frameworks`、`Resources` 或 `_CodeSignature`；
 - 插件目录大小与候选 manifest 合理一致，市场显示大小出现数量级差异时立即停止发布；
 - 发布向导完成后、最终提交前再次检查 `git diff --exit-code`。HBuilderX 若改写 `package.json`、changelog、平台版本或隐私声明，必须先恢复 authority 并重新核对，不能直接上传。

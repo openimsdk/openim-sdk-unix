@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process'
-import { lstatSync, readdirSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const defaultRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const pluginRelativeRoot = 'uni_modules/unix-openim-sdk'
 const forbiddenDirectoryPattern = /(?:^|\/)(?:libs|Frameworks|Resources|_CodeSignature)(?:\/|$)/
+const forbiddenWorkspacePaths = ['unpackage', '.hbuilderx']
 
 function git(root, args) {
   return execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' })
@@ -47,8 +48,12 @@ export function verifyPublicMarketplaceWorktree(root = defaultRoot) {
   const missing = [...tracked].filter((path) => !actual.has(path)).sort()
   const extra = files.map((file) => file.path).filter((path) => !tracked.has(path)).sort()
   const forbiddenDirectories = directories.filter((path) => forbiddenDirectoryPattern.test(path)).sort()
+  const presentForbiddenWorkspacePaths = forbiddenWorkspacePaths.filter((path) => existsSync(join(resolvedRoot, path)))
   const findings = []
   if (dirty !== '') findings.push('repository is dirty')
+  if (presentForbiddenWorkspacePaths.length > 0) {
+    findings.push(`forbidden workspace build/cache paths are present: ${presentForbiddenWorkspacePaths.join(', ')}`)
+  }
   if (missing.length > 0) findings.push(`tracked plugin files are missing: ${missing.join(', ')}`)
   if (extra.length > 0) findings.push(`untracked or ignored plugin files are present: ${extra.join(', ')}`)
   if (symlinks.length > 0) findings.push(`plugin symlinks are forbidden: ${symlinks.join(', ')}`)

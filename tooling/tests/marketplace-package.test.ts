@@ -116,3 +116,26 @@ test('Public marketplace worktree preflight rejects ignored native artifacts', (
     rmSync(fixture, { recursive: true, force: true })
   }
 })
+
+test('Public marketplace worktree preflight rejects top-level build caches', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'openim-marketplace-preflight-cache-'))
+  try {
+    const plugin = join(fixture, 'uni_modules/unix-openim-sdk')
+    mkdirSync(plugin, { recursive: true })
+    writeFileSync(join(fixture, '.gitignore'), 'unpackage/\n')
+    writeFileSync(join(plugin, 'package.json'), '{"id":"unix-openim-sdk"}\n')
+    execFileSync('git', ['init'], { cwd: fixture })
+    execFileSync('git', ['add', '.gitignore', 'uni_modules/unix-openim-sdk/package.json'], { cwd: fixture })
+    execFileSync('git', ['-c', 'user.name=OpenIM Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture'], { cwd: fixture })
+
+    const cachedArtifact = join(fixture, 'unpackage/resources/app-android/uni_modules/unix-openim-sdk/utssdk/app-android/libs')
+    mkdirSync(cachedArtifact, { recursive: true })
+    writeFileSync(join(cachedArtifact, 'open_im_sdk.aar'), 'cached native artifact')
+    assert.throws(
+      () => verifyPublicMarketplaceWorktree(fixture),
+      /forbidden workspace build\/cache paths are present: unpackage/,
+    )
+  } finally {
+    rmSync(fixture, { recursive: true, force: true })
+  }
+})
