@@ -80,6 +80,18 @@ test('Public compatibility ledger records the locked Core addBlack sync race as 
   assert.deepEqual(entry.versions, ['openim-sdk-core@d6e0b549db904d0327d76ef7c9c283203879a095'])
 })
 
+test('Public compatibility ledger records the locked Core group full-sync duplicate as release-blocking', () => {
+  const ledger = JSON.parse(readFileSync(resolve(repositoryRoot, 'tooling/compatibility/ledger.json'), 'utf8')) as {
+    entries: Array<Record<string, unknown>>
+  }
+  const entry = ledger.entries.find((item) => item.id === 'UTS-COMPAT-PUBLIC-CORE-GROUP-FULL-SYNC-001')
+  assert.ok(entry)
+  assert.deepEqual(entry.editions, ['public'])
+  assert.deepEqual(entry.platforms, ['android', 'ios'])
+  assert.equal(entry.releaseStatus, 'blocked')
+  assert.deepEqual(entry.versions, ['openim-sdk-core@d6e0b549db904d0327d76ef7c9c283203879a095'])
+})
+
 test('release compatibility debt is scoped to the edition being published', () => {
   const enterpriseOnlyBlocked = {
     ...certifiedEntry,
