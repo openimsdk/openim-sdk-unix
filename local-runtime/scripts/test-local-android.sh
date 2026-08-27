@@ -10,6 +10,11 @@ for name in OPENIM_API_BASE OPENIM_WS_BASE IM_SECRET; do
   fi
 done
 
+automation_suite="${OPENIM_LOCAL_SUITE:-full}"
+if [[ "$automation_suite" == full ]]; then
+  automation_suite=""
+fi
+
 readonly local_automation_env_path="$PROJECT_ROOT/env.js"
 readonly local_automation_env_backup="$(mktemp "${TMPDIR:-/tmp}/openim-public-env.XXXXXX")"
 local_automation_env_existed=false
@@ -51,6 +56,7 @@ OPENIM_TEST_ARCHITECTURE="$ARCHITECTURE" \
 OPENIM_TEST_BUILD_CONFIGURATION=Debug \
 OPENIM_TEST_VAPOR=false \
 OPENIM_AUTOMATION_PREPROVISION=1 \
+OPENIM_AUTOMATION_SUITE="$automation_suite" \
 OPENIM_AUTOMATION_RUNTIME_ROOT="$LOCAL_RUNTIME_ROOT" \
 OPENIM_LOCAL_ANDROID_AUTOMATION_REBUILD="$AUTOMATION_REBUILD" \
   node "$PROJECT_ROOT/scripts/run-openim-automation.mjs" android --device-id "$DEVICE_ID"

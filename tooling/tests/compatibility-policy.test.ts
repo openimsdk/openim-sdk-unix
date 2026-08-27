@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
+import { fileURLToPath } from 'node:url'
 import { verifyCompatibilityLedger, verifyReleaseNativeArtifacts } from '../src/policy.js'
+
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
 function writeLedger(entry: Record<string, unknown>): string {
   const root = mkdtempSync(join(tmpdir(), 'openim-compatibility-ledger-'))
@@ -63,6 +66,30 @@ test('release policy blocks unresolved and expired compatibility entries', () =>
     () => verifyCompatibilityLedger(writeLedger({ ...certifiedEntry, classification: 'experimental', expiry: '2026-08-07' }), false, '2026-08-08'),
     /expired/,
   )
+})
+
+test('Public compatibility ledger records the locked Core addBlack sync race as release-blocking', () => {
+  const ledger = JSON.parse(readFileSync(resolve(repositoryRoot, 'tooling/compatibility/ledger.json'), 'utf8')) as {
+    entries: Array<Record<string, unknown>>
+  }
+  const entry = ledger.entries.find((item) => item.id === 'UTS-COMPAT-PUBLIC-CORE-ADDBLACK-001')
+  assert.ok(entry)
+  assert.deepEqual(entry.editions, ['public'])
+  assert.deepEqual(entry.platforms, ['android', 'ios'])
+  assert.equal(entry.releaseStatus, 'blocked')
+  assert.deepEqual(entry.versions, ['openim-sdk-core@d6e0b549db904d0327d76ef7c9c283203879a095'])
+})
+
+test('Public compatibility ledger records the locked Core group full-sync duplicate as release-blocking', () => {
+  const ledger = JSON.parse(readFileSync(resolve(repositoryRoot, 'tooling/compatibility/ledger.json'), 'utf8')) as {
+    entries: Array<Record<string, unknown>>
+  }
+  const entry = ledger.entries.find((item) => item.id === 'UTS-COMPAT-PUBLIC-CORE-GROUP-FULL-SYNC-001')
+  assert.ok(entry)
+  assert.deepEqual(entry.editions, ['public'])
+  assert.deepEqual(entry.platforms, ['android', 'ios'])
+  assert.equal(entry.releaseStatus, 'blocked')
+  assert.deepEqual(entry.versions, ['openim-sdk-core@d6e0b549db904d0327d76ef7c9c283203879a095'])
 })
 
 test('release compatibility debt is scoped to the edition being published', () => {

@@ -426,6 +426,26 @@ function prepareAutomationAccountFixture() {
   console.log('[openim-runner] disposable OpenIM test users provisioned');
 }
 
+function applyPublicServerPortAuthority() {
+  if (process.env.OPENIM_AUTOMATION_PREPROVISION !== '1') {
+    return;
+  }
+  const apiPort = String(process.env.OPENIM_PUBLIC_SERVER_API_PORT || '11002');
+  const wsPort = String(process.env.OPENIM_PUBLIC_SERVER_WS_PORT || '11001');
+  for (const [name, value] of [['OPENIM_PUBLIC_SERVER_API_PORT', apiPort], ['OPENIM_PUBLIC_SERVER_WS_PORT', wsPort]]) {
+    const port = Number(value);
+    if (!Number.isSafeInteger(port) || port <= 0 || port > 65535) {
+      fail(`${name} must be an integer from 1 to 65535`);
+    }
+  }
+  if (apiPort === wsPort) {
+    fail('Public API and WebSocket port authorities must be distinct');
+  }
+  process.env.OPENIM_API_PORT = apiPort;
+  process.env.OPENIM_WS_PORT = wsPort;
+  console.log('[openim-runner] isolated Public server port authority applied');
+}
+
 if (platform !== 'android' && platform !== 'ios') {
   fail('Usage: node scripts/run-openim-automation.mjs <android|ios> [--device-id <id>]');
 }
@@ -461,6 +481,7 @@ disableAutomationProtocolDebug();
 assertManifestWebSocket();
 assertStaticAutomationIsPassive();
 terminateProjectJestProcesses('stale preflight process');
+applyPublicServerPortAuthority();
 prepareAutomationAccountFixture();
 stageAutomationSuiteFilter();
 

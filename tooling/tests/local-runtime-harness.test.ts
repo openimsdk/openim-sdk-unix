@@ -417,6 +417,29 @@ test('local automation pre-provisions accounts and requires an explicit server s
   assert.doesNotMatch(register, /openIM123/)
 })
 
+test('formal Public automation applies the isolated Public server port authority before provisioning', () => {
+  const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
+  assert.match(runner, /function applyPublicServerPortAuthority\(\)/)
+  assert.match(runner, /process\.env\.OPENIM_PUBLIC_SERVER_API_PORT \|\| '11002'/)
+  assert.match(runner, /process\.env\.OPENIM_PUBLIC_SERVER_WS_PORT \|\| '11001'/)
+  assert.match(runner, /process\.env\.OPENIM_API_PORT = apiPort/)
+  assert.match(runner, /process\.env\.OPENIM_WS_PORT = wsPort/)
+  assert.ok(
+    runner.indexOf('applyPublicServerPortAuthority();') < runner.indexOf('prepareAutomationAccountFixture();'),
+    'Public endpoint authority must be applied before disposable account provisioning',
+  )
+})
+
+test('local test suite selection reaches the formal runner without turning full into a fake focused suite', () => {
+  const androidTest = readFileSync(resolve(root, 'local-runtime/scripts/test-local-android.sh'), 'utf8')
+  const iosTest = readFileSync(resolve(root, 'local-runtime/scripts/test-local-ios.sh'), 'utf8')
+  for (const source of [androidTest, iosTest]) {
+    assert.match(source, /automation_suite="\$\{OPENIM_LOCAL_SUITE:-full\}"/)
+    assert.match(source, /if \[\[ "\$automation_suite" == full \]\]; then\s+automation_suite=""/)
+    assert.match(source, /OPENIM_AUTOMATION_SUITE="\$automation_suite"/)
+  }
+})
+
 test('automation imports the generated staging project before invoking uniapp.test', () => {
   const runner = readFileSync(resolve(root, 'scripts/run-openim-automation.mjs'), 'utf8')
   assert.match(runner, /\['project', 'close', '--path', projectRoot\]/)

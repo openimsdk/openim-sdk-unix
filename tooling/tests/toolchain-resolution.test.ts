@@ -67,7 +67,7 @@ test('package candidate version is consistent across platform metadata', () => {
     root,
     'uni_modules/unix-openim-sdk/package.json',
   ), 'utf8'))
-  assert.match(pluginPackage.version, /^0\.2\.0(?:-rc\.\d+)?$/)
+  assert.equal(pluginPackage.version, '0.2.2')
   for (const clientName of ['uni-app', 'uni-app-x']) {
     const app = pluginPackage.uni_modules.platforms.client[clientName].app
     assert.equal(app.android.extVersion, pluginPackage.version)
@@ -89,7 +89,7 @@ test('toolchain paths resolve from environment or verified siblings', () => {
   )
 })
 
-test('resolved toolchain proves Core revision and local native artifact hashes', () => {
+test('resolved toolchain proves Core revision without requiring package-local native overrides', () => {
   const isEnterpriseComposition = existsSync(resolve(root, 'contracts/enterprise/delta.json'))
   const verified = verifyToolchain(root, { verifyPublicNative: !isEnterpriseComposition })
   assert.equal(verified.hbuilderx.cliSha256, lock.hbuilderx.cliSha256)

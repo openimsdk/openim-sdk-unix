@@ -1,7 +1,7 @@
 {
   "id": "unix-openim-sdk",
   "displayName": "Unix OpenIM SDK",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "OpenIM UTS 原生插件，为 uni-app 和 uni-app x 的 Android、iOS App 提供即时通讯能力。",
   "keywords": [
     "即时通讯",
@@ -39,12 +39,12 @@
             "vue": "√",
             "nvue": "x",
             "android": {
-              "extVersion": "0.2.0",
+              "extVersion": "0.2.2",
               "minVersion": "5.0"
             },
             "harmony": "x",
             "ios": {
-              "extVersion": "0.2.0",
+              "extVersion": "0.2.2",
               "minVersion": "14"
             }
           },
@@ -60,12 +60,12 @@
         "uni-app-x": {
           "app": {
             "android": {
-              "extVersion": "0.2.0",
+              "extVersion": "0.2.2",
               "minVersion": "5.0"
             },
             "harmony": "x",
             "ios": {
-              "extVersion": "0.2.0",
+              "extVersion": "0.2.2",
               "minVersion": "14"
             }
           },
@@ -96,8 +96,8 @@
     },
     "declaration": {
       "ads": "无",
-      "data": "插件不会向插件作者或固定第三方服务上传数据；运行时连接宿主配置的 OpenIM API/WS，并在业务调用中处理用户 ID、IM Token、消息、会话、群组和关系数据。",
-      "permissions": "插件本身不主动申请权限；宿主使用相册、相机、麦克风或文件能力时，需按实际功能声明并申请对应系统权限。"
+      "data": "插件不采集任何数据",
+      "permissions": "无"
     },
     "npmurl": "",
     "darkmode": "x",

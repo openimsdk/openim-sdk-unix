@@ -11,11 +11,11 @@
 - Tag 固定为 `unix-openim-sdk-public-v<version>`，必须指向 release PR 的 `main` merge commit。
 - DCloud 上传完成并核对后删除临时 release 分支；Tag 和发布产物永久保留。
 
-`0.2.1` 当前仅为 `release-pending` 候选，`releaseApproved=false`。本阶段允许生成、审计和归档候选包，但不允许创建正式 Tag、GitHub Release 或更新 DCloud。
+`0.2.1` 已于 2026-08-27 上传到 DCloud，但随后确认市场分发包误含本地原生制品，不能作为发布 authority，也不应继续导入使用。当前修正候选为 `0.2.2`，仍保持 `release-pending`、`releaseApproved=false`。市场分发事实不能替代正式运行证据或解除 compatibility ledger 阻断。
 
 ## 市场包边界
 
-市场上传内容由 `uni_modules/unix-openim-sdk/package.json` 的 `files` allowlist控制：
+市场上传内容由 `uni_modules/unix-openim-sdk/package.json` 的 `files` allowlist 与当前提交的 Git tracked 文件交集控制。ignored 文件即使残留在长期 worktree 中，也不得进入候选包：
 
 - `package.json`
 - `license.md`
@@ -31,6 +31,7 @@
 - 测试账号、Token、服务器地址、日志、截图和自动化证据
 - 顶层 `local-runtime`、`tooling`、宿主模板、测试 fixture 和离线 SDK profile；这些仅用于团队内部开发、CI 与发布验证
 - `node_modules`、`unpackage`、`.hbuilderx`、本机绝对路径
+- Xcode `_CodeSignature/CodeResources` 以及其他 ignored 签名、缓存和构建残留
 
 Android 和 iOS 原生 SDK 由市场插件配置引用远端制品，不随源码包内嵌：
 
@@ -39,7 +40,7 @@ Android 和 iOS 原生 SDK 由市场插件配置引用远端制品，不随源�
 
 ## 发布候选生成
 
-必须从 clean checkout 执行：
+候选验证 checkout 必须从 clean checkout 执行：
 
 ```bash
 npm ci
@@ -55,6 +56,13 @@ npm run verify:release-policy
 npm run compile:public
 npm run verify:consumer:uniapp:android
 npm run verify:consumer:uniapp:ios
+```
+
+编译会生成 ignored `unpackage/`，因此不得直接从上述验证 checkout 发布。必须从同一完整提交重新创建专用发布 checkout；该 checkout 不执行 compile/runtime，只执行：
+
+```bash
+npm ci
+npm run marketplace:preflight
 npm run marketplace:build
 ```
 
@@ -64,7 +72,17 @@ npm run marketplace:build
 - `unix-openim-sdk-<version>-marketplace-manifest.json`
 - `SHA256SUMS`
 
-ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_modules 插件时，必须在同一 Tag 的 clean checkout 中用 HBuilderX 右键 `uni_modules/unix-openim-sdk` 执行“发布/更新到插件市场”；上传前后核对 HBuilderX 展示的版本、平台和文件差异与 manifest 一致。
+ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_modules 插件时，必须在同一 Tag 的专用 clean checkout 中用 HBuilderX 右键 `uni_modules/unix-openim-sdk` 执行“发布/更新到插件市场”；禁止从曾放置本地 AAR、XCFramework、HAR 或签名资源的长期 worktree 发布。
+
+HBuilderX 不以 Git tracked 状态作为上传边界。发布前必须同时执行以下检查：
+
+- `git status --porcelain` 为空；
+- 仓库顶层不存在 `unpackage/` 或 `.hbuilderx/`；验证产生的缓存只能保留在独立验证 checkout；
+- `git status --ignored --short -- uni_modules/unix-openim-sdk` 不包含二进制、`libs`、`Frameworks`、`Resources` 或 `_CodeSignature`；
+- 插件目录大小与候选 manifest 合理一致，市场显示大小出现数量级差异时立即停止发布；
+- 发布向导完成后、最终提交前再次检查 `git diff --exit-code`。HBuilderX 若改写 `package.json`、changelog、平台版本或隐私声明，必须先恢复 authority 并重新核对，不能直接上传。
+
+上传前后核对 HBuilderX 展示的版本、平台和文件差异与 manifest 一致。发布后必须从市场重新导入，逐文件比较实际插件与 Tag checkout；仅页面版本号和更新记录一致不足以证明同源。
 
 候选 ZIP、逐文件 manifest、`SHA256SUMS`、SBOM 和最终运行证据保存为 CI/Release 资产，不把运行后生成的索引提交回被测提交。仓库只保存稳定政策与历史摘要。
 
@@ -75,7 +93,7 @@ ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_module
 - iOS 同样需要三次连续证据，但不强制真机；模拟器证据可进入正式系列。
 - schema-v2 及更早结果只作为历史摘要，不能认证当前发布。`latest` 文件只用于导航，发布结论必须引用不可变的 per-run evidence 与 matching manifest。
 - Public 与 Private 的证据不能互相复用。Private Android/iOS 必须使用其锁定的 Enterprise Core，不能用 Public Core 结果替代。
-- 大型 runner 或 matrix 结构性重构登记为 `0.2.1` 发布后的技术债；候选收口阶段不扩大此类改动。
+- 大型 runner 或 matrix 结构性重构登记为当前修正版本发布后的技术债；候选收口阶段不扩大此类改动。
 
 ## 正式发布门禁
 
