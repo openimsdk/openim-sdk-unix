@@ -207,8 +207,8 @@ switch (command) {
     break
   }
   case 'native:verify': {
-    verifyToolchain(root)
-    console.log('Public native artifacts and local overrides verified.')
+    verifyToolchain(root, { requirePublicNativeSourceArtifacts: true })
+    console.log('Locked Public Core source artifacts and external dependency identity verified.')
     break
   }
   case 'enterprise:import': {

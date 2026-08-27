@@ -89,7 +89,7 @@ test('toolchain paths resolve from environment or verified siblings', () => {
   )
 })
 
-test('resolved toolchain proves Core revision and local native artifact hashes', () => {
+test('resolved toolchain proves Core revision without requiring package-local native overrides', () => {
   const isEnterpriseComposition = existsSync(resolve(root, 'contracts/enterprise/delta.json'))
   const verified = verifyToolchain(root, { verifyPublicNative: !isEnterpriseComposition })
   assert.equal(verified.hbuilderx.cliSha256, lock.hbuilderx.cliSha256)

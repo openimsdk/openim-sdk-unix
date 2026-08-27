@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { verifyPublicMarketplaceWorktree } from '../../scripts/verify-public-marketplace-worktree.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -86,4 +87,32 @@ test('Public marketplace packager derives archive inputs from tracked plugin fil
   const source = readFileSync(join(root, 'scripts/build-public-marketplace-package.mjs'), 'utf8')
   assert.match(source, /\['ls-files', '-z', '--', pluginRelativePath\]/)
   assert.doesNotMatch(source, /readdirSync\(absolutePath\)/)
+})
+
+test('Public marketplace worktree preflight rejects ignored native artifacts', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'openim-marketplace-preflight-'))
+  try {
+    const plugin = join(fixture, 'uni_modules/unix-openim-sdk')
+    mkdirSync(plugin, { recursive: true })
+    writeFileSync(join(fixture, '.gitignore'), '*.aar\n')
+    writeFileSync(join(plugin, 'package.json'), '{"id":"unix-openim-sdk"}\n')
+    execFileSync('git', ['init'], { cwd: fixture })
+    execFileSync('git', ['add', '.gitignore', 'uni_modules/unix-openim-sdk/package.json'], { cwd: fixture })
+    execFileSync('git', ['-c', 'user.name=OpenIM Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture'], { cwd: fixture })
+    assert.deepEqual(verifyPublicMarketplaceWorktree(fixture), {
+      pluginRelativeRoot: 'uni_modules/unix-openim-sdk',
+      fileCount: 1,
+      totalBytes: 25,
+    })
+
+    const libs = join(plugin, 'utssdk/app-android/libs')
+    mkdirSync(libs, { recursive: true })
+    writeFileSync(join(libs, 'open_im_sdk.aar'), 'ignored native artifact')
+    assert.throws(
+      () => verifyPublicMarketplaceWorktree(fixture),
+      /untracked or ignored plugin files are present: .*open_im_sdk\.aar.*forbidden plugin directories are present:/s,
+    )
+  } finally {
+    rmSync(fixture, { recursive: true, force: true })
+  }
 })

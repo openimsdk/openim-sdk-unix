@@ -42,6 +42,7 @@ interface ToolchainLock {
 export interface ToolchainVerificationOptions {
   verifyPublicNative?: boolean
   requirePublicNativeSourceArtifacts?: boolean
+  verifyLocalOverrides?: boolean
 }
 
 type VerifiedToolchainLock = ToolchainLock & { hbuilderx: ToolchainLock['hbuilderx'] & { cliPath: string } }
@@ -281,13 +282,15 @@ export function verifyToolchain(
   if (options.requirePublicNativeSourceArtifacts === true && (!existsSync(androidSource) || !existsSync(iosSource))) {
     throw new Error(`Locked Public Core source artifacts are required under ${nativeRoot}`)
   }
-  const localAndroid = join(root, lock.publicNative.android.localOverridePath)
-  const localIOS = join(root, lock.publicNative.ios.localOverridePath)
-  if (sha256File(localAndroid) !== lock.publicNative.android.sha256) {
-    throw new Error(`Public Android local override is stale: ${localAndroid}`)
-  }
-  if (sha256Directory(localIOS) !== lock.publicNative.ios.localOverrideInventorySha256) {
-    throw new Error(`Public iOS local override is stale: ${localIOS}`)
+  if (options.verifyLocalOverrides === true) {
+    const localAndroid = join(root, lock.publicNative.android.localOverridePath)
+    const localIOS = join(root, lock.publicNative.ios.localOverridePath)
+    if (!existsSync(localAndroid) || sha256File(localAndroid) !== lock.publicNative.android.sha256) {
+      throw new Error(`Public Android local override is unavailable or stale: ${localAndroid}`)
+    }
+    if (!existsSync(localIOS) || sha256Directory(localIOS) !== lock.publicNative.ios.localOverrideInventorySha256) {
+      throw new Error(`Public iOS local override is unavailable or stale: ${localIOS}`)
+    }
   }
   return { ...lock, hbuilderx: { ...lock.hbuilderx, cliPath } }
 }

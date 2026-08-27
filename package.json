@@ -14,6 +14,7 @@
     "verify:release-policy": "tsx tooling/src/cli.ts verify:release-policy",
     "verify:release-integrity": "tsx tooling/src/cli.ts verify:release-integrity",
     "marketplace:build": "node scripts/build-public-marketplace-package.mjs",
+    "marketplace:preflight": "node scripts/verify-public-marketplace-worktree.mjs",
     "verify:runtime-evidence": "tsx tooling/src/cli.ts verify:runtime-evidence",
     "verify:consumer:android": "tsx tooling/src/cli.ts verify:consumer --platform android",
     "verify:consumer:ios": "tsx tooling/src/cli.ts verify:consumer --platform ios",

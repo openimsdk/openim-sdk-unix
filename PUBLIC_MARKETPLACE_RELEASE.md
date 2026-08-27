@@ -56,6 +56,7 @@ npm run verify:release-policy
 npm run compile:public
 npm run verify:consumer:uniapp:android
 npm run verify:consumer:uniapp:ios
+npm run marketplace:preflight
 npm run marketplace:build
 ```
 
