@@ -76,13 +76,17 @@ test('Public marketplace metadata declares both traditional uni-app and uni-app 
   const traditional = pluginPackage.uni_modules.platforms.client['uni-app']
   assert.deepEqual(traditional.vue, { vue2: '√', vue3: '√' })
   assert.equal(traditional.app.vue, '√')
-  assert.equal(traditional.app.nvue, 'x')
+  assert.equal(traditional.app.nvue, '√')
   assert.equal(traditional.app.android.minVersion, '5.0')
+  assert.equal(traditional.app.android.extVersion, '0.2.2')
   assert.equal(traditional.app.ios.minVersion, '14')
+  assert.equal(traditional.app.ios.extVersion, '0.2.2')
 
   const uniAppX = pluginPackage.uni_modules.platforms.client['uni-app-x']
   assert.equal(uniAppX.app.android.minVersion, '5.0')
+  assert.equal(uniAppX.app.android.extVersion, '0.1.0')
   assert.equal(uniAppX.app.ios.minVersion, '14')
+  assert.equal(uniAppX.app.ios.extVersion, '0.1.0')
 })
 
 test('Public marketplace packager derives archive inputs from tracked plugin files', () => {
