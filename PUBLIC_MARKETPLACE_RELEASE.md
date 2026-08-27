@@ -15,7 +15,7 @@
 
 ## 市场包边界
 
-市场上传内容由 `uni_modules/unix-openim-sdk/package.json` 的 `files` allowlist控制：
+市场上传内容由 `uni_modules/unix-openim-sdk/package.json` 的 `files` allowlist 与当前提交的 Git tracked 文件交集控制。ignored 文件即使残留在长期 worktree 中，也不得进入候选包：
 
 - `package.json`
 - `license.md`
@@ -31,6 +31,7 @@
 - 测试账号、Token、服务器地址、日志、截图和自动化证据
 - 顶层 `local-runtime`、`tooling`、宿主模板、测试 fixture 和离线 SDK profile；这些仅用于团队内部开发、CI 与发布验证
 - `node_modules`、`unpackage`、`.hbuilderx`、本机绝对路径
+- Xcode `_CodeSignature/CodeResources` 以及其他 ignored 签名、缓存和构建残留
 
 Android 和 iOS 原生 SDK 由市场插件配置引用远端制品，不随源码包内嵌：
 
