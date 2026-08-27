@@ -69,6 +69,8 @@ test('Public marketplace metadata declares both traditional uni-app and uni-app 
   assert.equal(pluginPackage.version, '0.2.1')
   assert.equal(pluginPackage.engines['uni-app'], '^5.23')
   assert.equal(pluginPackage.engines['uni-app-x'], '^5.23')
+  assert.equal(pluginPackage.dcloudext.declaration.data, '插件不采集任何数据')
+  assert.equal(pluginPackage.dcloudext.declaration.permissions, '无')
   assert.deepEqual(pluginPackage.files, ['license.md', 'readme.md', 'changelog.md', 'utssdk'])
 
   const traditional = pluginPackage.uni_modules.platforms.client['uni-app']
