@@ -300,6 +300,10 @@ test('public producer plan binds remaining deterministic events to concrete oper
 	const destructiveProbe = eventDelivery.indexOf('runAutomationConnectFailureProbe(config)')
 	assert.ok(offlineProducer >= 0 && offlineProducer < eventControl, 'account-switch event control must run after message producers')
 	assert.ok(eventControl < destructiveProbe, 'the destructive connection probe must remain the final event producer')
+	const eventControlScenario = functionSource('runAutomationEventControlScenario')
+	const firstLoginWindow = eventControlScenario.indexOf("switchAutomationPrimary(config, 'A_event_control_first')")
+	const forcedLogout = eventControlScenario.indexOf("logout('uvue_auto_event_control_logout')")
+	assert.ok(forcedLogout >= 0 && forcedLogout < firstLoginWindow, 'event-control must force a fresh login before requiring connection events')
 
   const friendSuite = functionSource('runAutomationFriendSuite')
   assert.match(friendSuite, /recordAutomationRequiredEventCorrelation\('acceptFriendApplication', 'onFriendAdded'/)

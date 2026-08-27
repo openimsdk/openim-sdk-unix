@@ -3112,6 +3112,13 @@
 			off(removed)
 			const forged : OpenIMSDKEventSubscription = { id: 'forged-openim-subscription', eventName: 'onConnecting' }
 			off(forged)
+			if (automationLoggedIn) {
+				await runAutomationStep<string>('events', 'logoutForEventControl', logout('uvue_auto_event_control_logout'), (_value : string) => {
+					automationLoggedIn = false
+					automationActiveUserID = ''
+				})
+				if (isIOSRuntime()) { await sleepAutomation(500) }
+			}
 			let completedBefore = connectionCompletedCount
 			await switchAutomationPrimary(config, 'A_event_control_first')
 			let waited = 0
