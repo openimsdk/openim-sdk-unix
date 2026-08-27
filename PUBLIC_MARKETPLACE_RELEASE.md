@@ -11,7 +11,7 @@
 - Tag 固定为 `unix-openim-sdk-public-v<version>`，必须指向 release PR 的 `main` merge commit。
 - DCloud 上传完成并核对后删除临时 release 分支；Tag 和发布产物永久保留。
 
-`0.2.1` 当前仅为 `release-pending` 候选，`releaseApproved=false`。本阶段允许生成、审计和归档候选包，但不允许创建正式 Tag、GitHub Release 或更新 DCloud。
+`0.2.1` 已于 2026-08-27 更新到 DCloud，但仍为 `release-pending`，`releaseApproved=false`。市场分发事实不能替代正式运行证据或解除 compatibility ledger 阻断。
 
 ## 市场包边界
 
@@ -65,7 +65,16 @@ npm run marketplace:build
 - `unix-openim-sdk-<version>-marketplace-manifest.json`
 - `SHA256SUMS`
 
-ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_modules 插件时，必须在同一 Tag 的 clean checkout 中用 HBuilderX 右键 `uni_modules/unix-openim-sdk` 执行“发布/更新到插件市场”；上传前后核对 HBuilderX 展示的版本、平台和文件差异与 manifest 一致。
+ZIP 用于审计、GitHub Release 和归档。实际向 DCloud 更新 uni_modules 插件时，必须在同一 Tag 的专用 clean checkout 中用 HBuilderX 右键 `uni_modules/unix-openim-sdk` 执行“发布/更新到插件市场”；禁止从曾放置本地 AAR、XCFramework、HAR 或签名资源的长期 worktree 发布。
+
+HBuilderX 不以 Git tracked 状态作为上传边界。发布前必须同时执行以下检查：
+
+- `git status --porcelain` 为空；
+- `git status --ignored --short -- uni_modules/unix-openim-sdk` 不包含二进制、`libs`、`Frameworks`、`Resources` 或 `_CodeSignature`；
+- 插件目录大小与候选 manifest 合理一致，市场显示大小出现数量级差异时立即停止发布；
+- 发布向导完成后、最终提交前再次检查 `git diff --exit-code`。HBuilderX 若改写 `package.json`、changelog、平台版本或隐私声明，必须先恢复 authority 并重新核对，不能直接上传。
+
+上传前后核对 HBuilderX 展示的版本、平台和文件差异与 manifest 一致。发布后必须从市场重新导入，逐文件比较实际插件与 Tag checkout；仅页面版本号和更新记录一致不足以证明同源。
 
 候选 ZIP、逐文件 manifest、`SHA256SUMS`、SBOM 和最终运行证据保存为 CI/Release 资产，不把运行后生成的索引提交回被测提交。仓库只保存稳定政策与历史摘要。
 
