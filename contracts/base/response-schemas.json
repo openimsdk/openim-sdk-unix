@@ -5717,20 +5717,6 @@
           "schema": {
             "kind": "number"
           }
-        },
-        "lastMinSeq": {
-          "required": false,
-          "schema": {
-            "kind": "union",
-            "options": [
-              {
-                "kind": "number"
-              },
-              {
-                "kind": "null"
-              }
-            ]
-          }
         }
       }
     },
@@ -5745,12 +5731,6 @@
               "kind": "reference",
               "name": "OpenIMMessageItem"
             }
-          }
-        },
-        "lastMinSeq": {
-          "required": true,
-          "schema": {
-            "kind": "number"
           }
         },
         "isEnd": {

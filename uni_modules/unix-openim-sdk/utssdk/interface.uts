@@ -813,12 +813,10 @@ export type OpenIMGetAdvancedHistoryMessageListParams = {
   conversationID : string
   startClientMsgID : string
   count : number
-  lastMinSeq ?: number | null
 }
 
 export type OpenIMAdvancedHistoryMessageListResult = {
   messageList : Array<OpenIMMessageItem>
-  lastMinSeq : number
   isEnd : boolean
   errCode : number
   errMsg : string

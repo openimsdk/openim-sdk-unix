@@ -27,6 +27,12 @@ test('public video message schema carries the snapshotType field exported by the
   assert.match(ios, /export \{[^}]*stringifyOpenIMMessagePayload[^}]*\} from '\.\.\/common\/message-json-writer\.uts'/)
 })
 
+test('advanced history parser does not fabricate the removed lastMinSeq field', () => {
+  const parser = common.match(/export function parseNativeAdvancedHistoryMessageListCommon[\s\S]*?\n}\n\nexport function parseNativeAdvancedHistoryMessageListFallbackCommon[\s\S]*?\n}/)?.[0] ?? ''
+  assert.notEqual(parser, '')
+  assert.doesNotMatch(parser, /lastMinSeq/)
+})
+
 test('typed native messages are reconstructed through the declared public message schema', () => {
   const parser = common.match(/export function parseNativeMessageCommon[\s\S]*?\n}\n\nexport function parseNativeAdvancedHistoryMessageListCommon/)?.[0] ?? ''
 

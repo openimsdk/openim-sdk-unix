@@ -376,15 +376,14 @@ test('every callable and event response root has a closed concrete schema graph'
   assert.equal(reachable.size, 65)
 })
 
-test('rejects missing and wrongly typed advanced history fields', () => {
+test('advanced history matches the Core pagination response without legacy lastMinSeq', () => {
   const document = buildPublicResponseSchemas(contract)
   const rootSchema = document.callables.getAdvancedHistoryMessageList?.schema
   assert.ok(rootSchema)
-  const valid = { messageList: [], lastMinSeq: 0, isEnd: true, errCode: 0, errMsg: '' }
+  const valid = { messageList: [], isEnd: true, errCode: 0, errMsg: '' }
   assert.deepEqual(validateContractValue(document, rootSchema, valid).filter((issue) => issue.severity === 'error'), [])
 
-  const { lastMinSeq: _omitted, ...missingLastMinSeq } = valid
-  assert.ok(validateContractValue(document, rootSchema, missingLastMinSeq).some((issue) => issue.path === '$.lastMinSeq' && issue.rule === 'required'))
+  assert.ok(validateContractValue(document, rootSchema, { ...valid, lastMinSeq: 0 }).some((issue) => issue.path === '$.lastMinSeq' && issue.severity === 'contract-drift'))
   assert.ok(validateContractValue(document, rootSchema, { ...valid, isEnd: 'true' }).some((issue) => issue.path === '$.isEnd' && issue.rule === 'type'))
 })
 
@@ -435,7 +434,7 @@ test('reports additive response fields as contract drift instead of structural f
   const document = buildPublicResponseSchemas(contract)
   const schema = document.schemas.OpenIMAdvancedHistoryMessageListResult
   assert.ok(schema)
-  const issues = validateContractValue(document, schema, { messageList: [], lastMinSeq: 0, isEnd: true, errCode: 0, errMsg: '', futureField: 'value' })
+  const issues = validateContractValue(document, schema, { messageList: [], isEnd: true, errCode: 0, errMsg: '', futureField: 'value' })
   assert.equal(issues.some((issue) => issue.severity === 'error'), false)
   assert.ok(issues.some((issue) => issue.path === '$.futureField' && issue.severity === 'contract-drift'))
 })

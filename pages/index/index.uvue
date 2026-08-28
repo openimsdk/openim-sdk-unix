@@ -2357,7 +2357,7 @@
 		if (name == 'getAdvancedHistoryMessageList') {
 			if (value == null) { throw new Error(name + ' returned null') }
 			const result = value as OpenIMAdvancedHistoryMessageListResult
-			if (result.errCode != 0 || result.lastMinSeq < 0) { throw new Error(name + ' returned invalid pagination metadata') }
+			if (result.errCode != 0) { throw new Error(name + ' returned invalid pagination metadata') }
 			return { structureValidated: true, semanticValidated: true }
 		}
 		if (name == 'createGroup') {

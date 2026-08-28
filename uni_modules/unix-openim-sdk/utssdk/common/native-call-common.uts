@@ -928,7 +928,7 @@ export function parseNativeAdvancedHistoryMessageListCommon(data : string, helpe
   const typedResult = helpers.parseNativeAdvancedHistoryMessageListData(data)
   if (typedResult != null && isValidParsedMessageList(typedResult.messageList, helpers)) {
     const normalizedMessages = normalizeParsedMessageList(typedResult.messageList, helpers)
-    if (normalizedMessages != null) { return { messageList: normalizedMessages as Array<OpenIMMessageItem>, lastMinSeq: typedResult.lastMinSeq, isEnd: typedResult.isEnd, errCode: typedResult.errCode, errMsg: typedResult.errMsg } }
+    if (normalizedMessages != null) { return { messageList: normalizedMessages as Array<OpenIMMessageItem>, isEnd: typedResult.isEnd, errCode: typedResult.errCode, errMsg: typedResult.errMsg } }
   }
   return parseNativeAdvancedHistoryMessageListFallbackCommon(data, helpers)
 }
@@ -939,7 +939,7 @@ export function parseNativeAdvancedHistoryMessageListFallbackCommon(data : strin
   const messages : Array<OpenIMMessageItem> = []
   const rawList = parseNativeJSONObjectList(readNativeValue(raw, 'messageList'), helpers)
   rawList.forEach((item : UTSJSONObject) => { if (isValidParsedMessageObject(item, helpers)) { messages.push(parseNativeMessageItem(item, helpers)) } })
-  return { messageList: messages, lastMinSeq: helpers.readNumberParam(raw, 'lastMinSeq'), isEnd: helpers.readBooleanParam(raw, 'isEnd'), errCode: helpers.readNumberParam(raw, 'errCode'), errMsg: helpers.readStringParam(raw, 'errMsg') }
+  return { messageList: messages, isEnd: helpers.readBooleanParam(raw, 'isEnd'), errCode: helpers.readNumberParam(raw, 'errCode'), errMsg: helpers.readStringParam(raw, 'errMsg') }
 }
 
 function parseNativeMessageListFromValue(value : any | null, helpers : NativeParserHelpers) : Array<OpenIMMessageItem> {

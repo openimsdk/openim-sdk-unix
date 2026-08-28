@@ -1341,12 +1341,12 @@
     {
       "id": 1114,
       "name": "OpenIMGetAdvancedHistoryMessageListParams",
-      "signatureHash": "b521938a9052e5499ecbc005550e44e6abacf2e815092ec5e496a3dbc90774cc"
+      "signatureHash": "b3e06ea41a34d888d22bb6bb28bb7705d1a394dccb51a9c316395f008c8762a1"
     },
     {
       "id": 1115,
       "name": "OpenIMAdvancedHistoryMessageListResult",
-      "signatureHash": "02a6f480de44a33716123127bcec9de5615609d9fc54fcd5abc66b3e9dd5bf06"
+      "signatureHash": "569e3870397e0669bfe28520c6e2445df4e9be6337afb40342fcbf90ac5bfab3"
     },
     {
       "id": 1116,
@@ -2880,5 +2880,5 @@
       "signatureHash": "84d818eb034363f1220fe113a669d28509161956cf94b8d290ddf6ca3953c42d"
     }
   ],
-  "contractHash": "09edccfc09a4d3cad353feb89446cf3265ff896abe4b5de4f22fc05f2b29a49d"
+  "contractHash": "8601b7b5ebe609ceb087827665c3b2b86303b1237b2ef450129b5ddb6ec25caf"
 }
