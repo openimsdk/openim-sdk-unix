@@ -1,5 +1,22 @@
 # 更新日志
 
+## 0.2.3（待发布）
+
+### 新增
+
+- 补充消息接收选项、群设置、群成员角色、申请处理结果、在线状态等公共枚举常量，并为对应参数和返回字段提供命名类型。
+- 补充仍属于消息 `contentType` 的 UserCommand 通知类型常量。
+
+### 修复
+
+- 移除历史消息请求和结果中底层 Core 已不再提供的 `lastMinSeq` 字段。
+
+### 兼容性变化
+
+- 保留既有群设置和角色枚举类型名作为兼容别名；现有调用无需修改。
+- 移除 `createImageMessage()`、`createSoundMessage()`、`createVideoMessage()` 和 `createFileMessage()`；本地媒体消息统一使用对应的 `FromFullPath` API。
+- `OpenIMCreateVideoMessageParams` 不再包含 `videoSourcePath`、`snapshotSourcePath`，`OpenIMCreateFileMessageParams` 不再包含 `fileSourcePath`。
+
 ## 0.2.2（2026-08-27）
 
 ### 修复

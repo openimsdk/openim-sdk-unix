@@ -656,6 +656,240 @@
         "name": "OpenIMLoginStatusLogged",
         "status": "active",
         "previousNames": []
+      },
+      {
+        "id": 110,
+        "name": "OpenIMMessageReceiveOptionReceive",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 111,
+        "name": "OpenIMMessageReceiveOptionDoNotReceive",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 112,
+        "name": "OpenIMMessageReceiveOptionReceiveWithoutNotification",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 113,
+        "name": "OpenIMGroupAllowTypeAllowed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 114,
+        "name": "OpenIMGroupAllowTypeNotAllowed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 115,
+        "name": "OpenIMGroupTypeWorkingGroup",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 116,
+        "name": "OpenIMGroupJoinSourceAdmin",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 117,
+        "name": "OpenIMGroupJoinSourceInvitation",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 118,
+        "name": "OpenIMGroupJoinSourceSearch",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 119,
+        "name": "OpenIMGroupJoinSourceQRCode",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 120,
+        "name": "OpenIMGroupMemberRoleNormal",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 121,
+        "name": "OpenIMGroupMemberRoleAdmin",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 122,
+        "name": "OpenIMGroupMemberRoleOwner",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 123,
+        "name": "OpenIMGroupVerificationTypeApplyNeedInviteNot",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 124,
+        "name": "OpenIMGroupVerificationTypeAllNeed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 125,
+        "name": "OpenIMGroupVerificationTypeAllNot",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 126,
+        "name": "OpenIMApplicationHandleResultRejected",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 127,
+        "name": "OpenIMApplicationHandleResultUnprocessed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 128,
+        "name": "OpenIMApplicationHandleResultAccepted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 129,
+        "name": "OpenIMGroupStatusNormal",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 130,
+        "name": "OpenIMGroupStatusBanned",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 131,
+        "name": "OpenIMGroupStatusDismissed",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 132,
+        "name": "OpenIMGroupStatusMuted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 133,
+        "name": "OpenIMGroupMentionTypeNormal",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 134,
+        "name": "OpenIMGroupMentionTypeMentionedMe",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 135,
+        "name": "OpenIMGroupMentionTypeMentionedAll",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 136,
+        "name": "OpenIMGroupMentionTypeMentionedAllAndMe",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 137,
+        "name": "OpenIMGroupMentionTypeGroupNotice",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 138,
+        "name": "OpenIMGroupMemberFilterAll",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 139,
+        "name": "OpenIMGroupMemberFilterOwner",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 140,
+        "name": "OpenIMGroupMemberFilterAdmin",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 141,
+        "name": "OpenIMGroupMemberFilterNormal",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 142,
+        "name": "OpenIMGroupMemberFilterAdminAndNormal",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 143,
+        "name": "OpenIMGroupMemberFilterAdminAndOwner",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 144,
+        "name": "OpenIMOnlineStateOffline",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 145,
+        "name": "OpenIMOnlineStateOnline",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 146,
+        "name": "OpenIMMessageTypeUserCommandAdded",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 147,
+        "name": "OpenIMMessageTypeUserCommandDeleted",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 148,
+        "name": "OpenIMMessageTypeUserCommandUpdated",
+        "status": "active",
+        "previousNames": []
       }
     ],
     "types": [
@@ -1618,6 +1852,72 @@
         "name": "OpenIMSDKInstance",
         "status": "active",
         "previousNames": []
+      },
+      {
+        "id": 1161,
+        "name": "OpenIMMessageReceiveOption",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1162,
+        "name": "OpenIMGroupAllowType",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1163,
+        "name": "OpenIMGroupType",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1164,
+        "name": "OpenIMGroupJoinSource",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1165,
+        "name": "OpenIMGroupMemberRole",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1166,
+        "name": "OpenIMGroupVerificationType",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1167,
+        "name": "OpenIMApplicationHandleResult",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1168,
+        "name": "OpenIMGroupStatus",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1169,
+        "name": "OpenIMGroupMentionType",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1170,
+        "name": "OpenIMGroupMemberFilter",
+        "status": "active",
+        "previousNames": []
+      },
+      {
+        "id": 1171,
+        "name": "OpenIMOnlineState",
+        "status": "active",
+        "previousNames": []
       }
     ],
     "callables": [
@@ -1631,9 +1931,7 @@
         "id": 2002,
         "name": "offAll",
         "status": "active",
-        "previousNames": [
-          "offEvent"
-        ]
+        "previousNames": []
       },
       {
         "id": 2003,

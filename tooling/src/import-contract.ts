@@ -40,7 +40,7 @@ import {
   validateImplementationBoundaryAuthority,
 } from './platform-implementation-types.js'
 
-const EXPECTED_PUBLIC = { constants: 109, types: 160, callables: 161, events: 48 } as const
+const EXPECTED_PUBLIC = { constants: 148, types: 171, callables: 161, events: 48 } as const
 
 function writeText(path: string, value: string): void {
   mkdirSync(dirname(path), { recursive: true })

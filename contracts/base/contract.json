@@ -12,8 +12,8 @@
     }
   },
   "expected": {
-    "constants": 109,
-    "types": 160,
+    "constants": 148,
+    "types": 171,
     "callables": 161,
     "events": 48
   },
@@ -780,6 +780,279 @@
       "type": "OpenIMLoginStatus",
       "value": "3",
       "signatureHash": "83d5ad7e02193fd11100ab63e2e9f5382d7c244807aa01156f24f11d129c00f5"
+    },
+    {
+      "id": 110,
+      "name": "OpenIMMessageReceiveOptionReceive",
+      "type": "OpenIMMessageReceiveOption",
+      "value": "0",
+      "signatureHash": "b26767427c487c53f047d5baad4664a83f7c00c7323981c96a1e56d1e50f326f"
+    },
+    {
+      "id": 111,
+      "name": "OpenIMMessageReceiveOptionDoNotReceive",
+      "type": "OpenIMMessageReceiveOption",
+      "value": "1",
+      "signatureHash": "161c4314f3629fc19c36b6d797aa62fbedad9e27b767f2cb3aafa234fdbc4663"
+    },
+    {
+      "id": 112,
+      "name": "OpenIMMessageReceiveOptionReceiveWithoutNotification",
+      "type": "OpenIMMessageReceiveOption",
+      "value": "2",
+      "signatureHash": "e915bd2ae4b7d0553cde3496b91c755cb5b5fbd0079669ec53d066ca94bceaf7"
+    },
+    {
+      "id": 113,
+      "name": "OpenIMGroupAllowTypeAllowed",
+      "type": "OpenIMGroupAllowType",
+      "value": "0",
+      "signatureHash": "79cf7483dde95bf747aff7fd52ea614aa4899005fdefb7fc96e9f48c2aa1aea6"
+    },
+    {
+      "id": 114,
+      "name": "OpenIMGroupAllowTypeNotAllowed",
+      "type": "OpenIMGroupAllowType",
+      "value": "1",
+      "signatureHash": "6af5b9ccd39b57aed9b042f9c37b65452a4b871eb8aca47fcbcd257661b17af5"
+    },
+    {
+      "id": 115,
+      "name": "OpenIMGroupTypeWorkingGroup",
+      "type": "OpenIMGroupType",
+      "value": "2",
+      "signatureHash": "a1c1be4d9415d4ca40a2044d590a8571b991af2e7161193233a76fd99805f34f"
+    },
+    {
+      "id": 116,
+      "name": "OpenIMGroupJoinSourceAdmin",
+      "type": "OpenIMGroupJoinSource",
+      "value": "1",
+      "signatureHash": "8e290fe065a20e909c47479577c497260c3e847be3195a45195f297a24301342"
+    },
+    {
+      "id": 117,
+      "name": "OpenIMGroupJoinSourceInvitation",
+      "type": "OpenIMGroupJoinSource",
+      "value": "2",
+      "signatureHash": "88a54d7b3d1263122ca4decf364ff7cff53f691826cf0a2af3586060ad23e719"
+    },
+    {
+      "id": 118,
+      "name": "OpenIMGroupJoinSourceSearch",
+      "type": "OpenIMGroupJoinSource",
+      "value": "3",
+      "signatureHash": "4d5e750c7c16265e11068765dd8da6ba4274e47697f13f361cf1cd8df4368d09"
+    },
+    {
+      "id": 119,
+      "name": "OpenIMGroupJoinSourceQRCode",
+      "type": "OpenIMGroupJoinSource",
+      "value": "4",
+      "signatureHash": "bbed1537b7266b5689e39410dcc68942c27554bd03927357f7f1c312da84d1a6"
+    },
+    {
+      "id": 120,
+      "name": "OpenIMGroupMemberRoleNormal",
+      "type": "OpenIMGroupMemberRole",
+      "value": "20",
+      "signatureHash": "fe11fdc7e92a81b90602744497bf5e38d4416507cfb8bf077ecd5427276baca7"
+    },
+    {
+      "id": 121,
+      "name": "OpenIMGroupMemberRoleAdmin",
+      "type": "OpenIMGroupMemberRole",
+      "value": "60",
+      "signatureHash": "0806a35d8bf82d4af261acea99876e9180fb038a7e4b22fc8ca2dfa1d6c9c8b1"
+    },
+    {
+      "id": 122,
+      "name": "OpenIMGroupMemberRoleOwner",
+      "type": "OpenIMGroupMemberRole",
+      "value": "100",
+      "signatureHash": "d6a5c5b4d613c451677405b63432d898b66ff347385ee65876562b66c146fae3"
+    },
+    {
+      "id": 123,
+      "name": "OpenIMGroupVerificationTypeApplyNeedInviteNot",
+      "type": "OpenIMGroupVerificationType",
+      "value": "0",
+      "signatureHash": "77d11c20fc10fed30efb1ad26d47afb5038bbd78e82da6107d20ec9151bfbe42"
+    },
+    {
+      "id": 124,
+      "name": "OpenIMGroupVerificationTypeAllNeed",
+      "type": "OpenIMGroupVerificationType",
+      "value": "1",
+      "signatureHash": "cf9a64c29cce36320c1a210a424800689a8df9c075a25a9bf1f3e9dd3a50cfad"
+    },
+    {
+      "id": 125,
+      "name": "OpenIMGroupVerificationTypeAllNot",
+      "type": "OpenIMGroupVerificationType",
+      "value": "2",
+      "signatureHash": "214d98e75a737e6754224236b8d8ce0f0994c4e3908777022b7f10214e1f7ef0"
+    },
+    {
+      "id": 126,
+      "name": "OpenIMApplicationHandleResultRejected",
+      "type": "OpenIMApplicationHandleResult",
+      "value": "-1",
+      "signatureHash": "62b47fe82793bfda4ae0420c80323a7e46b99926142d679c45afb69f64d7cf6f"
+    },
+    {
+      "id": 127,
+      "name": "OpenIMApplicationHandleResultUnprocessed",
+      "type": "OpenIMApplicationHandleResult",
+      "value": "0",
+      "signatureHash": "0ba64d47a432666affb4fd9b42e7b990e3cf963f84412df3ea781e0f02071c69"
+    },
+    {
+      "id": 128,
+      "name": "OpenIMApplicationHandleResultAccepted",
+      "type": "OpenIMApplicationHandleResult",
+      "value": "1",
+      "signatureHash": "a888203ab0f6acdd86df72d1231b155568e926839bcfad2d0d7df0b1c99d815b"
+    },
+    {
+      "id": 129,
+      "name": "OpenIMGroupStatusNormal",
+      "type": "OpenIMGroupStatus",
+      "value": "0",
+      "signatureHash": "8a6038ed81b8d1b0c7a714c2aedbc66e482d0a8a55c4e3b0a3f2720622f0c1a2"
+    },
+    {
+      "id": 130,
+      "name": "OpenIMGroupStatusBanned",
+      "type": "OpenIMGroupStatus",
+      "value": "1",
+      "signatureHash": "37008b165843f3cdaf2d7d40b245f8665260011175fd2163c14bfe293ca0aede"
+    },
+    {
+      "id": 131,
+      "name": "OpenIMGroupStatusDismissed",
+      "type": "OpenIMGroupStatus",
+      "value": "2",
+      "signatureHash": "bb41faa915a7cf3357ad8e11c1e0cd26f9d46e4d66ba25d981d278b3e44bb42d"
+    },
+    {
+      "id": 132,
+      "name": "OpenIMGroupStatusMuted",
+      "type": "OpenIMGroupStatus",
+      "value": "3",
+      "signatureHash": "06335494246eabfa6f5447bab003e17b5b763d1d822fb4af9a9dcf7a59a734d5"
+    },
+    {
+      "id": 133,
+      "name": "OpenIMGroupMentionTypeNormal",
+      "type": "OpenIMGroupMentionType",
+      "value": "0",
+      "signatureHash": "bb6b1a596a0c50dedb90c7fc81ac48e8741474df647960620c39e85668bb8b3c"
+    },
+    {
+      "id": 134,
+      "name": "OpenIMGroupMentionTypeMentionedMe",
+      "type": "OpenIMGroupMentionType",
+      "value": "1",
+      "signatureHash": "0a108d6716c0c0dfce197b94f3809b94964197a8935f9468549060bd931d2924"
+    },
+    {
+      "id": 135,
+      "name": "OpenIMGroupMentionTypeMentionedAll",
+      "type": "OpenIMGroupMentionType",
+      "value": "2",
+      "signatureHash": "6df4fcab0da04b3da47b5e2a6352541999ec3eeb36b54e0d5a74988ab8afd114"
+    },
+    {
+      "id": 136,
+      "name": "OpenIMGroupMentionTypeMentionedAllAndMe",
+      "type": "OpenIMGroupMentionType",
+      "value": "3",
+      "signatureHash": "add752745d437a1ac648c4ee85bcc86af83af79277950f344e629d927a779fb1"
+    },
+    {
+      "id": 137,
+      "name": "OpenIMGroupMentionTypeGroupNotice",
+      "type": "OpenIMGroupMentionType",
+      "value": "4",
+      "signatureHash": "26c0ac864f1448116e9950711335ebf29526a3d8cc93a81689fc95a74f47dcb5"
+    },
+    {
+      "id": 138,
+      "name": "OpenIMGroupMemberFilterAll",
+      "type": "OpenIMGroupMemberFilter",
+      "value": "0",
+      "signatureHash": "9f9205e9a287cf5d03fc7d98f2388324983125d605e545e602ef041d52f1cda6"
+    },
+    {
+      "id": 139,
+      "name": "OpenIMGroupMemberFilterOwner",
+      "type": "OpenIMGroupMemberFilter",
+      "value": "1",
+      "signatureHash": "5b06eb3cea0b3619f21c776c729d4bb06bc799d586bcb18508c60874b16b4063"
+    },
+    {
+      "id": 140,
+      "name": "OpenIMGroupMemberFilterAdmin",
+      "type": "OpenIMGroupMemberFilter",
+      "value": "2",
+      "signatureHash": "76139c691010fb567346a98e3a343a7116803e22ee16ae1013079045f5072555"
+    },
+    {
+      "id": 141,
+      "name": "OpenIMGroupMemberFilterNormal",
+      "type": "OpenIMGroupMemberFilter",
+      "value": "3",
+      "signatureHash": "490df6e02722b95c2894d2c07ddd1d941229433f4323326156627a459160f104"
+    },
+    {
+      "id": 142,
+      "name": "OpenIMGroupMemberFilterAdminAndNormal",
+      "type": "OpenIMGroupMemberFilter",
+      "value": "4",
+      "signatureHash": "88ea655e28a0e8233e9e647423b0d1f0bd37805747112103f58f221fa0847d4d"
+    },
+    {
+      "id": 143,
+      "name": "OpenIMGroupMemberFilterAdminAndOwner",
+      "type": "OpenIMGroupMemberFilter",
+      "value": "5",
+      "signatureHash": "55c800d19b30ea200e2b126b0b4d34498bb2a07791dec49637eb057487dfa590"
+    },
+    {
+      "id": 144,
+      "name": "OpenIMOnlineStateOffline",
+      "type": "OpenIMOnlineState",
+      "value": "0",
+      "signatureHash": "ad6902ffc828c80679501f8e66fe432206ee9997e2f964232180e28d5fb5fc85"
+    },
+    {
+      "id": 145,
+      "name": "OpenIMOnlineStateOnline",
+      "type": "OpenIMOnlineState",
+      "value": "1",
+      "signatureHash": "d93dde1b814f0ea286760f892d338dc9d7abb61d3a34c0fe78c092bab31a7b2a"
+    },
+    {
+      "id": 146,
+      "name": "OpenIMMessageTypeUserCommandAdded",
+      "type": "OpenIMMessageType",
+      "value": "1305",
+      "signatureHash": "dd8e1c4a349e6ae0a51125be4127988fcc47c8d4f3be7ee157daa1d6ca1f97f8"
+    },
+    {
+      "id": 147,
+      "name": "OpenIMMessageTypeUserCommandDeleted",
+      "type": "OpenIMMessageType",
+      "value": "1306",
+      "signatureHash": "0881daf2b534565fad43a5c5d76efa5ebae0dc60b0850e07bce4868f0af45ad0"
+    },
+    {
+      "id": 148,
+      "name": "OpenIMMessageTypeUserCommandUpdated",
+      "type": "OpenIMMessageType",
+      "value": "1307",
+      "signatureHash": "576752d190830d634c4a98d237bbc34126909ee301c7b8a8d3e13825979bc41f"
     }
   ],
   "types": [
@@ -906,8 +1179,8 @@
     {
       "id": 1021,
       "name": "OpenIMSetSelfInfoRecvMsgOpt",
-      "declaration": "export type OpenIMSetSelfInfoRecvMsgOpt = 0 | 1 | 2",
-      "signatureHash": "6af170121ec89812d978317f6308580bf371f923eefa0f5faf556da8aa8533fb"
+      "declaration": "export type OpenIMSetSelfInfoRecvMsgOpt = OpenIMMessageReceiveOption",
+      "signatureHash": "2496f2a8a543e55948ad43e140f48c1a1685689acf60dd0aefc7c12266302785"
     },
     {
       "id": 1022,
@@ -918,14 +1191,14 @@
     {
       "id": 1023,
       "name": "OpenIMGroupNeedVerification",
-      "declaration": "export type OpenIMGroupNeedVerification = 0 | 1 | 2",
-      "signatureHash": "d917f362aa627f1c48128ac20cea7f394ff9ff5cd3e8ff285cffa55cd485bb0b"
+      "declaration": "export type OpenIMGroupNeedVerification = OpenIMGroupVerificationType",
+      "signatureHash": "9af297fa8561e1c0e521bf26fc9bc340612b9bde8503ee94e8f9fcaad3c2913c"
     },
     {
       "id": 1024,
       "name": "OpenIMGroupOption",
-      "declaration": "export type OpenIMGroupOption = 0 | 1",
-      "signatureHash": "5cfc8db4d763fb4968c159241605ccc795eba8ccbe1b60630692b83389e350f8"
+      "declaration": "export type OpenIMGroupOption = OpenIMGroupAllowType",
+      "signatureHash": "4cee5391e117e78c86c747b0b4c39a497fb858f1cbc196d2dad0ea821a19d1ca"
     },
     {
       "id": 1025,
@@ -936,20 +1209,20 @@
     {
       "id": 1026,
       "name": "OpenIMGroupMemberRoleLevel",
-      "declaration": "export type OpenIMGroupMemberRoleLevel = 20 | 60 | 100",
-      "signatureHash": "6dfeb17bdc44ec09d528b134e753009b308f897302792ff60be0dbc2e535d475"
+      "declaration": "export type OpenIMGroupMemberRoleLevel = OpenIMGroupMemberRole",
+      "signatureHash": "daf9b3dd3644404e3fe2a48372a931aebb1e0d04d715a75eaffb391f06b4282d"
     },
     {
       "id": 1027,
       "name": "OpenIMSetConversationParams",
-      "declaration": "export type OpenIMSetConversationParams = {\n  conversationID : string\n  recvMsgOpt ?: number | null\n  isPinned ?: OpenIMSetConversationBoolean | null\n  isPrivateChat ?: OpenIMSetConversationBoolean | null\n  burnDuration ?: number | null\n  groupAtType ?: number | null\n  ex ?: string | null\n}",
-      "signatureHash": "be0ad0433ae82d7088f8330cb25a8c18a36827d55355d5f776be36635ede1506"
+      "declaration": "export type OpenIMSetConversationParams = {\n  conversationID : string\n  recvMsgOpt ?: OpenIMMessageReceiveOption | null\n  isPinned ?: OpenIMSetConversationBoolean | null\n  isPrivateChat ?: OpenIMSetConversationBoolean | null\n  burnDuration ?: number | null\n  groupAtType ?: OpenIMGroupMentionType | null\n  ex ?: string | null\n}",
+      "signatureHash": "7d478e88f3819fbb881a25ac4aa97c548f72eb797db11394b71f5f5dbff17594"
     },
     {
       "id": 1028,
       "name": "OpenIMSetSelfInfoParams",
-      "declaration": "export type OpenIMSetSelfInfoParams = {\n  nickname ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n  globalRecvMsgOpt ?: OpenIMSetSelfInfoRecvMsgOpt | null\n}",
-      "signatureHash": "4923c4d16dcc83f754cb8bf299fe9f91b21f9771d071c0564d3a276bec48e34c"
+      "declaration": "export type OpenIMSetSelfInfoParams = {\n  nickname ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n  globalRecvMsgOpt ?: OpenIMMessageReceiveOption | null\n}",
+      "signatureHash": "8c9e25daa567afd9c3e152586284cae4c8a83ce77da0876fd059719a32fc4b31"
     },
     {
       "id": 1029,
@@ -1044,8 +1317,8 @@
     {
       "id": 1044,
       "name": "OpenIMCreateGroupInfo",
-      "declaration": "export type OpenIMCreateGroupInfo = {\n  groupName : string\n  groupType : 2\n  notification ?: string | null\n  introduction ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n}",
-      "signatureHash": "ffec54165e4c12239b73917e333ffe16126376c86068de95f3ab36ec87a1c64b"
+      "declaration": "export type OpenIMCreateGroupInfo = {\n  groupName : string\n  groupType : OpenIMGroupType\n  notification ?: string | null\n  introduction ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n}",
+      "signatureHash": "85cdc2d47fe7349cf74e8ada34e7bcd9688de341bb5cd9afb081d80d0ceb83cf"
     },
     {
       "id": 1045,
@@ -1056,20 +1329,20 @@
     {
       "id": 1046,
       "name": "OpenIMSetGroupInfoParams",
-      "declaration": "export type OpenIMSetGroupInfoParams = {\n  groupID : string\n  groupName ?: string | null\n  notification ?: string | null\n  introduction ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n  needVerification ?: OpenIMGroupNeedVerification | null\n  lookMemberInfo ?: OpenIMGroupOption | null\n  applyMemberFriend ?: OpenIMGroupOption | null\n}",
-      "signatureHash": "9aafff7e76952491739ce9ba04d2d29b72540e2ef6091e77bc74bfba32a87434"
+      "declaration": "export type OpenIMSetGroupInfoParams = {\n  groupID : string\n  groupName ?: string | null\n  notification ?: string | null\n  introduction ?: string | null\n  faceURL ?: string | null\n  ex ?: string | null\n  needVerification ?: OpenIMGroupVerificationType | null\n  lookMemberInfo ?: OpenIMGroupAllowType | null\n  applyMemberFriend ?: OpenIMGroupAllowType | null\n}",
+      "signatureHash": "f60bed3ebbbd4aa7deee15388834fe85ff5636ae7e99df1f9fe40d91ed4771c3"
     },
     {
       "id": 1047,
       "name": "OpenIMSetGroupMemberInfoParams",
-      "declaration": "export type OpenIMSetGroupMemberInfoParams = {\n  groupID : string\n  userID : string\n  nickname ?: string | null\n  faceURL ?: string | null\n  roleLevel ?: OpenIMGroupMemberRoleLevel | null\n  ex ?: string | null\n}",
-      "signatureHash": "be5a45a607a834119a540dd426b154a0f542eb1822ef8df4c704bc60e9e327e7"
+      "declaration": "export type OpenIMSetGroupMemberInfoParams = {\n  groupID : string\n  userID : string\n  nickname ?: string | null\n  faceURL ?: string | null\n  roleLevel ?: OpenIMGroupMemberRole | null\n  ex ?: string | null\n}",
+      "signatureHash": "98fa2ca238ea8407d40d1ff2b45ad1e2fe6d0f1ec486b21c4f1044e1231a3e02"
     },
     {
       "id": 1048,
       "name": "OpenIMJoinGroupParams",
-      "declaration": "export type OpenIMJoinGroupParams = {\n  groupID : string\n  reqMsg : string\n  joinSource : number\n  ex ?: string | null\n}",
-      "signatureHash": "04d375b93c6de64b3b6a5bfe36ddaccd0f07f5f02c6c622a646f36d3c2c07eb5"
+      "declaration": "export type OpenIMJoinGroupParams = {\n  groupID : string\n  reqMsg : string\n  joinSource : OpenIMGroupJoinSource\n  ex ?: string | null\n}",
+      "signatureHash": "97b79b08ac349b22231c2e3da6755a15226fcd1735e6c6710a57fc6ec255c154"
     },
     {
       "id": 1049,
@@ -1302,8 +1575,8 @@
     {
       "id": 1087,
       "name": "OpenIMConversationItem",
-      "declaration": "export type OpenIMConversationItem = {\n  conversationID : string\n  conversationType : OpenIMSessionType\n  userID ?: string | null\n  groupID ?: string | null\n  showName : string\n  faceURL : string\n  recvMsgOpt : number\n  unreadCount : number\n  latestMsg ?: string | null\n  latestMsgSendTime : number\n  draftText : string\n  draftTextTime : number\n  isPinned : boolean\n  isPrivateChat : boolean\n  attachedInfo : string\n  ex : string\n  burnDuration : number\n  minSeq : number\n  maxSeq : number\n  msgDestructTime : number\n  groupAtType : number\n  isMsgDestruct : boolean\n  isNotInGroup : boolean\n  updateUnreadCountTime : number\n}",
-      "signatureHash": "598414c4c588fa99562775080bb8d17daa4cbb793dd6b15aea42afb478f6ddd0"
+      "declaration": "export type OpenIMConversationItem = {\n  conversationID : string\n  conversationType : OpenIMSessionType\n  userID ?: string | null\n  groupID ?: string | null\n  showName : string\n  faceURL : string\n  recvMsgOpt : OpenIMMessageReceiveOption\n  unreadCount : number\n  latestMsg ?: string | null\n  latestMsgSendTime : number\n  draftText : string\n  draftTextTime : number\n  isPinned : boolean\n  isPrivateChat : boolean\n  attachedInfo : string\n  ex : string\n  burnDuration : number\n  minSeq : number\n  maxSeq : number\n  msgDestructTime : number\n  groupAtType : OpenIMGroupMentionType\n  isMsgDestruct : boolean\n  isNotInGroup : boolean\n  updateUnreadCountTime : number\n}",
+      "signatureHash": "6f4f9cc7f20e8f3ab29d57c1cce21613b72aa31dc96c817b73abdb47f6167561"
     },
     {
       "id": 1088,
@@ -1320,8 +1593,8 @@
     {
       "id": 1090,
       "name": "OpenIMUserStatusItem",
-      "declaration": "export type OpenIMUserStatusItem = {\n  userID : string\n  status : number\n  platformIDs : Array<number>\n}",
-      "signatureHash": "a8d28054689489918abd8332b6339a2cb5cb28ad0941b0f7290e676fc46dda8d"
+      "declaration": "export type OpenIMUserStatusItem = {\n  userID : string\n  status : OpenIMOnlineState\n  platformIDs : Array<OpenIMPlatform>\n}",
+      "signatureHash": "283244374a342209e2f2d656f7e64f5de941180d2b31ff5f12603930e12da349"
     },
     {
       "id": 1091,
@@ -1374,8 +1647,8 @@
     {
       "id": 1099,
       "name": "OpenIMUserInfo",
-      "declaration": "export type OpenIMUserInfo = {\n  userID : string\n  nickname : string\n  faceURL : string\n  ex : string\n  createTime ?: number | null\n  attachedInfo ?: string | null\n  globalRecvMsgOpt ?: number | null\n}",
-      "signatureHash": "ce8160a04596bf7e963750e430746f3c09f8c8904972036030426300000b3f39"
+      "declaration": "export type OpenIMUserInfo = {\n  userID : string\n  nickname : string\n  faceURL : string\n  ex : string\n  createTime ?: number | null\n  attachedInfo ?: string | null\n  globalRecvMsgOpt ?: OpenIMMessageReceiveOption | null\n}",
+      "signatureHash": "42d1da1d627a17d2b3a66c04f5c4e3af357149fcc13f2699e85058969a67fe25"
     },
     {
       "id": 1100,
@@ -1398,26 +1671,26 @@
     {
       "id": 1103,
       "name": "OpenIMGroupItem",
-      "declaration": "export type OpenIMGroupItem = {\n  groupID : string\n  groupName : string\n  notification : string\n  introduction : string\n  faceURL : string\n  ownerUserID : string\n  createTime : number\n  memberCount : number\n  status : number\n  creatorUserID : string\n  groupType : number\n  needVerification : number\n  lookMemberInfo : number\n  applyMemberFriend : number\n  notificationUpdateTime : number\n  notificationUserID : string\n  ex : string\n  attachedInfo : string\n}",
-      "signatureHash": "7a3c765d2938ab26d72e645d65f89483e94c0404c7dcf3e3210aa7b0d579aca7"
+      "declaration": "export type OpenIMGroupItem = {\n  groupID : string\n  groupName : string\n  notification : string\n  introduction : string\n  faceURL : string\n  ownerUserID : string\n  createTime : number\n  memberCount : number\n  status : OpenIMGroupStatus\n  creatorUserID : string\n  groupType : OpenIMGroupType\n  needVerification : OpenIMGroupVerificationType\n  lookMemberInfo : OpenIMGroupAllowType\n  applyMemberFriend : OpenIMGroupAllowType\n  notificationUpdateTime : number\n  notificationUserID : string\n  ex : string\n  attachedInfo : string\n}",
+      "signatureHash": "43f280315daaa6efaf49073d634c216105960456282fb49fe0207c8441a904c6"
     },
     {
       "id": 1104,
       "name": "OpenIMGroupMemberItem",
-      "declaration": "export type OpenIMGroupMemberItem = {\n  groupID : string\n  userID : string\n  nickname : string\n  faceURL : string\n  roleLevel : number\n  joinTime : number\n  joinSource : number\n  operatorUserID : string\n  ex : string\n  muteEndTime : number\n  inviterUserID : string\n  attachedInfo : string\n}",
-      "signatureHash": "81ad1090935d1bb275b174f79bfb9c9a96939f692971de1c2481fb01e3e3234d"
+      "declaration": "export type OpenIMGroupMemberItem = {\n  groupID : string\n  userID : string\n  nickname : string\n  faceURL : string\n  roleLevel : OpenIMGroupMemberRole\n  joinTime : number\n  joinSource : OpenIMGroupJoinSource\n  operatorUserID : string\n  ex : string\n  muteEndTime : number\n  inviterUserID : string\n  attachedInfo : string\n}",
+      "signatureHash": "0abaa1d94049d05be2b0f919f9aaa266a1168b100128c3ffb43fcaf3663ff6bc"
     },
     {
       "id": 1105,
       "name": "OpenIMFriendApplicationItem",
-      "declaration": "export type OpenIMFriendApplicationItem = {\n  fromUserID : string\n  fromNickname : string\n  fromFaceURL : string\n  toUserID : string\n  toNickname : string\n  toFaceURL : string\n  handleResult : number\n  reqMsg : string\n  createTime : number\n  handlerUserID : string\n  handleMsg : string\n  handleTime : number\n  ex : string\n  attachedInfo : string\n}",
-      "signatureHash": "366f3242235b8dcb611776ececab41acfe647ae1ea7b9b97d36cc5c80e62fc8d"
+      "declaration": "export type OpenIMFriendApplicationItem = {\n  fromUserID : string\n  fromNickname : string\n  fromFaceURL : string\n  toUserID : string\n  toNickname : string\n  toFaceURL : string\n  handleResult : OpenIMApplicationHandleResult\n  reqMsg : string\n  createTime : number\n  handlerUserID : string\n  handleMsg : string\n  handleTime : number\n  ex : string\n  attachedInfo : string\n}",
+      "signatureHash": "1233659cced7e243d9a28697406a8d2da5ed0d8e896050c94c1814240e50cbd7"
     },
     {
       "id": 1106,
       "name": "OpenIMGroupApplicationItem",
-      "declaration": "export type OpenIMGroupApplicationItem = {\n  groupID : string\n  groupName : string\n  notification : string\n  introduction : string\n  groupFaceURL : string\n  ownerUserID : string\n  createTime : number\n  status : number\n  creatorUserID : string\n  groupType ?: number | null\n  memberCount : number\n  userID : string\n  nickname : string\n  userFaceURL : string\n  handleResult : number\n  reqMsg : string\n  handledMsg : string\n  reqTime : number\n  joinSource : number\n  inviterUserID : string\n  handleUserID : string\n  handledTime : number\n  ex : string\n  attachedInfo : string\n}",
-      "signatureHash": "7b33f7fe84a3f268f96ea23446c4ca9334624827f7c1607de708fd3ad6ed4e86"
+      "declaration": "export type OpenIMGroupApplicationItem = {\n  groupID : string\n  groupName : string\n  notification : string\n  introduction : string\n  groupFaceURL : string\n  ownerUserID : string\n  createTime : number\n  status : OpenIMGroupStatus\n  creatorUserID : string\n  groupType ?: OpenIMGroupType | null\n  memberCount : number\n  userID : string\n  nickname : string\n  userFaceURL : string\n  handleResult : OpenIMApplicationHandleResult\n  reqMsg : string\n  handledMsg : string\n  reqTime : number\n  joinSource : OpenIMGroupJoinSource\n  inviterUserID : string\n  handleUserID : string\n  handledTime : number\n  ex : string\n  attachedInfo : string\n}",
+      "signatureHash": "717e349e38bf317f9378ef16f2e65f5ca20997b94cc0292e9e7c81d51061a45f"
     },
     {
       "id": 1107,
@@ -1440,8 +1713,8 @@
     {
       "id": 1110,
       "name": "OpenIMConversationInputStatusItem",
-      "declaration": "export type OpenIMConversationInputStatusItem = {\n  conversationID : string\n  userID : string\n  platformIDs : Array<number>\n}",
-      "signatureHash": "ea0d22504dd2734a2f02cbea762beb04d681440d3d8ebe46f4951fee83856b7a"
+      "declaration": "export type OpenIMConversationInputStatusItem = {\n  conversationID : string\n  userID : string\n  platformIDs : Array<OpenIMPlatform>\n}",
+      "signatureHash": "c8baab3d924805ad094330f9be428de74e156902e44f765536e70f85161be230"
     },
     {
       "id": 1111,
@@ -1458,8 +1731,8 @@
     {
       "id": 1113,
       "name": "OpenIMGetGroupMemberListParams",
-      "declaration": "export type OpenIMGetGroupMemberListParams = {\n  groupID : string\n  filter : number\n  offset : number\n  count : number\n}",
-      "signatureHash": "06c82731d2e593ca418de1a0866a245b71a2be01ddeb3c02277edae1e84ec4f0"
+      "declaration": "export type OpenIMGetGroupMemberListParams = {\n  groupID : string\n  filter : OpenIMGroupMemberFilter\n  offset : number\n  count : number\n}",
+      "signatureHash": "3bab2db31fe3ac6e77f0158f09b582b3360708ee27dff25a20d2fa0e8d55be68"
     },
     {
       "id": 1114,
@@ -1742,6 +2015,72 @@
       "name": "OpenIMSDKInstance",
       "declaration": "export type OpenIMSDKInstance = {\n  initSDK : InitSDK\n  login : Login\n  logout : Logout\n  getLoginStatus : GetLoginStatus\n  getLoginUserID : GetLoginUserID\n  createTextMessage : CreateTextMessage\n  sendMessage : SendMessage\n  uploadFile : UploadFile\n}",
       "signatureHash": "b825f5e5894ba29931c5c212158214ef7b50058e72e52e08e9d3a35204d53118"
+    },
+    {
+      "id": 1161,
+      "name": "OpenIMMessageReceiveOption",
+      "declaration": "export type OpenIMMessageReceiveOption = 0 | 1 | 2",
+      "signatureHash": "b1e57723a4c86f0a1f848af0d07c10cb1c43107904fd39ee826e0460dd6e3bef"
+    },
+    {
+      "id": 1162,
+      "name": "OpenIMGroupAllowType",
+      "declaration": "export type OpenIMGroupAllowType = 0 | 1",
+      "signatureHash": "9846cc059587b100eae2ac6748024f1fb20a9a135855e4b5213748dc2ae0a376"
+    },
+    {
+      "id": 1163,
+      "name": "OpenIMGroupType",
+      "declaration": "export type OpenIMGroupType = 2",
+      "signatureHash": "b03631f6abdd5fb0dfdf164c502d84edba48c0a0ea031070565036d03a6b7fca"
+    },
+    {
+      "id": 1164,
+      "name": "OpenIMGroupJoinSource",
+      "declaration": "export type OpenIMGroupJoinSource = 1 | 2 | 3 | 4",
+      "signatureHash": "102117dfb8e8e7f0484df1c70f1096f492d151a116d4d3b8c74e8964c3fa061f"
+    },
+    {
+      "id": 1165,
+      "name": "OpenIMGroupMemberRole",
+      "declaration": "export type OpenIMGroupMemberRole = 20 | 60 | 100",
+      "signatureHash": "01d5c99d23853a12721a9286f334c5142e6d6bc767ad6d681b9938c2054e5705"
+    },
+    {
+      "id": 1166,
+      "name": "OpenIMGroupVerificationType",
+      "declaration": "export type OpenIMGroupVerificationType = 0 | 1 | 2",
+      "signatureHash": "080d7fa218e05a0b86738957ccba4e66a3ff63d66648cae95f4160c90d210d7d"
+    },
+    {
+      "id": 1167,
+      "name": "OpenIMApplicationHandleResult",
+      "declaration": "export type OpenIMApplicationHandleResult = -1 | 0 | 1",
+      "signatureHash": "36c5aeab9e02e5f4b5532a3eaabd1fbcc2b8938c64f336993a58aa9edad4d39a"
+    },
+    {
+      "id": 1168,
+      "name": "OpenIMGroupStatus",
+      "declaration": "export type OpenIMGroupStatus = 0 | 1 | 2 | 3",
+      "signatureHash": "ed8c5a51ec8e8ba0f238e8ff474269ccead0a77191e05296c4a11001cdc61dec"
+    },
+    {
+      "id": 1169,
+      "name": "OpenIMGroupMentionType",
+      "declaration": "export type OpenIMGroupMentionType = 0 | 1 | 2 | 3 | 4",
+      "signatureHash": "e24f0e2b2f9d36fc2ea50443efdd30c2e7341ae5e5712a5179524b73474e7a31"
+    },
+    {
+      "id": 1170,
+      "name": "OpenIMGroupMemberFilter",
+      "declaration": "export type OpenIMGroupMemberFilter = 0 | 1 | 2 | 3 | 4 | 5",
+      "signatureHash": "51d5c61c68da824cb9b3143b263d8ac3d0e06554cc210c7786c94c07d81035d1"
+    },
+    {
+      "id": 1171,
+      "name": "OpenIMOnlineState",
+      "declaration": "export type OpenIMOnlineState = 0 | 1",
+      "signatureHash": "48fc7460c4fe314fa07c3958f268da06b0894a93e2225434c058b4bb9d7f8d93"
     }
   ],
   "callables": [

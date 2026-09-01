@@ -101,25 +101,25 @@ export type OpenIMSetMessageLocalExParams = {
 
 export type OpenIMSetConversationBoolean = true | false
 
-export type OpenIMSetSelfInfoRecvMsgOpt = 0 | 1 | 2
+export type OpenIMSetSelfInfoRecvMsgOpt = OpenIMMessageReceiveOption
 
 export type OpenIMUpdateFriendBoolean = true | false
 
-export type OpenIMGroupNeedVerification = 0 | 1 | 2
+export type OpenIMGroupNeedVerification = OpenIMGroupVerificationType
 
-export type OpenIMGroupOption = 0 | 1
+export type OpenIMGroupOption = OpenIMGroupAllowType
 
 export type OpenIMGroupDisplayIsRead = true | false
 
-export type OpenIMGroupMemberRoleLevel = 20 | 60 | 100
+export type OpenIMGroupMemberRoleLevel = OpenIMGroupMemberRole
 
 export type OpenIMSetConversationParams = {
   conversationID : string
-  recvMsgOpt ?: number | null
+  recvMsgOpt ?: OpenIMMessageReceiveOption | null
   isPinned ?: OpenIMSetConversationBoolean | null
   isPrivateChat ?: OpenIMSetConversationBoolean | null
   burnDuration ?: number | null
-  groupAtType ?: number | null
+  groupAtType ?: OpenIMGroupMentionType | null
   ex ?: string | null
 }
 
@@ -127,7 +127,7 @@ export type OpenIMSetSelfInfoParams = {
   nickname ?: string | null
   faceURL ?: string | null
   ex ?: string | null
-  globalRecvMsgOpt ?: OpenIMSetSelfInfoRecvMsgOpt | null
+  globalRecvMsgOpt ?: OpenIMMessageReceiveOption | null
 }
 
 export type OpenIMUpdateFriendsParams = {
@@ -217,7 +217,7 @@ export type OpenIMSearchGroupMembersParams = {
 
 export type OpenIMCreateGroupInfo = {
   groupName : string
-  groupType : 2
+  groupType : OpenIMGroupType
   notification ?: string | null
   introduction ?: string | null
   faceURL ?: string | null
@@ -237,9 +237,9 @@ export type OpenIMSetGroupInfoParams = {
   introduction ?: string | null
   faceURL ?: string | null
   ex ?: string | null
-  needVerification ?: OpenIMGroupNeedVerification | null
-  lookMemberInfo ?: OpenIMGroupOption | null
-  applyMemberFriend ?: OpenIMGroupOption | null
+  needVerification ?: OpenIMGroupVerificationType | null
+  lookMemberInfo ?: OpenIMGroupAllowType | null
+  applyMemberFriend ?: OpenIMGroupAllowType | null
 }
 
 export type OpenIMSetGroupMemberInfoParams = {
@@ -247,14 +247,14 @@ export type OpenIMSetGroupMemberInfoParams = {
   userID : string
   nickname ?: string | null
   faceURL ?: string | null
-  roleLevel ?: OpenIMGroupMemberRoleLevel | null
+  roleLevel ?: OpenIMGroupMemberRole | null
   ex ?: string | null
 }
 
 export type OpenIMJoinGroupParams = {
   groupID : string
   reqMsg : string
-  joinSource : number
+  joinSource : OpenIMGroupJoinSource
   ex ?: string | null
 }
 
@@ -573,7 +573,7 @@ export type OpenIMConversationItem = {
   groupID ?: string | null
   showName : string
   faceURL : string
-  recvMsgOpt : number
+  recvMsgOpt : OpenIMMessageReceiveOption
   unreadCount : number
   latestMsg ?: string | null
   latestMsgSendTime : number
@@ -587,7 +587,7 @@ export type OpenIMConversationItem = {
   minSeq : number
   maxSeq : number
   msgDestructTime : number
-  groupAtType : number
+  groupAtType : OpenIMGroupMentionType
   isMsgDestruct : boolean
   isNotInGroup : boolean
   updateUnreadCountTime : number
@@ -603,8 +603,8 @@ export type OpenIMUserListResult = {
 
 export type OpenIMUserStatusItem = {
   userID : string
-  status : number
-  platformIDs : Array<number>
+  status : OpenIMOnlineState
+  platformIDs : Array<OpenIMPlatform>
 }
 
 export type OpenIMUserStatusListResult = {
@@ -646,7 +646,7 @@ export type OpenIMUserInfo = {
   ex : string
   createTime ?: number | null
   attachedInfo ?: string | null
-  globalRecvMsgOpt ?: number | null
+  globalRecvMsgOpt ?: OpenIMMessageReceiveOption | null
 }
 
 export type OpenIMPublicUserItem = OpenIMUserInfo
@@ -686,12 +686,12 @@ export type OpenIMGroupItem = {
   ownerUserID : string
   createTime : number
   memberCount : number
-  status : number
+  status : OpenIMGroupStatus
   creatorUserID : string
-  groupType : number
-  needVerification : number
-  lookMemberInfo : number
-  applyMemberFriend : number
+  groupType : OpenIMGroupType
+  needVerification : OpenIMGroupVerificationType
+  lookMemberInfo : OpenIMGroupAllowType
+  applyMemberFriend : OpenIMGroupAllowType
   notificationUpdateTime : number
   notificationUserID : string
   ex : string
@@ -703,9 +703,9 @@ export type OpenIMGroupMemberItem = {
   userID : string
   nickname : string
   faceURL : string
-  roleLevel : number
+  roleLevel : OpenIMGroupMemberRole
   joinTime : number
-  joinSource : number
+  joinSource : OpenIMGroupJoinSource
   operatorUserID : string
   ex : string
   muteEndTime : number
@@ -720,7 +720,7 @@ export type OpenIMFriendApplicationItem = {
   toUserID : string
   toNickname : string
   toFaceURL : string
-  handleResult : number
+  handleResult : OpenIMApplicationHandleResult
   reqMsg : string
   createTime : number
   handlerUserID : string
@@ -738,18 +738,18 @@ export type OpenIMGroupApplicationItem = {
   groupFaceURL : string
   ownerUserID : string
   createTime : number
-  status : number
+  status : OpenIMGroupStatus
   creatorUserID : string
-  groupType ?: number | null
+  groupType ?: OpenIMGroupType | null
   memberCount : number
   userID : string
   nickname : string
   userFaceURL : string
-  handleResult : number
+  handleResult : OpenIMApplicationHandleResult
   reqMsg : string
   handledMsg : string
   reqTime : number
-  joinSource : number
+  joinSource : OpenIMGroupJoinSource
   inviterUserID : string
   handleUserID : string
   handledTime : number
@@ -789,7 +789,7 @@ export type OpenIMMessageReceiptListResult = {
 export type OpenIMConversationInputStatusItem = {
   conversationID : string
   userID : string
-  platformIDs : Array<number>
+  platformIDs : Array<OpenIMPlatform>
 }
 
 export type OpenIMGetOneConversationParams = {
@@ -804,7 +804,7 @@ export type OpenIMPageParams = {
 
 export type OpenIMGetGroupMemberListParams = {
   groupID : string
-  filter : number
+  filter : OpenIMGroupMemberFilter
   offset : number
   count : number
 }
@@ -1019,6 +1019,28 @@ export type OpenIMSDKInstance = {
   sendMessage : SendMessage
   uploadFile : UploadFile
 }
+
+export type OpenIMMessageReceiveOption = 0 | 1 | 2
+
+export type OpenIMGroupAllowType = 0 | 1
+
+export type OpenIMGroupType = 2
+
+export type OpenIMGroupJoinSource = 1 | 2 | 3 | 4
+
+export type OpenIMGroupMemberRole = 20 | 60 | 100
+
+export type OpenIMGroupVerificationType = 0 | 1 | 2
+
+export type OpenIMApplicationHandleResult = -1 | 0 | 1
+
+export type OpenIMGroupStatus = 0 | 1 | 2 | 3
+
+export type OpenIMGroupMentionType = 0 | 1 | 2 | 3 | 4
+
+export type OpenIMGroupMemberFilter = 0 | 1 | 2 | 3 | 4 | 5
+
+export type OpenIMOnlineState = 0 | 1
 
 export declare const OpenIMMessageStatusNotExist : OpenIMMessageStatus
 
@@ -1237,6 +1259,84 @@ export declare const OpenIMLoginStatusLogout : OpenIMLoginStatus
 export declare const OpenIMLoginStatusLogging : OpenIMLoginStatus
 
 export declare const OpenIMLoginStatusLogged : OpenIMLoginStatus
+
+export declare const OpenIMMessageReceiveOptionReceive : OpenIMMessageReceiveOption
+
+export declare const OpenIMMessageReceiveOptionDoNotReceive : OpenIMMessageReceiveOption
+
+export declare const OpenIMMessageReceiveOptionReceiveWithoutNotification : OpenIMMessageReceiveOption
+
+export declare const OpenIMGroupAllowTypeAllowed : OpenIMGroupAllowType
+
+export declare const OpenIMGroupAllowTypeNotAllowed : OpenIMGroupAllowType
+
+export declare const OpenIMGroupTypeWorkingGroup : OpenIMGroupType
+
+export declare const OpenIMGroupJoinSourceAdmin : OpenIMGroupJoinSource
+
+export declare const OpenIMGroupJoinSourceInvitation : OpenIMGroupJoinSource
+
+export declare const OpenIMGroupJoinSourceSearch : OpenIMGroupJoinSource
+
+export declare const OpenIMGroupJoinSourceQRCode : OpenIMGroupJoinSource
+
+export declare const OpenIMGroupMemberRoleNormal : OpenIMGroupMemberRole
+
+export declare const OpenIMGroupMemberRoleAdmin : OpenIMGroupMemberRole
+
+export declare const OpenIMGroupMemberRoleOwner : OpenIMGroupMemberRole
+
+export declare const OpenIMGroupVerificationTypeApplyNeedInviteNot : OpenIMGroupVerificationType
+
+export declare const OpenIMGroupVerificationTypeAllNeed : OpenIMGroupVerificationType
+
+export declare const OpenIMGroupVerificationTypeAllNot : OpenIMGroupVerificationType
+
+export declare const OpenIMApplicationHandleResultRejected : OpenIMApplicationHandleResult
+
+export declare const OpenIMApplicationHandleResultUnprocessed : OpenIMApplicationHandleResult
+
+export declare const OpenIMApplicationHandleResultAccepted : OpenIMApplicationHandleResult
+
+export declare const OpenIMGroupStatusNormal : OpenIMGroupStatus
+
+export declare const OpenIMGroupStatusBanned : OpenIMGroupStatus
+
+export declare const OpenIMGroupStatusDismissed : OpenIMGroupStatus
+
+export declare const OpenIMGroupStatusMuted : OpenIMGroupStatus
+
+export declare const OpenIMGroupMentionTypeNormal : OpenIMGroupMentionType
+
+export declare const OpenIMGroupMentionTypeMentionedMe : OpenIMGroupMentionType
+
+export declare const OpenIMGroupMentionTypeMentionedAll : OpenIMGroupMentionType
+
+export declare const OpenIMGroupMentionTypeMentionedAllAndMe : OpenIMGroupMentionType
+
+export declare const OpenIMGroupMentionTypeGroupNotice : OpenIMGroupMentionType
+
+export declare const OpenIMGroupMemberFilterAll : OpenIMGroupMemberFilter
+
+export declare const OpenIMGroupMemberFilterOwner : OpenIMGroupMemberFilter
+
+export declare const OpenIMGroupMemberFilterAdmin : OpenIMGroupMemberFilter
+
+export declare const OpenIMGroupMemberFilterNormal : OpenIMGroupMemberFilter
+
+export declare const OpenIMGroupMemberFilterAdminAndNormal : OpenIMGroupMemberFilter
+
+export declare const OpenIMGroupMemberFilterAdminAndOwner : OpenIMGroupMemberFilter
+
+export declare const OpenIMOnlineStateOffline : OpenIMOnlineState
+
+export declare const OpenIMOnlineStateOnline : OpenIMOnlineState
+
+export declare const OpenIMMessageTypeUserCommandAdded : OpenIMMessageType
+
+export declare const OpenIMMessageTypeUserCommandDeleted : OpenIMMessageType
+
+export declare const OpenIMMessageTypeUserCommandUpdated : OpenIMMessageType
 
 export declare function off(subscription:OpenIMSDKEventSubscription) : void
 

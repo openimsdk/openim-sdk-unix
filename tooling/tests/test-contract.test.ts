@@ -373,7 +373,7 @@ test('every callable and event response root has a closed concrete schema graph'
   }
   Object.values(document.callables).forEach((root) => visit(root.schema))
   Object.values(document.events).forEach((root) => root.arguments.forEach(visit))
-  assert.equal(reachable.size, 65)
+  assert.equal(reachable.size, 75)
 })
 
 test('advanced history matches the Core pagination response without legacy lastMinSeq', () => {
@@ -426,7 +426,7 @@ test('allows locked Core group applications to omit or null groupType', () => {
   assert.equal(groupType?.required, false)
   assert.deepEqual(groupType?.schema, {
     kind: 'union',
-    options: [{ kind: 'number' }, { kind: 'null' }],
+    options: [{ kind: 'reference', name: 'OpenIMGroupType' }, { kind: 'null' }],
   })
 })
 

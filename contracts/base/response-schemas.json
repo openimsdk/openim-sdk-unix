@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "edition": "public",
   "counts": {
-    "schemas": 128,
+    "schemas": 139,
     "callables": 161,
     "events": 48
   },
@@ -892,21 +892,8 @@
       ]
     },
     "OpenIMSetSelfInfoRecvMsgOpt": {
-      "kind": "union",
-      "options": [
-        {
-          "kind": "literal",
-          "value": 0
-        },
-        {
-          "kind": "literal",
-          "value": 1
-        },
-        {
-          "kind": "literal",
-          "value": 2
-        }
-      ]
+      "kind": "reference",
+      "name": "OpenIMMessageReceiveOption"
     },
     "OpenIMUpdateFriendBoolean": {
       "kind": "union",
@@ -922,34 +909,12 @@
       ]
     },
     "OpenIMGroupNeedVerification": {
-      "kind": "union",
-      "options": [
-        {
-          "kind": "literal",
-          "value": 0
-        },
-        {
-          "kind": "literal",
-          "value": 1
-        },
-        {
-          "kind": "literal",
-          "value": 2
-        }
-      ]
+      "kind": "reference",
+      "name": "OpenIMGroupVerificationType"
     },
     "OpenIMGroupOption": {
-      "kind": "union",
-      "options": [
-        {
-          "kind": "literal",
-          "value": 0
-        },
-        {
-          "kind": "literal",
-          "value": 1
-        }
-      ]
+      "kind": "reference",
+      "name": "OpenIMGroupAllowType"
     },
     "OpenIMGroupDisplayIsRead": {
       "kind": "union",
@@ -965,21 +930,8 @@
       ]
     },
     "OpenIMGroupMemberRoleLevel": {
-      "kind": "union",
-      "options": [
-        {
-          "kind": "literal",
-          "value": 20
-        },
-        {
-          "kind": "literal",
-          "value": 60
-        },
-        {
-          "kind": "literal",
-          "value": 100
-        }
-      ]
+      "kind": "reference",
+      "name": "OpenIMGroupMemberRole"
     },
     "OpenIMSetConversationParams": {
       "kind": "object",
@@ -996,7 +948,8 @@
             "kind": "union",
             "options": [
               {
-                "kind": "number"
+                "kind": "reference",
+                "name": "OpenIMMessageReceiveOption"
               },
               {
                 "kind": "null"
@@ -1054,7 +1007,8 @@
             "kind": "union",
             "options": [
               {
-                "kind": "number"
+                "kind": "reference",
+                "name": "OpenIMGroupMentionType"
               },
               {
                 "kind": "null"
@@ -1130,7 +1084,7 @@
             "options": [
               {
                 "kind": "reference",
-                "name": "OpenIMSetSelfInfoRecvMsgOpt"
+                "name": "OpenIMMessageReceiveOption"
               },
               {
                 "kind": "null"
@@ -1540,8 +1494,8 @@
         "groupType": {
           "required": true,
           "schema": {
-            "kind": "literal",
-            "value": 2
+            "kind": "reference",
+            "name": "OpenIMGroupType"
           }
         },
         "notification": {
@@ -1726,7 +1680,7 @@
             "options": [
               {
                 "kind": "reference",
-                "name": "OpenIMGroupNeedVerification"
+                "name": "OpenIMGroupVerificationType"
               },
               {
                 "kind": "null"
@@ -1741,7 +1695,7 @@
             "options": [
               {
                 "kind": "reference",
-                "name": "OpenIMGroupOption"
+                "name": "OpenIMGroupAllowType"
               },
               {
                 "kind": "null"
@@ -1756,7 +1710,7 @@
             "options": [
               {
                 "kind": "reference",
-                "name": "OpenIMGroupOption"
+                "name": "OpenIMGroupAllowType"
               },
               {
                 "kind": "null"
@@ -1816,7 +1770,7 @@
             "options": [
               {
                 "kind": "reference",
-                "name": "OpenIMGroupMemberRoleLevel"
+                "name": "OpenIMGroupMemberRole"
               },
               {
                 "kind": "null"
@@ -1858,7 +1812,8 @@
         "joinSource": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupJoinSource"
           }
         },
         "ex": {
@@ -4521,7 +4476,8 @@
         "recvMsgOpt": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMMessageReceiveOption"
           }
         },
         "unreadCount": {
@@ -4613,7 +4569,8 @@
         "groupAtType": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupMentionType"
           }
         },
         "isMsgDestruct": {
@@ -4678,7 +4635,8 @@
         "status": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMOnlineState"
           }
         },
         "platformIDs": {
@@ -4686,7 +4644,8 @@
           "schema": {
             "kind": "array",
             "items": {
-              "kind": "number"
+              "kind": "reference",
+              "name": "OpenIMPlatform"
             }
           }
         }
@@ -4873,7 +4832,8 @@
             "kind": "union",
             "options": [
               {
-                "kind": "number"
+                "kind": "reference",
+                "name": "OpenIMMessageReceiveOption"
               },
               {
                 "kind": "null"
@@ -5071,7 +5031,8 @@
         "status": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupStatus"
           }
         },
         "creatorUserID": {
@@ -5083,25 +5044,29 @@
         "groupType": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupType"
           }
         },
         "needVerification": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupVerificationType"
           }
         },
         "lookMemberInfo": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupAllowType"
           }
         },
         "applyMemberFriend": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupAllowType"
           }
         },
         "notificationUpdateTime": {
@@ -5160,7 +5125,8 @@
         "roleLevel": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupMemberRole"
           }
         },
         "joinTime": {
@@ -5172,7 +5138,8 @@
         "joinSource": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupJoinSource"
           }
         },
         "operatorUserID": {
@@ -5249,7 +5216,8 @@
         "handleResult": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMApplicationHandleResult"
           }
         },
         "reqMsg": {
@@ -5344,7 +5312,8 @@
         "status": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupStatus"
           }
         },
         "creatorUserID": {
@@ -5359,7 +5328,8 @@
             "kind": "union",
             "options": [
               {
-                "kind": "number"
+                "kind": "reference",
+                "name": "OpenIMGroupType"
               },
               {
                 "kind": "null"
@@ -5394,7 +5364,8 @@
         "handleResult": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMApplicationHandleResult"
           }
         },
         "reqMsg": {
@@ -5418,7 +5389,8 @@
         "joinSource": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupJoinSource"
           }
         },
         "inviterUserID": {
@@ -5627,7 +5599,8 @@
           "schema": {
             "kind": "array",
             "items": {
-              "kind": "number"
+              "kind": "reference",
+              "name": "OpenIMPlatform"
             }
           }
         }
@@ -5680,7 +5653,8 @@
         "filter": {
           "required": true,
           "schema": {
-            "kind": "number"
+            "kind": "reference",
+            "name": "OpenIMGroupMemberFilter"
           }
         },
         "offset": {
@@ -6387,6 +6361,200 @@
           }
         }
       }
+    },
+    "OpenIMMessageReceiveOption": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        }
+      ]
+    },
+    "OpenIMGroupAllowType": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        }
+      ]
+    },
+    "OpenIMGroupType": {
+      "kind": "literal",
+      "value": 2
+    },
+    "OpenIMGroupJoinSource": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        },
+        {
+          "kind": "literal",
+          "value": 4
+        }
+      ]
+    },
+    "OpenIMGroupMemberRole": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 20
+        },
+        {
+          "kind": "literal",
+          "value": 60
+        },
+        {
+          "kind": "literal",
+          "value": 100
+        }
+      ]
+    },
+    "OpenIMGroupVerificationType": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        }
+      ]
+    },
+    "OpenIMApplicationHandleResult": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": -1
+        },
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        }
+      ]
+    },
+    "OpenIMGroupStatus": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        }
+      ]
+    },
+    "OpenIMGroupMentionType": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        },
+        {
+          "kind": "literal",
+          "value": 4
+        }
+      ]
+    },
+    "OpenIMGroupMemberFilter": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        },
+        {
+          "kind": "literal",
+          "value": 2
+        },
+        {
+          "kind": "literal",
+          "value": 3
+        },
+        {
+          "kind": "literal",
+          "value": 4
+        },
+        {
+          "kind": "literal",
+          "value": 5
+        }
+      ]
+    },
+    "OpenIMOnlineState": {
+      "kind": "union",
+      "options": [
+        {
+          "kind": "literal",
+          "value": 0
+        },
+        {
+          "kind": "literal",
+          "value": 1
+        }
+      ]
     }
   },
   "callables": {

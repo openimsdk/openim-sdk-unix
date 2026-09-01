@@ -8,6 +8,17 @@ import {
   OpenIMMessageType,
   OpenIMSessionType,
   OpenIMLoginStatus,
+  OpenIMMessageReceiveOption,
+  OpenIMGroupAllowType,
+  OpenIMGroupType,
+  OpenIMGroupJoinSource,
+  OpenIMGroupMemberRole,
+  OpenIMGroupVerificationType,
+  OpenIMApplicationHandleResult,
+  OpenIMGroupStatus,
+  OpenIMGroupMentionType,
+  OpenIMGroupMemberFilter,
+  OpenIMOnlineState,
   OpenIMSendMessageOptions,
   OpenIMUploadFileParams,
   OpenIMCreateSoundMessageParams,
@@ -374,6 +385,45 @@ export const OpenIMSessionTypeNotification : OpenIMSessionType = 4
 export const OpenIMLoginStatusLogout : OpenIMLoginStatus = 1
 export const OpenIMLoginStatusLogging : OpenIMLoginStatus = 2
 export const OpenIMLoginStatusLogged : OpenIMLoginStatus = 3
+export const OpenIMMessageReceiveOptionReceive : OpenIMMessageReceiveOption = 0
+export const OpenIMMessageReceiveOptionDoNotReceive : OpenIMMessageReceiveOption = 1
+export const OpenIMMessageReceiveOptionReceiveWithoutNotification : OpenIMMessageReceiveOption = 2
+export const OpenIMGroupAllowTypeAllowed : OpenIMGroupAllowType = 0
+export const OpenIMGroupAllowTypeNotAllowed : OpenIMGroupAllowType = 1
+export const OpenIMGroupTypeWorkingGroup : OpenIMGroupType = 2
+export const OpenIMGroupJoinSourceAdmin : OpenIMGroupJoinSource = 1
+export const OpenIMGroupJoinSourceInvitation : OpenIMGroupJoinSource = 2
+export const OpenIMGroupJoinSourceSearch : OpenIMGroupJoinSource = 3
+export const OpenIMGroupJoinSourceQRCode : OpenIMGroupJoinSource = 4
+export const OpenIMGroupMemberRoleNormal : OpenIMGroupMemberRole = 20
+export const OpenIMGroupMemberRoleAdmin : OpenIMGroupMemberRole = 60
+export const OpenIMGroupMemberRoleOwner : OpenIMGroupMemberRole = 100
+export const OpenIMGroupVerificationTypeApplyNeedInviteNot : OpenIMGroupVerificationType = 0
+export const OpenIMGroupVerificationTypeAllNeed : OpenIMGroupVerificationType = 1
+export const OpenIMGroupVerificationTypeAllNot : OpenIMGroupVerificationType = 2
+export const OpenIMApplicationHandleResultRejected : OpenIMApplicationHandleResult = -1
+export const OpenIMApplicationHandleResultUnprocessed : OpenIMApplicationHandleResult = 0
+export const OpenIMApplicationHandleResultAccepted : OpenIMApplicationHandleResult = 1
+export const OpenIMGroupStatusNormal : OpenIMGroupStatus = 0
+export const OpenIMGroupStatusBanned : OpenIMGroupStatus = 1
+export const OpenIMGroupStatusDismissed : OpenIMGroupStatus = 2
+export const OpenIMGroupStatusMuted : OpenIMGroupStatus = 3
+export const OpenIMGroupMentionTypeNormal : OpenIMGroupMentionType = 0
+export const OpenIMGroupMentionTypeMentionedMe : OpenIMGroupMentionType = 1
+export const OpenIMGroupMentionTypeMentionedAll : OpenIMGroupMentionType = 2
+export const OpenIMGroupMentionTypeMentionedAllAndMe : OpenIMGroupMentionType = 3
+export const OpenIMGroupMentionTypeGroupNotice : OpenIMGroupMentionType = 4
+export const OpenIMGroupMemberFilterAll : OpenIMGroupMemberFilter = 0
+export const OpenIMGroupMemberFilterOwner : OpenIMGroupMemberFilter = 1
+export const OpenIMGroupMemberFilterAdmin : OpenIMGroupMemberFilter = 2
+export const OpenIMGroupMemberFilterNormal : OpenIMGroupMemberFilter = 3
+export const OpenIMGroupMemberFilterAdminAndNormal : OpenIMGroupMemberFilter = 4
+export const OpenIMGroupMemberFilterAdminAndOwner : OpenIMGroupMemberFilter = 5
+export const OpenIMOnlineStateOffline : OpenIMOnlineState = 0
+export const OpenIMOnlineStateOnline : OpenIMOnlineState = 1
+export const OpenIMMessageTypeUserCommandAdded : OpenIMMessageType = 1305
+export const OpenIMMessageTypeUserCommandDeleted : OpenIMMessageType = 1306
+export const OpenIMMessageTypeUserCommandUpdated : OpenIMMessageType = 1307
 
 
 function optionalString(value ?: string | null) : string { return value != null ? value as string : '' }

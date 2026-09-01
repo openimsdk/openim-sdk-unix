@@ -849,7 +849,7 @@ test('event payload decoding is platform-neutral contract data', () => {
 })
 
 test('constants are generated from canonical type and value fields', () => {
-  assert.equal(contract.constants.length, 109)
+  assert.equal(contract.constants.length, 148)
   assert.equal(contract.constants.some((constant) => 'declaration' in constant), false)
   const facades = {
     android: generateIndex(root, contract, 'android'),
