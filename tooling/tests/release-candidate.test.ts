@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const readJSON = (path: string) => JSON.parse(readFileSync(resolve(root, path), 'utf8'))
 
-test('Public 0.2.2 packaging correction remains non-approved before final runtime evidence', () => {
+test('Public 0.2.2 remains non-approved while the 0.2.3 SDK changes are pending', () => {
   const candidate = readJSON('tooling/release/public-candidate.json')
   const plugin = readJSON('uni_modules/unix-openim-sdk/package.json')
 
@@ -19,8 +19,7 @@ test('Public 0.2.2 packaging correction remains non-approved before final runtim
     releaseApproved: false,
   })
   assert.equal(plugin.version, candidate.version)
-  assert.match(
-    readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/changelog.md'), 'utf8'),
-    /^# 更新日志\n\n## 0\.2\.2（2026-08-27）/,
-  )
+  const changelog = readFileSync(resolve(root, 'uni_modules/unix-openim-sdk/changelog.md'), 'utf8')
+  assert.match(changelog, /^# 更新日志\n\n## 0\.2\.3（待发布）/)
+  assert.match(changelog, /\n## 0\.2\.2（2026-08-27）/)
 })

@@ -15,7 +15,10 @@ test('group application parsing preserves null and never fabricates zero for a m
   assert.doesNotMatch(parser, /groupType: helpers\.readNumberParam/)
   assert.match(parser, /groupType: null/)
   assert.match(parser, /if \(hasNativeKey\(item, 'groupType'\)\)/)
-  assert.match(parser, /application\.groupType = groupType == null \? null : helpers\.readNumberParam\(item, 'groupType'\)/)
+  assert.match(parser, /status: helpers\.readNumberParam\(item, 'status'\) as OpenIMGroupStatus/)
+  assert.match(parser, /handleResult: helpers\.readNumberParam\(item, 'handleResult'\) as OpenIMApplicationHandleResult/)
+  assert.match(parser, /joinSource: helpers\.readNumberParam\(item, 'joinSource'\) as OpenIMGroupJoinSource/)
+  assert.match(parser, /application\.groupType = groupType == null \? null : helpers\.readNumberParam\(item, 'groupType'\) as OpenIMGroupType/)
 })
 
 test('group application validation treats groupType as optional but type checked', () => {
